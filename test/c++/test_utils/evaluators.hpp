@@ -17,6 +17,8 @@
 
 #include <nda/nda.hpp>
 
+#include <cppdlr/cppdlr.hpp>
+
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/operators/many_body_operator.hpp>
@@ -35,9 +37,9 @@
  *
  * @details An adapter takes the propagator over the Fock states, shape (r, N, N), passes it in the layout its evaluator reads, and returns
  * the self-energy over the Fock states and the single-particle Green's function with shape (r, n_hyb, n_hyb). Results are the raw evaluator
- * output, without topology_parity. Every evaluator is compared with make_reference(). Adding an evaluator takes its include and one entry
- * in all_evaluators(), with an adapter of its own unless it has the public API of the dense or the block-sparse evaluator. Kept in a header
- * since it depends on gtest, which the test_utils library does not link.
+ * output, without topology_parity. Every evaluator is compared with make_reference(), and with closed forms through matches_closed_form().
+ * Adding an evaluator takes its include and one entry in all_evaluators(), with an adapter of its own unless it has the public API of the
+ * dense or the block-sparse evaluator. Kept in a header since it depends on gtest, which the test_utils library does not link.
  */
 
 namespace triqs_xca::test_utils {
@@ -173,6 +175,18 @@ namespace triqs_xca::test_utils {
             std::move(dynint_coeffs),
             mesh,
             dressed_propagator(ad, mesh, G0)};
+  }
+
+  /**
+   * @brief The model of ad with the hybridization poles and coefficients and the propagator G over the Fock states, shape (r, N, N) on the
+   * nodes of mesh, without a dynamical interaction
+   *
+   * @details G has to be block diagonal in the subspaces of ad, since the block-sparse evaluator reads only those blocks of it.
+   */
+  inline EvalModel make_eval_model(std::string name, ad_t const &ad, nda::vector<double> hyb_poles, nda::array<dcomplex, 3> hyb_coeffs,
+                                   mesh_t const &mesh, tensor_t G) {
+    long p = hyb_poles.size();
+    return {std::move(name), ad, flat_twin(ad), std::move(hyb_poles), std::move(hyb_coeffs), {}, nda::zeros<dcomplex>(p, 0, 0), mesh, std::move(G)};
   }
 
   /**
@@ -339,8 +353,8 @@ namespace triqs_xca::test_utils {
   struct EvaluatorEntry {
     std::string name;
     std::function<std::unique_ptr<Evaluator>(EvalModel const &)> make; // returns nullptr where the evaluator is not available
-    double rel_tol    = 1e-13;                                         // relative tolerance of a comparison with the reference
-    bool is_reference = false;                                         // whether this is the evaluator every entry is compared with
+    double rel_tol    = 1e-13; // relative tolerance of a comparison with the reference, added to the tolerance of one with a closed form
+    bool is_reference = false; // whether this is the evaluator every entry is compared with
   };
 
   inline void PrintTo(EvaluatorEntry const &e, std::ostream *os) { *os << e.name; }
@@ -420,6 +434,26 @@ namespace triqs_xca::test_utils {
     return ::testing::AssertionSuccess();
   }
 
+  /**
+   * @brief max|a - ref| <= abs_tol + rel_tol max|ref|, with equal shapes and max|ref| > min_scale, for a reference that holds to the
+   * absolute accuracy abs_tol only
+   *
+   * @details The tolerance at the floor, abs_tol + rel_tol min_scale, has to be below min_scale, which makes a vanishing result fail against
+   * every reference above the floor.
+   */
+  inline ::testing::AssertionResult close_to(nda::array_const_view<dcomplex, 3> a, nda::array_const_view<dcomplex, 3> ref, double rel_tol,
+                                             double min_scale, double abs_tol) {
+    if (!(abs_tol + rel_tol * min_scale < min_scale))
+      return ::testing::AssertionFailure() << "the tolerance " << abs_tol + rel_tol * min_scale << " at the floor is not below " << min_scale;
+    if (a.shape() != ref.shape())
+      return ::testing::AssertionFailure() << "shape " << a.shape() << " differs from the reference shape " << ref.shape();
+    double scale = max_abs(ref);
+    if (!(scale > min_scale)) return ::testing::AssertionFailure() << "vacuous comparison: max|ref| = " << scale << " <= " << min_scale;
+    double err = max_abs(a - ref), tol = abs_tol + rel_tol * scale;
+    if (!(err <= tol)) return ::testing::AssertionFailure() << "max|a - ref| = " << err << " > " << tol << ", max|ref| = " << scale;
+    return ::testing::AssertionSuccess();
+  }
+
   /// The flat indices lo, ..., hi - 1
   inline nda::vector<long> flat_indices(long lo, long hi) {
     nda::vector<long> v(hi - lo);
@@ -439,6 +473,66 @@ namespace triqs_xca::test_utils {
     for (long k = 0; k < odd.size(); ++k) odd(k) = n - 1 - n % 2 - 2 * k;
     for (long k = 0; k < even.size(); ++k) even(k) = 2 * k;
     return {odd, even};
+  }
+
+  // ---------------------------------------------------------------------------------------------------
+  // Closed forms
+  // ---------------------------------------------------------------------------------------------------
+
+  /**
+   * @brief A closed form at the times t = tau / beta asked for or, where it is tabulated, at the times of its table
+   *
+   * @details A tabulated closed form is diagonal. A closed form that vanishes identically has no scale, so a result is bounded by an
+   * absolute tolerance instead of being compared with it.
+   */
+  struct ClosedForm {
+    tensor_t values;                   // shape (number of times, n, n)
+    std::vector<double> table = {};    // the times of the table, empty unless the closed form is tabulated
+    bool vanishes             = false; // whether the closed form is identically zero
+  };
+
+  /// max|a(t, i, j)| over the entries with i != j, or NaN when such an entry is NaN
+  inline double max_abs_offdiag(tensor_t a) {
+    for (long i = 0; i < std::min(a.extent(1), a.extent(2)); ++i) a(nda::range::all, i, i) = 0;
+    return max_abs(a);
+  }
+
+  /// A result on its own grid of times at the times t = tau / beta of a table
+  using at_times_t = std::function<tensor_t(tensor_t const &result, std::vector<double> const &times)>;
+
+  /// The DLR interpolant of a result on the DLR nodes of itops
+  inline at_times_t dlr_interpolant(cppdlr::imtime_ops const &itops) {
+    return [&itops](tensor_t const &result, std::vector<double> const &times) {
+      auto coefs = itops.vals2coefs(result);
+      tensor_t r(static_cast<long>(times.size()), result.extent(1), result.extent(2));
+      for (long k = 0; k < r.extent(0); ++k) r(k, nda::range::all, nda::range::all) = itops.coefs2eval(coefs, times[k]);
+      return r;
+    };
+  }
+
+  /**
+   * @brief A result against parity times the closed form cf at the same times, within abs_tol + rel_tol max|ref| and with max|ref| >
+   * min_scale
+   *
+   * @details Against a tabulated closed form the result is taken at the times of the table by at_times, and its off-diagonal entries vanish
+   * to the same tolerance at every time of the result. Against a closed form that vanishes identically, max|result| <= abs_tol.
+   */
+  inline ::testing::AssertionResult matches_closed_form(tensor_t const &result, ClosedForm const &cf, int parity, at_times_t const &at_times,
+                                                        double rel_tol, double min_scale, double abs_tol) {
+    if (cf.vanishes) {
+      if (max_abs(cf.values) != 0.0) return ::testing::AssertionFailure() << "a vanishing closed form has max|ref| = " << max_abs(cf.values);
+      if (cf.values.shape() != result.shape())
+        return ::testing::AssertionFailure() << "shape " << result.shape() << " differs from the reference shape " << cf.values.shape();
+      if (double a = max_abs(result); !(a <= abs_tol)) return ::testing::AssertionFailure() << "max|a| = " << a << " > " << abs_tol;
+      return ::testing::AssertionSuccess();
+    }
+    tensor_t ref = parity * cf.values;
+    if (cf.table.empty()) return close_to(result, ref, rel_tol, min_scale, abs_tol);
+    auto res = close_to(at_times(result, cf.table), ref, rel_tol, min_scale, abs_tol);
+    if (!res) return res;
+    if (double off = max_abs_offdiag(result), tol = abs_tol + rel_tol * max_abs(ref); !(off <= tol))
+      return ::testing::AssertionFailure() << "max off-diagonal |a| = " << off << " > " << tol;
+    return res;
   }
 
 } // namespace triqs_xca::test_utils
