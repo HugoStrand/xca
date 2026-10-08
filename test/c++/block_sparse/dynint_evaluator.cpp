@@ -41,10 +41,10 @@ namespace test_utils = triqs_xca::test_utils;
  *
  * @brief Tests of the block-sparse DiagramEvaluator with dynamical interactions: the constructors, n / n_hyb / n_int and Nmax
  *
- * @details The self-energy is compared to the dense evaluator with dynamical interactions, which runs on the single-subspace twin of the
- * partitioned atom_diag, with the two eigenbases bridged by get_tensor_in_atom_diag_subspace(). The comparison on the crossing topology
- * requires n_int to reach every Backbone constructed in block_sparse/diagram_evaluator.cpp, since the permutation parity otherwise treats the
- * interaction line as fermionic, while the non-crossing topologies are insensitive to this and pin the rest of the construction.
+ * @details The comparisons with the dense evaluator in this file drive the internal constructor that takes the field operators; the dense
+ * evaluator runs on the single-subspace twin of the partitioned atom_diag, with the two eigenbases bridged by
+ * get_tensor_in_atom_diag_subspace(). The self-energy and the single-particle Green's function of the public constructors are compared
+ * across evaluators in sigma_spgf_all_evals.cpp.
  */
 
 namespace {
@@ -116,116 +116,6 @@ namespace {
   }
 
 } // namespace
-
-/**
- * @brief Compare the self-energy on the crossing topology to the dense evaluator with dynamical interactions
- */
-TEST(BlockSparseDynintEvaluator, self_energy_matches_dense_with_dynamical_interactions) {
-
-  auto m = dynint_model(/*n_int=*/1);
-  ASSERT_NO_FATAL_FAILURE(test_utils::assert_parallel_atom_diags(m.ad, m.ad_flat));
-
-  // only a crossing topology exposes the parity error
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
-
-  int n_hyb = static_cast<int>(m.ad.get_fops().size());
-  int n_int = static_cast<int>(m.dynint_ops.size());
-
-  auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
-  auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
-
-  auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  ASSERT_EQ(D.n_hyb, n_hyb);
-  ASSERT_EQ(D.n_int, n_int);
-  ASSERT_EQ(D.n, n_hyb + n_int);
-
-  // check that some backbones carry the interaction operator on the internal line, which does not hold at order 1
-  auto Fq_ferm = std::get<0>(get_operators(m.ad, m.hyb_coeffs));
-  DiagramEvaluator D_ferm(beta, Lambda, eps, m.hyb_poles, m.hyb_coeffs, Fq_ferm);
-  ASSERT_GT(D.get_num_self_energy_backbones(topology), D_ferm.get_num_self_energy_backbones(topology))
-     << "vacuous test: the interaction flavour is not in the backbone enumeration (this compares two evaluators, so it asserts n_ext > n_hyb rather than that any particular backbone puts the interaction on an internal line)";
-
-  auto Sigma = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
-
-  // dense reference on the single-subspace twin
-  auto G_flat = test_utils::ad_to_atom_prop(m.ad_flat, beta, Lambda, eps);
-  dense::DiagramEvaluator D_dense(m.hyb_poles, m.hyb_coeffs, G_flat[0].mesh(), m.ad_flat, m.dynint_ops, m.dynint_coeffs);
-  ASSERT_EQ(D_dense.n_hyb, n_hyb);
-  ASSERT_EQ(D_dense.n_int, n_int);
-  auto Sigma_dense = D_dense.compute_self_energy(G_flat, topology);
-
-  auto [err, scale] = test_utils::compare_sigma_with_dense(Sigma, Sigma_dense, m.ad);
-
-  // the comparison is absolute, so require a non-negligible self-energy
-  ASSERT_GT(scale, 0.1) << "vacuous test: the self-energy is too small for an absolute tolerance";
-
-  EXPECT_LE(err, sigma_tol) << "max|Sigma_dense| = " << scale << ", max|bs - dense| = " << err
-                            << " -- the interaction line is being given fermionic parity";
-}
-
-/**
- * @brief Check the comparison harness without interaction operators, where the block-sparse and the dense evaluator must agree
- */
-TEST(BlockSparseDynintEvaluator, no_dynamical_interaction_matches_dense) {
-
-  auto m = dynint_model(/*n_int=*/0);
-  ASSERT_NO_FATAL_FAILURE(test_utils::assert_parallel_atom_diags(m.ad, m.ad_flat));
-
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto itops                  = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
-  auto Gt                     = test_utils::ad_to_atom_prop(m.ad, beta, itops);
-
-  auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, nda::zeros<dcomplex>(p_poles, 0, 0), {}));
-  auto ext = get_extended_coefficients(m.hyb_coeffs, nda::zeros<dcomplex>(p_poles, 0, 0));
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, /*n_int=*/0);
-  auto Sigma = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
-
-  auto G_flat = test_utils::ad_to_atom_prop(m.ad_flat, beta, Lambda, eps);
-  dense::DiagramEvaluator D_dense(m.hyb_poles, m.hyb_coeffs, G_flat[0].mesh(), m.ad_flat);
-  auto Sigma_dense = D_dense.compute_self_energy(G_flat, topology);
-
-  auto [err, scale] = test_utils::compare_sigma_with_dense(Sigma, Sigma_dense, m.ad);
-  ASSERT_GT(scale, 0.01) << "vacuous test: the self-energy is zero"; // measured 0.134
-  EXPECT_LE(err, sigma_tol) << "max|bs - dense| = " << err;
-}
-
-/**
- * @brief Compare the self-energy on the non-crossing topologies, which are insensitive to the parity of the interaction line
- */
-TEST(BlockSparseDynintEvaluator, self_energy_matches_dense_on_non_crossing_topologies) {
-
-  auto m = dynint_model(/*n_int=*/1);
-  ASSERT_NO_FATAL_FAILURE(test_utils::assert_parallel_atom_diags(m.ad, m.ad_flat));
-  int n_int = static_cast<int>(m.dynint_ops.size());
-
-  auto itops  = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
-  auto Gt     = test_utils::ad_to_atom_prop(m.ad, beta, itops);
-  auto Fq     = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext    = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  auto G_flat = test_utils::ad_to_atom_prop(m.ad_flat, beta, Lambda, eps);
-
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  dense::DiagramEvaluator D_dense(m.hyb_poles, m.hyb_coeffs, G_flat[0].mesh(), m.ad_flat, m.dynint_ops, m.dynint_coeffs);
-
-  for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 3}, {1, 2}}}) {
-    SCOPED_TRACE("topology " + [&] {
-      std::ostringstream o;
-      o << topology;
-      return o.str();
-    }());
-    ASSERT_EQ(triqs_xca::topology::topology_parity(topology), 1) << "this test is about non-crossing topologies";
-
-    auto Sigma        = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
-    auto Sigma_dense  = D_dense.compute_self_energy(G_flat, topology);
-    auto [err, scale] = test_utils::compare_sigma_with_dense(Sigma, Sigma_dense, m.ad);
-    ASSERT_GT(scale, 0.01) << "vacuous test: the self-energy is zero"; // measured 2.68 and 0.68
-    EXPECT_LE(err, sigma_tol) << "max|bs - dense| = " << err;
-  }
-}
 
 /**
  * @brief Check the atom_diag constructor with dynamical interactions
