@@ -15,6 +15,7 @@
 namespace test_utils = triqs_xca::test_utils;
 
 using nda::dcomplex;
+using test_utils::max_abs;
 using test_utils::tensor_t;
 using triqs_xca::topology::topology_parity;
 
@@ -90,8 +91,6 @@ namespace {
        .first->second;
   }
 
-  double max_abs(auto const &a) { return nda::max_element(nda::abs(a)); }
-
 } // namespace
 
 /**
@@ -130,7 +129,8 @@ TEST(SigmaSpgfModels, models_are_not_vacuous) {
     if (m.dynint_ops.empty()) continue;
     EXPECT_GT(max_abs(nda::imag(m.dynint_coeffs)), 1e-3);
 
-    // the interaction flavours enter the backbone enumeration and change both results on the crossing topology
+    // the interaction flavours enter the backbone enumeration and change both results on the crossing topology, where every backbone with
+    // an interaction line changes sign when that line is taken as fermionic, so the statistics of the interaction lines changes both too
     nda::array<int, 2> topology = {{0, 2}, {1, 3}};
     auto m_ferm                 = m;
     m_ferm.dynint_ops.clear();
@@ -146,13 +146,20 @@ TEST(SigmaSpgfModels, models_are_not_vacuous) {
   }
 }
 
+/// @brief Every name in TRIQS_XCA_REQUIRED_EVALUATORS is an entry of test_utils::all_evaluators(), so that a misspelt name fails
+TEST(EvaluatorRegistry, required_evaluators_exist) {
+  auto const entries = test_utils::all_evaluators();
+  for (auto const &name : test_utils::required_evaluators())
+    EXPECT_TRUE(std::ranges::any_of(entries, [&](auto const &e) { return e.name == name; }))
+       << name << " in TRIQS_XCA_REQUIRED_EVALUATORS is not an entry of all_evaluators()";
+}
+
 class SigmaSpgfAllEvals : public ::testing::TestWithParam<std::tuple<test_utils::EvaluatorEntry, Case>> {};
 
 TEST_P(SigmaSpgfAllEvals, matches_reference) {
   auto const &[entry, c] = GetParam();
   auto const &m          = test_utils::eval_model(c.model);
-  auto E                 = entry.make(m);
-  if (!E && test_utils::evaluator_required(entry.name)) FAIL() << entry.name << " is required but not available here";
+  auto E                 = test_utils::make_if_available(entry, m);
   if (!E) GTEST_SKIP() << entry.name << " is not available here";
 
   auto const &t = c.topology;

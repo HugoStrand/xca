@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <functional>
 #include <map>
@@ -65,6 +67,7 @@ namespace triqs_xca::test_utils {
     tensor_t G; // propagator over the Fock states, block diagonal in the subspaces of ad
 
     [[nodiscard]] long n_hyb() const { return static_cast<long>(ad.get_fops().size()); }
+    [[nodiscard]] long n_int() const { return static_cast<long>(dynint_ops.size()); }
   };
 
   /// The atom_diag of the same Hamiltonian and fundamental operators with a single subspace
@@ -178,6 +181,8 @@ namespace triqs_xca::test_utils {
    * @details
    * - unequal_sets: symmetry sets of unequal size, {A0, A1} and {B0}, without a dynamical interaction
    * - unequal_sets_small_pole: the same with the coefficients of the second pole scaled by 1e-7, so that some backbones are small
+   * - unequal_sets_five_poles: the same with five poles, so that the pole digits of a flat index have a radix other than those of the line
+   *   directions and the orbital indices
    * - unequal_sets_nA0: unequal_sets with the density n_A0 as interaction operator
    * - spin_flip_nup0_ndo0: an autopartitioned spin-flip model with a subspace of dimension 4 and interleaved symmetry-set labels, with n_up0
    *   and n_do0, which share a symmetry set, coupled by complex off-diagonal coefficients
@@ -187,8 +192,8 @@ namespace triqs_xca::test_utils {
    * - spin_flip_3orb: a three-orbital spin-flip model with 64 states and one pole, without a dynamical interaction
    */
   inline std::vector<std::string> eval_model_names() {
-    return {"unequal_sets",    "unequal_sets_small_pole", "unequal_sets_nA0", "spin_flip_nup0_ndo0",
-            "sz_resolved_spm", "n_partition_spin_xyz",    "spin_flip_3orb"};
+    return {"unequal_sets",        "unequal_sets_small_pole", "unequal_sets_five_poles", "unequal_sets_nA0",
+            "spin_flip_nup0_ndo0", "sz_resolved_spm",         "n_partition_spin_xyz",    "spin_flip_3orb"};
   }
 
   inline EvalModel build_eval_model(std::string const &name) {
@@ -199,6 +204,7 @@ namespace triqs_xca::test_utils {
       m.hyb_coeffs(1, nda::range::all, nda::range::all) *= 1e-7;
       return m;
     }
+    if (name == "unequal_sets_five_poles") return make_eval_model(name, unequal_sym_set_model(true), {}, {}, {1.3, -0.8, 0.45, -1.7, 2.2});
     if (name == "unequal_sets_nA0") return make_eval_model(name, unequal_sym_set_model(true), {n("A", 0)}, dynint_coeffs_from({1.0}));
     if (name == "spin_flip_nup0_ndo0") {
       nda::matrix<dcomplex> off = {{0.0, dcomplex(0.12, 0.09)}, {dcomplex(-0.05, 0.11), 0.0}};
@@ -227,11 +233,40 @@ namespace triqs_xca::test_utils {
     return cache.emplace(name, build_eval_model(name)).first->second;
   }
 
+  /**
+   * @brief A second propagator of the model, 0.8 G plus 0.15 (Y + Y^dag) with a complex, tau-dependent Y that is block diagonal in the
+   * subspaces of ad, for the checks that an evaluator keeps nothing of one propagator for the next call
+   *
+   * @details Like G it is Hermitian at every time and has no weight outside the subspaces of ad.
+   */
+  inline tensor_t second_propagator(EvalModel const &m) {
+    tensor_t G2 = m.G;
+    auto tau    = cppdlr::rel2abs(m.mesh.dlr_it().get_itnodes());
+    for (long t = 0; t < G2.extent(0); ++t) {
+      nda::matrix<dcomplex> Y = nda::zeros<dcomplex>(G2.extent(1), G2.extent(2));
+      for (int s = 0; s < m.ad.n_subspaces(); ++s) {
+        auto const &fs = m.ad.get_fock_states(s);
+        for (long i = 0; i < fs.size(); ++i) {
+          for (long j = 0; j < fs.size(); ++j)
+            Y(fs[i], fs[j]) = dcomplex(0.05 - 0.09 * i + 0.04 * j, 0.07 * j - 0.02 * i + 0.03 * s) * std::exp(-0.3 * tau(t) * m.mesh.beta());
+        }
+      }
+      G2(t, nda::range::all, nda::range::all) = 0.8 * G2(t, nda::range::all, nda::range::all) + 0.15 * (Y + nda::dagger(Y));
+    }
+    return G2;
+  }
+
   // ---------------------------------------------------------------------------------------------------
   // Evaluators
   // ---------------------------------------------------------------------------------------------------
 
-  /// A diagram evaluator as the *_all_evals tests drive it: the propagator over the Fock states in, raw results out
+  /**
+   * @brief A diagram evaluator as the *_all_evals tests drive it: the propagator over the Fock states in, raw results out
+   *
+   * @details f_ix and the entries of f_ix_vec are flat indices in [0, n_*_backbones(topology)). They select the backbones in the enumeration
+   * of the reference, orbital indices fastest and line directions slowest, which the solver's by-pairs self-energy loop relies on. A flat
+   * index outside that range throws std::invalid_argument, an empty f_ix_vec gives zeros, and no result depends on an earlier call.
+   */
   class Evaluator {
     public:
     virtual ~Evaluator() = default;
@@ -242,10 +277,12 @@ namespace triqs_xca::test_utils {
     /// Self-energy over the Fock states, shape (r, N, N)
     virtual tensor_t sigma(tensor_t const &G, topo_t topology)                  = 0;
     virtual tensor_t sigma(tensor_t const &G, topo_t topology, f_ix_t f_ix_vec) = 0;
+    virtual tensor_t sigma(tensor_t const &G, topo_t topology, long f_ix)       = 0;
 
     /// Single-particle Green's function, shape (r, n_hyb, n_hyb)
     virtual tensor_t spgf(tensor_t const &G, topo_t topology)                  = 0;
     virtual tensor_t spgf(tensor_t const &G, topo_t topology, f_ix_t f_ix_vec) = 0;
+    virtual tensor_t spgf(tensor_t const &G, topo_t topology, long f_ix)       = 0;
   };
 
   /// An evaluator with the public API of dense::DiagramEvaluator, built on the single-subspace twin and given one block over the Fock states
@@ -266,8 +303,10 @@ namespace triqs_xca::test_utils {
     long n_spgf_backbones(topo_t t) override { return D.get_num_single_ptcle_gf_backbones(t); }
     tensor_t sigma(tensor_t const &G, topo_t t) override { return D.compute_self_energy(native(G), t)[0].data(); }
     tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_self_energy(native(G), t, f)[0].data(); }
+    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return D.compute_self_energy(native(G), t, f)[0].data(); }
     tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(native(G), t); }
     tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
+    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
   };
 
   /// An evaluator with the public API of block_sparse::DiagramEvaluator, built on the partitioned atom_diag and given one block per subspace
@@ -289,8 +328,10 @@ namespace triqs_xca::test_utils {
     long n_spgf_backbones(topo_t t) override { return D.get_num_single_ptcle_gf_backbones(t); }
     tensor_t sigma(tensor_t const &G, topo_t t) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t)); }
     tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t, f)); }
+    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t, f)); }
     tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t); }
     tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
+    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
   };
 
   template <typename A> std::unique_ptr<Evaluator> make_evaluator(EvalModel const &m) { return std::make_unique<A>(m); }
@@ -328,29 +369,53 @@ namespace triqs_xca::test_utils {
     return E;
   }
 
-  /// Whether the comma-separated list in the environment variable TRIQS_XCA_REQUIRED_EVALUATORS names this evaluator, which then fails
-  /// rather than skips where it is not available
-  inline bool evaluator_required(std::string const &name) {
+  /// The names in the comma-separated list in the environment variable TRIQS_XCA_REQUIRED_EVALUATORS, without surrounding spaces
+  inline std::vector<std::string> required_evaluators() {
+    std::vector<std::string> names;
     char const *env = std::getenv("TRIQS_XCA_REQUIRED_EVALUATORS");
-    if (env == nullptr) return false;
+    if (env == nullptr) return names;
     std::istringstream list{env};
-    for (std::string item; std::getline(list, item, ',');)
-      if (item == name) return true;
-    return false;
+    for (std::string item; std::getline(list, item, ',');) {
+      auto first = item.find_first_not_of(" \t");
+      if (first != std::string::npos) names.push_back(item.substr(first, item.find_last_not_of(" \t") - first + 1));
+    }
+    return names;
+  }
+
+  /// Whether TRIQS_XCA_REQUIRED_EVALUATORS names this evaluator, which then fails rather than skips where it is not available
+  inline bool evaluator_required(std::string const &name) {
+    auto names = required_evaluators();
+    return std::ranges::find(names, name) != names.end();
+  }
+
+  /// The evaluator of the entry for the model, or nullptr where it is not available, which is a failure when TRIQS_XCA_REQUIRED_EVALUATORS
+  /// names it
+  inline std::unique_ptr<Evaluator> make_if_available(EvaluatorEntry const &entry, EvalModel const &m) {
+    auto E = entry.make(m);
+    if (!E && evaluator_required(entry.name)) ADD_FAILURE() << entry.name << " is required but not available here";
+    return E;
   }
 
   // ---------------------------------------------------------------------------------------------------
   // Comparisons
   // ---------------------------------------------------------------------------------------------------
 
+  /// max|a| over the entries of a, or NaN when an entry is NaN, which nda::max_element drops unless it is the first entry
+  inline double max_abs(auto const &a) {
+    auto x = nda::make_regular(nda::abs(a));
+    for (double v : x)
+      if (std::isnan(v)) return v;
+    return nda::max_element(x);
+  }
+
   /// max|a - ref| <= rel_tol max|ref|, with equal shapes and max|ref| > min_scale, so that two vanishing results do not compare equal
   inline ::testing::AssertionResult close_to(nda::array_const_view<dcomplex, 3> a, nda::array_const_view<dcomplex, 3> ref, double rel_tol,
                                              double min_scale) {
     if (a.shape() != ref.shape())
       return ::testing::AssertionFailure() << "shape " << a.shape() << " differs from the reference shape " << ref.shape();
-    double scale = nda::max_element(nda::abs(ref));
+    double scale = max_abs(ref);
     if (!(scale > min_scale)) return ::testing::AssertionFailure() << "vacuous comparison: max|ref| = " << scale << " <= " << min_scale;
-    double err = nda::max_element(nda::abs(a - ref));
+    double err = max_abs(a - ref);
     if (!(err <= rel_tol * scale)) return ::testing::AssertionFailure() << "max|a - ref| = " << err << ", max|ref| = " << scale;
     return ::testing::AssertionSuccess();
   }

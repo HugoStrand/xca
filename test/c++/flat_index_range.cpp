@@ -26,12 +26,15 @@ namespace test_utils   = triqs_xca::test_utils;
 /**
  * @file flat_index_range.cpp
  *
- * @brief The range of the flat indices of both diagram evaluators
+ * @brief The range of the flat indices of both diagram evaluators: the routines outside the API that flat_index_all_evals.cpp checks, and
+ * flat indices beyond the range of an int
  *
  * @details Both evaluators decode a flat index with Backbone::set_flat_index, which throws std::invalid_argument outside [0, number of
- * backbones). The dense self-energy accumulates in a member, so a call that throws part way through a flat-index vector must not leave a
- * partial sum behind for the next call. Backbone counts and flat indices are longs, since the counts exceed the range of an int already
- * at moderate order.
+ * backbones). The flat-index overloads of the self-energy and the single-particle Green's function, and the calls that follow a call
+ * that threw, are checked for every evaluator in flat_index_all_evals.cpp; here the dense by-pairs self-energy and the one-time
+ * correlators, and every flat-index overload at flat indices beyond the range of an int. The dense self-energy accumulates in a member,
+ * so a call that throws part way through a flat-index vector must not leave a partial sum behind for the by-pairs overloads. Backbone
+ * counts and flat indices are longs, since the counts exceed the range of an int already at moderate order.
  */
 
 namespace {
@@ -46,7 +49,8 @@ namespace {
 
 } // namespace
 
-/// @brief Check every flat-index overload of both evaluators, and the dense self-energy after a failed call
+/// @brief Check the flat-index overloads of the dense by-pairs self-energy and of the one-time correlators, and the by-pairs overloads
+/// after a failed call
 TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   double beta = 2.0, Lambda = 40.0, eps = 1.0e-10;
   int p = 2;
@@ -83,25 +87,17 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   auto all_sigma = first(n_sigma);
 
   for (int bad : {-1, n_sigma}) {
-    SCOPED_TRACE("self-energy, f_ix = " + std::to_string(bad));
-    expect_flat_index_rejected([&] { D_dense.compute_self_energy(G_flat, topology, bad); });
-    expect_flat_index_rejected([&] { D_dense.compute_self_energy(G_flat, topology, valid_then(n_sigma, bad)); });
+    SCOPED_TRACE("by-pairs self-energy, f_ix = " + std::to_string(bad));
     expect_flat_index_rejected([&] { D_dense.compute_self_energy_by_pairs(G_flat, topology, bad); });
     expect_flat_index_rejected([&] { D_dense.compute_self_energy_by_pairs(G_flat, topology, valid_then(n_sigma, bad)); });
-    expect_flat_index_rejected([&] { D_bs.compute_self_energy(G_bs, topology, bad); });
-    expect_flat_index_rejected([&] { D_bs.compute_self_energy(G_bs, topology, valid_then(n_sigma, bad)); });
   }
   for (int bad : {-1, n_correlator}) {
-    SCOPED_TRACE("correlators, f_ix = " + std::to_string(bad));
-    expect_flat_index_rejected([&] { D_dense.compute_single_ptcle_gf(G_flat, topology, bad); });
-    expect_flat_index_rejected([&] { D_dense.compute_single_ptcle_gf(G_flat, topology, valid_then(n_correlator, bad)); });
+    SCOPED_TRACE("one-time correlators, f_ix = " + std::to_string(bad));
     expect_flat_index_rejected([&] { D_dense.compute_one_time_correlator(G_flat, ops, ops, ad_flat, topology, valid_then(n_correlator, bad)); });
-    expect_flat_index_rejected([&] { D_bs.compute_single_ptcle_gf(G_bs, topology, bad); });
-    expect_flat_index_rejected([&] { D_bs.compute_single_ptcle_gf(G_bs, topology, valid_then(n_correlator, bad)); });
     expect_flat_index_rejected([&] { D_bs.compute_one_time_correlator(G_bs, ops, ops, ad, topology, valid_then(n_correlator, bad)); });
   }
 
-  // each dense self-energy overload, called after a call that failed with a partial sum in Sigma, agrees with a fresh evaluator
+  // each dense by-pairs overload, called after a call that failed with a partial sum in Sigma, agrees with a fresh evaluator
   auto fresh = [&] { return dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat); };
   auto fail  = [&] { EXPECT_THROW(D_dense.compute_self_energy(G_flat, topology, valid_then(n_sigma, n_sigma)), std::invalid_argument); };
   auto check = [&](std::string const &what, auto const &Sigma, auto const &Sigma_fresh) {
@@ -112,14 +108,6 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   int f_nonzero = 0;
   while (nda::max_element(nda::abs(fresh().compute_self_energy(G_flat, topology, f_nonzero)[0].data())) < 0.01) ++f_nonzero;
 
-  fail();
-  check("compute_self_energy(G, topology)", D_dense.compute_self_energy(G_flat, topology), fresh().compute_self_energy(G_flat, topology));
-  fail();
-  check("compute_self_energy(G, topology, f_ix)", D_dense.compute_self_energy(G_flat, topology, f_nonzero),
-        fresh().compute_self_energy(G_flat, topology, f_nonzero));
-  fail();
-  check("compute_self_energy(G, topology, f_ix_vec)", D_dense.compute_self_energy(G_flat, topology, all_sigma),
-        fresh().compute_self_energy(G_flat, topology, all_sigma));
   fail();
   check("compute_self_energy_by_pairs(G, topology)", D_dense.compute_self_energy_by_pairs(G_flat, topology),
         fresh().compute_self_energy_by_pairs(G_flat, topology));

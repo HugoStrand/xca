@@ -12,9 +12,6 @@
 
 using nda::dcomplex;
 
-using cppdlr::_;
-using cppdlr::build_dlr_rf;
-
 using triqs::operators::many_body_operator_complex;
 using triqs::operators::n;
 
@@ -29,9 +26,10 @@ namespace test_utils = triqs_xca::test_utils;
  * @details Statistics enters the diagram evaluation only through the fermionic permutation parity, where Backbone::get_parity() treats a vertex
  * as fermionic iff its orbital index is smaller than n_hyb = n - n_int. Every Backbone and CorrelatorBackbone therefore has to be constructed
  * with n_int, since the default n_int = 0 classifies the interaction lines as fermionic. Only a crossing topology exposes the parity error, so
- * the tests use the order-2 topology {{0,2},{1,3}}, which is odd while all of its sub-matchings are even. The tests of the single-subspace
- * requirement cover both the dense dynamical interaction operator construction and compute_one_time_correlator(), which read the operator
- * matrices from subspace 0 only.
+ * the tests use the order-2 topology {{0,2},{1,3}}, which is odd while all of its sub-matchings are even. The flat-index overloads of the
+ * self-energy and the single-particle Green's function are checked for every evaluator in flat_index_all_evals.cpp; the by-pairs
+ * self-energy, which only the dense evaluator has, is checked here. The tests of the single-subspace requirement cover both the dense
+ * dynamical interaction operator construction and compute_one_time_correlator(), which read the operator matrices from subspace 0 only.
  */
 
 namespace {
@@ -94,73 +92,6 @@ namespace {
   }
 
 } // namespace
-
-/**
- * @brief Check that the flat-index overloads of compute_single_ptcle_gf() agree with the whole-topology one with dynamical interactions
- *
- * @details The fermionic order-2 spgf of a single level vanishes backbone by backbone, so this uses the single-subspace twin of
- * unequal_sym_set_model with a density interaction on one orbital, where the parity of the interaction line changes the result.
- */
-TEST(DenseDynint, spgf_flat_index_overloads_agree) {
-
-  double beta   = 2.0;
-  double Lambda = 20.0 * beta;
-  double eps    = 1.0e-8;
-
-  auto ad     = test_utils::unequal_sym_set_model(false);
-  auto G_ppsc = test_utils::ad_to_atom_prop(ad, beta, Lambda, eps);
-  int n_hyb   = static_cast<int>(ad.get_fops().size());
-  int p       = 2;
-
-  nda::vector<double> hyb_poles = {1.3, -0.8};
-  nda::array<dcomplex, 3> hyb_coeffs(p, n_hyb, n_hyb);
-  for (int l = 0; l < p; ++l)
-    for (int i = 0; i < n_hyb; ++i)
-      for (int j = 0; j < n_hyb; ++j) hyb_coeffs(l, i, j) = dcomplex(0.4 - 0.1 * l + 0.05 * (i - j), 0.03 * (i + 2 * j));
-
-  std::vector<many_body_operator_complex> dynint_ops = {n<double>("A", 0)};
-  auto dynint_coeffs                              = nda::zeros<dcomplex>(p, 1, 1);
-  dynint_coeffs(0, 0, 0)                          = 0.9;
-  dynint_coeffs(1, 0, 0)                          = 0.6;
-
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}}; // second order: one internal line
-
-  DiagramEvaluator D(hyb_poles, hyb_coeffs, G_ppsc[0].mesh(), ad, dynint_ops, dynint_coeffs);
-  ASSERT_EQ(D.n_int, 1);
-
-  // Reference: sums all backbones internally, with n_int passed to the CorrelatorBackbone.
-  auto spgf_all = D.compute_single_ptcle_gf(G_ppsc, topology);
-
-  // the external legs are the fermionic flavours only
-  ASSERT_EQ(spgf_all.extent(1), n_hyb);
-  ASSERT_EQ(spgf_all.extent(2), n_hyb);
-  double scale = nda::max_element(nda::abs(spgf_all));
-  ASSERT_GT(scale, 1.0e-2) << "vacuous test: the single-particle Green's function vanishes";
-
-  // check that the parity of the interaction line matters, by evaluating with a backbone that calls it fermionic
-  CorrelatorBackbone backbone_without_n_int(topology, D.n, 0);
-  auto spgf_without_n_int =
-     D.eval_correlator(G_ppsc[0].data(), backbone_without_n_int, D.Fset.Fs(nda::range(n_hyb), _, _), D.Fset.F_dags(nda::range(n_hyb), _, _));
-  ASSERT_GT(nda::max_element(nda::abs(spgf_all - spgf_without_n_int)), 1.0e-3 * scale)
-     << "vacuous test: the parity of the interaction line does not change the single-particle Green's function";
-
-  long n_backbones = D.get_num_single_ptcle_gf_backbones(topology);
-
-  // Path 1: the vector overload, used by the solver for the MPI distributed evaluation.
-  nda::vector<long> f_ix_vec(n_backbones);
-  for (long f_ix = 0; f_ix < n_backbones; ++f_ix) f_ix_vec(f_ix) = f_ix;
-  auto spgf_vec = D.compute_single_ptcle_gf(G_ppsc, topology, f_ix_vec);
-
-  // Path 2: accumulating the single flat index overload.
-  auto spgf_single = nda::make_regular(0 * spgf_all);
-  for (long f_ix = 0; f_ix < n_backbones; ++f_ix) spgf_single += D.compute_single_ptcle_gf(G_ppsc, topology, f_ix);
-
-  EXPECT_LE(nda::max_element(nda::abs(spgf_all - spgf_vec)), 1.0e-12)
-     << "compute_single_ptcle_gf(G, topology, f_ix_vec) disagrees with compute_single_ptcle_gf(G, topology)";
-
-  EXPECT_LE(nda::max_element(nda::abs(spgf_all - spgf_single)), 1.0e-12)
-     << "compute_single_ptcle_gf(G, topology, f_ix) disagrees with compute_single_ptcle_gf(G, topology)";
-}
 
 /**
  * @brief Check that compute_self_energy_by_pairs() agrees with compute_self_energy() in the presence of dynamical interactions

@@ -19,7 +19,6 @@
 #include "test_utils/dense_comparison.hpp"
 #include "test_utils/parallel_atom_diag_check.hpp"
 
-using cppdlr::_;
 using cppdlr::build_dlr_rf;
 using cppdlr::imtime_ops;
 using nda::dcomplex;
@@ -44,7 +43,7 @@ namespace test_utils = triqs_xca::test_utils;
  * @details The comparisons with the dense evaluator in this file drive the internal constructor that takes the field operators; the dense
  * evaluator runs on the single-subspace twin of the partitioned atom_diag, with the two eigenbases bridged by
  * get_tensor_in_atom_diag_subspace(). The self-energy and the single-particle Green's function of the public constructors are compared
- * across evaluators in sigma_spgf_all_evals.cpp.
+ * across evaluators in sigma_spgf_all_evals.cpp, and backbone by backbone in flat_index_all_evals.cpp.
  */
 
 namespace {
@@ -136,19 +135,28 @@ TEST(BlockSparseDynintEvaluator, dynint_constructor_contract) {
   EXPECT_EQ(D.n, n_hyb + n_int);
   ASSERT_GT(n_int, 0) << "vacuous test: no interaction operator";
 
-  // the evaluator built from the quartet must give the same Sigma exactly
+  // the evaluator built from the quartet must have the same flavours and give the same Sigma and spgf exactly
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
   auto Fq                     = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
   auto ext                    = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
   EXPECT_EQ(D.q, static_cast<int>(nda::max_element(Fq.sym_set_labels) + 1));
 
   DiagramEvaluator D_fq(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
+  EXPECT_EQ(D_fq.n_hyb, n_hyb);
+  EXPECT_EQ(D_fq.n_int, n_int);
+  EXPECT_EQ(D_fq.n, n_hyb + n_int);
   auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
 
   auto Sa = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
   auto Sb = BlockDiagOpFun(D_fq.compute_self_energy(Gt, topology));
   for (int b = 0; b < Sa.get_num_block_cols(); ++b) EXPECT_EQ(nda::max_element(nda::abs(Sa.get_block(b) - Sb.get_block(b))), 0.0) << "block " << b;
+
+  auto ga = D.compute_single_ptcle_gf(Gt, topology);
+  auto gb = D_fq.compute_single_ptcle_gf(Gt, topology);
+  ASSERT_EQ(gb.shape(), ga.shape());
+  ASSERT_GT(nda::max_element(nda::abs(ga)), 0.01) << "vacuous test: the spgf is zero";
+  EXPECT_EQ(nda::max_element(nda::abs(ga - gb)), 0.0);
 
   // match the message, other std::invalid_argument checks sit earlier in the same routine
   auto short_hyb = nda::zeros<dcomplex>(p_poles, n_hyb - 1, n_hyb - 1);
@@ -334,69 +342,6 @@ namespace {
 } // namespace
 
 /**
- * @brief Compare the single-particle Green's function with a dynamical interaction to the dense evaluator on the crossing order-2 topology
- *
- * @details A backbone whose internal line carries the interaction operator drops only that pair, turning the crossing -1 into +1. All three
- * overloads are compared.
- */
-TEST(BlockSparseDynintEvaluator, spgf_matches_dense_with_dynamical_interactions) {
-
-  auto m = dynint_model(/*n_int=*/1);
-  ASSERT_NO_FATAL_FAILURE(test_utils::assert_parallel_atom_diags(m.ad, m.ad_flat));
-
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: a fermionic external pair needs a crossing topology here";
-
-  int n_hyb = static_cast<int>(m.ad.get_fops().size());
-  int n_int = static_cast<int>(m.dynint_ops.size());
-  ASSERT_GT(n_int, 0) << "vacuous test: no interaction operator";
-
-  auto G_bs = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
-  auto G_fl = test_utils::ad_to_atom_prop(m.ad_flat, beta, Lambda, eps);
-
-  auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  dense::DiagramEvaluator D_dense(m.hyb_poles, m.hyb_coeffs, G_fl[0].mesh(), m.ad_flat, m.dynint_ops, m.dynint_coeffs);
-
-  // check that the interaction flavour is in the backbone enumeration
-  auto Fq_ferm = std::get<0>(get_operators(m.ad, m.hyb_coeffs));
-  DiagramEvaluator D_ferm(beta, Lambda, eps, m.hyb_poles, m.hyb_coeffs, Fq_ferm);
-  long nb = D.get_num_single_ptcle_gf_backbones(topology);
-  ASSERT_GT(nb, D_ferm.get_num_single_ptcle_gf_backbones(topology))
-     << "vacuous test: the interaction flavour is not in the backbone enumeration (this compares two evaluators, so it asserts n_ext > n_hyb rather than that any particular backbone puts the interaction on an internal line)";
-  ASSERT_EQ(nb, D_dense.get_num_single_ptcle_gf_backbones(topology)) << "the two evaluators do not enumerate the same backbones";
-
-  auto f_ix_vec = nda::array<long, 1>(nb);
-  for (long i = 0; i < nb; ++i) f_ix_vec(i) = i;
-
-  auto spgf_dense = D_dense.compute_single_ptcle_gf(G_fl, topology);
-  ASSERT_EQ(spgf_dense.extent(1), n_hyb);
-
-  // (a) the whole-topology overload
-  {
-    SCOPED_TRACE("compute_single_ptcle_gf(G, topology)");
-    auto [err, scale] = test_utils::compare_spgf(D.compute_single_ptcle_gf(G_bs, topology), spgf_dense);
-    ASSERT_GT(scale, 0.05) << "vacuous test: the single-particle Green's function is too small for an absolute tolerance";
-    EXPECT_LE(err, corr_tol) << "max|dense| = " << scale << ", max|bs - dense| = " << err;
-  }
-  // (b) the flat-index overload, summed by hand
-  {
-    SCOPED_TRACE("compute_single_ptcle_gf(G, topology, f_ix)");
-    auto acc = nda::zeros<dcomplex>(D.r, n_hyb, n_hyb);
-    for (long f = 0; f < nb; ++f) acc += D.compute_single_ptcle_gf(G_bs, topology, f);
-    auto [err, scale] = test_utils::compare_spgf(acc, spgf_dense);
-    EXPECT_LE(err, corr_tol) << "max|dense| = " << scale << ", max|bs - dense| = " << err;
-  }
-  // (c) the flat-index-vector overload
-  {
-    SCOPED_TRACE("compute_single_ptcle_gf(G, topology, f_ix_vec)");
-    auto [err, scale] = test_utils::compare_spgf(D.compute_single_ptcle_gf(G_bs, topology, f_ix_vec), spgf_dense);
-    EXPECT_LE(err, corr_tol) << "max|dense| = " << scale << ", max|bs - dense| = " << err;
-  }
-}
-
-/**
  * @brief Compare the one-time correlator of a density operator with a dynamical interaction to the dense evaluator
  *
  * @details With a bosonic external operator get_parity() first drops the pair (0, vct0), so the diagram carries external_bosonic_parity() rather
@@ -495,118 +440,6 @@ TEST(BlockSparseDynintEvaluator, one_time_correlator_matches_dense_with_dynamica
   ASSERT_GT(n_red_drivers, 0) << "vacuous test: none of the topologies can see a wrong interaction-line statistics. "
                                  "A bosonic external operator needs external_bosonic_parity(topology) == -1, which no "
                                  "order-2 topology has - the reduced matching is a single pair and a single pair is even.";
-}
-
-/**
- * @brief Check that the three compute_self_energy() overloads agree with dynamical interactions, which fails on partial n_int plumbing
- */
-TEST(BlockSparseDynintEvaluator, self_energy_flat_index_overloads_agree) {
-
-  auto m    = dynint_model(/*n_int=*/1);
-  int n_int = static_cast<int>(m.dynint_ops.size());
-  ASSERT_GT(n_int, 0) << "vacuous test: no interaction operator";
-
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
-
-  auto G_bs = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
-  auto Fq   = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext  = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-
-  auto Fq_ferm = std::get<0>(get_operators(m.ad, m.hyb_coeffs));
-  DiagramEvaluator D_ferm(beta, Lambda, eps, m.hyb_poles, m.hyb_coeffs, Fq_ferm);
-  long nb = D.get_num_self_energy_backbones(topology);
-  ASSERT_GT(nb, D_ferm.get_num_self_energy_backbones(topology))
-     << "vacuous test: the interaction flavour is not in the backbone enumeration (this compares two evaluators, so it asserts n_ext > n_hyb rather than that any particular backbone puts the interaction on an internal line)";
-
-  auto f_ix_vec = nda::array<long, 1>(nb);
-  for (long i = 0; i < nb; ++i) f_ix_vec(i) = i;
-
-  auto S_all = BlockDiagOpFun(D.compute_self_energy(G_bs, topology));
-  auto S_vec = BlockDiagOpFun(D.compute_self_energy(G_bs, topology, f_ix_vec)); // the solver's entry point
-  auto S_one = BlockDiagOpFun(D.compute_self_energy(G_bs, topology, 0));
-  for (int f = 1; f < nb; ++f) {
-    auto S_f = BlockDiagOpFun(D.compute_self_energy(G_bs, topology, f));
-    for (int b = 0; b < S_one.get_num_block_cols(); ++b) S_one.set_block(b, nda::make_regular(S_one.get_block(b) + S_f.get_block(b)));
-  }
-
-  double scale = 0.0, e_vec = 0.0, e_one = 0.0;
-  for (int b = 0; b < S_all.get_num_block_cols(); ++b) {
-    scale = std::max(scale, nda::max_element(nda::abs(S_all.get_block(b))));
-    e_vec = std::max(e_vec, nda::max_element(nda::abs(S_all.get_block(b) - S_vec.get_block(b))));
-    e_one = std::max(e_one, nda::max_element(nda::abs(S_all.get_block(b) - S_one.get_block(b))));
-  }
-  ASSERT_GT(scale, 0.1) << "vacuous test: the self-energy is too small for an absolute tolerance";
-  EXPECT_LE(e_vec, sigma_tol) << "the f_ix_vec overload disagrees with the whole-topology one by " << e_vec;
-  EXPECT_LE(e_one, sigma_tol) << "the single-f_ix overload disagrees with the whole-topology one by " << e_one;
-}
-
-/**
- * @brief Check that the three compute_single_ptcle_gf() overloads agree with dynamical interactions, which fails on partial n_int plumbing
- *
- * @details The bound of the per-component loop is n_hyb, since the block-sparse spgf has shape (r, n_hyb, n_hyb).
- */
-TEST(BlockSparseDynintEvaluator, spgf_flat_index_overloads_agree) {
-
-  auto m    = dynint_model(/*n_int=*/1);
-  int n_hyb = static_cast<int>(m.ad.get_fops().size());
-  int n_int = static_cast<int>(m.dynint_ops.size());
-
-  // only a crossing topology separates the two parities
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
-
-  auto G   = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
-  auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  ASSERT_EQ(D.n_hyb, n_hyb);
-  ASSERT_EQ(D.n_int, n_int);
-
-  // check that the interaction flavour is in the backbone enumeration
-  auto Fq_ferm = std::get<0>(get_operators(m.ad, m.hyb_coeffs));
-  DiagramEvaluator D_ferm(beta, Lambda, eps, m.hyb_poles, m.hyb_coeffs, Fq_ferm);
-  long n_backbones = D.get_num_single_ptcle_gf_backbones(topology);
-  ASSERT_GT(n_backbones, D_ferm.get_num_single_ptcle_gf_backbones(topology))
-     << "vacuous test: the interaction flavour is not in the backbone enumeration (this compares two evaluators, so it asserts n_ext > n_hyb rather than that any particular backbone puts the interaction on an internal line)";
-
-  // Route 1: sums every backbone internally
-  auto spgf_all = D.compute_single_ptcle_gf(G, topology);
-  ASSERT_EQ(spgf_all.extent(1), n_hyb) << "the per-component loop below assumes the (r, n_hyb, n_hyb) shape";
-  ASSERT_EQ(spgf_all.extent(2), n_hyb);
-
-  // Route 2: the vector overload, driven by the solver for the MPI split
-  nda::vector<long> f_ix_vec(n_backbones);
-  for (long f_ix = 0; f_ix < n_backbones; ++f_ix) f_ix_vec(f_ix) = f_ix;
-  auto spgf_vec = D.compute_single_ptcle_gf(G, topology, f_ix_vec);
-
-  // Route 3: accumulating the single flat index overload
-  auto spgf_single = nda::make_regular(0 * spgf_all);
-  for (long f_ix = 0; f_ix < n_backbones; ++f_ix) spgf_single += D.compute_single_ptcle_gf(G, topology, f_ix);
-
-  // the comparisons are absolute, so require a non-negligible Green's function
-  double scale = nda::max_element(nda::abs(spgf_all));
-  ASSERT_GT(scale, 0.01) << "vacuous test: the single-particle Green's function is zero";
-
-  // On failure, report which components disagree.
-  for (int mu = 0; mu < n_hyb; ++mu) {
-    for (int kap = 0; kap < n_hyb; ++kap) {
-      double e_vec = nda::max_element(nda::abs(spgf_all(_, mu, kap) - spgf_vec(_, mu, kap)));
-      double e_one = nda::max_element(nda::abs(spgf_all(_, mu, kap) - spgf_single(_, mu, kap)));
-      if (std::max(e_vec, e_one) > 1.0e-12)
-        std::cout << "component (" << mu << ", " << kap << "): max|all - vec| = " << e_vec << ", max|all - single| = " << e_one
-                  << ", max|all| = " << nda::max_element(nda::abs(spgf_all(_, mu, kap))) << "\n";
-    }
-  }
-
-  EXPECT_LE(nda::max_element(nda::abs(spgf_all - spgf_vec)), 1.0e-12)
-     << "max|spgf| = " << scale
-     << ": compute_single_ptcle_gf(G, topology, f_ix_vec) disagrees with compute_single_ptcle_gf(G, topology). n_int is reaching the "
-        "CorrelatorBackbone in some of the overloads and not the others.";
-
-  EXPECT_LE(nda::max_element(nda::abs(spgf_all - spgf_single)), 1.0e-12)
-     << "max|spgf| = " << scale << ": compute_single_ptcle_gf(G, topology, f_ix) disagrees with compute_single_ptcle_gf(G, topology). Same cause.";
 }
 
 /**

@@ -28,7 +28,8 @@ namespace test_utils = triqs_xca::test_utils;
  *
  * @details Diagram evaluators can be constructed in two ways in C++, either from an atom_diag object, which derives the field operators and the 
  * block structure itself and takes the propagator as a block_gf, or from a BlockOpSymQuartet assembled by the caller, which takes the propagator as 
- * a BlockDiagOpFun. Separately, the backbone evaluation loop can be left to the evaluator or driven by the caller one flat index at a time.
+ * a BlockDiagOpFun. The flat-index overloads, through which the caller drives the backbone loop, are checked for every evaluator in
+ * flat_index_all_evals.cpp.
  *
  * These are consistency checks between code paths rather than checks of the diagram itself: the routes build the same Hybridization from the same
  * coefficients and sum the same backbones, so they should agree to machine precision.
@@ -82,45 +83,6 @@ TEST(EvaluatorAPI, OCA_constructor_equivalence) {
 }
 
 /**
- * @brief Check that summing the backbones one at a time reproduces the built-in self-energy diagram loop
- *
- * @details compute_self_energy has an overload taking a single flat backbone index, which is how a caller drives the diagram loop itself, e.g. to
- * distribute it. Summing that overload over all get_num_self_energy_backbones indices must reproduce the overload that loops internally, so their
- * difference is checked to vanish. Both sides come from the same evaluator, so this is self-consistency of the loop bookkeeping and is independent
- * of the model.
- */
-TEST(EvaluatorAPI, manual_loop) {
-  double beta   = 2.0;
-  double Lambda = 20.0 * beta;
-  double eps    = 1.0e-4;
-
-  // DLR generation
-  auto dlr_rf = build_dlr_rf(Lambda, eps);
-  auto itops  = imtime_ops(Lambda, dlr_rf);
-
-  // hybridization
-  auto [Deltat, Deltat_reflect] = test_utils::discrete_bath_helper(beta, Lambda, eps);
-  auto hyb_coeffs               = itops.vals2coefs(Deltat); // hybridization DLR coeffs
-
-  // Kanamori atom and its atomic propagator as a block_gf
-  auto ad      = test_utils::two_band_atom_diag_helper();
-  auto G0_ppsc = test_utils::ad_to_atom_prop(ad, beta, Lambda, eps);
-
-  // set up backbone and diagram evaluator
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  DiagramEvaluator D(nda::make_regular(dlr_rf / beta), hyb_coeffs, G0_ppsc[0].mesh(), ad);
-  auto OCA_result = D.compute_self_energy(G0_ppsc, topology); // evaluate self-energy using built-in loop
-
-  for (int f = 0; f < D.get_num_self_energy_backbones(topology); ++f) {
-    OCA_result -= D.compute_self_energy(G0_ppsc, topology, f); // subtract off self-energy evaluation using manual loop
-  }
-  for (int i = 0; i < ad.n_subspaces(); ++i) {
-    SCOPED_TRACE("block " + std::to_string(i));
-    EXPECT_LE(nda::max_element(nda::abs(OCA_result[i].data())), 1.0e-15);
-  }
-}
-
-/**
  * @brief Check that the two DiagramEvaluator constructors give the same single-particle Green's function
  *
  * @details The single-particle analogue of OCA_constructor_equivalence above, with a comparison against the dense evaluator appended: unlike the
@@ -169,40 +131,4 @@ TEST(EvaluatorAPI, gf_constructor_equivalence) {
   dense::DiagramEvaluator D_dense(nda::make_regular(dlr_rf / beta), hyb_coeffs, G0_ppsc[0].mesh(), ad);
   auto OCA_gf_dense = D_dense.compute_single_ptcle_gf(G0_ppsc_dense, topology);
   EXPECT_LE(nda::max_element(nda::abs(OCA_gf - OCA_gf_dense)), 1.0e-15);
-}
-
-/**
- * @brief Check that summing the backbones one at a time reproduces the built-in single-particle Green's function diagram loop
- *
- * @details The single-particle analogue of manual_loop above, summing the flat-index overload of compute_single_ptcle_gf over all
- * get_num_single_ptcle_gf_backbones indices. The manual sum runs on a fresh evaluator, so a diagram loop that left state behind would show up here.
- */
-TEST(EvaluatorAPI, gf_manual_loop) {
-  double beta   = 2.0;
-  double Lambda = 20.0 * beta;
-  double eps    = 1.0e-4;
-
-  // DLR generation
-  auto dlr_rf = build_dlr_rf(Lambda, eps);
-  auto itops  = imtime_ops(Lambda, dlr_rf);
-
-  // hybridization
-  auto [Deltat, Deltat_reflect] = test_utils::discrete_bath_helper(beta, Lambda, eps);
-  auto hyb_coeffs               = itops.vals2coefs(Deltat); // hybridization DLR coeffs
-
-  // Kanamori atom and its atomic propagator as a block_gf
-  auto ad      = test_utils::two_band_atom_diag_helper();
-  auto G0_ppsc = test_utils::ad_to_atom_prop(ad, beta, Lambda, eps);
-
-  // set up backbone and diagram evaluator
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  DiagramEvaluator D(nda::make_regular(dlr_rf / beta), hyb_coeffs, G0_ppsc[0].mesh(), ad);
-  auto OCA_gf = D.compute_single_ptcle_gf(G0_ppsc, topology); // evaluate Green's function using built-in loop
-
-  // ... and again, driving the backbone loop from the caller, one flat index at a time, on a fresh evaluator
-  DiagramEvaluator D2(nda::make_regular(dlr_rf / beta), hyb_coeffs, G0_ppsc[0].mesh(), ad);
-  auto OCA_gf_2 = nda::make_regular(0 * OCA_gf);
-  for (int f = 0; f < D.get_num_single_ptcle_gf_backbones(topology); ++f) { OCA_gf_2 += D2.compute_single_ptcle_gf(G0_ppsc, topology, f); }
-
-  EXPECT_LE(nda::max_element(nda::abs(OCA_gf - OCA_gf_2)), 1.0e-15);
 }
