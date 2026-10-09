@@ -101,6 +101,16 @@ namespace triqs_xca::dense::cuda {
                                           r_);
     finish("dense CUDA batched product");
   }
+  void DeviceOps::rank_product(matrix_const_view op, tensor_const_view in, tensor_view out, complex alpha, complex beta) const {
+    validate(in);
+    validate(out);
+    require(op.shape() == std::array<long, 2>{r_, r_} && op.strides() == std::array<long, 2>{r_, 1}, "invalid rank transform");
+    disjoint(in.data(), count_, out.data(), count_);
+    disjoint(op.data(), checked_product(r_, r_), out.data(), count_);
+    // C-order Y=op*X becomes Y^T=X^T*op^T in column-major storage.
+    nda::blas::device::gemm('N', 'N', stride_, r_, r_, alpha, in.data(), stride_, op.data(), r_, beta, out.data(), stride_);
+    finish("dense CUDA rank transform");
+  }
   void DeviceOps::vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left, complex alpha, complex beta) {
     validate_operator(op);
     validate(in);

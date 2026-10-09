@@ -43,6 +43,8 @@ namespace triqs_xca::dense::cuda {
     void scale(complex alpha, tensor_view out) const;
     void axpy(complex alpha, tensor_const_view in, tensor_view out) const;
     void batch_product(tensor_const_view a, tensor_const_view b, tensor_view out, complex alpha = 1., complex beta = 0.) const;
+    // Apply a contiguous (r,r) matrix along the rank axis of (r,N,N).
+    void rank_product(matrix_const_view op, tensor_const_view in, tensor_view out, complex alpha = 1., complex beta = 0.) const;
     void left_product(matrix_const_view op, tensor_const_view in, tensor_view out, complex alpha = 1., complex beta = 0.);
     void right_product(tensor_const_view in, matrix_const_view op, tensor_view out, complex alpha = 1., complex beta = 0.);
     // Flatten (r,N,N) as a C-order (r,N*N) matrix. Weights are complex device scalars.
