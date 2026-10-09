@@ -3,8 +3,8 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: all planned C++ compute paths implemented and numerically verified.
-Next: allocation/residency tracing, checked workspace inventory and end-to-end benchmarks.
+Phase: all compute paths and residency tracing verified; timing collection is running.
+Next: finish/inspect benchmark batch, report performance and perform the completion audit.
 
 ## Objective and working rules
 
@@ -339,30 +339,109 @@ Logs: `/tmp/xca-{cpu,cuda}-correlator-final-{build,test}.log`,
 Some first-pass logs use shorter names. Temporary logs may disappear; tests and this
 checkpoint preserve the evidence and measured full-suite times.
 
+## Completed: residency evidence and benchmark implementation
+
+Commit `db133b5` adds checked application-owned memory reporting, conservative resize
+lifetime byte checks, NVTX boundaries, lazy-kernel warmup, the extended comparison
+benchmark and a reproducible Nsight SQLite auditor. Tracked trace summaries and the
+benchmark README record workload, memory and profiler interpretation. Previous goal
+turn: progress (correlator code/full numerical gates). This turn is also progress.
+No blocker exists; the goal remains active because timing collection/report and the
+final completion audit remain incomplete.
+
+`workspace_bytes()` inventories all application-owned device/managed tensors, tables,
+RHS, pivots, endpoint buffers and pointer tables using checked multiplication/addition.
+It excludes library handle/context caches and caller memory. Constructor allocation
+arithmetic and conservative old+replacement endpoint peak bytes are checked before
+device resizes. Final review should still assess allocation-failure context for
+available-memory exhaustion, rather than treating size overflow checks as an OOM test.
+
+The extended benchmark compares original CPU self-energy, by-pairs and single-particle
+APIs with CUDA using identical data/index vectors, complex double and maximum absolute
+error 1e-12 with explicit non-finite rejection. It reports cutoff/rank, construction,
+separate CUDA context initialization, first/workload and warm synchronized API wall
+times including transfers, warm default-stream event timing for isolated primitives,
+owned device bytes and errors. Standalone current/hoisted CPU convolution remains
+separate. Primitive solve error is reconstructed values, not ill-conditioned raw
+coefficients. Event time includes host gaps between synchronous adapters; zero API
+measurement means not measured by events, not zero work. See README for details.
+
+Residency investigation:
+
+- An unprewarmed N32 first-call trace found two 16-byte memory events during driver
+  cuKernelGetFunction inside self-energy traversal. Runtime malloc-only auditing
+  would have missed them. Added constructor warmup with existing scratch for all
+  known batched/rank GEMM, weighting and DLR paths, and endpoint trace-shape warmup
+  before correlator traversal.
+- Final N32/rank26/two-pole trace, orders1–3, four indices (NCA two), first/warm
+  ordinary, pairs and spgf calls: all 18 ranges have **zero allocation/deallocation
+  events and zero explicit host/device copies**. Large copies stay device-to-device.
+- Mixed dynamic-interface/reuse test: all 12 ranges have the same zero-event result,
+  including one-time density correlators and failed-prefix recovery.
+- UVM migrations are explicitly reported; maximum 4096 bytes per migration in both
+  final traces, consistent with unified pointer/status pages rather than work tensors.
+- Nsight-visible peak device/managed/static allocations: 39,021,389 bytes (N32),
+  29,816,293 (dynamic test). These are logical allocations including observable
+  library memory, not physical UVM residency/unreported context cache measurements.
+- N32 traversal active kernel time totals 232.55 ms: combined GEMMs 151.67 ms (~65%),
+  TRSM/pivot/status solves 67.17 ms (~29%). This is not a whole-call or batched-only
+  fraction. Profiler overhead and synchronization/launch costs prevent using these
+  times as speed measurements.
+
+Profiler 2026.3.2.476, RTX A4000, driver580.178.04, 16376MiB. Traces enable CUDA,
+NVTX, BLAS/solver, memory usage and UVM faults; CPU sampling/context switches are off.
+Raw reports/SQLite stay under ignored `cbuild-profile/`. Tracked
+`benchmarks/dense_cuda/trace_{n32_r26,dynint}.csv` plus README reproduce the audit.
+The auditor fails on inner allocation/explicit host copy, unknown/incomplete copy or
+allocation history and missing ranges/tables. Verified actual before-warm trace fails
+and both actual final traces pass; it records metadata migrations rather than hiding
+those costs. Do not broaden its numerical claims beyond captured workloads.
+
+Verification after warmup/inventory changes: full CPU **33/33 C++ tests passed**
+(13.89s), CUDA **33/33 passed** (21.85s), mixed dynamic-interface constructor/reuse
+Compute Sanitizer **0 errors**. No tracked binding changes. Logs under
+`/tmp/xca-{cpu,cuda}-profile-final-{build,test}.log`,
+`/tmp/xca-cuda-profile-sanitizer.log`, and `/tmp/xca-cuda-profile-*-{run,export}.log`.
+The final benchmark-only pair timing/non-finite checks were built and completed
+N2/4/16/32/64 runs with all comparisons passing; a CPU benchmark refresh remains
+necessary before final delivery. Source scope excludes the unrelated user changes.
+
+## Live benchmark job — inspect before starting another
+
+Native exec session **14871**, shell PID140791, was verified live; child PID140931
+was executing `dense_cuda_benchmark 128 8 3 40` (elapsed ~2min). Do not infer termination
+from a silent output file (iostream buffering). Poll this same session with write_stdin;
+if the handle is unavailable, inspect authoritative process state and output before
+restarting anything. No other GPU workloads should run during the unprofiled batch.
+
+Batch: N2/4/16/32/64/128 at cutoff40, then N32/64 at cutoff10 and120; eight selected
+indices and three warm repeats, one OpenMP/OpenBLAS thread, CUDA environment.
+Each writes `cbuild-profile/timings/n{N}-l{lambda}.csv`; shell uses set-e, so any failed
+comparison stops the batch. N2/4/16/32/64 are complete (30 data rows each); N128 was
+in progress at the last verified poll. The remaining rank variants follow it.
+Timing files are not yet committed or interpreted as final performance results.
+
 ## Next action
 
-Extend `examples/dense_cuda_benchmark.cpp` to compare CPU and CUDA with identical
-inputs/subsets. Include multiple DLR ranks and N=2/4/16/32/64/128 where feasible,
-orders 1–3, construction, first/warm API timings including transfers, device-phase
-CUDA event measurements on the actual default stream and owned/live memory evidence.
-Keep the CPU hoisted-transform baseline distinct from GPU offload. Compare returned
-results in the benchmark; do not time unchecked work or claim speedup from fixtures.
+First resume/verify job14871 and let the existing batch finish. Inspect all ten output
+files for expected rows, ranks, finite errors/checksums and matching phase counts.
+Combine them into a tracked comparison CSV and write measured speedups/size regimes
+with three-repeat/synthetic-workload limits. Distinguish CPU transform hoisting from
+GPU offload and discuss launch/FP64/transfer/synchronization costs without assumptions.
+Do not run another GPU trace/test concurrently with the timing batch.
 
-`nsys` is available at `/usr/local/bin/nsys`, and CUPTI headers are under
-`/usr/local/cuda/targets/x86_64-linux/include`. Use Nsight Systems CUDA traces with
-explicit boundary/traversal ranges to measure allocations, transfer sizes, launch
-counts and GEMM/solve time, proving no large tensor copies or device allocations in
-inner evaluation loops. Warm library paths outside traversal or fix repeated library
-allocations if the evidence shows them. Extend the checked workspace inventory to
-include persistent endpoint buffers/peak-live resize behavior and clear allocation
-failure context. Inspect profiling tool help locally before choosing commands.
+Then refresh the CPU benchmark build after the final benchmark-only edits, and compare
+at least one workload with the CPU-only prefix to detect material prefix differences.
+Consider a first/warm larger-size trace with api-only mode after timing collection;
+retain audited trace evidence, active kernel shares, tracked peak allocations and
+application-owned memory. Review available-memory allocation failure context and
+aggregate workspace coverage before treating that acceptance item as achieved.
 
-Review final implementation against every acceptance requirement in the plan. Run
-required final CPU/CUDA C++ gates after material changes and targeted sanitizer checks
-when new memory paths justify them. Deliver tracked benchmark CSVs/report and trace
-summaries with workload/GPU/thread metadata. Do not mark the goal complete until
-all allocation/residency/performance evidence is present and reviewed.
+Finally audit current code, tests, named plan invariants and all artifacts against the
+original full objective. All compute families are implemented/tested, but end-to-end
+performance deliverables are still incomplete. Run only justified final checks after
+material changes; no further algorithm expansion is authorized/necessary. Mark the
+goal complete only when the requirement-by-requirement audit proves all criteria.
 
-Supervisor setup is complete; do not recreate the goal or restart the shared server.
-Keep plan/log commits separate from implementation/tests/benchmarks. Preserve unrelated
-user work and do not push.
+Keep plan/log commits separate from code/tests/benchmarks. Preserve unrelated user work,
+do not push, recreate the goal or restart the shared server. Supervisor setup is done.
