@@ -504,6 +504,14 @@ namespace triqs_xca::dense {
                                                 triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                 nda::array_const_view<long, 1> f_ix_vec) {
 
+    // Figure out whether ops_tau and ops_0 are fermionic or bosonic.
+    // Require that all operators have the same statistics
+
+    // The statistics is the fermion parity of the operators, not whether they commute: a commutator test calls (S+, S-) fermionic
+    // since [S+, S-] = 2 Sz != 0, see operator_statistics.hpp. It is decided before the operator matrices are built, since get_op_mat
+    // gives a zero operator an empty matrix
+    bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
+
     CorrelatorBackbone backbone(topology, n, n_int);
 
     // The operator matrices are read from subspace 0 only
@@ -530,13 +538,6 @@ namespace triqs_xca::dense {
     }
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
-
-    // Figure out whether ops_tau and ops_0 are fermionic or bosonic.
-    // Require that all operators have the same statistics
-
-    // The statistics is the fermion parity of the operators, not whether they commute: a commutator test calls (S+, S-) fermionic
-    // since [S+, S-] = 2 Sz != 0, see operator_statistics.hpp
-    bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
 
     for (auto f_ix : f_ix_vec) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic); }
 
