@@ -36,10 +36,11 @@
  * @brief Models and one adapter per diagram evaluator, so that the *_all_evals tests run the same checks on every evaluator
  *
  * @details An adapter takes the propagator over the Fock states, shape (r, N, N), passes it in the layout its evaluator reads, and returns
- * the self-energy over the Fock states and the single-particle Green's function with shape (r, n_hyb, n_hyb). Results are the raw evaluator
- * output, without topology_parity. Every evaluator is compared with make_reference(), and with closed forms through matches_closed_form().
- * Adding an evaluator takes its include and one entry in all_evaluators(), with an adapter of its own unless it has the public API of the
- * dense or the block-sparse evaluator. Kept in a header since it depends on gtest, which the test_utils library does not link.
+ * the self-energy over the Fock states, the single-particle Green's function with shape (r, n_hyb, n_hyb) and the one-time correlator of two
+ * operator lists. Results are the raw evaluator output, without topology_parity. Every evaluator is compared with make_reference(), and with
+ * closed forms through matches_closed_form(). Adding an evaluator takes its include and one entry in all_evaluators(), with an adapter of its
+ * own unless it has the public API of the dense or the block-sparse evaluator, compute_one_time_correlator included. Kept in a header since
+ * it depends on gtest, which the test_utils library does not link.
  */
 
 namespace triqs_xca::test_utils {
@@ -201,13 +202,15 @@ namespace triqs_xca::test_utils {
    * - spin_flip_nup0_ndo0: an autopartitioned spin-flip model with a subspace of dimension 4 and interleaved symmetry-set labels, with n_up0
    *   and n_do0, which share a symmetry set, coupled by complex off-diagonal coefficients
    * - sz_resolved_spm: the (N_up, N_do) partition with S- and S+, which move between subspaces
-   * - n_partition_spin_xyz: the particle-number partition of the same Hamiltonian with S_x, S_y and S_z, where S_y has imaginary
-   *   coefficients, with S_x and S_y coupled by complex off-diagonal coefficients
+   * - sz_resolved: the same without a dynamical interaction
+   * - sz_resolved_complex_hopping: sz_resolved with a complex spin-conserving hopping added, so that the eigenvectors of ad are complex
+   * - n_partition_spin_xyz: the particle-number partition of the Hamiltonian of sz_resolved, with S_x, S_y and S_z, where S_y has
+   *   imaginary coefficients, with S_x and S_y coupled by complex off-diagonal coefficients
    * - spin_flip_3orb: a three-orbital spin-flip model with 64 states and one pole, without a dynamical interaction
    */
   inline std::vector<std::string> eval_model_names() {
-    return {"unequal_sets",        "unequal_sets_small_pole", "unequal_sets_five_poles", "unequal_sets_nA0",
-            "spin_flip_nup0_ndo0", "sz_resolved_spm",         "n_partition_spin_xyz",    "spin_flip_3orb"};
+    return {"unequal_sets", "unequal_sets_small_pole",     "unequal_sets_five_poles", "unequal_sets_nA0", "spin_flip_nup0_ndo0", "sz_resolved_spm",
+            "sz_resolved",  "sz_resolved_complex_hopping", "n_partition_spin_xyz",    "spin_flip_3orb"};
   }
 
   inline EvalModel build_eval_model(std::string const &name) {
@@ -226,6 +229,17 @@ namespace triqs_xca::test_utils {
     }
     if (name == "sz_resolved_spm")
       return make_eval_model(name, sz_resolved_atom_diag_helper(2, true), {S_minus(2), S_plus(2)}, dynint_coeffs_from({1.0, 0.7}));
+    if (name == "sz_resolved") return make_eval_model(name, sz_resolved_atom_diag_helper(2, true));
+    if (name == "sz_resolved_complex_hopping") {
+      using triqs::operators::c;
+      using triqs::operators::c_dag;
+      auto ad_real = sz_resolved_atom_diag_helper(2, true);
+      auto H       = ad_real.get_h_atomic();
+      for (auto const &[s, t] : {std::pair{"up", dcomplex(0.18, 0.24)}, std::pair{"do", dcomplex(-0.11, 0.21)}})
+        H += t * c_dag(s, 0) * c(s, 1) + std::conj(t) * c_dag(s, 1) * c(s, 0);
+      ops_t N = {n("up", 0) + n("up", 1), n("do", 0) + n("do", 1)};
+      return make_eval_model(name, ad_t(H, ad_real.get_fops(), N));
+    }
     if (name == "n_partition_spin_xyz") {
       auto ad_spin = sz_resolved_atom_diag_helper(2, false);
       ops_t N      = {n("up", 0) + n("up", 1) + n("do", 0) + n("do", 1)};
@@ -279,7 +293,8 @@ namespace triqs_xca::test_utils {
    *
    * @details f_ix and the entries of f_ix_vec are flat indices in [0, n_*_backbones(topology)). They select the backbones in the enumeration
    * of the reference, orbital indices fastest and line directions slowest, which the solver's by-pairs self-energy loop relies on. A flat
-   * index outside that range throws std::invalid_argument, an empty f_ix_vec gives zeros, and no result depends on an earlier call.
+   * index outside that range throws std::invalid_argument, an empty f_ix_vec gives zeros, and no result depends on an earlier call. The
+   * one-time correlator has the backbones of the single-particle Green's function, n_spgf_backbones(topology) of them.
    */
   class Evaluator {
     public:
@@ -297,11 +312,16 @@ namespace triqs_xca::test_utils {
     virtual tensor_t spgf(tensor_t const &G, topo_t topology)                  = 0;
     virtual tensor_t spgf(tensor_t const &G, topo_t topology, f_ix_t f_ix_vec) = 0;
     virtual tensor_t spgf(tensor_t const &G, topo_t topology, long f_ix)       = 0;
+
+    /// One-time correlator of the operators ops_tau at tau and ops_0 at 0, shape (r, ops_tau.size(), ops_0.size()); an operator of mixed
+    /// fermion parity or identically zero, operators of different parities and two empty lists throw std::runtime_error
+    virtual tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t topology, f_ix_t f_ix_vec) = 0;
   };
 
   /// An evaluator with the public API of dense::DiagramEvaluator, built on the single-subspace twin and given one block over the Fock states
   template <typename E> class DenseFamily final : public Evaluator {
     mesh_t mesh;
+    ad_t ad_flat;
     E D;
 
     static E make(EvalModel const &m) {
@@ -311,7 +331,7 @@ namespace triqs_xca::test_utils {
     [[nodiscard]] bgf_t native(tensor_t const &G) const { return bgf_t{std::vector{triqs::gfs::gf<mesh_t>(mesh, G)}}; }
 
     public:
-    explicit DenseFamily(EvalModel const &m) : mesh(m.mesh), D(make(m)) {}
+    explicit DenseFamily(EvalModel const &m) : mesh(m.mesh), ad_flat(m.ad_flat), D(make(m)) {}
 
     long n_sigma_backbones(topo_t t) override { return D.get_num_self_energy_backbones(t); }
     long n_spgf_backbones(topo_t t) override { return D.get_num_single_ptcle_gf_backbones(t); }
@@ -321,6 +341,9 @@ namespace triqs_xca::test_utils {
     tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(native(G), t); }
     tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
     tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
+    tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t, f_ix_t f) override {
+      return D.compute_one_time_correlator(native(G), ops_tau, ops_0, ad_flat, t, f);
+    }
   };
 
   /// An evaluator with the public API of block_sparse::DiagramEvaluator, built on the partitioned atom_diag and given one block per subspace
@@ -346,6 +369,9 @@ namespace triqs_xca::test_utils {
     tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t); }
     tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
     tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
+    tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t, f_ix_t f) override {
+      return D.compute_one_time_correlator(subspace_blocks(G, ad, mesh), ops_tau, ops_0, ad, t, f);
+    }
   };
 
   template <typename A> std::unique_ptr<Evaluator> make_evaluator(EvalModel const &m) { return std::make_unique<A>(m); }

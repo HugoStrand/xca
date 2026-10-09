@@ -27,14 +27,16 @@ namespace test_utils = triqs_xca::test_utils;
 /**
  * @file dense/correlator_statistics.cpp
  *
- * @brief Tests of how compute_one_time_correlator() classifies its operators as fermionic or bosonic
+ * @brief Tests that compute_one_time_correlator() classifies even operators as bosonic
  *
  * @details The classification enters the diagram in one place: is_fermionic picks the external-vertex sentinel, -2 or -3, which
  * Backbone::get_parity() uses to decide whether the external pair is dropped before the permutation parity is taken, a sign on a crossing
  * topology. The rule is the fermion parity of the operators, i.e. whether their monomials have odd or even length, which differs from a
  * commutator test whenever an even-parity operator fails to commute, as for [S+, S-] = 2 Sz != 0. Since eval_correlator() takes is_fermionic
  * as an explicit argument, both classifications can be evaluated and compared to what compute_one_time_correlator() chose, which pins the
- * decision itself without an ED reference, and the two flag values giving different answers is the non-vacuity guard of each test.
+ * decision itself without an ED reference, and the two flag values giving different answers is the non-vacuity guard of each test. The
+ * fermionic classification of c and c^dag, against the single-particle Green's function, and the rejection of operators without one fermion
+ * parity are checked for every evaluator in one_time_correlator_all_evals.cpp.
  */
 
 namespace {
@@ -131,51 +133,21 @@ TEST(DenseCorrelatorStatistics, spin_flip_operators_are_classified_bosonic) {
 }
 
 /**
- * @brief Check that a density operator is classified bosonic and c / c^dag fermionic, the cases where the parity rule and a commutator test
- * agree
+ * @brief Check that a density operator is classified bosonic, a case where the parity rule and a commutator test agree
  */
-TEST(DenseCorrelatorStatistics, densities_stay_bosonic_and_single_fermions_stay_fermionic) {
+TEST(DenseCorrelatorStatistics, density_operators_are_classified_bosonic) {
   auto h                      = make_harness(two_orbital_model());
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
 
   nda::vector<long> f_ix_vec(h.D.get_num_single_ptcle_gf_backbones(topology));
   for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
 
-  {
-    SCOPED_TRACE("density-density, must be bosonic");
-    std::vector<many_body_operator_complex> ops{n<double>("up", 0)};
-    auto as_boson = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, false);
-    auto chosen   = h.D.compute_one_time_correlator(h.G, ops, ops, h.ad, topology, f_ix_vec);
-    ASSERT_GT(maxabs(as_boson), 1.0e-6) << "vacuous: chi_nn is zero on this model";
-    EXPECT_LE(maxabs(nda::make_regular(chosen - as_boson)), 1.0e-13 * std::max(1.0, maxabs(as_boson)));
-  }
-  {
-    SCOPED_TRACE("c / c_dag, must be fermionic");
-    std::vector<many_body_operator_complex> ops_tau{c<double>("up", 0)}, ops_0{c_dag<double>("up", 0)};
-    auto as_fermion = correlator_with_flag(h.D, h.G, ops_tau, ops_0, h.ad, topology, true);
-    auto chosen     = h.D.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
-    ASSERT_GT(maxabs(as_fermion), 1.0e-6) << "vacuous: the single-particle correlator is zero on this model";
-    EXPECT_LE(maxabs(nda::make_regular(chosen - as_fermion)), 1.0e-13 * std::max(1.0, maxabs(as_fermion)));
-  }
-}
-
-/**
- * @brief Check that an operator of mixed fermion parity such as c + n is rejected, while the all-odd c + c^dag c^dag c is accepted
- */
-TEST(DenseCorrelatorStatistics, mixed_parity_operators_are_rejected) {
-  auto h                      = make_harness(two_orbital_model());
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  nda::vector<long> f_ix_vec(h.D.get_num_single_ptcle_gf_backbones(topology));
-  for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
-
-  std::vector<many_body_operator_complex> mixed{c<double>("up", 0) + n<double>("up", 0)};
-  std::vector<many_body_operator_complex> plain{c<double>("up", 0)};
-
-  EXPECT_THROW(h.D.compute_one_time_correlator(h.G, mixed, plain, h.ad, topology, f_ix_vec), std::runtime_error)
-     << "an operator with both even- and odd-length monomials has no fermion parity and must be rejected";
-
-  // all-odd with several monomials must be accepted
-  std::vector<many_body_operator_complex> all_odd{c<double>("up", 0) + c_dag<double>("up", 1) * c_dag<double>("do", 1) * c<double>("up", 0)};
-  EXPECT_NO_THROW(h.D.compute_one_time_correlator(h.G, all_odd, plain, h.ad, topology, f_ix_vec))
-     << "an operator whose monomials are all odd has a well-defined fermion parity and must be accepted";
+  std::vector<many_body_operator_complex> ops{n<double>("up", 0)};
+  auto as_boson   = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, false);
+  auto as_fermion = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, true);
+  auto chosen     = h.D.compute_one_time_correlator(h.G, ops, ops, h.ad, topology, f_ix_vec);
+  ASSERT_GT(maxabs(as_boson), 1.0e-6) << "vacuous: chi_nn is zero on this model";
+  ASSERT_GT(maxabs(nda::make_regular(as_boson - as_fermion)), 1.0e-3)
+     << "vacuous test: the two statistics give the same correlator on this topology";
+  EXPECT_LE(maxabs(nda::make_regular(chosen - as_boson)), 1.0e-13 * std::max(1.0, maxabs(as_boson)));
 }

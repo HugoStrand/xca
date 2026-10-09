@@ -43,7 +43,8 @@ namespace test_utils = triqs_xca::test_utils;
  * @details The comparisons with the dense evaluator in this file drive the internal constructor that takes the field operators; the dense
  * evaluator runs on the single-subspace twin of the partitioned atom_diag, with the two eigenbases bridged by
  * get_tensor_in_atom_diag_subspace(). The self-energy and the single-particle Green's function of the public constructors are compared
- * across evaluators in sigma_spgf_all_evals.cpp, and backbone by backbone in flat_index_all_evals.cpp.
+ * across evaluators in sigma_spgf_all_evals.cpp and backbone by backbone in flat_index_all_evals.cpp; the one-time correlator is compared
+ * across evaluators in one_time_correlator_all_evals.cpp, and that of the evaluator built from the quartet in dynint_constructor_contract.
  */
 
 namespace {
@@ -55,8 +56,7 @@ namespace {
   constexpr int p_poles = 2;
 
   struct DynintModel {
-    triqs::atom_diag::atom_diag<true> ad;      // partitioned: the block-sparse side
-    triqs::atom_diag::atom_diag<true> ad_flat; // the sym_ops = {} twin: the dense side
+    triqs::atom_diag::atom_diag<true> ad;
     nda::vector<double> hyb_poles;
     nda::array<dcomplex, 3> hyb_coeffs;
     nda::array<dcomplex, 3> dynint_coeffs;
@@ -64,13 +64,12 @@ namespace {
   };
 
   /**
-   * @brief unequal_sym_set_model and its single-subspace twin, plus n_int density interactions
+   * @brief unequal_sym_set_model plus n_int density interactions
    *
    * @details The symmetry sets have unequal sizes {2, 1} and the largest subspace has dimension 2, so the Nmax tests are not vacuous.
    */
   DynintModel dynint_model(int n_int) {
     auto ad       = test_utils::unequal_sym_set_model(true);
-    auto ad_flat  = test_utils::unequal_sym_set_model(false);
     int n_hyb     = static_cast<int>(ad.get_fops().size());
     auto labels_f = std::get<1>(get_operators(ad, nda::zeros<dcomplex>(p_poles, n_hyb, n_hyb)));
     auto hyb      = test_utils::sym_set_diagonal_hyb(labels_f, p_poles);
@@ -87,7 +86,7 @@ namespace {
       for (int i = 0; i < n_int; ++i) d(l, i, i) = 0.61 - 0.07 * l + 0.05 * i;
 
     nda::vector<double> hyb_poles = {1.3, -0.8};
-    return {ad, ad_flat, hyb_poles, hyb, d, ops};
+    return {ad, hyb_poles, hyb, d, ops};
   }
 
   /// Same quartet with symmetry set s moved to position 0
@@ -157,6 +156,20 @@ TEST(BlockSparseDynintEvaluator, dynint_constructor_contract) {
   ASSERT_EQ(gb.shape(), ga.shape());
   ASSERT_GT(nda::max_element(nda::abs(ga)), 0.01) << "vacuous test: the spgf is zero";
   EXPECT_EQ(nda::max_element(nda::abs(ga - gb)), 0.0);
+
+  // the same one-time correlator exactly, for fermionic legs, whose sign on this topology depends on the statistics of the interaction lines,
+  // and for the interaction operators
+  nda::vector<long> f_ix_vec(D.get_num_single_ptcle_gf_backbones(topology));
+  for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
+  std::vector<std::pair<std::vector<many_body_operator_complex>, std::vector<many_body_operator_complex>>> const corr_ops{
+     {{triqs::operators::c("A", 0)}, {triqs::operators::c_dag("A", 0)}}, {m.dynint_ops, m.dynint_ops}};
+  for (auto const &[ops_tau, ops_0] : corr_ops) {
+    auto ca = D.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology, f_ix_vec);
+    auto cb = D_fq.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology, f_ix_vec);
+    ASSERT_EQ(cb.shape(), ca.shape());
+    ASSERT_GT(nda::max_element(nda::abs(ca)), 0.01) << "vacuous test: the correlator is zero";
+    EXPECT_EQ(nda::max_element(nda::abs(ca - cb)), 0.0) << "one-time correlator of " << ops_tau.size() << " operators";
+  }
 
   // match the message, other std::invalid_argument checks sit earlier in the same routine
   auto short_hyb = nda::zeros<dcomplex>(p_poles, n_hyb - 1, n_hyb - 1);
@@ -315,131 +328,6 @@ TEST(BlockSparseDynintEvaluator, symmetry_set_order_does_not_change_sigma) {
   }
   ASSERT_GT(scale, 0.01) << "vacuous test: the self-energy is zero";
   EXPECT_LE(err, 1.0e-14) << "max|Sigma_original - Sigma_permuted| = " << err;
-}
-
-// ========== Correlators with dynamical interactions ==========
-
-namespace {
-
-  // tolerance for the comparison with the dense reference, the measured agreement is ~1e-16
-  constexpr double corr_tol = 1.0e-13;
-
-  /**
-   * @brief Parity of a correlator diagram with a bosonic external operator pair, i.e. of the topology with the pair (0, vct0) dropped
-   *
-   * @details This is the property that decides whether a bosonic correlator can see a wrong interaction-line statistics. It is exact only up to
-   * order 3, where the reduced topology has at most two pairs. At order 2 the reduced topology is a single pair, so the crossing topology
-   * {{0,2},{1,3}} is blind here and order 3 is the smallest order that is not.
-   */
-  int external_bosonic_parity(nda::array_const_view<int, 2> topology) {
-    auto is_ferm            = nda::array<bool, 1>(2 * topology.extent(0));
-    is_ferm()               = true;
-    is_ferm(0)              = false;
-    is_ferm(topology(0, 1)) = false;
-    return triqs_xca::topology::topology_parity(triqs_xca::topology::fermionic_topology(topology, is_ferm));
-  }
-
-} // namespace
-
-/**
- * @brief Compare the one-time correlator of a density operator with a dynamical interaction to the dense evaluator
- *
- * @details With a bosonic external operator get_parity() first drops the pair (0, vct0), so the diagram carries external_bosonic_parity() rather
- * than topology_parity(). At order 2 that leaves a single pair, so the crossing order-2 topology is blind to the interaction-line statistics
- * and serves as a control, while the maximally crossing order-3 topology is the driver. The density operator commutes with itself, so the
- * statistics classification takes the bosonic branch, which is pinned below.
- */
-TEST(BlockSparseDynintEvaluator, one_time_correlator_matches_dense_with_dynamical_interactions) {
-
-  auto m = dynint_model(/*n_int=*/1);
-  ASSERT_NO_FATAL_FAILURE(test_utils::assert_parallel_atom_diags(m.ad, m.ad_flat));
-
-  int n_hyb = static_cast<int>(m.ad.get_fops().size());
-  int n_int = static_cast<int>(m.dynint_ops.size());
-  int n_ext = n_hyb + n_int;
-  ASSERT_EQ(n_int, 1) << "this test reads correlator component (n_hyb, n_hyb)";
-
-  auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
-  auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
-  auto G_bs  = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
-  auto G_fl  = test_utils::ad_to_atom_prop(m.ad_flat, beta, Lambda, eps);
-
-  auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
-  auto ext = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  dense::DiagramEvaluator D_dense(m.hyb_poles, m.hyb_coeffs, G_fl[0].mesh(), m.ad_flat, m.dynint_ops, m.dynint_coeffs);
-
-  auto [mu_ops, kap_ops] = test_utils::make_correlator_ops(Fq, n_ext);
-  ASSERT_EQ(static_cast<int>(mu_ops.size()), n_ext);
-
-  auto Fq_ferm = std::get<0>(get_operators(m.ad, m.hyb_coeffs));
-  DiagramEvaluator D_ferm(beta, Lambda, eps, m.hyb_poles, m.hyb_coeffs, Fq_ferm);
-
-  // the maximally crossing order-3 topology is the driver, the crossing order-2 one the parity-blind control
-  int n_red_drivers = 0;
-  for (auto topology : {nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
-
-    int two_m       = 2 * topology.extent(0);
-    bool can_see_it = (external_bosonic_parity(topology) == -1);
-    if (can_see_it) ++n_red_drivers;
-    SCOPED_TRACE("topology " + [&] {
-      std::ostringstream o;
-      o << topology;
-      return o.str();
-    }() + (can_see_it ? " (red driver)" : " (parity-blind control)"));
-
-    // vertex 0 pairing with vertex 2m-1 is covered by SparsityInvariance.correlator_keeps_the_beta_tau_side_when_vertex_zero_pairs_with_the_last_vertex
-    // on a purely fermionic model, so keep this test off that case
-    ASSERT_NE(topology(0, 1), two_m - 1) << "covered by the sparsity-invariance correlator test, not here";
-
-    long nb = D.get_num_single_ptcle_gf_backbones(topology);
-    ASSERT_EQ(nb, D_dense.get_num_single_ptcle_gf_backbones(topology)) << "the two evaluators do not enumerate the same backbones";
-    ASSERT_GT(nb, D_ferm.get_num_single_ptcle_gf_backbones(topology))
-       << "vacuous test: the interaction flavour is not in the backbone enumeration (this compares two evaluators, so it asserts n_ext > n_hyb rather than that any particular backbone puts the interaction on an internal line)";
-    auto f_ix_vec = nda::array<long, 1>(nb);
-    for (long i = 0; i < nb; ++i) f_ix_vec(i) = i;
-
-    // dense reference on the single-subspace twin, the one-time correlator is a trace and needs no basis bridge
-    auto ref = nda::array<dcomplex, 1>(
-       D_dense.compute_one_time_correlator(G_fl, m.dynint_ops, m.dynint_ops, m.ad_flat, topology, f_ix_vec)(nda::range::all, 0, 0));
-    double scale = nda::max_element(nda::abs(ref));
-    ASSERT_GT(scale, 0.01) << "vacuous test: the correlator is too small for an absolute tolerance";
-
-    // (1) the routine under test
-    auto bs =
-       nda::array<dcomplex, 1>(D.compute_one_time_correlator(G_bs, m.dynint_ops, m.dynint_ops, m.ad, topology, f_ix_vec)(nda::range::all, 0, 0));
-    double err_bs = nda::max_element(nda::abs(nda::make_regular(bs - ref)));
-
-    // (2) the same quantity through eval_correlator with a CorrelatorBackbone built here, component (n_hyb, n_hyb) is the interaction
-    //     operator against its own dagger
-    CorrelatorBackbone bb(topology, n_ext, n_int);
-    auto direct       = nda::array<dcomplex, 1>(D.eval_correlator(Gt, bb, mu_ops, kap_ops, /*is_fermionic=*/false)(nda::range::all, n_hyb, n_hyb));
-    double err_direct = nda::max_element(nda::abs(nda::make_regular(direct - ref)));
-
-    // (3) check that the bosonic branch differs from the fermionic one
-    CorrelatorBackbone bb_f(topology, n_ext, n_int);
-    auto direct_ferm = nda::array<dcomplex, 1>(D.eval_correlator(Gt, bb_f, mu_ops, kap_ops, /*is_fermionic=*/true)(nda::range::all, n_hyb, n_hyb));
-    if (can_see_it)
-      ASSERT_GT(nda::max_element(nda::abs(nda::make_regular(direct_ferm - direct))), 0.01)
-         << "vacuous test: the external statistics flag does not change this correlator";
-
-    EXPECT_LE(err_direct, corr_tol) << "eval_correlator with a correctly built CorrelatorBackbone disagrees with dense by " << err_direct
-                                    << " (max|dense| = " << scale << ") -- the engine is at fault";
-    if (can_see_it) {
-      EXPECT_LE(err_bs, corr_tol) << "max|dense| = " << scale << ", max|bs - dense| = " << err_bs
-                                  << " -- compute_one_time_correlator builds its CorrelatorBackbone without n_int, so the interaction line "
-                                     "is given fermionic parity";
-    } else {
-      // the parity-blind control
-      EXPECT_LE(err_bs, corr_tol) << "max|bs - dense| = " << err_bs;
-      EXPECT_LE(nda::max_element(nda::abs(nda::make_regular(direct - bs))), corr_tol) << "the two block-sparse correlator routes disagree";
-    }
-  }
-
-  // check that at least one topology can see the interaction-line statistics
-  ASSERT_GT(n_red_drivers, 0) << "vacuous test: none of the topologies can see a wrong interaction-line statistics. "
-                                 "A bosonic external operator needs external_bosonic_parity(topology) == -1, which no "
-                                 "order-2 topology has - the reduced matching is a single pair and a single pair is even.";
 }
 
 /**
