@@ -36,6 +36,8 @@ set(all_tests
   one_time_correlator
   expectation_value
   order_conv
+  one_spinful_fermion
+  analytic_diagrams
   )
 
 foreach(test ${all_tests})
