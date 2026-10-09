@@ -1,5 +1,8 @@
 # Dense evaluator baseline
 
+The completed port's measurements and acceptance audit are in [results.md](results.md).
+The initial baseline below is retained as historical evidence.
+
 `cpu_baseline.csv` records the initial CPU measurements on ts on 2026-10-10.
 These are bounded synthetic C++ workloads, not solver benchmarks or GPU timings.
 
@@ -69,7 +72,7 @@ not confidence intervals. The initial pre-port CPU CSV uses the older column sch
 
 Residency instrumentation uses header-only NVTX ranges around uploads, downloads and
 flat-index traversal. Constructor warmup primes batched/rank GEMM, weighting and DLR
-paths with existing scratch; endpoint setup primes the trace shape. A first-call trace
+paths with existing scratch. A first-call trace
 without standalone primitive prewarming originally found two 16-byte driver allocations
 inside cuKernelGetFunction; warming removes them before traversal.
 
@@ -80,7 +83,9 @@ Verified trace summaries:
   ranges, **zero allocation/deallocation events and zero explicit host/device copies**.
 - `trace_dynint.csv`: existing mixed-dynamic-interface/reuse test, including density
   correlators and failed-prefix recovery: 12 ranges with the same zero-event result.
-- Unified-memory migrations remain visible: maxima 4096 bytes per migration, consistent
+- `trace_n128_r26.csv`: N128 first/warm API-only calls, 18 ranges with the same
+  zero-event result; visible peak 194,503,565 bytes and largest UVM migration 61,440 bytes.
+- Unified-memory migrations remain visible: maxima 4096 bytes per migration in N32/dynamic traces, consistent
   with pointer-table/status pages. Large work-tensor copies are device-to-device.
   Host/unified copies are reported separately, rather than treating metadata migration
   as absent. CUDA allocations include driver-visible memory events, not just malloc APIs.
@@ -119,3 +124,13 @@ include GEAM, DGMM and vector operations. Combined GEMMs account for about 65% o
 active kernel time in the N32 trace, solves about 29%; these are not whole-call shares,
 nor a proof that batched GEMMs alone dominate. Launch and synchronization overhead
 must be judged from wall time alongside the active kernel sum.
+
+Final diagnostic ranges also separate vertices, special vertices, LU solves,
+convolution, reflection, endpoint products and traces. Profile the same command
+with output `dense-phases-n32-r26`; export its SQLite and pass `--phases` to the
+auditor for `trace_phases_detail.csv`. Without that flag it emits the traversal audit.
+Constructor warmup phases are excluded from the phase report.
+
+`owned_device_bytes` on primitive rows covers the standalone DLR object and local
+buffers, excluding the primary evaluator still alive. API rows cover that evaluator.
+These counts exclude context/library caches and must not be read as process peaks.

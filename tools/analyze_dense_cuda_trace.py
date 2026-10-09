@@ -16,6 +16,7 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("trace", type=Path)
+    parser.add_argument("--phases", action="store_true", help="report phase ranges contained in traversal (excludes constructor warmup)")
     args = parser.parse_args()
     db = sqlite3.connect(f"file:{args.trace}?mode=ro", uri=True)
     tables = {r[0] for r in db.execute("select name from sqlite_master where type='table'")}
@@ -25,6 +26,12 @@ def main():
     ranges = list(db.execute("select start,end,text from NVTX_EVENTS where text like 'xca.%traversal' order by start"))
     if not ranges or any(end is None for _, end, _ in ranges):
         raise RuntimeError("missing or incomplete traversal ranges")
+    if args.phases:
+        traversals = ranges
+        ranges = [row for row in db.execute("select start,end,text from NVTX_EVENTS where text like 'xca.phase.%' order by start")
+                  if row[1] is not None and any(begin <= row[0] and row[1] <= finish for begin, finish, _ in traversals)]
+        if not ranges:
+            raise RuntimeError("missing traversal phase ranges")
     live = peak = 0
     # Nsight-visible device, array, managed and static allocations. This does
     # not claim to measure unreported driver/context memory or physical UVM residency.
@@ -51,7 +58,7 @@ def main():
         gemm = sum(t for t, n in kernels if "gemm" in n.lower() or "splitkreduce" in n.lower())
         solve = sum(t for t, n in kernels if any(x in n.lower() for x in ("trsm", "laswp", "copy_info")))
         output.writerow(dict(zip(headers, [args.trace.name, peak, name, seen[name], (end-start)/1e6, allocations, deallocations, sum(host), max(host, default=0), sum(uvm), max(uvm, default=0), sum(size for size, kind in copies if kind==8), len(kernels), sum(t for t,_ in kernels)/1e6, gemm/1e6, solve/1e6])))
-        failed |= bool(allocations or host)
+        failed |= bool(allocations or deallocations or host)
     # Strict gate for any allocation or explicit host tensor transfer in traversal.
     # UVM is not silently ignored: byte totals/maxima remain in the output and
     # must be interpreted against metadata/table sizes and page granularity.

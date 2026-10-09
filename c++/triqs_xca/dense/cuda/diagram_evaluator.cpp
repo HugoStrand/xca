@@ -154,6 +154,7 @@ namespace triqs_xca::dense::cuda {
     return b.has_vertex_dag(v) ? Fd_(o, a, a) : Fs_(o, a, a);
   }
   void DiagramEvaluator::vertex(tensor_view t, Backbone &b, int v, bool right) {
+    ProfileRange phase("xca.phase.vertex");
     auto &ops = dlr_.device_ops();
     int p     = b.get_pole_ind(b.get_vertex_hyb_ind(v));
     if (right)
@@ -186,6 +187,7 @@ namespace triqs_xca::dense::cuda {
       dlr_.convolve(beta_, gc_, tc_, t);
   }
   void DiagramEvaluator::special(tensor_view t, Backbone &b, int v) {
+    ProfileRange phase("xca.phase.special_vertex");
     auto &ops    = dlr_.device_ops();
     bool forward = b.has_vertex_dag(v);
     for (int k = 0; k < n_; ++k) ops.right_product(t, op(b, 0, k), Tkaps_(k, a, a, a));
@@ -352,9 +354,15 @@ namespace triqs_xca::dense::cuda {
       b.set_orb_inds_of_0_and_vct0(sentinel, sentinel);
       complex parity = b.get_parity();
       for (long q = 0; q < m; ++q) {
-        ops.left_product(mu_ops_(q, a, a), T_, tmp_);
-        ops.batch_product(U_, tmp_, Tmu_);
-        ops.traces(Tmu_, packed_ops_, trace_values_);
+        {
+          ProfileRange phase("xca.phase.endpoint_products");
+          ops.left_product(mu_ops_(q, a, a), T_, tmp_);
+          ops.batch_product(U_, tmp_, Tmu_);
+        }
+        {
+          ProfileRange phase("xca.phase.trace");
+          ops.traces(Tmu_, packed_ops_, trace_values_);
+        }
         nda::blas::device::axpy(row_count, parity, trace_values_.data(), 1, corr_sum_(q, a, a).data(), 1);
       }
       b.reset_all_inds();
@@ -418,7 +426,15 @@ namespace triqs_xca::dense::cuda {
     upload(g);
     CorrelatorBackbone b(topology, n_, n_int_);
     bool fermionic = correlator_statistics(ops_tau, ops_zero, "compute_one_time_correlator");
-    auto rotation  = ad.get_unitary_matrix(0);
+    // Check endpoint element/byte arithmetic before host assembly as well as
+    // before device resizing in correlate(). Empty endpoints are valid.
+    for (auto count : {ops_tau.size(), ops_zero.size()}) {
+      if (count > std::size_t(std::numeric_limits<int>::max()))
+        throw std::overflow_error("CUDA correlator endpoint count exceeds BLAS integer range");
+      auto elements = DeviceOps::checked_product(count, DeviceOps::checked_product(N_, N_));
+      (void)DeviceOps::checked_product(elements, sizeof(complex));
+    }
+    auto rotation = ad.get_unitary_matrix(0);
     auto mu = nda::zeros<complex>(ops_tau.size(), N_, N_), kap = nda::zeros<complex>(ops_zero.size(), N_, N_);
     for (std::size_t i = 0; i < ops_tau.size(); ++i)
       mu(i, a, a) = rotation * triqs_xca::atom_diag::get_op_mat(ad, ops_tau[i]).block_mat[0] * nda::dagger(rotation);

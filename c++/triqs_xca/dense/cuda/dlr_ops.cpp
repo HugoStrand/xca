@@ -1,6 +1,7 @@
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
 #include "dlr_ops.hpp"
+#include "profile_range.hpp"
 #ifdef NDA_HAVE_CUDA
 #include <nda/lapack.hpp>
 #include <cppdlr/dlr_kernels.hpp>
@@ -62,6 +63,7 @@ namespace triqs_xca::dense::cuda {
   }
 
   void DlrOps::vals2coefs(tensor_const_view values, tensor_view coefficients) {
+    ProfileRange phase("xca.phase.vals2coefs");
     validate(values);
     validate(coefficients);
     // The NDA wrapper reads its unified-memory status before returning. Its
@@ -75,9 +77,13 @@ namespace triqs_xca::dense::cuda {
 
   void DlrOps::coefs2vals(tensor_const_view coefficients, tensor_view values) const { ops_.rank_product(C_, coefficients, values); }
 
-  void DlrOps::reflect(tensor_const_view values, tensor_view reflected) const { ops_.rank_product(reflection_, values, reflected); }
+  void DlrOps::reflect(tensor_const_view values, tensor_view reflected) const {
+    ProfileRange phase("xca.phase.reflection");
+    ops_.rank_product(reflection_, values, reflected);
+  }
 
   void DlrOps::convolve(double beta, tensor_const_view fc, tensor_const_view gc, tensor_view out) {
+    ProfileRange phase("xca.phase.convolution");
     validate(fc);
     validate(gc);
     validate(out);
