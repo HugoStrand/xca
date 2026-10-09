@@ -3,7 +3,7 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: initial device primitives and bounded CPU baseline verified; next is device DLR operations.
+Phase: device primitives and DLR gate verified; next is ordinary self-energy traversal.
 The CUDA evaluator itself is not yet implemented.
 
 ## Objective and working rules
@@ -146,24 +146,79 @@ two invariant rank transforms matches the current cppdlr convolution exactly in
 all these runs. This measurable CPU improvement must be distinguished from GPU
 acceleration in the final performance report.
 
+## Completed: resident device DLR layer
+
+Previous goal turn classification: progress (verified primitive code, benchmark
+artifacts and separate checkpoint committed). This turn adds verified DLR code;
+no blocker is present and the complete evaluator goal remains active.
+
+Commit `4d4a0bc` adds `dense/cuda/dlr_ops.{hpp,cpp}`, a checked rank-axis GEMM in
+DeviceOps and four GPU test cases in `test/c++/dense/cuda/dlr_ops.cpp`.
+
+DlrOps owns immutable device copies of cached LU/pivots, C/H/Q and the reflection
+matrix. It preserves the cached LU's C-layout/NDA getrs transpose convention,
+uses device GEAM to pack/unpack a persistent Fortran RHS, checks solver status,
+and reuses four convolution tensors. Hilbert transforms are computed once each;
+three batched products build P/R, followed by two accumulating rank GEMMs with beta.
+Reflection is a value-to-value matrix constructed by host `reflect(identity)` once.
+No explicit inverse replaces the LU solve.
+
+NDA source review confirms its solver handle and unified one-word status storage
+are lazy process-shared state. Construction warms those and the shared BLAS handle
+using existing buffers, keeping initialization ahead of traversal. Solver
+synchronization is required and checked at construction and at every solve; the
+backend never silently changes the thread-local setting. The initial API requires
+serialized NDA device solver use, including other NDA users in the same process.
+Final allocation/residency tracing is still required; library internals are not
+assumed allocation-free merely because XCA reuses its buffers.
+
+Validation:
+
+- Reconfigured in place and built `dense_cuda_dlr_ops` in both CPU/CUDA trees.
+- GPU CTest passed with all four GoogleTests executed; Compute Sanitizer memcheck
+  passed all four with **0 errors**, including the failed-constructor resource path.
+- The small rank-3 well-conditioned system checks coefficients against both the
+  known coefficients and cppdlr, including in-place conversion, at 1e-12.
+- Real mesh tests cover lambda 10/40/120, eps 1e-10/1e-12, symmetric and non-symmetric
+  meshes, beta 0.5/2/7, complex noncommuting matrix inputs, reconstruction, reflection
+  and reflection twice, coefficient convolution and the full two-solves→convolve
+  edge pipeline. Comparisons pass at 1e-12 without a GPU-specific tolerance.
+- Additional checks cover cancelling coefficient inputs, changed input at the same
+  allocation, reusable scratch, convolution output aliasing either input, invalid
+  shapes/beta/transform aliasing and preservation of the caller's synchronization
+  setting after rejection. The solver's disabled-sync constructor/call contract is
+  exercised explicitly.
+- CPU test compiles/runs its deliberately disabled no-CUDA branch; it executes zero
+  GoogleTests and is compatibility evidence, not numerical device validation.
+
+Evidence: `/tmp/xca-{cpu,cuda}-dlr-{configure,build,test}.log` and
+`/tmp/xca-cuda-dlr-sanitizer.log`. Final sources were rebuilt in both configurations;
+GPU tests and sanitizer were rerun after the constructor warmup/contract changes.
+No tracked binding regeneration changes were produced.
+
 ## Next action
 
-Implement `dense/cuda/dlr_ops.{hpp,cpp}` and focused GPU/CPU-reference tests before
-integrating diagram traversal. Upload cached complex LU factors/pivots, C/H/Q
-matrices and a reflection matrix once, reuse a Fortran-order RHS and convolution
-scratch, and use the validated DeviceOps operations. Preserve the cached LU's
-layout/transpose convention rather than treating its logical entries as a fresh
-unfactored matrix. Require NDA solver synchronization before `getrs` because it
-reads unified `info` immediately; do not disable or silently change shared settings.
+Implement `dense/cuda/diagram_evaluator.{hpp,cpp}` ordinary self-energy first.
+Reuse host Backbone enumeration and atom-diagonalization/FSet/hybridization setup,
+with immutable model snapshots and device numerical mirrors. Do not inherit or
+retain CPU evaluator scratch. Reuse DlrOps::device_ops() for traversal products;
+allocate checked persistent G/T/U/sum/GKt/coefficient/ping-pong/Tmu/Tkaps workspace.
+Upload propagator once per public call and download the accumulated result once.
+Keep all/single/vector index interfaces and counts in long; preserve duplicates.
 
-Construct H/Q using the installed cppdlr time-ordered formulas, including its
-relative-node branch at zero. Build the value-to-value reflection matrix by applying
-host `itops.reflect` to an identity matrix. Validate transforms/reconstruction,
-reflection and noncommuting complex matrix convolution across beta/rank/symmetric
-mesh choices and cancellation-sensitive inputs. Investigate LU coefficient
-sensitivity using reconstruction/residual evidence; do not weaken CPU assertions.
-Then port ordinary self-energy constructor/compute paths using existing test seams.
+Read the CPU constructor/traversal and hyb.cpp before copying their contracts:
+vertex `sign=-1.0` selects the opposite pole-kernel cache, **not** an extra scalar
+minus sign. Edge kernels multiply all active kernel factors; prefactor uses powers
+of k_0. Special vertex backward hybridization uses (kap,mu), forward (mu,kap), with
+orbital-dependent parity. Constructor-built kernels/hybridization/operator tables
+must be uploaded once. Small composite edge-weight metadata can use reusable
+staging buffers as allowed by the plan; no large tensors may round-trip in loops.
+
+Extend existing one-/two-fermion self-energy analytic comparisons (fixture insertion
+points around OneFermionSetup line 140 and TwoFermionSetup line 120) and the unitary
+registry as methods become available; avoid a new universal test framework. Validate
+ordinary orders 1–3 and subset/reuse behavior before by-pairs/dynamic-interaction and
+correlator phases. Keep plan/log commits separate from implementation/tests.
 
 Supervisor setup is complete; do not recreate the goal or restart the shared
-daemon. Continue committing verified implementation/tests on dev_cuda and this
-checkpoint separately; preserve the listed unrelated user changes.
+server. Preserve the listed unrelated user changes and do not push.
