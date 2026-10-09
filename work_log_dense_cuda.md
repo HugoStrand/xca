@@ -3,7 +3,7 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: supervisor setup verified; persistent goal activation follows this checkpoint.
+Phase: supervisor setup verified and persistent implementation goal active.
 The CUDA evaluator itself is not yet implemented.
 
 ## Objective and working rules
@@ -37,7 +37,7 @@ Preserve pre-existing user work: modified `.gitignore`; untracked `AGENTS.md`,
   Installed and verified one user-crontab `@reboot` entry marked
   `xca-dense-cuda-supervisor`; existing crontab entries were preserved.
 - Launcher starts the managed daemon only if absent and does not restart live work.
-  Initial local `PAUSE` file holds custom recovery until goal activation.
+  Initial local `PAUSE` was removed after persistent goal activation.
 
 Validation: all 23 tests passed via
 `python3 -m unittest discover -s tools/codex_supervisor/tests -v`.
@@ -73,11 +73,25 @@ or bypass was required.
   CUDA 61/61 passed (52.35 s), with real GPU smoke cases and adapol `d3c4ab7`.
   Those results precede this supervisor setup and are not new evaluator validation.
 
+## Goal activation and commit record
+
+The persistent goal is active with the exact objective bound in supervisor config;
+no explicit goal token budget was requested or set. Removed the initial local PAUSE
+and verified live `state.json` transitions to `thread_active`. The detached
+supervisor observes this current turn without submitting another continuation.
+
+Separate initial commits:
+
+- `c584bb5`: supervisor code, tests and operational README.
+- `d33339d`: plan only, including verified cuTENSOR availability.
+- `b63fd84`: initial work log only.
+
+This activation checkpoint is also committed as a log-only change.
+
 ## Next action
 
-Activate the persistent implementation goal with the exact objective in local
-supervisor config, remove its initial local PAUSE, verify observation of this active
-thread, and commit this activation as a log-only checkpoint. Then start phase 1:
-inspect dense evaluator/NDA interfaces and existing C++ test seams, profile a bounded
-CPU workload, and implement/validate the device primitives required by DLR operations.
-Keep plan/log commits separate from code throughout.
+Start phase 1 of the CUDA port. Inspect dense evaluator/NDA interfaces and existing
+C++ test seams; reconfigure in place against the current CUDA prefix as necessary.
+Profile a bounded CPU workload and implement/validate device primitives required by
+DLR operations. Keep plan/log commits separate from code throughout. Supervisor
+setup is complete; do not recreate the goal or restart the shared daemon.
