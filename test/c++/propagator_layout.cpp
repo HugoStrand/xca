@@ -107,9 +107,21 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
     EXPECT_THROW(D_cuda.compute_self_energy_by_pairs(G, topology, f_ix_vec), std::invalid_argument);
 #endif
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_single_ptcle_gf(G, topology), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, 0), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_single_ptcle_gf(G, topology, 0), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, f_ix_vec), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_single_ptcle_gf(G, topology, f_ix_vec), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_one_time_correlator(G, ops, ops, ad_flat, topology, f_ix_vec), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_one_time_correlator(G, ops, ops, ad_flat, topology, f_ix_vec), std::invalid_argument);
+#endif
   }
   auto wrong_for_bs = std::vector<std::pair<std::string, bgf_t>>{
      {"dense layout", G_flat}, {"empty", G_empty}, {"wrong block dimension", G_bs_wrong_dim}, {"other rank", G_bs_rank}};
@@ -128,6 +140,9 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   auto ad_other = test_utils::sz_resolved_atom_diag_helper(1, false);
   ASSERT_NE(ad_other.get_full_hilbert_space_dim(), ad_flat.get_full_hilbert_space_dim());
   EXPECT_THROW(D_dense.compute_one_time_correlator(G_flat, ops, ops, ad_other, topology, f_ix_vec), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+  EXPECT_THROW(D_cuda.compute_one_time_correlator(G_flat,ops,ops,ad_other,topology,f_ix_vec),std::invalid_argument);
+#endif
   EXPECT_THROW(D_bs.compute_one_time_correlator(G_bs, ops, ops, ad_flat, topology, f_ix_vec), std::invalid_argument);
 
   // the BlockDiagOpFun overloads of the block-sparse evaluator, which a block-sparse layout from another model reaches unconverted
@@ -157,3 +172,50 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   }
   EXPECT_EQ(std::abs(block_sparse::expectation_value(many_body_operator_complex(c_dag("A", 0)), ad, G_bs)), 0.0);
 }
+
+#ifdef NDA_HAVE_CUDA
+TEST(PropagatorLayout, cuda_strided_input_and_constructor_interfaces) {
+  double beta=2.,Lambda=40.,eps=1e-10;
+  triqs::atom_diag::fundamental_operator_set fops;
+  fops.insert("0",0);
+  triqs::operators::many_body_operator_real H=-.3*n<double>("0",0);
+  triqs::atom_diag::atom_diag<false> real_ad(H,fops,std::vector<triqs::operators::many_body_operator_real>{});
+  triqs::atom_diag::atom_diag<true> complex_ad(H,fops,std::vector<many_body_operator_complex>{});
+  auto g=test_utils::ad_to_atom_prop(complex_ad,beta,Lambda,eps);
+  nda::vector<double> poles{-1.2,.8};
+  nda::array<dcomplex,3> coefficients={{{dcomplex{.7,.1}}},{{dcomplex{.3,-.2}}}};
+  dense::DiagramEvaluator cpu(poles,coefficients,g[0].mesh(),real_ad);
+  dense::cuda::DiagramEvaluator gpu(poles,coefficients,g[0].mesh(),real_ad);
+  auto itops=g[0].mesh().dlr_it();
+  auto dimensionless_poles=nda::make_regular(beta*poles);
+  dense::DiagramEvaluator cpu_low(beta,eps,itops,dimensionless_poles,coefficients,cpu.Fset);
+  dense::cuda::DiagramEvaluator gpu_low(beta,eps,itops,dimensionless_poles,coefficients,cpu.Fset);
+  int r=g[0].data().extent(0),N=g[0].data().extent(1);
+  nda::array<dcomplex,3> storage(r,N,2*N);
+  auto strided=storage(nda::range::all,nda::range::all,nda::range(0,2*N,2));
+  strided=g[0].data();
+  triqs::gfs::gf_view<mesh_t> view(g[0].mesh(),strided);
+  triqs::gfs::block_gf_view<mesh_t> blocks({"full"},{view});
+  ASSERT_EQ(blocks[0].data().strides()[2],2);
+  nda::array<int,2> topology={{0,2},{1,3}};
+  nda::vector<long> subset{0,1,0};
+  auto check=[](auto const &a,auto const &b){EXPECT_LE(nda::max_element(nda::abs(a-b)),1e-12);};
+  check(cpu.compute_self_energy(blocks,topology)[0].data(),gpu.compute_self_energy(blocks,topology)[0].data());
+  check(cpu_low.compute_self_energy(blocks,topology)[0].data(),gpu_low.compute_self_energy(blocks,topology)[0].data());
+  check(cpu.compute_single_ptcle_gf(blocks,topology,subset),gpu.compute_single_ptcle_gf(blocks,topology,subset));
+  std::vector<many_body_operator_complex> mu{n<double>("0",0)},kap{n<double>("0",0)};
+  check(cpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset),gpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset));
+  mu.push_back(2.*n<double>("0",0));
+  check(cpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset),gpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset));
+  mu[1]=3.*n<double>("0",0);
+  strided*=dcomplex{.9,.03};
+  check(cpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset),gpu.compute_one_time_correlator(blocks,mu,kap,real_ad,topology,subset));
+  std::vector<many_body_operator_complex> empty_ops;
+  auto empty=gpu.compute_one_time_correlator(blocks,empty_ops,kap,real_ad,topology,subset);
+  EXPECT_EQ(empty.shape(),(std::array<long,3>{r,0,1}));
+  nda::vector<long> bad{gpu.get_num_single_ptcle_gf_backbones(topology)};
+  EXPECT_THROW(gpu.compute_one_time_correlator(blocks,empty_ops,kap,real_ad,topology,bad),std::invalid_argument);
+  std::vector<many_body_operator_complex> zero{many_body_operator_complex{}};
+  EXPECT_THROW(gpu.compute_one_time_correlator(blocks,zero,kap,real_ad,topology,subset),std::runtime_error);
+}
+#endif

@@ -7,6 +7,7 @@
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 #include <triqs_xca/topology.hpp>
 #include "test_utils/block_sparse.hpp"
 
@@ -310,3 +311,37 @@ TEST(DenseDynint, one_time_correlator_rejects_multi_subspace_atom_diag) {
     FAIL() << "expected std::invalid_argument for a multi-subspace atom_diag";
   } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("single subspace"), std::string::npos) << e.what(); }
 }
+
+#ifdef NDA_HAVE_CUDA
+TEST(DenseDynint, cuda_compute_interfaces_and_reuse) {
+  auto m=dynint_model(2.,40.,1e-8);
+  DiagramEvaluator cpu(m.hyb_poles,m.hyb_coeffs,m.G_ppsc[0].mesh(),m.ad,m.dynint_ops,m.dynint_coeffs);
+  triqs_xca::dense::cuda::DiagramEvaluator gpu(m.hyb_poles,m.hyb_coeffs,m.G_ppsc[0].mesh(),m.ad,m.dynint_ops,m.dynint_coeffs);
+  nda::array<int,2> topology={{0,2},{1,3}};
+  long count=cpu.get_num_self_energy_backbones(topology);
+  EXPECT_EQ(gpu.get_num_self_energy_backbones(topology),count);
+  nda::vector<long> subset{count-1,0,count/2,0};
+  auto check=[](auto const &a,auto const &b){ EXPECT_LE(nda::max_element(nda::abs(a-b)),1e-12); };
+  check(cpu.compute_self_energy(m.G_ppsc,topology)[0].data(),gpu.compute_self_energy(m.G_ppsc,topology)[0].data());
+  check(cpu.compute_self_energy_by_pairs(m.G_ppsc,topology)[0].data(),gpu.compute_self_energy_by_pairs(m.G_ppsc,topology)[0].data());
+  check(cpu.compute_self_energy(m.G_ppsc,topology,count-1)[0].data(),gpu.compute_self_energy(m.G_ppsc,topology,count-1)[0].data());
+  check(cpu.compute_self_energy(m.G_ppsc,topology,subset)[0].data(),gpu.compute_self_energy(m.G_ppsc,topology,subset)[0].data());
+  check(cpu.compute_self_energy_by_pairs(m.G_ppsc,topology,count-1)[0].data(),gpu.compute_self_energy_by_pairs(m.G_ppsc,topology,count-1)[0].data());
+  check(cpu.compute_self_energy_by_pairs(m.G_ppsc,topology,subset)[0].data(),gpu.compute_self_energy_by_pairs(m.G_ppsc,topology,subset)[0].data());
+  count=cpu.get_num_single_ptcle_gf_backbones(topology);
+  EXPECT_EQ(gpu.get_num_single_ptcle_gf_backbones(topology),count);
+  subset=nda::vector<long>{count-1,0,0};
+  check(cpu.compute_single_ptcle_gf(m.G_ppsc,topology),gpu.compute_single_ptcle_gf(m.G_ppsc,topology));
+  check(cpu.compute_single_ptcle_gf(m.G_ppsc,topology,count-1),gpu.compute_single_ptcle_gf(m.G_ppsc,topology,count-1));
+  check(cpu.compute_single_ptcle_gf(m.G_ppsc,topology,subset),gpu.compute_single_ptcle_gf(m.G_ppsc,topology,subset));
+  std::vector<many_body_operator_complex> ops{n<double>("0",0)};
+  check(cpu.compute_one_time_correlator(m.G_ppsc,ops,ops,m.ad,topology,subset),gpu.compute_one_time_correlator(m.G_ppsc,ops,ops,m.ad,topology,subset));
+  nda::vector<long> bad{0,count};
+  EXPECT_THROW(gpu.compute_one_time_correlator(m.G_ppsc,ops,ops,m.ad,topology,bad),std::invalid_argument);
+  check(cpu.compute_one_time_correlator(m.G_ppsc,ops,ops,m.ad,topology,subset),gpu.compute_one_time_correlator(m.G_ppsc,ops,ops,m.ad,topology,subset));
+  auto partitioned=dynint_model(2.,40.,1e-8,true);
+  EXPECT_THROW((triqs_xca::dense::cuda::DiagramEvaluator(partitioned.hyb_poles,partitioned.hyb_coeffs,partitioned.G_ppsc[0].mesh(),partitioned.ad,partitioned.dynint_ops,partitioned.dynint_coeffs)),std::invalid_argument);
+  EXPECT_THROW(gpu.compute_one_time_correlator(m.G_ppsc,ops,ops,partitioned.ad,topology,subset),std::invalid_argument);
+
+}
+#endif

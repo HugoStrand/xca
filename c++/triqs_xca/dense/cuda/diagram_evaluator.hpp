@@ -25,15 +25,22 @@ namespace triqs_xca::dense::cuda {
     nda::cuarray<complex, 4> Tkaps_, bars_, bars_refl_;
     tensor Fs_, Fd_, values_, reflected_;
     nda::cumatrix<complex> kp_, km_;
+    // Endpoint/output buffers resize only when endpoint counts change.
+    tensor mu_ops_, corr_sum_;
+    nda::cumatrix<complex> packed_ops_, trace_values_;
     static int checked_workspace(long r, long n, long N, long p);
     DiagramEvaluator(triqs::mesh::dlr_imtime mesh, cppdlr::imtime_ops itops, nda::vector_const_view<double> poles,
                      nda::array_const_view<complex, 3> coefficients, FSet fset, int n_int);
     matrix_const_view op(Backbone &b, int vertex, int orbital, int pole = -1) const;
-    void vertex(tensor_view t, Backbone &b, int v);
-    void edge(tensor_view t, Backbone &b, int e);
+    void vertex(tensor_view t, Backbone &b, int v, bool right = false);
+    void edge(tensor_view t, Backbone &b, int e, bool right = false);
     void special(tensor_view t, Backbone &b, int v);
     void evaluate(Backbone &b, long index, bool pairs);
+    double prefactor(Backbone &b) const;
+    void upload_tensor(nda::array_const_view<complex, 3> g);
     void upload(gf_vt g);
+    nda::array<complex, 3> correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap,
+                                     nda::array_const_view<long, 1> indices, bool all, bool fermionic);
     gf_t result();
     gf_t compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all, bool pairs);
 
@@ -55,6 +62,23 @@ namespace triqs_xca::dense::cuda {
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, long index);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    int num_orbitals() const { return n_; }
+    int num_interactions() const { return n_int_; }
+    int dimension() const { return N_; }
+    int rank() const { return r_; }
+    long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology);
+    nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology);
+    nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology, long index);
+    nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
+                                           nda::array_const_view<complex, 3> kap, bool fermionic = true);
+    nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
+                                           nda::array_const_view<complex, 3> kap, long index, bool fermionic = true);
+    template <bool C>
+    nda::array<complex, 3> compute_one_time_correlator(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                       std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+                                                       triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology,
+                                                       nda::array_const_view<long, 1> indices);
   };
 } // namespace triqs_xca::dense::cuda
 #endif

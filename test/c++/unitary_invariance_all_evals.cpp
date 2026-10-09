@@ -118,6 +118,15 @@ namespace {
             nda::make_regular(topology_parity(topology) * D.compute_single_ptcle_gf(G, topology))};
   }
 
+#ifdef NDA_HAVE_CUDA
+  Diagrams eval_cuda(Problem const &P, nda::vector_const_view<double> poles, nda::array_const_view<int,2> topology) {
+    dense::cuda::DiagramEvaluator D(poles,P.hyb_coeffs,P.G_bs[0].mesh(),P.ad);
+    auto G=P.G_dense;
+    return {nda::make_regular(topology_parity(topology)*D.compute_self_energy(G,topology)[0].data()),
+            nda::make_regular(topology_parity(topology)*D.compute_single_ptcle_gf(G,topology))};
+  }
+#endif
+
   Diagrams eval_block_sparse(Problem const &P, nda::vector_const_view<double> poles, nda::array_const_view<int, 2> topology) {
     block_sparse::DiagramEvaluator D(poles, P.hyb_coeffs, P.G_bs[0].mesh(), P.ad);
     auto G = P.G_bs;
@@ -170,7 +179,11 @@ TEST(unitary_invariance, two_fermions_complex_rotation) {
     std::string name;
     Diagrams (*eval)(Problem const &, nda::vector_const_view<double>, nda::array_const_view<int, 2>);
   };
-  std::vector<Evaluator> const evaluators{{"dense", eval_dense}, {"block-sparse", eval_block_sparse}};
+  std::vector<Evaluator> const evaluators{{"dense", eval_dense}, {"block-sparse", eval_block_sparse}
+#ifdef NDA_HAVE_CUDA
+      ,{"cuda",eval_cuda}
+#endif
+  };
 
   std::vector<nda::array<int, 2>> const topologies{{{0, 1}}, {{0, 2}, {1, 3}}, {{0, 3}, {1, 4}, {2, 5}}};
 
@@ -205,7 +218,9 @@ TEST(unitary_invariance, two_fermions_complex_rotation) {
 
     // the evaluators also agree with each other on the complex problem
     SCOPED_TRACE("order " + std::to_string(topology.extent(0)));
-    EXPECT_LE(max_abs(rotated[0].sigma - rotated[1].sigma), 1e-11 * max_abs(rotated[0].sigma));
-    EXPECT_LE(max_abs(rotated[0].spgf - rotated[1].spgf), 1e-11 * max_abs(rotated[0].spgf));
+    for(std::size_t i=1;i<rotated.size();++i) {
+      EXPECT_LE(max_abs(rotated[0].sigma-rotated[i].sigma),1e-11*max_abs(rotated[0].sigma));
+      EXPECT_LE(max_abs(rotated[0].spgf-rotated[i].spgf),1e-11*max_abs(rotated[0].spgf));
+    }
   }
 }

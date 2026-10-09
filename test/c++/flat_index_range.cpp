@@ -110,8 +110,17 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   for (int bad : {-1, n_correlator}) {
     SCOPED_TRACE("correlators, f_ix = " + std::to_string(bad));
     expect_flat_index_rejected([&] { D_dense.compute_single_ptcle_gf(G_flat, topology, bad); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_single_ptcle_gf(G_flat, topology, bad); });
+#endif
     expect_flat_index_rejected([&] { D_dense.compute_single_ptcle_gf(G_flat, topology, valid_then(n_correlator, bad)); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_single_ptcle_gf(G_flat, topology, valid_then(n_correlator, bad)); });
+#endif
     expect_flat_index_rejected([&] { D_dense.compute_one_time_correlator(G_flat, ops, ops, ad_flat, topology, valid_then(n_correlator, bad)); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_one_time_correlator(G_flat, ops, ops, ad_flat, topology, valid_then(n_correlator, bad)); });
+#endif
     expect_flat_index_rejected([&] { D_bs.compute_single_ptcle_gf(G_bs, topology, bad); });
     expect_flat_index_rejected([&] { D_bs.compute_single_ptcle_gf(G_bs, topology, valid_then(n_correlator, bad)); });
     expect_flat_index_rejected([&] { D_bs.compute_one_time_correlator(G_bs, ops, ops, ad, topology, valid_then(n_correlator, bad)); });
@@ -174,6 +183,9 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   long n_spgf  = D_dense.get_num_single_ptcle_gf_backbones(topology);
   ASSERT_EQ(n_sigma, 49766400000L);
   ASSERT_EQ(n_spgf, 24883200000L);
+#ifdef NDA_HAVE_CUDA
+  EXPECT_EQ(D_cuda.get_num_single_ptcle_gf_backbones(topology),n_spgf);
+#endif
   ASSERT_EQ(D_bs.get_num_self_energy_backbones(topology), n_sigma);
   ASSERT_EQ(D_bs.get_num_single_ptcle_gf_backbones(topology), n_spgf);
 
@@ -238,6 +250,10 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
 
   // the vector overloads, and the one-time correlator of the annihilators and creators, which is the single-particle Green's function
   auto f_spgf_vec = nda::vector<long>{f_spgf};
+#ifdef NDA_HAVE_CUDA
+  EXPECT_LE(nda::max_element(nda::abs(D_cuda.compute_single_ptcle_gf(G_flat,topology,f_spgf)-g)),gpu_high_order_tol*nda::max_element(nda::abs(g)));
+  EXPECT_LE(nda::max_element(nda::abs(D_cuda.compute_single_ptcle_gf(G_flat,topology,f_spgf_vec)-g)),gpu_high_order_tol*nda::max_element(nda::abs(g)));
+#endif
   auto c_ops = std::vector<many_body_operator_complex>{}, c_dag_ops = std::vector<many_body_operator_complex>{};
   for (auto const &fop : ad.get_fops()) {
     c_ops.push_back(many_body_operator_complex::make_canonical(false, fop.index));
@@ -249,6 +265,10 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   };
   check_g("dense spgf", D_dense.compute_single_ptcle_gf(G_flat, topology, f_spgf_vec));
   check_g("block-sparse spgf", D_bs.compute_single_ptcle_gf(G_bs, topology, f_spgf_vec));
+#ifdef NDA_HAVE_CUDA
+  auto cuda_corr=D_cuda.compute_one_time_correlator(G_flat,c_ops,c_dag_ops,ad_flat,topology,f_spgf_vec);
+  EXPECT_LE(nda::max_element(nda::abs(cuda_corr-g)),gpu_high_order_tol*nda::max_element(nda::abs(g)));
+#endif
   check_g("dense correlator", D_dense.compute_one_time_correlator(G_flat, c_ops, c_dag_ops, ad_flat, topology, f_spgf_vec));
   check_g("block-sparse correlator", D_bs.compute_one_time_correlator(G_bs, c_ops, c_dag_ops, ad, topology, f_spgf_vec));
 

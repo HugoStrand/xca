@@ -9,6 +9,7 @@
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/backbone.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 #include <triqs_xca/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
@@ -60,12 +61,14 @@ namespace {
   many_body_operator_complex S_minus() { return c_dag<double>("do", 0) * c<double>("up", 0) + c_dag<double>("do", 1) * c<double>("up", 1); }
 
   /// The body of compute_one_time_correlator with the statistics flag forced rather than inferred
-  nda::array<dcomplex, 3> correlator_with_flag(DiagramEvaluator &D, triqs::gfs::block_gf<triqs::mesh::dlr_imtime> const &G,
+  template<typename Evaluator> nda::array<dcomplex, 3> correlator_with_flag(Evaluator &D, triqs::gfs::block_gf<triqs::mesh::dlr_imtime> const &G,
                                                std::vector<many_body_operator_complex> const &ops_tau,
                                                std::vector<many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
                                                nda::array_const_view<int, 2> topology, bool is_fermionic) {
-    CorrelatorBackbone backbone(topology, D.n, D.n_int);
-    int N                           = D.N;
+    int n,n_int,N,r;
+    if constexpr(requires{D.n;}) { n=D.n; n_int=D.n_int; N=D.N; r=D.r; }
+    else { n=D.num_orbitals(); n_int=D.num_interactions(); N=D.dimension(); r=D.rank(); }
+    CorrelatorBackbone backbone(topology,n,n_int);
     auto U                          = ad.get_unitary_matrix(0);
     nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
     nda::array<dcomplex, 3> kap_ops = nda::zeros<dcomplex>(ops_0.size(), N, N);
@@ -74,9 +77,15 @@ namespace {
     for (auto [i, op] : itertools::enumerate(ops_0))
       kap_ops(i, range::all, range::all) = U * ad.get_op_mat(op).block_mat[0] * nda::conj(nda::transpose(U));
 
-    nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.r, mu_ops.extent(0), kap_ops.extent(0));
+    nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
     long nb                      = D.get_num_single_ptcle_gf_backbones(topology);
     for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), backbone, mu_ops, kap_ops, f_ix, is_fermionic);
+#ifdef NDA_HAVE_CUDA
+    if constexpr(!requires{D.n;}) {
+      auto all=D.eval_correlator(G[0].data(),backbone,mu_ops,kap_ops,is_fermionic);
+      EXPECT_LE(nda::max_element(nda::abs(all-corr)),1e-13*std::max(1.,nda::max_element(nda::abs(corr))));
+    }
+#endif
     return corr;
   }
 
@@ -84,6 +93,9 @@ namespace {
     triqs::atom_diag::atom_diag<true> ad;
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G;
     DiagramEvaluator D;
+#ifdef NDA_HAVE_CUDA
+    triqs_xca::dense::cuda::DiagramEvaluator D_cuda;
+#endif
   };
 
   Harness make_harness(triqs::atom_diag::atom_diag<true> ad) {
@@ -95,7 +107,11 @@ namespace {
       hc(1, i, i) = 0.5 - 0.04 * i;
     }
     nda::vector<double> poles = {1.3, -0.8};
-    return {ad, G, DiagramEvaluator(poles, hc, G[0].mesh(), ad)};
+    return {ad, G, DiagramEvaluator(poles, hc, G[0].mesh(), ad)
+#ifdef NDA_HAVE_CUDA
+      ,triqs_xca::dense::cuda::DiagramEvaluator(poles,hc,G[0].mesh(),ad)
+#endif
+    };
   }
 
   double maxabs(nda::array_const_view<dcomplex, 3> a) { return nda::max_element(nda::abs(a)); }
@@ -115,6 +131,12 @@ TEST(DenseCorrelatorStatistics, spin_flip_operators_are_classified_bosonic) {
 
   auto as_boson   = correlator_with_flag(h.D, h.G, ops_tau, ops_0, h.ad, topology, false);
   auto as_fermion = correlator_with_flag(h.D, h.G, ops_tau, ops_0, h.ad, topology, true);
+#ifdef NDA_HAVE_CUDA
+  auto gpu_boson=correlator_with_flag(h.D_cuda,h.G,ops_tau,ops_0,h.ad,topology,false);
+  auto gpu_fermion=correlator_with_flag(h.D_cuda,h.G,ops_tau,ops_0,h.ad,topology,true);
+  EXPECT_LE(maxabs(nda::make_regular(gpu_boson-as_boson)),1e-13*std::max(1.,maxabs(as_boson)));
+  EXPECT_LE(maxabs(nda::make_regular(gpu_fermion-as_fermion)),1e-13*std::max(1.,maxabs(as_fermion)));
+#endif
 
   // check that the topology can see the classification, at order 1 the two coincide
   ASSERT_GT(maxabs(nda::make_regular(as_boson - as_fermion)), 1.0e-3)
@@ -124,6 +146,10 @@ TEST(DenseCorrelatorStatistics, spin_flip_operators_are_classified_bosonic) {
   nda::vector<long> f_ix_vec(h.D.get_num_single_ptcle_gf_backbones(topology));
   for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
   auto chosen = h.D.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
+#ifdef NDA_HAVE_CUDA
+    auto chosen_cuda=h.D_cuda.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
+    EXPECT_LE(maxabs(nda::make_regular(chosen_cuda-chosen)),1e-13*std::max(1.,maxabs(chosen)));
+#endif
 
   EXPECT_LE(maxabs(nda::make_regular(chosen - as_boson)), 1.0e-13 * std::max(1.0, maxabs(as_boson)))
      << "compute_one_time_correlator classified (S+, S-) as fermionic, but both have even fermion parity. max|chosen - bosonic| = "
@@ -146,6 +172,10 @@ TEST(DenseCorrelatorStatistics, densities_stay_bosonic_and_single_fermions_stay_
     std::vector<many_body_operator_complex> ops{n<double>("up", 0)};
     auto as_boson = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, false);
     auto chosen   = h.D.compute_one_time_correlator(h.G, ops, ops, h.ad, topology, f_ix_vec);
+#ifdef NDA_HAVE_CUDA
+    auto chosen_cuda=h.D_cuda.compute_one_time_correlator(h.G, ops, ops, h.ad, topology, f_ix_vec);
+    EXPECT_LE(maxabs(nda::make_regular(chosen_cuda-chosen)),1e-13*std::max(1.,maxabs(chosen)));
+#endif
     ASSERT_GT(maxabs(as_boson), 1.0e-6) << "vacuous: chi_nn is zero on this model";
     EXPECT_LE(maxabs(nda::make_regular(chosen - as_boson)), 1.0e-13 * std::max(1.0, maxabs(as_boson)));
   }
@@ -153,7 +183,15 @@ TEST(DenseCorrelatorStatistics, densities_stay_bosonic_and_single_fermions_stay_
     SCOPED_TRACE("c / c_dag, must be fermionic");
     std::vector<many_body_operator_complex> ops_tau{c<double>("up", 0)}, ops_0{c_dag<double>("up", 0)};
     auto as_fermion = correlator_with_flag(h.D, h.G, ops_tau, ops_0, h.ad, topology, true);
+#ifdef NDA_HAVE_CUDA
+  auto gpu_fermion=correlator_with_flag(h.D_cuda,h.G,ops_tau,ops_0,h.ad,topology,true);
+  EXPECT_LE(maxabs(nda::make_regular(gpu_fermion-as_fermion)),1e-13*std::max(1.,maxabs(as_fermion)));
+#endif
     auto chosen     = h.D.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
+#ifdef NDA_HAVE_CUDA
+    auto chosen_cuda=h.D_cuda.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
+    EXPECT_LE(maxabs(nda::make_regular(chosen_cuda-chosen)),1e-13*std::max(1.,maxabs(chosen)));
+#endif
     ASSERT_GT(maxabs(as_fermion), 1.0e-6) << "vacuous: the single-particle correlator is zero on this model";
     EXPECT_LE(maxabs(nda::make_regular(chosen - as_fermion)), 1.0e-13 * std::max(1.0, maxabs(as_fermion)));
   }
@@ -171,11 +209,17 @@ TEST(DenseCorrelatorStatistics, mixed_parity_operators_are_rejected) {
   std::vector<many_body_operator_complex> mixed{c<double>("up", 0) + n<double>("up", 0)};
   std::vector<many_body_operator_complex> plain{c<double>("up", 0)};
 
+#ifdef NDA_HAVE_CUDA
+  EXPECT_THROW(h.D_cuda.compute_one_time_correlator(h.G,mixed,plain,h.ad,topology,f_ix_vec),std::runtime_error);
+#endif
   EXPECT_THROW(h.D.compute_one_time_correlator(h.G, mixed, plain, h.ad, topology, f_ix_vec), std::runtime_error)
      << "an operator with both even- and odd-length monomials has no fermion parity and must be rejected";
 
   // all-odd with several monomials must be accepted
   std::vector<many_body_operator_complex> all_odd{c<double>("up", 0) + c_dag<double>("up", 1) * c_dag<double>("do", 1) * c<double>("up", 0)};
+#ifdef NDA_HAVE_CUDA
+  EXPECT_NO_THROW(h.D_cuda.compute_one_time_correlator(h.G,all_odd,plain,h.ad,topology,f_ix_vec));
+#endif
   EXPECT_NO_THROW(h.D.compute_one_time_correlator(h.G, all_odd, plain, h.ad, topology, f_ix_vec))
      << "an operator whose monomials are all odd has a well-defined fermion parity and must be accepted";
 }

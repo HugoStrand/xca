@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <limits>
+#include <triqs_xca/operator_statistics.hpp>
 
 namespace triqs_xca::dense::cuda {
   static constexpr auto a = nda::range::all;
@@ -110,17 +111,20 @@ namespace triqs_xca::dense::cuda {
     if (p >= 0 && b.has_vertex_bar(v)) return b.has_vertex_dag(v) ? bars_(o, p, a, a) : bars_refl_(o, p, a, a);
     return b.has_vertex_dag(v) ? Fd_(o, a, a) : Fs_(o, a, a);
   }
-  void DiagramEvaluator::vertex(tensor_view t, Backbone &b, int v) {
+  void DiagramEvaluator::vertex(tensor_view t, Backbone &b, int v, bool right) {
     auto &ops = dlr_.device_ops();
     int p     = b.get_pole_ind(b.get_vertex_hyb_ind(v));
-    ops.left_product(op(b, v, b.get_vertex_orb(v), p), t, tmp_);
-    int sign = b.get_vertex_Ksign(v);
+    if (right)
+      ops.right_product(t, op(b, v, b.get_vertex_orb(v), p), tmp_);
+    else
+      ops.left_product(op(b, v, b.get_vertex_orb(v), p), t, tmp_);
+    int sign = b.get_vertex_Ksign(v) * (right ? -1 : 1);
     if (sign)
       ops.weight_rows(tmp_, sign > 0 ? kp_(p, a) : km_(p, a), t);
     else
       ops.copy(tmp_, t);
   }
-  void DiagramEvaluator::edge(tensor_view t, Backbone &b, int e) {
+  void DiagramEvaluator::edge(tensor_view t, Backbone &b, int e, bool right) {
     auto &ops = dlr_.device_ops();
     ops.copy(G_, GKt_);
     // Match the host's sequential kernel multiplication. Precombining the
@@ -134,7 +138,10 @@ namespace triqs_xca::dense::cuda {
     }
     dlr_.vals2coefs(GKt_, gc_);
     dlr_.vals2coefs(t, tc_);
-    dlr_.convolve(beta_, gc_, tc_, t);
+    if (right)
+      dlr_.convolve(beta_, tc_, gc_, t);
+    else
+      dlr_.convolve(beta_, gc_, tc_, t);
   }
   void DiagramEvaluator::special(tensor_view t, Backbone &b, int v) {
     auto &ops    = dlr_.device_ops();
@@ -172,23 +179,28 @@ namespace triqs_xca::dense::cuda {
       edge(T_, b, v - 1);
       vertex(T_, b, v);
     }
+    double pref = prefactor(b);
+    int sign    = b.m % 2 == 0 ? -1 : 1;
+    if (b.get_fb(0) == 0) sign *= -1;
+    ops.axpy(pref * sign * b.prefactor_sign, T_, sum_);
+    b.reset_all_inds();
+  }
+  double DiagramEvaluator::prefactor(Backbone &b) const {
     double pref = 1.;
     for (int x = 0; x < b.m - 1; ++x) {
       int exponent = b.get_prefactor_Kexp(x), p = b.get_pole_ind(x);
       if (exponent) pref *= std::pow(b.get_prefactor_Ksign(x) > 0 ? hyb_.k_0_p(p) : hyb_.k_0_m(p), -exponent);
     }
-    int sign = b.m % 2 == 0 ? -1 : 1;
-    if (b.get_fb(0) == 0) sign *= -1;
-    ops.axpy(pref * sign * b.prefactor_sign, T_, sum_);
-    b.reset_all_inds();
+    return pref;
+  }
+  void DiagramEvaluator::upload_tensor(nda::array_const_view<complex, 3> h) {
+    if (h.shape() != std::array<long, 3>{r_, N_, N_}) throw std::invalid_argument("CUDA evaluator propagator shape mismatch");
+    G_ = nda::make_regular(h);
+    dlr_.device_ops().zero(sum_);
   }
   void DiagramEvaluator::upload(gf_vt g) {
     if (g.size() != 1) throw std::invalid_argument("CUDA evaluator requires one full Hilbert-space propagator block");
-    auto h = g[0].data();
-    if (h.shape() != std::array<long, 3>{r_, N_, N_}) throw std::invalid_argument("CUDA evaluator propagator shape mismatch");
-    // Pack arbitrary host strides at the public boundary, then upload exactly once.
-    G_ = nda::make_regular(h);
-    dlr_.device_ops().zero(sum_);
+    upload_tensor(g[0].data());
   }
   DiagramEvaluator::gf_t DiagramEvaluator::result() {
     auto h = nda::to_host(sum_);
@@ -227,5 +239,140 @@ namespace triqs_xca::dense::cuda {
   METHODS(compute_self_energy, false)
   METHODS(compute_self_energy_by_pairs, true)
 #undef METHODS
+
+  nda::array<complex, 3> DiagramEvaluator::correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
+                                                     nda::array_const_view<complex, 3> kap, nda::array_const_view<long, 1> indices, bool all,
+                                                     bool fermionic) {
+    if (mu.extent(1) != N_ || mu.extent(2) != N_ || kap.extent(1) != N_ || kap.extent(2) != N_)
+      throw std::invalid_argument("CUDA correlator endpoint shape mismatch");
+    long m = mu.extent(0), k = kap.extent(0);
+    if (m == 0 || k == 0) {
+      // Empty endpoints still honor flat-index validation and Backbone counts.
+      if (all)
+        (void)b.num_flat_indices(hyb_.poles.size());
+      else
+        for (long index : indices) b.set_flat_index(index, hyb_.poles);
+      b.reset_all_inds();
+      return nda::zeros<complex>(r_, m, k);
+    }
+    DeviceOps::checked_blas_int(m);
+    DeviceOps::checked_blas_int(k);
+    auto mul      = DeviceOps::checked_product;
+    auto entries  = mul(m, mul(r_, k));
+    auto bytes    = mul(entries, sizeof(complex));
+    int row_count = DeviceOps::checked_blas_int(mul(r_, k));
+    auto host     = nda::zeros<complex>(r_, m, k);
+    mul(mul(k, mul(N_, N_)), sizeof(complex));
+    mul(mul(m, mul(N_, N_)), sizeof(complex));
+    if (mu_ops_.shape() != mu.shape()) mu_ops_ = tensor(mu.shape());
+    mu_ops_ = nda::make_regular(mu);
+    nda::matrix<complex> packed(k, N_ * N_);
+    for (long q = 0; q < k; ++q)
+      for (int i = 0; i < N_; ++i)
+        for (int j = 0; j < N_; ++j) packed(q, i * N_ + j) = kap(q, j, i);
+    if (packed_ops_.shape() != packed.shape()) packed_ops_ = nda::cumatrix<complex>(packed.shape());
+    packed_ops_ = packed;
+    if (trace_values_.shape() != std::array<long, 2>{r_, k}) trace_values_ = nda::cumatrix<complex>(r_, k);
+    if (corr_sum_.shape() != std::array<long, 3>{m, r_, k}) corr_sum_ = tensor(m, r_, k);
+    nda::device_error_check(cudaMemset(corr_sum_.data(), 0, bytes), "CUDA correlator reset");
+    auto &ops           = dlr_.device_ops();
+    auto evaluate_index = [&](long index) {
+      b.set_flat_index(index, hyb_.poles);
+      int v0 = b.get_topology(0, 1);
+      ops.copy(G_, T_);
+      for (int v = 1; v < v0; ++v) {
+        vertex(T_, b, v);
+        edge(T_, b, v);
+      }
+      ops.copy(G_, U_);
+      for (int v = 2 * b.m - 1; v > v0; --v) {
+        vertex(U_, b, v, true);
+        edge(U_, b, v - 1, true);
+      }
+      dlr_.reflect(U_, tmp_);
+      ops.copy(tmp_, U_);
+      ops.scale(prefactor(b) * b.prefactor_sign, T_);
+      int sentinel = fermionic ? -2 : -3;
+      b.set_orb_inds_of_0_and_vct0(sentinel, sentinel);
+      complex parity = b.get_parity();
+      for (long q = 0; q < m; ++q) {
+        ops.left_product(mu_ops_(q, a, a), T_, tmp_);
+        ops.batch_product(U_, tmp_, Tmu_);
+        ops.traces(Tmu_, packed_ops_, trace_values_);
+        nda::blas::device::axpy(row_count, parity, trace_values_.data(), 1, corr_sum_(q, a, a).data(), 1);
+      }
+      b.reset_all_inds();
+    };
+    if (all) {
+      long count = b.num_flat_indices(hyb_.poles.size());
+      for (long i = 0; i < count; ++i) evaluate_index(i);
+    } else
+      for (long i : indices) evaluate_index(i);
+    auto result = nda::to_host(corr_sum_);
+    for (long q = 0; q < m; ++q)
+      for (int t = 0; t < r_; ++t)
+        for (long j = 0; j < k; ++j) host(t, q, j) = result(q, t, j);
+    return host;
+  }
+  long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) {
+    CorrelatorBackbone b(topology, n_, n_int_);
+    return b.num_flat_indices(hyb_.poles.size());
+  }
+  nda::array<complex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology) {
+    upload(g);
+    CorrelatorBackbone b(topology, n_, n_int_);
+    nda::vector<long> empty(0);
+    return correlate(b, fset_.Fs(nda::range(n_ - n_int_), a, a), fset_.F_dags(nda::range(n_ - n_int_), a, a), empty, true, true);
+  }
+  nda::array<complex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology, long index) {
+    nda::vector<long> indices{index};
+    return compute_single_ptcle_gf(g, topology, indices);
+  }
+  nda::array<complex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology,
+                                                                   nda::array_const_view<long, 1> indices) {
+    upload(g);
+    CorrelatorBackbone b(topology, n_, n_int_);
+    return correlate(b, fset_.Fs(nda::range(n_ - n_int_), a, a), fset_.F_dags(nda::range(n_ - n_int_), a, a), indices, false, true);
+  }
+  nda::array<complex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b,
+                                                           nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap,
+                                                           bool fermionic) {
+    upload_tensor(g);
+    nda::vector<long> empty(0);
+    return correlate(b, mu, kap, empty, true, fermionic);
+  }
+  nda::array<complex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b,
+                                                           nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap, long index,
+                                                           bool fermionic) {
+    upload_tensor(g);
+    nda::vector<long> indices{index};
+    return correlate(b, mu, kap, indices, false, fermionic);
+  }
+  template <bool C>
+  nda::array<complex, 3>
+  DiagramEvaluator::compute_one_time_correlator(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+                                                triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology,
+                                                nda::array_const_view<long, 1> indices) {
+    if (ad.n_subspaces() != 1) throw std::invalid_argument("compute_one_time_correlator: requires an atom_diag with a single subspace");
+    if (ad.get_full_hilbert_space_dim() != N_) throw std::invalid_argument("compute_one_time_correlator: atom_diag dimension mismatch");
+    upload(g);
+    CorrelatorBackbone b(topology, n_, n_int_);
+    bool fermionic = correlator_statistics(ops_tau, ops_zero, "compute_one_time_correlator");
+    auto rotation  = ad.get_unitary_matrix(0);
+    auto mu = nda::zeros<complex>(ops_tau.size(), N_, N_), kap = nda::zeros<complex>(ops_zero.size(), N_, N_);
+    for (std::size_t i = 0; i < ops_tau.size(); ++i)
+      mu(i, a, a) = rotation * triqs_xca::atom_diag::get_op_mat(ad, ops_tau[i]).block_mat[0] * nda::dagger(rotation);
+    for (std::size_t i = 0; i < ops_zero.size(); ++i)
+      kap(i, a, a) = rotation * triqs_xca::atom_diag::get_op_mat(ad, ops_zero[i]).block_mat[0] * nda::dagger(rotation);
+    return correlate(b, mu, kap, indices, false, fermionic);
+  }
+#define CORR_INSTANTIATE(C)                                                                                                                          \
+  template nda::array<complex, 3> DiagramEvaluator::compute_one_time_correlator(                                                                     \
+     gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &, std::vector<triqs::operators::many_body_operator_complex> const &,    \
+     triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, nda::array_const_view<long, 1>);
+  CORR_INSTANTIATE(true)
+  CORR_INSTANTIATE(false)
+#undef CORR_INSTANTIATE
 } // namespace triqs_xca::dense::cuda
 #endif

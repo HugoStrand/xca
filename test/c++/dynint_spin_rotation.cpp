@@ -9,6 +9,7 @@
 
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
@@ -146,7 +147,16 @@ namespace {
     }
     auto D = with_dynint ? dense::DiagramEvaluator(poles, coeffs, G[0].mesh(), ad, form.ops, form.coeffs) :
                            dense::DiagramEvaluator(poles, coeffs, G[0].mesh(), ad);
-    return {D.compute_self_energy(G, topology)[0].data(), D.compute_single_ptcle_gf(G, topology)};
+    Diagrams result{D.compute_self_energy(G, topology)[0].data(), D.compute_single_ptcle_gf(G, topology)};
+#ifdef NDA_HAVE_CUDA
+    auto gpu=with_dynint ? dense::cuda::DiagramEvaluator(poles,coeffs,G[0].mesh(),ad,form.ops,form.coeffs) :
+                          dense::cuda::DiagramEvaluator(poles,coeffs,G[0].mesh(),ad);
+    auto sigma=gpu.compute_self_energy(G,topology);
+    auto spgf=gpu.compute_single_ptcle_gf(G,topology);
+    EXPECT_LE(nda::max_element(nda::abs(sigma[0].data()-result.sigma)),1e-12);
+    EXPECT_LE(nda::max_element(nda::abs(spgf-result.spgf)),1e-12);
+#endif
+    return result;
   }
 
   Diagrams evaluate(EvalSetup const &setup, DynintForm const &form, nda::array_const_view<int, 2> topology, bool with_dynint = true) {

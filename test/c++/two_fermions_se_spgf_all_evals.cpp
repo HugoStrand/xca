@@ -365,6 +365,10 @@ TEST(two_fermions, const_hyb_spgf) {
   auto nca_bs = nda::make_regular(topology_parity(nca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, nca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto nca_dense = nda::make_regular(topology_parity(nca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_cuda = nda::make_regular(topology_parity(nca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_cuda - nca_dense)), eps);
+#endif
   // manual dense routine
   auto nca_manual_dense = dense::manual::spgf_nca(s.Gt_dense, s.Gt_dense_refl, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -388,6 +392,10 @@ TEST(two_fermions, const_hyb_spgf) {
   auto oca_bs = nda::make_regular(topology_parity(oca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, oca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto oca_dense = nda::make_regular(topology_parity(oca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_cuda = nda::make_regular(topology_parity(oca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_cuda - oca_dense)), eps);
+#endif
   // manual dense routine
   auto oca_manual_dense = dense::manual::spgf_oca(s.D.hyb.coeffs, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -411,6 +419,10 @@ TEST(two_fermions, const_hyb_spgf) {
   auto third_bs = nda::make_regular(topology_parity(third_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, third_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto third_dense = nda::make_regular(topology_parity(third_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_cuda = nda::make_regular(topology_parity(third_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_cuda - third_dense)), eps);
+#endif
   // no manual third-order routine
 
   // compute analytical reference: tau^2 (beta - tau)^2 / 32, the alpha = 0 case of hermitian_hyb_spgf below
@@ -588,6 +600,10 @@ TEST(two_fermions, hermitian_hyb_spgf) {
   auto nca_bs = nda::make_regular(topology_parity(nca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, nca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto nca_dense = nda::make_regular(topology_parity(nca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_cuda = nda::make_regular(topology_parity(nca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_cuda - nca_dense)), eps);
+#endif
   // manual dense routine
   auto nca_manual_dense = dense::manual::spgf_nca(s.Gt_dense, s.Gt_dense_refl, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -611,6 +627,10 @@ TEST(two_fermions, hermitian_hyb_spgf) {
   auto oca_bs = nda::make_regular(topology_parity(oca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, oca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto oca_dense = nda::make_regular(topology_parity(oca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_cuda = nda::make_regular(topology_parity(oca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_cuda - oca_dense)), eps);
+#endif
   // manual dense routine
   auto oca_manual_dense = dense::manual::spgf_oca(s.D.hyb.coeffs, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -636,6 +656,10 @@ TEST(two_fermions, hermitian_hyb_spgf) {
   auto third_bs = nda::make_regular(topology_parity(third_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, third_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto third_dense = nda::make_regular(topology_parity(third_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_cuda = nda::make_regular(topology_parity(third_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_cuda - third_dense)), eps);
+#endif
   // no manual third-order routine
 
   // compute analytical reference: g_aa = (alpha^2 + 1) tau^2 (beta - tau)^2 / 32, g_ab = alpha tau^2 (beta - tau)^2 / 16
@@ -833,6 +857,10 @@ TEST(two_fermions, one_hyb_pole_spgf) {
   auto nca_bs = nda::make_regular(topology_parity(nca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, nca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto nca_dense = nda::make_regular(topology_parity(nca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_cuda = nda::make_regular(topology_parity(nca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, nca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_cuda - nca_dense)), eps);
+#endif
   // manual dense routine
   auto nca_manual_dense = dense::manual::spgf_nca(s.Gt_dense, s.Gt_dense_refl, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -856,6 +884,10 @@ TEST(two_fermions, one_hyb_pole_spgf) {
   auto oca_bs = nda::make_regular(topology_parity(oca_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, oca_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto oca_dense = nda::make_regular(topology_parity(oca_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_cuda = nda::make_regular(topology_parity(oca_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, oca_topology));
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_cuda - oca_dense)), eps);
+#endif
   // manual dense routine
   auto oca_manual_dense = dense::manual::spgf_oca(s.D.hyb.coeffs, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
   // manual block-sparse routine
@@ -884,6 +916,10 @@ TEST(two_fermions, one_hyb_pole_spgf) {
   auto third_bs = nda::make_regular(topology_parity(third_topology) * s.D.compute_single_ptcle_gf(s.model.G_ppsc, third_topology));
   // compute using dense::DiagramEvaluator, and ensure sign is correct; there is no by-pairs analogue for the single-particle Green's function
   auto third_dense = nda::make_regular(topology_parity(third_topology) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_cuda = nda::make_regular(topology_parity(third_topology) * s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense, third_topology));
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_cuda - third_dense)), eps);
+#endif
   // no manual third-order routine
 
   // analytical reference: values of g_{up,up}(tau) at beta=2, om=-1.5, computed from the closed form derived
@@ -930,5 +966,19 @@ TEST(dense_cuda, TwoFermionSetup_subsets_and_reuse) {
   nda::vector<long> empty(0);
   gpu=s.D_cuda.compute_self_energy(s.G_ppsc_dense,topology,empty);
   EXPECT_EQ(nda::max_element(nda::abs(gpu[0].data())),0.);
+  long n_corr=s.D_dense.get_num_single_ptcle_gf_backbones(topology);
+  EXPECT_EQ(s.D_cuda.get_num_single_ptcle_gf_backbones(topology),n_corr);
+  nda::vector<long> corr_indices{n_corr-1,0,0};
+  auto ref=s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense,topology,corr_indices);
+  auto got=s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense,topology,corr_indices);
+  EXPECT_LE(nda::max_element(nda::abs(ref-got)),1e-12);
+  nda::vector<long> corr_bad{0,n_corr};
+  EXPECT_THROW(s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense,topology,corr_bad),std::invalid_argument);
+  ref=s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense,topology,n_corr-1);
+  got=s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense,topology,n_corr-1);
+  EXPECT_LE(nda::max_element(nda::abs(ref-got)),1e-12);
+  got=s.D_cuda.compute_single_ptcle_gf(s.G_ppsc_dense,topology,empty);
+  EXPECT_EQ(nda::max_element(nda::abs(got)),0.);
+
 }
 #endif
