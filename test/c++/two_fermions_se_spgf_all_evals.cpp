@@ -7,6 +7,7 @@
 
 #include <triqs_xca/hyb.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/manual/sigma.hpp>
 #include <triqs_xca/block_sparse/manual/sigma.hpp>
@@ -108,6 +109,9 @@ namespace {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G_ppsc_dense;
 
     dense::DiagramEvaluator D_dense;
+#ifdef NDA_HAVE_CUDA
+    dense::cuda::DiagramEvaluator D_cuda;
+#endif
     DiagramEvaluator D;
     BlockOpSymQuartet Fq;     // field operators of the block-sparse evaluator
     nda::vector<int> block_N; // occupation sector N of each block, which indexes the per-sector references
@@ -132,6 +136,9 @@ namespace {
          Gt_dense_refl(itops.reflect(Gt_dense)),
          G_ppsc_dense(wrap_dense(model.G_ppsc[0].mesh(), Gt_dense)),
          D_dense(model.hyb_poles, model.hyb_coeffs, model.G_ppsc[0].mesh(), model.ad),
+#ifdef NDA_HAVE_CUDA
+         D_cuda(model.hyb_poles, model.hyb_coeffs, model.G_ppsc[0].mesh(), model.ad),
+#endif
          D(model.hyb_poles, model.hyb_coeffs, model.G_ppsc[0].mesh(), model.ad),
          Fq(make_field_operators(model.ad, model.hyb_coeffs)),
          block_N(make_block_occupations(model.ad)) {
@@ -237,9 +244,17 @@ TEST(two_fermions, const_hyb_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, nca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto nca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_gf_cuda[0].data() - nca_dense_gf[0].data())), eps);
+#endif
   auto nca_dense    = nda::make_regular(topology_parity(nca_topology) * nca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto nca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_pairs_gf_cuda[0].data() - nca_pairs_gf[0].data())), eps);
+#endif
   auto nca_pairs    = nda::make_regular(topology_parity(nca_topology) * nca_pairs_gf[0].data());
   // manual dense routine
   auto nca_manual_dense = dense::manual::sigma_nca(s.D.hyb.values, s.D.hyb.values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
@@ -266,9 +281,17 @@ TEST(two_fermions, const_hyb_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, oca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto oca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_gf_cuda[0].data() - oca_dense_gf[0].data())), eps);
+#endif
   auto oca_dense    = nda::make_regular(topology_parity(oca_topology) * oca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto oca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_pairs_gf_cuda[0].data() - oca_pairs_gf[0].data())), eps);
+#endif
   auto oca_pairs    = nda::make_regular(topology_parity(oca_topology) * oca_pairs_gf[0].data());
   // manual dense routine
   auto oca_manual_dense = dense::manual::sigma_oca(s.D.hyb.values, s.D.hyb.coeffs, s.D.hyb.values_reflect, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta,
@@ -296,9 +319,17 @@ TEST(two_fermions, const_hyb_se) {
                                     * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, third_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto third_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_gf_cuda[0].data() - third_dense_gf[0].data())), eps);
+#endif
   auto third_dense    = nda::make_regular(topology_parity(third_topology) * third_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto third_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_pairs_gf_cuda[0].data() - third_pairs_gf[0].data())), eps);
+#endif
   auto third_pairs    = nda::make_regular(topology_parity(third_topology) * third_pairs_gf[0].data());
   // no manual third-order routine
 
@@ -425,9 +456,17 @@ TEST(two_fermions, hermitian_hyb_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, nca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto nca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_gf_cuda[0].data() - nca_dense_gf[0].data())), eps);
+#endif
   auto nca_dense    = nda::make_regular(topology_parity(nca_topology) * nca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto nca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_pairs_gf_cuda[0].data() - nca_pairs_gf[0].data())), eps);
+#endif
   auto nca_pairs    = nda::make_regular(topology_parity(nca_topology) * nca_pairs_gf[0].data());
   // manual dense routine
   auto nca_manual_dense = dense::manual::sigma_nca(s.D.hyb.values, s.D.hyb.values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
@@ -454,9 +493,17 @@ TEST(two_fermions, hermitian_hyb_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, oca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto oca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_gf_cuda[0].data() - oca_dense_gf[0].data())), eps);
+#endif
   auto oca_dense    = nda::make_regular(topology_parity(oca_topology) * oca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto oca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_pairs_gf_cuda[0].data() - oca_pairs_gf[0].data())), eps);
+#endif
   auto oca_pairs    = nda::make_regular(topology_parity(oca_topology) * oca_pairs_gf[0].data());
   // manual dense routine
   auto oca_manual_dense = dense::manual::sigma_oca(s.D.hyb.values, s.D.hyb.coeffs, s.D.hyb.values_reflect, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta,
@@ -487,9 +534,17 @@ TEST(two_fermions, hermitian_hyb_se) {
                                     * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, third_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto third_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_gf_cuda[0].data() - third_dense_gf[0].data())), eps);
+#endif
   auto third_dense    = nda::make_regular(topology_parity(third_topology) * third_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto third_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_pairs_gf_cuda[0].data() - third_pairs_gf[0].data())), eps);
+#endif
   auto third_pairs    = nda::make_regular(topology_parity(third_topology) * third_pairs_gf[0].data());
   // no manual third-order routine
 
@@ -627,9 +682,17 @@ TEST(two_fermions, one_hyb_pole_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, nca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto nca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_dense_gf_cuda[0].data() - nca_dense_gf[0].data())), eps);
+#endif
   auto nca_dense    = nda::make_regular(topology_parity(nca_topology) * nca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto nca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto nca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, nca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(nca_pairs_gf_cuda[0].data() - nca_pairs_gf[0].data())), eps);
+#endif
   auto nca_pairs    = nda::make_regular(topology_parity(nca_topology) * nca_pairs_gf[0].data());
   // manual dense routine
   auto nca_manual_dense = dense::manual::sigma_nca(s.D.hyb.values, s.D.hyb.values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense);
@@ -663,9 +726,17 @@ TEST(two_fermions, one_hyb_pole_se) {
                                   * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, oca_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto oca_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_dense_gf_cuda[0].data() - oca_dense_gf[0].data())), eps);
+#endif
   auto oca_dense    = nda::make_regular(topology_parity(oca_topology) * oca_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto oca_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+#ifdef NDA_HAVE_CUDA
+  auto oca_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, oca_topology);
+  EXPECT_LE(nda::max_element(nda::abs(oca_pairs_gf_cuda[0].data() - oca_pairs_gf[0].data())), eps);
+#endif
   auto oca_pairs    = nda::make_regular(topology_parity(oca_topology) * oca_pairs_gf[0].data());
   // manual dense routine
   auto oca_manual_dense = dense::manual::sigma_oca(s.D.hyb.values, s.D.hyb.coeffs, s.D.hyb.values_reflect, s.D.hyb.coeffs, s.D.hyb.poles, s.itops, s.beta,
@@ -702,9 +773,17 @@ TEST(two_fermions, one_hyb_pole_se) {
                                     * test_utils::get_tensor_in_full_hilbert_space(s.D.compute_self_energy(s.model.G_ppsc, third_topology), s.model.ad));
   // compute using dense::DiagramEvaluator, and ensure sign is correct
   auto third_dense_gf = s.D_dense.compute_self_energy(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_dense_gf_cuda = s.D_cuda.compute_self_energy(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_dense_gf_cuda[0].data() - third_dense_gf[0].data())), eps);
+#endif
   auto third_dense    = nda::make_regular(topology_parity(third_topology) * third_dense_gf[0].data());
   // dense::DiagramEvaluator with pairs optimization, which is what the Python wrappers actually use, and ensure sign is correct
   auto third_pairs_gf = s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+#ifdef NDA_HAVE_CUDA
+  auto third_pairs_gf_cuda = s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense, third_topology);
+  EXPECT_LE(nda::max_element(nda::abs(third_pairs_gf_cuda[0].data() - third_pairs_gf[0].data())), eps);
+#endif
   auto third_pairs    = nda::make_regular(topology_parity(third_topology) * third_pairs_gf[0].data());
   // no manual third-order routine
 
@@ -821,3 +900,35 @@ TEST(two_fermions, one_hyb_pole_spgf) {
   EXPECT_LE(test_utils::max_offdiag(third_bs), eps);
   EXPECT_LE(nda::max_element(nda::abs(third_bs - third_dense)), eps);
 }
+
+#ifdef NDA_HAVE_CUDA
+TEST(dense_cuda, TwoFermionSetup_subsets_and_reuse) {
+  TwoFermionSetup s{2.,40.,1e-12,.8,.3};
+  nda::array<int,2> topology={{0,3},{1,4},{2,5}};
+  long count=s.D_dense.get_num_self_energy_backbones(topology);
+  EXPECT_EQ(s.D_cuda.get_num_self_energy_backbones(topology),count);
+  nda::vector<long> indices{count-1,0,count/2,0};
+  auto cpu=s.D_dense.compute_self_energy(s.G_ppsc_dense,topology,indices);
+  auto gpu=s.D_cuda.compute_self_energy(s.G_ppsc_dense,topology,indices);
+  EXPECT_LE(nda::max_element(nda::abs(cpu[0].data()-gpu[0].data())),1e-12);
+  cpu=s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense,topology,indices);
+  gpu=s.D_cuda.compute_self_energy_by_pairs(s.G_ppsc_dense,topology,indices);
+  EXPECT_LE(nda::max_element(nda::abs(cpu[0].data()-gpu[0].data())),1e-12);
+  nda::vector<long> bad{0,count};
+  EXPECT_THROW(s.D_cuda.compute_self_energy(s.G_ppsc_dense,topology,bad),std::invalid_argument);
+  cpu=s.D_dense.compute_self_energy(s.G_ppsc_dense,topology,count-1);
+  gpu=s.D_cuda.compute_self_energy(s.G_ppsc_dense,topology,count-1);
+  EXPECT_LE(nda::max_element(nda::abs(cpu[0].data()-gpu[0].data())),1e-12);
+  // Change the input at the same host address and change topology on reuse.
+  auto pointer=s.G_ppsc_dense[0].data().data();
+  s.G_ppsc_dense[0].data()*=dcomplex{.9,.03};
+  EXPECT_EQ(pointer,s.G_ppsc_dense[0].data().data());
+  nda::array<int,2> nca={{0,1}};
+  cpu=s.D_dense.compute_self_energy(s.G_ppsc_dense,nca);
+  gpu=s.D_cuda.compute_self_energy(s.G_ppsc_dense,nca);
+  EXPECT_LE(nda::max_element(nda::abs(cpu[0].data()-gpu[0].data())),1e-12);
+  nda::vector<long> empty(0);
+  gpu=s.D_cuda.compute_self_energy(s.G_ppsc_dense,topology,empty);
+  EXPECT_EQ(nda::max_element(nda::abs(gpu[0].data())),0.);
+}
+#endif

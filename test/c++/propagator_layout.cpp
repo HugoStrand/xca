@@ -9,6 +9,7 @@
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 
 #include "test_utils/block_sparse.hpp"
 
@@ -54,6 +55,9 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   auto topology   = nda::array<int, 2>{{0, 1}};
   auto f_ix_vec   = nda::vector<long>{0};
   auto D_dense    = dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#ifdef NDA_HAVE_CUDA
+  auto D_cuda = dense::cuda::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#endif
   auto D_bs       = block_sparse::DiagramEvaluator(hyb_poles, hyb_coeffs, G_bs[0].mesh(), ad);
 
   // the evaluators accept their own layout
@@ -79,11 +83,29 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   for (auto &[what, G] : wrong_for_dense) {
     SCOPED_TRACE("dense, " + what);
     EXPECT_THROW(D_dense.compute_self_energy(G, topology), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy(G, topology), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_self_energy(G, topology, 0), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy(G, topology, 0), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_self_energy(G, topology, f_ix_vec), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy(G, topology, f_ix_vec), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy_by_pairs(G, topology), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology, 0), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy_by_pairs(G, topology, 0), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology, f_ix_vec), std::invalid_argument);
+#ifdef NDA_HAVE_CUDA
+    EXPECT_THROW(D_cuda.compute_self_energy_by_pairs(G, topology, f_ix_vec), std::invalid_argument);
+#endif
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, 0), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, f_ix_vec), std::invalid_argument);

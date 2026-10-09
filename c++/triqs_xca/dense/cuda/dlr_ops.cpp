@@ -80,9 +80,15 @@ namespace triqs_xca::dense::cuda {
     ops_.rank_product(H_, gc, hg_);
     ops_.batch_product(fc, gc, product_);
     ops_.batch_product(hf_, gc, cross_);
-    ops_.batch_product(fc, hg_, cross_, 1., 1.);
-    ops_.rank_product(Q_, product_, out, beta, 0.);
-    ops_.rank_product(C_, cross_, out, beta, 1.);
+    // Match cppdlr's addition and final beta scaling order. Reuse consumed
+    // scratch instead of fusing independent products/terms through GEMM beta;
+    // this limits differences amplified by repeated ill-conditioned DLR solves.
+    ops_.batch_product(fc, hg_, hf_);
+    ops_.axpy(1., hf_, cross_);
+    ops_.rank_product(Q_, product_, out);
+    ops_.rank_product(C_, cross_, product_);
+    ops_.axpy(1., product_, out);
+    ops_.scale(beta, out);
   }
 
 } // namespace triqs_xca::dense::cuda

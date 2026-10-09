@@ -9,6 +9,7 @@
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 #include <triqs_xca/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
@@ -186,6 +187,21 @@ TEST(unitary_invariance, two_fermions_complex_rotation) {
       EXPECT_LE(max_abs(conjugate_by(V_dag, d.spgf) - d_rot.spgf), 1e-11 * max_abs(d.spgf));
       rotated.push_back(std::move(d_rot));
     }
+
+#ifdef NDA_HAVE_CUDA
+    dense::cuda::DiagramEvaluator gpu(poles,P.hyb_coeffs,P.G_dense[0].mesh(),P.ad);
+    dense::cuda::DiagramEvaluator gpu_rot(poles,P_rot.hyb_coeffs,P_rot.G_dense[0].mesh(),P_rot.ad);
+    auto g=P.G_dense, gr=P_rot.G_dense;
+    auto sig=gpu.compute_self_energy(g,topology);
+    auto sigr=gpu_rot.compute_self_energy(gr,topology);
+    auto sigp=gpu.compute_self_energy_by_pairs(g,topology);
+    auto sigrp=gpu_rot.compute_self_energy_by_pairs(gr,topology);
+    auto sign=topology_parity(topology);
+    EXPECT_LE(max_abs(sign*sigr[0].data()-rotated[0].sigma),1e-11*max_abs(rotated[0].sigma));
+    EXPECT_LE(max_abs(sign*sigrp[0].data()-rotated[0].sigma),1e-11*max_abs(rotated[0].sigma));
+    EXPECT_LE(max_abs(conjugate_by(W,sig[0].data())-sigr[0].data()),1e-11*max_abs(sig[0].data()));
+    EXPECT_LE(max_abs(conjugate_by(W,sigp[0].data())-sigrp[0].data()),1e-11*max_abs(sigp[0].data()));
+#endif
 
     // the evaluators also agree with each other on the complex problem
     SCOPED_TRACE("order " + std::to_string(topology.extent(0)));

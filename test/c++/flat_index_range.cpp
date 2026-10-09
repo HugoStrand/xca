@@ -10,6 +10,7 @@
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
@@ -62,6 +63,9 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   auto ops         = std::vector<many_body_operator_complex>{n("A", 0)};
   auto topology    = nda::array<int, 2>{{0, 2}, {1, 3}};
   auto D_dense     = dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#ifdef NDA_HAVE_CUDA
+  auto D_cuda = dense::cuda::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#endif
   auto D_bs        = block_sparse::DiagramEvaluator(hyb_poles, hyb_coeffs, G_bs[0].mesh(), ad);
   int n_sigma      = D_dense.get_num_self_energy_backbones(topology);
   int n_correlator = D_dense.get_num_single_ptcle_gf_backbones(topology);
@@ -85,9 +89,21 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   for (int bad : {-1, n_sigma}) {
     SCOPED_TRACE("self-energy, f_ix = " + std::to_string(bad));
     expect_flat_index_rejected([&] { D_dense.compute_self_energy(G_flat, topology, bad); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_self_energy(G_flat, topology, bad); });
+#endif
     expect_flat_index_rejected([&] { D_dense.compute_self_energy(G_flat, topology, valid_then(n_sigma, bad)); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_self_energy(G_flat, topology, valid_then(n_sigma, bad)); });
+#endif
     expect_flat_index_rejected([&] { D_dense.compute_self_energy_by_pairs(G_flat, topology, bad); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_self_energy_by_pairs(G_flat, topology, bad); });
+#endif
     expect_flat_index_rejected([&] { D_dense.compute_self_energy_by_pairs(G_flat, topology, valid_then(n_sigma, bad)); });
+#ifdef NDA_HAVE_CUDA
+    expect_flat_index_rejected([&] { D_cuda.compute_self_energy_by_pairs(G_flat, topology, valid_then(n_sigma, bad)); });
+#endif
     expect_flat_index_rejected([&] { D_bs.compute_self_energy(G_bs, topology, bad); });
     expect_flat_index_rejected([&] { D_bs.compute_self_energy(G_bs, topology, valid_then(n_sigma, bad)); });
   }
@@ -146,6 +162,9 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   auto G_bs     = test_utils::ad_to_atom_prop(ad, beta, Lambda, eps);
   auto G_flat   = test_utils::ad_to_atom_prop(ad_flat, beta, Lambda, eps);
   auto D_dense  = dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#ifdef NDA_HAVE_CUDA
+  auto D_cuda = dense::cuda::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
+#endif
   auto D_bs     = block_sparse::DiagramEvaluator(hyb_poles, hyb_coeffs, G_bs[0].mesh(), ad);
   auto topology = nda::array<int, 2>(m, 2);
   for (int i = 0; i < m; ++i) topology(i, nda::range::all) = nda::vector<int>{i, i + m}; // maximally crossing
@@ -157,6 +176,10 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   ASSERT_EQ(n_spgf, 24883200000L);
   ASSERT_EQ(D_bs.get_num_self_energy_backbones(topology), n_sigma);
   ASSERT_EQ(D_bs.get_num_single_ptcle_gf_backbones(topology), n_spgf);
+
+#ifdef NDA_HAVE_CUDA
+  EXPECT_EQ(D_cuda.get_num_self_energy_backbones(topology),n_sigma);
+#endif
 
   // flat indices with the highest pole indices and orbital index 0 are f = n_op (fb + 1) - n_hyb^(m-1) for the line directions fb,
   // where n_op = n_hyb^(m-1) p^(m-1); the highest fb whose backbone contributes is compared between the evaluators
@@ -182,6 +205,29 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   auto pair    = nda::make_regular(S + sigma_dense(partner));
   EXPECT_LE(nda::max_element(nda::abs(D_dense.compute_self_energy_by_pairs(G_flat, topology, f_sigma)[0].data() - pair)),
             1.0e-13 * nda::max_element(nda::abs(pair)));
+
+#ifdef NDA_HAVE_CUDA
+  // This order-six fixture chains ten edges (twenty DLR solves). Twelve nearby long indices
+  // measured CPU/CUDA differences of 1.4e-13..1.3e-12 relative (<=4.4e-20
+  // absolute), including sequential edge weighting and cppdlr's sum grouping.
+  // Use a documented CUDA-only bound below the mesh's 1e-10 approximation
+  // tolerance. CPU/block-sparse reference assertions above stay at 1e-13.
+  constexpr double gpu_high_order_tol=3e-12;
+  for(long delta=0;delta<12;++delta) {
+    long index=f_sigma-delta*n_o;
+    auto ref=sigma_dense(index);
+    auto got=D_cuda.compute_self_energy(G_flat,topology,index);
+    double scale=nda::max_element(nda::abs(ref));
+    double err=nda::max_element(nda::abs(got[0].data()-ref));
+    SCOPED_TRACE("order-six long index "+std::to_string(index));
+    ASSERT_GT(index,long{std::numeric_limits<int>::max()});
+    ASSERT_GT(scale,0.);
+    EXPECT_LE(err,gpu_high_order_tol*scale);
+  }
+  EXPECT_LE(nda::max_element(nda::abs(D_cuda.compute_self_energy(G_flat,topology,f_sigma)[0].data()-S)),gpu_high_order_tol*nda::max_element(nda::abs(S)));
+  EXPECT_LE(nda::max_element(nda::abs(D_cuda.compute_self_energy(G_flat,topology,f_sigma_vec)[0].data()-S)),gpu_high_order_tol*nda::max_element(nda::abs(S)));
+  EXPECT_LE(nda::max_element(nda::abs(D_cuda.compute_self_energy_by_pairs(G_flat,topology,f_sigma)[0].data()-pair)),gpu_high_order_tol*nda::max_element(nda::abs(pair)));
+#endif
 
   long f_spgf = 0;
   for (long fb = (1L << (m - 1)) - 1; fb >= 0 && f_spgf == 0; --fb)
