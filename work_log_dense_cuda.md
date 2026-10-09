@@ -3,8 +3,8 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: device primitives and DLR gate verified; next is ordinary self-energy traversal.
-The CUDA evaluator itself is not yet implemented.
+Phase: ordinary self-energy and by-pairs CUDA traversal verified.
+Next: dynamic-interaction self-energy validation, then correlator implementation.
 
 ## Objective and working rules
 
@@ -196,29 +196,99 @@ Evidence: `/tmp/xca-{cpu,cuda}-dlr-{configure,build,test}.log` and
 GPU tests and sanitizer were rerun after the constructor warmup/contract changes.
 No tracked binding regeneration changes were produced.
 
+## Completed: ordinary self-energy and paired traversal
+
+Commit `e8138dc` adds `dense/cuda/diagram_evaluator.{hpp,cpp}`, updates the device
+convolution grouping, and extends five existing C++ test seams. The preceding goal
+turn revalidated supervisor/status without changing implementation; this turn makes
+concrete implementation progress. No blocker is present; the full goal remains active.
+
+The independent CUDA class owns frozen host mesh/hybridization/FSet setup and device
+operator, kernel and hybridization tables. It does not inherit CPU scratch. Checked
+workspace arithmetic runs before device workspace allocation, including BLAS integer
+limits, aggregate complex-array bytes, pivots and persistent pointer tables. Native
+allocators report allocation failures; final live-memory measurement remains pending.
+
+Compute/count interfaces use long indices. All/single/vector self-energy and by-pairs
+interfaces preserve duplicate indices, explicit pair seeds and direction, empty
+subsets and reset of the accumulated sum after a prior failure. The all-pairs path
+selects fb(0)=0 representatives. Each public call packs/uploads the full propagator
+once and downloads the accumulated result once. All traversal GEMMs, DLR solves and
+convolutions operate on persistent device tensors.
+
+Special-vertex backward weights use (kap,mu), forward weights (mu,kap); parity is
+recomputed after setting both orbitals. Prefactor and diagram-order/direction signs
+follow the CPU implementation. Edge kernels are applied sequentially using uploaded
+pole kernels and swapped device scratch, preserving G*k1*k2 arithmetic and removing
+the initial small host edge-weight staging. Convolution now uses separate product
+addition and final beta scaling in cppdlr's order, reusing consumed scratch. No
+explicit inverse or reduced precision was introduced.
+
+Both real/complex atom_diag constructors and the low-level FSet constructor compile;
+the dynamic-interaction constructor uploads extended coefficients/operators but its
+numerical gate is the next task. Correlator and single-particle methods are not yet
+implemented. Runtime tracing has not yet established library-internal allocation
+or transfer behavior; resident source-level workspace alone is not final evidence.
+
+Validation on final sources:
+
+- CPU and CUDA targeted builds passed. Both focused gates passed all seven CTest
+  entries: one-/two-fermion analytic fixtures, complex unitary invariance,
+  flat-index range, propagator layout, DeviceOps and DlrOps. CPU primitive entries
+  deliberately execute no GoogleTests; CUDA tests actually execute GPU work.
+- Added 36 CUDA comparison points to existing analytic self-energy tests, including
+  orders 1–3 and ordinary/by-pairs variants, at the original test tolerances.
+- Existing complex-rotation seam validates ordinary/by-pairs self-energy covariance
+  and agreement with CPU for both original and rotated off-diagonal problems.
+- Subset tests cover duplicates, either pair direction, count equality, a failed
+  vector after a valid prefix, next-call reuse, empty input, changed topology and
+  changed propagator data at the same host allocation.
+- Existing wrong-layout checks now exercise all six CUDA self-energy overloads;
+  negative/out-of-range index checks preserve the Backbone exception contract.
+- The order-six count is 49,766,400,000. Twelve nearby nonzero indices beyond INT_MAX,
+  plus vector and pair interfaces, are explicitly evaluated on the GPU.
+- Compute Sanitizer memcheck passed three focused traversal GoogleTests and all four
+  revised DLR GoogleTests with **0 errors**. No tracked binding changes appeared.
+
+Numerical investigation and documented exception: the original order-six relative
+1e-13 CPU/block-sparse threshold failed the new CUDA comparison. Its ten edges chain
+twenty LU solves. Initial composed edge weights produced 1.12e-13 relative difference
+at the original selected index. Matching cppdlr's separate addition/final scaling did
+not change that result. Sequential resident kernel multiplication changed the selected
+error to 1.72e-13, demonstrating arithmetic sensitivity. Measuring twelve nearby long
+indices found 1.4e-13–1.3e-12 relative differences, all below 4.4e-20 absolute. Following
+the plan's numerical policy, only these order-six CUDA assertions use a documented
+3e-12 relative bound (below this mesh's eps=1e-10). CPU/block-sparse assertions remain
+1e-13, and the analytic/primitive/covariance assertions retain their original bounds.
+This is evidence of accumulated CPU/CUDA floating-point differences, not an isolated
+proof that cuSOLVER alone causes them. No tolerance was silently changed.
+
+Logs: `/tmp/xca-{cpu,cuda}-evaluator-final-{build,test}.log`,
+`/tmp/xca-cpu-evaluator-final-refresh.log`, `/tmp/xca-cuda-evaluator-sanitizer.log`,
+`/tmp/xca-cuda-dlr-grouping-sanitizer.log`, and
+`/tmp/xca-cuda-order-six-roundoff.log`. Temporary logs may disappear; test comments
+preserve the measured range and bound. Final full-suite runs and performance tracing
+remain acceptance requirements after all compute paths are implemented.
+
 ## Next action
 
-Implement `dense/cuda/diagram_evaluator.{hpp,cpp}` ordinary self-energy first.
-Reuse host Backbone enumeration and atom-diagonalization/FSet/hybridization setup,
-with immutable model snapshots and device numerical mirrors. Do not inherit or
-retain CPU evaluator scratch. Reuse DlrOps::device_ops() for traversal products;
-allocate checked persistent G/T/U/sum/GKt/coefficient/ping-pong/Tmu/Tkaps workspace.
-Upload propagator once per public call and download the accumulated result once.
-Keep all/single/vector index interfaces and counts in long; preserve duplicates.
+Validate dynamic-interaction self-energy using the existing `dense/dynint_parity.cpp`
+and `dynint_spin_rotation.cpp` seams. The constructor already snapshots the extended
+hybridization/FSet; verify mixed fermionic/bosonic parity and all/single/vector/pairs
+behavior before treating that path as complete. Test the low-level constructor and
+real atom_diag constructor numerically, plus non-contiguous host input at the API
+boundary where the current source packs it.
 
-Read the CPU constructor/traversal and hyb.cpp before copying their contracts:
-vertex `sign=-1.0` selects the opposite pole-kernel cache, **not** an extra scalar
-minus sign. Edge kernels multiply all active kernel factors; prefactor uses powers
-of k_0. Special vertex backward hybridization uses (kap,mu), forward (mu,kap), with
-orbital-dependent parity. Constructor-built kernels/hybridization/operator tables
-must be uploaded once. Small composite edge-weight metadata can use reusable
-staging buffers as allowed by the plan; no large tensors may round-trip in loops.
+Then port correlator traversal into the same CUDA class: right vertex/edge ordering,
+reflection, endpoint operators, non-conjugating traces, single-particle all/single/
+vector/count interfaces and one-time correlator with explicit statistics. Read the CPU
+correlator code before writing it. Vertex sign=-1 selects the opposite pole kernel;
+it is not an extra scalar minus. Reuse device scratch and upload per-call endpoint
+operator tables outside traversal. Extend the existing analytic/unitary/statistics/
+dynamic/long-index seams as methods become available, without a universal framework.
 
-Extend existing one-/two-fermion self-energy analytic comparisons (fixture insertion
-points around OneFermionSetup line 140 and TwoFermionSetup line 120) and the unitary
-registry as methods become available; avoid a new universal test framework. Validate
-ordinary orders 1–3 and subset/reuse behavior before by-pairs/dynamic-interaction and
-correlator phases. Keep plan/log commits separate from implementation/tests.
-
-Supervisor setup is complete; do not recreate the goal or restart the shared
-server. Preserve the listed unrelated user changes and do not push.
+Complete final CPU/CUDA C++ suites, actual GPU sanitizer checks, allocation/residency
+traces and end-to-end benchmarks before claiming the goal achieved. Keep plan/log
+commits separate from implementation/tests. Supervisor setup is complete; do not
+recreate the goal or restart the shared server. Preserve unrelated user work and do
+not push.
