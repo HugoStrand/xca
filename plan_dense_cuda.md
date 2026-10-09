@@ -1,6 +1,6 @@
 # Plan: port the dense C++ DiagramEvaluator to CUDA
 
-Status: reviewed and revised implementation plan. Based on the source and installed NDA/cppdlr inspected on 2026-10-09. This document plans the implementation; no CUDA evaluator has been implemented or benchmarked yet.
+Status: implemented and verified on 2026-10-10 on `dev_cuda`. The design below records the reviewed plan based on the 2026-10-09 source inspection. The requirement-by-requirement acceptance audit, measured results and limitations are in [benchmarks/dense_cuda/results.md](benchmarks/dense_cuda/results.md); the durable checkpoint is [work_log_dense_cuda.md](work_log_dense_cuda.md).
 
 ## Objective and scope
 
@@ -178,7 +178,15 @@ Reviewed against the dense implementation, existing C++ test seams, and installe
 - Added checked allocation/stride arithmetic and clarified how existing tests access operator tables.
 - Required performance measurements to distinguish GPU offload from removal of repeated DLR transforms.
 
-Implementation-time validation remains necessary for adapter layouts, numerical tolerances, memory use and performance. No speedup or CUDA evaluator correctness is claimed by this planning document.
+The original review required implementation-time validation for adapter layouts, numerical tolerances, memory use and performance. That evidence is now recorded in the acceptance audit linked above; performance claims apply only to the measured workloads.
+
+## Implementation outcome (2026-10-10)
+
+All six phases are complete. The separate guarded evaluator covers all constructor and compute/count families, including dynamic interactions and correlator helper wrappers. Device and DLR primitives passed before traversal integration; the existing C++ test seams were extended with CUDA comparisons. Final CPU and CUDA builds each pass all 33 C++ CTest entries, with actual GPU primitive/evaluator execution and focused Compute Sanitizer checks reporting zero errors.
+
+Persistent pointer tables, checked workspace arithmetic, frozen device model tables and constructor kernel warmup meet the inner-loop allocation/residency requirement. N32, dynamic/reuse and N128 traces, plus a final detailed phase trace, report no traversal allocation/deallocation or explicit host/device copies. Managed metadata migrations and observable library memory are reported separately. The implementation uses cuBLAS/cuSOLVER and does not require cuTENSOR calls or custom kernels.
+
+Ten bounded benchmark runs cover N2–128, ranks16/26/36 and orders1–3. The port helps at larger sizes and is slower at N2/4. CPU convolution hoisting and a material CPU-prefix timing discrepancy are explicitly reported rather than attributed to device acceleration. Only the order-six long-index stress comparison has a measured GPU-specific 3e-12 relative bound; other existing comparison tolerances remain intact. Asynchronous execution, fusion, cross-backbone batching and solver integration remain follow-up work outside this port.
 
 ## Execution and checkpoint policy (2026-10-10)
 
