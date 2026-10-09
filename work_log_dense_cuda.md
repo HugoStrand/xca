@@ -3,8 +3,10 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: all compute paths and residency tracing verified; timing collection is running.
-Next: finish/inspect benchmark batch, report performance and perform the completion audit.
+Phase: implementation, benchmark collection and requirement-by-requirement audit complete.
+Code/evidence milestone: `4a1fbbe`. Separate completed-plan commit: `4c559b3`.
+Next: mark the persistent goal complete after this log-only commit. No implementation
+work or live benchmark job remains. Historical next-action sections below are superseded.
 
 ## Objective and working rules
 
@@ -445,3 +447,88 @@ goal complete only when the requirement-by-requirement audit proves all criteria
 
 Keep plan/log commits separate from code/tests/benchmarks. Preserve unrelated user work,
 do not push, recreate the goal or restart the shared server. Supervisor setup is done.
+
+## Completed: final measurements and acceptance audit — 2026-10-10
+
+The previous live batch14871 completed successfully. All ten runs have 30 data rows:
+N2/4/16/32/64/128 at cutoff40/rank26, N32/64 at cutoff10/rank16 and120/rank36.
+Validated finite errors, phase counts and checksums; worst maximum absolute CPU/CUDA
+error was 5.52e-15. The 300-row combined comparison and the CPU-only-prefix control
+are committed under `benchmarks/dense_cuda/`. No benchmark/test/profiler job remains.
+
+Final measured order-three ordinary self-energy CPU/CUDA speedups in the matched
+CUDA-enabled executable: N2 .19x, N4 .33x, N16 2.63x, N32 6.56x, N64 8.58x,
+N128 17.54x. Single-particle N128 24.27x; pairs 15.15x. Three warm samples, bounded
+synthetic subsets, synchronous API including transfers; not a solver speedup claim.
+Current/hoisted/GPU convolution timings distinguish algorithm hoisting from offload.
+
+The CPU-only-prefix N32 control measured 566.21ms for order-three self-energy,
+compared with 284.59ms for the host evaluator in the CUDA-enabled executable.
+Convolution timings agree closely. Both use O3, the same OpenBLAS path and identical
+cppdlr headers; root cause of the API difference was not isolated. Report uses the
+smaller matched-run CPU time and records this limitation rather than combining the
+older larger baseline with CUDA timings.
+
+N128/rank26 API-only first/warm profiling: all 18 traversal ranges have zero memory
+allocation/deallocation events and zero explicit host/device copies. Observable
+peak allocated device/managed/static bytes:194,503,565; evaluator-owned157,931,224.
+Largest UVM migration61,440 bytes on first call, subsequent maxima4096; reported
+metadata migrations are far below a rank-time tensor6,815,744 bytes. These are
+logical observable allocations, not physical UVM residency or hidden context caches.
+Primitive benchmark owned-memory counts exclude the primary evaluator still alive;
+report explicitly explains this distinction from process peak.
+
+Added diagnostic NVTX ranges for vertices, special vertices, DLR solve/convolution,
+reflection, endpoint products and non-conjugating traces. Final N32 trace contains
+18 audited traversals and834 disjoint contained phase ranges, all with zero
+allocations/deallocations and explicit host copies. Phase totals preserve kernel and
+wall times separately; special vertices123.59ms wall/64.29ms kernels, solves89.40/
+67.65ms, convolution77.06/55.18ms across all captured calls. Combined GEMMs are a
+major active-kernel cost; evidence does not establish batched GEMMs alone as the
+whole-call bottleneck. Auditor now gates deallocations explicitly as well as allocation
+and host-copy events. Re-running it reproduces committed traversal/phase CSVs exactly.
+
+Correction to the preceding historical checkpoint: it claimed explicit endpoint
+trace-shape warmup. The actual code has constructor family warmup, without a separate
+endpoint trace-shape warmup. All first-call traces pass with that actual implementation;
+README/report now describe it accurately. No extra warmup was added merely to match
+that mistaken description.
+
+Final byte-arithmetic review added endpoint element/byte checks before host operator
+assembly. CUDA allocation-failure context was verified in NDA's malloc/device-error
+source: operation name, CUDA error code/name/string are included. No intentional GPU
+exhaustion experiment was needed. Workspace checks cover persistent and replacement
+endpoint buffers, library integer dimensions and size_t multiplication/sums.
+
+Final verification after phase instrumentation:
+- CPU configure/build had passed; final full build and C++ CTest:33/33,13.87s.
+- CUDA configure/build had passed; final full build and C++ CTest:33/33,21.11s.
+- Actual GPU primitives/evaluator cases execute; focused final propagator-layout
+  Compute Sanitizer:one test,zero errors, in addition to earlier primitive/DLR/dynint
+  sanitizer gates. Final diagnostic changes only add ranges.
+- Supervisor regression:23/23 tests passed. Live state observed `thread_active` with
+  the exact repository/branch/objective binding. Real quota exhaustion/reboot remain
+  deliberately unforced; simulation/local-transport and boot registration evidence
+  are documented. Completion makes the supervisor stop resuming this goal.
+- Git diff whitespace check passed; binding generation produced no tracked changes.
+
+Logs:/tmp/xca-{cpu,cuda}-final-{configure,build,test}.log,
+/tmp/xca-{cpu,cuda}-phase-{build,test}.log,
+/tmp/xca-cuda-final-sanitizer.log,/tmp/xca-supervisor-final-test.log,
+/tmp/xca-cuda-phases-{profile,export}.log. Temporary logs may disappear; tracked CSVs
+and the report preserve the deliverable evidence. Raw profiles remain ignored in
+cbuild-profile/. All owned temporary exec sessions ended successfully.
+
+`benchmarks/dense_cuda/results.md` audits every design/acceptance item with evidence,
+records the limited order-six GPU tolerance exception and all material limitations.
+All constructors and compute/count families, both-direction pair semantics, complex
+sign/transposition conventions, dynamic/statistics paths, invalid-input recovery,
+long indices and host-stride handling are covered. No remaining acceptance blocker.
+Optional fusion, asynchronous scheduling, cross-backbone batching and solver/Python
+integration remain outside scope.
+
+Code/tests/supervisor/performance artifacts were committed separately from the plan
+and this work log throughout. Final implementation/artifact commit4a1fbbe, plan-only
+commit4c559b3; this checkpoint is a log-only commit. No push. Unrelated user work
+remains exactly the listed modified/untracked files and was never staged. Mark the
+persistent goal complete; no further autonomous development is required for this goal.
