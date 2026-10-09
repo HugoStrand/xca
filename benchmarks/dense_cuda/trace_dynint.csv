@@ -1,0 +1,13 @@
+trace,tracked_peak_device_allocation_bytes,range,occurrence,wall_ms,allocation_events,deallocation_events,host_copy_bytes,max_host_copy_bytes,uvm_copy_bytes,max_uvm_copy_bytes,d2d_copy_bytes,kernel_launches,kernel_ms,gemm_ms,solve_ms
+dense-dynint.sqlite,29816293,xca.self_energy.traversal,1,31.088312,0,0,0,0,262144,4096,81920,1104,14.685721,10.078281,3.540894
+dense-dynint.sqlite,29816293,xca.self_energy.pairs.traversal,1,12.859691,0,0,0,0,0,0,51200,656,5.857803,4.063227,1.119061
+dense-dynint.sqlite,29816293,xca.self_energy.traversal,2,1.323653,0,0,0,0,0,0,3840,69,0.637496,0.430683,0.140223
+dense-dynint.sqlite,29816293,xca.self_energy.traversal,3,5.308307,0,0,0,0,0,0,17920,276,2.55038,1.724051,0.559738
+dense-dynint.sqlite,29816293,xca.self_energy.pairs.traversal,2,1.596775,0,0,0,0,0,0,5120,82,0.732473,0.508028,0.140062
+dense-dynint.sqlite,29816293,xca.self_energy.pairs.traversal,3,6.452442,0,0,0,0,0,0,23040,328,2.927711,2.030377,0.559354
+dense-dynint.sqlite,29816293,xca.correlator.traversal,1,13.546769,0,0,0,0,0,0,61440,496,4.900193,3.330375,1.119514
+dense-dynint.sqlite,29816293,xca.correlator.traversal,2,1.235618,0,0,0,0,0,0,6400,62,0.612762,0.416571,0.139839
+dense-dynint.sqlite,29816293,xca.correlator.traversal,3,3.696383,0,0,0,0,0,0,19200,186,1.837264,1.248691,0.419709
+dense-dynint.sqlite,29816293,xca.correlator.traversal,4,3.696113,0,0,0,0,0,0,19200,186,1.837617,1.249238,0.419485
+dense-dynint.sqlite,29816293,xca.correlator.traversal,5,1.316539,0,0,0,0,0,0,6400,62,0.61225,0.416251,0.139743
+dense-dynint.sqlite,29816293,xca.correlator.traversal,6,3.696734,0,0,0,0,0,0,19200,186,1.837612,1.249107,0.419516

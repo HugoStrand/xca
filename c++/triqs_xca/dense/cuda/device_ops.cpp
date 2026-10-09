@@ -26,6 +26,11 @@ namespace triqs_xca::dense::cuda {
     }
   } // namespace
 
+  std::size_t DeviceOps::checked_sum(std::size_t a, std::size_t b) {
+    if (a > SIZE_MAX - b) throw std::overflow_error("dense CUDA workspace size overflow");
+    return a + b;
+  }
+  std::size_t DeviceOps::workspace_bytes() const { return checked_product(3, checked_product(r_, sizeof(complex *))); }
   std::size_t DeviceOps::checked_product(std::size_t a, std::size_t b) {
     if (b && a > std::numeric_limits<std::size_t>::max() / b) throw std::overflow_error("dense CUDA: allocation/stride overflow");
     return a * b;

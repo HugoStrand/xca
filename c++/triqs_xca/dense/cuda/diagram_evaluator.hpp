@@ -62,6 +62,9 @@ namespace triqs_xca::dense::cuda {
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, long index);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    // Application-owned device/unified allocations; excludes library handles,
+    // context caches and caller inputs. Nsight traces account for those separately.
+    std::size_t workspace_bytes() const;
     int num_orbitals() const { return n_; }
     int num_interactions() const { return n_int_; }
     int dimension() const { return N_; }

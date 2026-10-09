@@ -44,3 +44,78 @@ hoisted transforms; a left vertex is 0.157 ms. At N=64, corresponding times are
 has measurable cost in this workload. It is not evidence that CUDA has accelerated
 anything. Final port measurements must distinguish this CPU algorithm improvement
 from device offload and include construction, transfers, memory and residency traces.
+
+## CUDA comparison and residency audit
+
+The extended benchmark accepts an optional fourth argument (DLR cutoff, default
+40) and fifth argument `api-only` to omit standalone CUDA primitive measurements.
+The CPU rows in a CUDA-enabled executable still execute the host dense evaluator;
+the two backends receive identical propagators, poles, topology and index vectors.
+All returned CUDA results are checked against CPU at maximum absolute error 1e-12;
+non-finite differences fail. By-pairs and single-particle API rows are also measured.
+CPU-only compilation retains its host measurements.
+
+New CSV columns append cutoff, warm default-stream CUDA-event time, application-owned
+device/unified buffer bytes and maximum absolute comparison error. Event timing is
+for isolated CUDA primitives and includes gaps introduced by their synchronous host
+adapters; it is not the sum of active kernel times. API timings are synchronized wall
+time including uploads, host scheduling and copy-back. Event time zero for API rows
+means not separately measured. Values-to-coefficients primitive error is reconstruction
+error after device coefs2vals, rather than direct ill-conditioned coefficient error.
+Construction includes lazy module/kernel warmup; context initialization is separate.
+First means the first measured call of that workload within the process, after any
+earlier phases. Warm time averages the next three calls. These are single-run samples,
+not confidence intervals. The initial pre-port CPU CSV uses the older column schema.
+
+Residency instrumentation uses header-only NVTX ranges around uploads, downloads and
+flat-index traversal. Constructor warmup primes batched/rank GEMM, weighting and DLR
+paths with existing scratch; endpoint setup primes the trace shape. A first-call trace
+without standalone primitive prewarming originally found two 16-byte driver allocations
+inside cuKernelGetFunction; warming removes them before traversal.
+
+Verified trace summaries:
+
+- `trace_n32_r26.csv`: N=32, rank 26, two poles, four selected indices (NCA two),
+  orders 1–3, first and subsequent ordinary/pairs/single-particle calls: 18 traversal
+  ranges, **zero allocation/deallocation events and zero explicit host/device copies**.
+- `trace_dynint.csv`: existing mixed-dynamic-interface/reuse test, including density
+  correlators and failed-prefix recovery: 12 ranges with the same zero-event result.
+- Unified-memory migrations remain visible: maxima 4096 bytes per migration, consistent
+  with pointer-table/status pages. Large work-tensor copies are device-to-device.
+  Host/unified copies are reported separately, rather than treating metadata migration
+  as absent. CUDA allocations include driver-visible memory events, not just malloc APIs.
+- Nsight-visible peak device/managed/static allocations are 39,021,389 bytes for the N32
+  trace and 29,816,293 for the dynamic test. This includes observable library allocations;
+  it does not claim physical UVM residency or unreported context/driver cache memory.
+  Application-owned bytes are reported separately by the benchmark.
+
+Profiler: Nsight Systems 2026.3.2.476; GPU RTX A4000, driver 580.178.04, 16376 MiB.
+The traces enable CUDA runtime/driver activity, memory usage and UVM page faults,
+with CPU sampling/context switches disabled. Profiling times are diagnostic and must
+not be used as the unprofiled speed measurements. Full `.nsys-rep` and SQLite exports
+are machine-local under ignored `cbuild-profile/`; tracked CSVs preserve the audit.
+
+Reproduce the N32 trace:
+
+```bash
+source ~/env/xca-cuda.sh
+cmake --build cbuild-cuda --target dense_cuda_benchmark --parallel 12
+mkdir -p cbuild-profile
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 nsys profile \
+  --trace=cuda,nvtx,cublas,cusolver --sample=none --cpuctxsw=none \
+  --cuda-memory-usage=true --cuda-um-cpu-page-faults=true \
+  --cuda-um-gpu-page-faults=true --force-overwrite=true \
+  --output=cbuild-profile/dense-n32-r26 \
+  cbuild-cuda/examples/dense_cuda_benchmark 32 4 1 40 api-only
+nsys export --type=sqlite --force-overwrite=true \
+  --output=cbuild-profile/dense-n32-r26.sqlite cbuild-profile/dense-n32-r26.nsys-rep
+python3 tools/analyze_dense_cuda_trace.py cbuild-profile/dense-n32-r26.sqlite
+```
+
+The audit returns nonzero for any inner allocation or explicit host/device copy,
+or incomplete/unknown trace data. Its GEMM/solve timings classify demangled kernel
+families (`gemm`/split-K reduction versus TRSM/pivot/status kernels); remaining kernels
+include GEAM, DGMM and vector operations. Combined GEMMs account for about 65% of
+active kernel time in the N32 trace, solves about 29%; these are not whole-call shares,
+nor a proof that batched GEMMs alone dominate. Launch and synchronization overhead
+must be judged from wall time alongside the active kernel sum.

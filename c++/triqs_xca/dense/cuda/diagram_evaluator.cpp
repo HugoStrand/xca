@@ -1,6 +1,7 @@
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
 #include "diagram_evaluator.hpp"
+#include "profile_range.hpp"
 #ifdef NDA_HAVE_CUDA
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/dynint.hpp>
@@ -82,6 +83,20 @@ namespace triqs_xca::dense::cuda {
       }
     kp_ = k;
     km_ = l;
+    // Prime lazy CUDA kernel/module paths before the first backbone. Use only
+    // owned scratch and immutable tables; construction cost is reported separately.
+    auto &ops = dlr_.device_ops();
+    ops.zero(G_);
+    ops.zero(T_);
+    ops.left_product(Fs_(0, a, a), G_, T_);
+    ops.right_product(G_, Fs_(0, a, a), T_);
+    ops.left_product(Fs_(0, a, a), G_, T_, 1., 1.);
+    ops.batch_product(G_, G_, T_);
+    ops.weight_rows(G_, kp_(0, a), T_);
+    ops.axpy(1., G_, T_);
+    dlr_.reflect(G_, T_);
+    dlr_.vals2coefs(G_, gc_);
+    dlr_.convolve(beta_, gc_, gc_, T_);
   }
   DiagramEvaluator::DiagramEvaluator(double beta, double eps, cppdlr::imtime_ops &itops, nda::vector_const_view<double> poles,
                                      nda::array_const_view<complex, 3> coefficients, FSet &fset)
@@ -107,6 +122,33 @@ namespace triqs_xca::dense::cuda {
   INSTANTIATE(true)
   INSTANTIATE(false)
 #undef INSTANTIATE
+  std::size_t DiagramEvaluator::workspace_bytes() const {
+    auto bytes   = dlr_.workspace_bytes();
+    auto include = [&](auto const &x) { bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(x.size(), sizeof(complex))); };
+    include(G_);
+    include(T_);
+    include(U_);
+    include(sum_);
+    include(tmp_);
+    include(GKt_);
+    include(gc_);
+    include(tc_);
+    include(Tmu_);
+    include(Tkaps_);
+    include(bars_);
+    include(bars_refl_);
+    include(Fs_);
+    include(Fd_);
+    include(values_);
+    include(reflected_);
+    include(kp_);
+    include(km_);
+    include(mu_ops_);
+    include(corr_sum_);
+    include(packed_ops_);
+    include(trace_values_);
+    return bytes;
+  }
   matrix_const_view DiagramEvaluator::op(Backbone &b, int v, int o, int p) const {
     if (p >= 0 && b.has_vertex_bar(v)) return b.has_vertex_dag(v) ? bars_(o, p, a, a) : bars_refl_(o, p, a, a);
     return b.has_vertex_dag(v) ? Fd_(o, a, a) : Fs_(o, a, a);
@@ -214,14 +256,21 @@ namespace triqs_xca::dense::cuda {
   }
   DiagramEvaluator::gf_t DiagramEvaluator::compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all,
                                                    bool pairs) {
-    upload(g);
+    {
+      ProfileRange range("xca.self_energy.upload");
+      upload(g);
+    }
     Backbone b(topology, n_, n_int_);
-    if (all) {
-      long count = get_num_self_energy_backbones(b), group = count / b.fb_ix_max;
-      for (long i = 0; i < count; ++i)
-        if (!pairs || (i / group) % 2 == 0) evaluate(b, i, pairs);
-    } else
-      for (long i : indices) evaluate(b, i, pairs);
+    {
+      ProfileRange range(pairs ? "xca.self_energy.pairs.traversal" : "xca.self_energy.traversal");
+      if (all) {
+        long count = get_num_self_energy_backbones(b), group = count / b.fb_ix_max;
+        for (long i = 0; i < count; ++i)
+          if (!pairs || (i / group) % 2 == 0) evaluate(b, i, pairs);
+      } else
+        for (long i : indices) evaluate(b, i, pairs);
+    }
+    ProfileRange range("xca.self_energy.download");
     return result();
   }
 #define METHODS(NAME, PAIR)                                                                                                                          \
@@ -264,6 +313,13 @@ namespace triqs_xca::dense::cuda {
     auto host     = nda::zeros<complex>(r_, m, k);
     mul(mul(k, mul(N_, N_)), sizeof(complex));
     mul(mul(m, mul(N_, N_)), sizeof(complex));
+    // Conservatively include old persistent buffers plus all replacement buffers
+    // before any resize allocation. This bounds overlapping resize lifetimes.
+    auto replacements = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(mul(r_, k), sizeof(complex)));
+    replacements      = DeviceOps::checked_sum(replacements, DeviceOps::checked_product(mul(m, N_ * N_), sizeof(complex)));
+    replacements      = DeviceOps::checked_sum(replacements, DeviceOps::checked_product(mul(k, N_ * N_), sizeof(complex)));
+    (void)DeviceOps::checked_sum(workspace_bytes(), replacements);
+    ProfileRange boundary("xca.correlator.endpoints_and_result");
     if (mu_ops_.shape() != mu.shape()) mu_ops_ = tensor(mu.shape());
     mu_ops_ = nda::make_regular(mu);
     nda::matrix<complex> packed(k, N_ * N_);
@@ -303,11 +359,14 @@ namespace triqs_xca::dense::cuda {
       }
       b.reset_all_inds();
     };
-    if (all) {
-      long count = b.num_flat_indices(hyb_.poles.size());
-      for (long i = 0; i < count; ++i) evaluate_index(i);
-    } else
-      for (long i : indices) evaluate_index(i);
+    {
+      ProfileRange traversal("xca.correlator.traversal");
+      if (all) {
+        long count = b.num_flat_indices(hyb_.poles.size());
+        for (long i = 0; i < count; ++i) evaluate_index(i);
+      } else
+        for (long i : indices) evaluate_index(i);
+    }
     auto result = nda::to_host(corr_sum_);
     for (long q = 0; q < m; ++q)
       for (int t = 0; t < r_; ++t)

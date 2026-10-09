@@ -24,6 +24,7 @@ namespace triqs_xca::dense::cuda {
     DlrOps(cppdlr::imtime_ops const &host, long dimension);
     DlrOps(DlrOps const &)            = delete;
     DlrOps &operator=(DlrOps const &) = delete;
+    std::size_t workspace_bytes() const;
     DeviceOps &device_ops() { return ops_; }
     // In-place values->coefficients is safe because the solve uses owned RHS storage.
     void vals2coefs(tensor_const_view values, tensor_view coefficients);

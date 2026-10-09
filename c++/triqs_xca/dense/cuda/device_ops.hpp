@@ -31,6 +31,8 @@ namespace triqs_xca::dense::cuda {
     void vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left, complex alpha, complex beta);
 
     public:
+    static std::size_t checked_sum(std::size_t a, std::size_t b);
+    std::size_t workspace_bytes() const;
     static std::size_t checked_product(std::size_t a, std::size_t b);
     static int checked_blas_int(long value);
     DeviceOps(long rank, long dimension);

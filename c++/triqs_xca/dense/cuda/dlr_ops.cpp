@@ -50,6 +50,12 @@ namespace triqs_xca::dense::cuda {
     if (info != 0) throw std::runtime_error("dense CUDA DLR solver warmup: info " + std::to_string(info));
   }
 
+  std::size_t DlrOps::workspace_bytes() const {
+    auto mul      = DeviceOps::checked_product;
+    auto add      = DeviceOps::checked_sum;
+    auto elements = add(mul(5, mul(r_, r_)), mul(5, mul(r_, columns_)));
+    return add(ops_.workspace_bytes(), add(mul(elements, sizeof(complex)), mul(r_, sizeof(int))));
+  }
   void DlrOps::validate(tensor_const_view input) const {
     if (input.shape() != std::array<long, 3>{r_, N_, N_} || input.strides() != std::array<long, 3>{columns_, N_, 1})
       throw std::invalid_argument("dense CUDA DLR: expected contiguous (r,N,N) tensor");
