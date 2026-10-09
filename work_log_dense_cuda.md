@@ -3,8 +3,8 @@
 ## Current checkpoint — 2026-10-10
 
 Branch: `dev_cuda`. Session: `01a11fc7-86f7-7130-9dd9-8a073f35fc9f`.
-Phase: ordinary self-energy and by-pairs CUDA traversal verified.
-Next: dynamic-interaction self-energy validation, then correlator implementation.
+Phase: all planned C++ compute paths implemented and numerically verified.
+Next: allocation/residency tracing, checked workspace inventory and end-to-end benchmarks.
 
 ## Objective and working rules
 
@@ -270,25 +270,99 @@ Logs: `/tmp/xca-{cpu,cuda}-evaluator-final-{build,test}.log`,
 preserve the measured range and bound. Final full-suite runs and performance tracing
 remain acceptance requirements after all compute paths are implemented.
 
+## Completed: correlators and dynamic-interaction numerical gate
+
+Commit `4327fe4` adds CUDA single-particle all/single/vector/count methods, one-time
+correlators for real/complex atom_diag and both explicit-statistics eval_correlator
+wrappers. Previous goal turn: progress (self-energy/by-pairs code and checkpoint).
+This turn is also progress; no blocker exists. The full goal remains active because
+residency/allocation and benchmark deliverables are not yet achieved.
+
+The right traversal multiplies on the right, selects the opposite pole-kernel cache
+without an extra scalar minus, and convolves U coefficients before G coefficients.
+Reflection, prefactor and external-statistics sentinels match the host evaluator.
+Endpoints contract as U*(mu*T), followed by a packed, non-conjugating trace GEMM.
+Fermion parity uses the shared operator_statistics classifier. Dynamic external
+single-particle legs exclude the appended interaction operators.
+
+Endpoint/operator/output device buffers persist across calls and resize only when
+endpoint counts change. Host operator assembly and uploads happen before flat-index
+traversal. Trace accumulation stays on device and returns only the completed result.
+Empty endpoint sets retain flat-index validation; empty operator lists/zero or mixed
+parity follow the classifier's exceptions. Existing shape/AD constraints are retained.
+Constructor workspace arithmetic and endpoint byte/BLAS checks exist; the final
+aggregate live-workspace inventory and tracing of library-internal allocations remain
+necessary. Do not infer the allocation gate from source reuse alone.
+
+Verified on this machine:
+
+- Complete CPU build and all **33/33 C++ CTest entries passed** (13.84 s).
+- Complete CUDA build and all **33/33 C++ entries passed** (22.40 s), including
+  actual GPU smoke/primitives and the new evaluator comparisons. Python tests were
+  excluded as specified by the C++ port scope; the full builds still build bindings.
+- Added 18 single-particle analytic comparison points for orders 1–3 to the existing
+  one-/two-fermion tests at their original tolerances. Their subset cases now cover
+  duplicate indices, failed-prefix reuse, empty subsets and long counts.
+- Registered CUDA alongside dense/block-sparse in the complex unitary seam and made
+  cross-evaluator comparisons iterate over all entries. Both self-energy and spgf
+  covariance pass; ordinary/by-pairs self-energy checks are retained.
+- Spin-rotation tests compare CUDA self-energy/spgf with dense results for ladder,
+  Cartesian (including imaginary S_y) and reduced/no-interaction forms, with real
+  and complex atom_diag. The new dynint-parity test covers every self-energy/pairs
+  overload, every spgf overload, counts, density correlators and failed-prefix reuse.
+- Existing statistics helper is narrowly templated for immutable CUDA metadata.
+  Forced bosonic/fermionic single-index and all-index wrappers agree with CPU;
+  automatically classified spin-flip, density and fermion correlators retain the
+  original 1e-13*max(1,scale) gate. Mixed parity rejection/all-odd acceptance pass.
+- Added real/low-level constructor comparisons, genuinely strided propagator input
+  (last stride 2), changed data at the same storage, changing endpoint count and
+  changed endpoint content with unchanged shape. Empty endpoints, zero statistics,
+  wrong AD dimension, multi-subspace AD and dynamic constructor rejection pass.
+- Long spgf and one-time correlator indices beyond INT_MAX pass using the previously
+  documented order-six 3e-12 CUDA bound; no additional tolerances were changed.
+- Final negative-test additions were rebuilt and verified in focused CPU/CUDA runs
+  after the full suites; final wrapper additions were also rebuilt in both trees.
+- Compute Sanitizer memcheck: strided/constructor/endpoint case (1 GoogleTest),
+  dynamic-interface/reuse/constructor-exception case (1), and statistics (3), all
+  **0 errors**. The latter checks both explicit-statistics wrapper overloads.
+- No tracked binding regeneration changes; unrelated user work remains unchanged.
+
+One new test initially failed to compile because an injected fermion-block check
+referenced the boson result from another scope. Corrected that test before the
+reported passing gates. No implementation numerical failure or new tolerance change
+was required by this milestone.
+
+Logs: `/tmp/xca-{cpu,cuda}-correlator-final-{build,test}.log`,
+`/tmp/xca-{cpu,cuda}-correlator-rejections-{build,test}.log`,
+`/tmp/xca-{cpu,cuda}-correlator-wrapper-{build,test}.log`, and
+`/tmp/xca-cuda-correlator-{layout,dynint,statistics}-sanitizer.log`.
+Some first-pass logs use shorter names. Temporary logs may disappear; tests and this
+checkpoint preserve the evidence and measured full-suite times.
+
 ## Next action
 
-Validate dynamic-interaction self-energy using the existing `dense/dynint_parity.cpp`
-and `dynint_spin_rotation.cpp` seams. The constructor already snapshots the extended
-hybridization/FSet; verify mixed fermionic/bosonic parity and all/single/vector/pairs
-behavior before treating that path as complete. Test the low-level constructor and
-real atom_diag constructor numerically, plus non-contiguous host input at the API
-boundary where the current source packs it.
+Extend `examples/dense_cuda_benchmark.cpp` to compare CPU and CUDA with identical
+inputs/subsets. Include multiple DLR ranks and N=2/4/16/32/64/128 where feasible,
+orders 1–3, construction, first/warm API timings including transfers, device-phase
+CUDA event measurements on the actual default stream and owned/live memory evidence.
+Keep the CPU hoisted-transform baseline distinct from GPU offload. Compare returned
+results in the benchmark; do not time unchecked work or claim speedup from fixtures.
 
-Then port correlator traversal into the same CUDA class: right vertex/edge ordering,
-reflection, endpoint operators, non-conjugating traces, single-particle all/single/
-vector/count interfaces and one-time correlator with explicit statistics. Read the CPU
-correlator code before writing it. Vertex sign=-1 selects the opposite pole kernel;
-it is not an extra scalar minus. Reuse device scratch and upload per-call endpoint
-operator tables outside traversal. Extend the existing analytic/unitary/statistics/
-dynamic/long-index seams as methods become available, without a universal framework.
+`nsys` is available at `/usr/local/bin/nsys`, and CUPTI headers are under
+`/usr/local/cuda/targets/x86_64-linux/include`. Use Nsight Systems CUDA traces with
+explicit boundary/traversal ranges to measure allocations, transfer sizes, launch
+counts and GEMM/solve time, proving no large tensor copies or device allocations in
+inner evaluation loops. Warm library paths outside traversal or fix repeated library
+allocations if the evidence shows them. Extend the checked workspace inventory to
+include persistent endpoint buffers/peak-live resize behavior and clear allocation
+failure context. Inspect profiling tool help locally before choosing commands.
 
-Complete final CPU/CUDA C++ suites, actual GPU sanitizer checks, allocation/residency
-traces and end-to-end benchmarks before claiming the goal achieved. Keep plan/log
-commits separate from implementation/tests. Supervisor setup is complete; do not
-recreate the goal or restart the shared server. Preserve unrelated user work and do
-not push.
+Review final implementation against every acceptance requirement in the plan. Run
+required final CPU/CUDA C++ gates after material changes and targeted sanitizer checks
+when new memory paths justify them. Deliver tracked benchmark CSVs/report and trace
+summaries with workload/GPU/thread metadata. Do not mark the goal complete until
+all allocation/residency/performance evidence is present and reviewed.
+
+Supervisor setup is complete; do not recreate the goal or restart the shared server.
+Keep plan/log commits separate from implementation/tests/benchmarks. Preserve unrelated
+user work and do not push.
