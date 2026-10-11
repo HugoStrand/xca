@@ -1,0 +1,50 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-fused
+Test project /home/hugstr/dev/xca/cbuild-experiment-fused
+    Start 1: batch_one_fermion_se_spgf_all_evals
+1/6 Test #1: batch_one_fermion_se_spgf_all_evals ....   Passed    1.94 sec
+    Start 2: batch_two_fermions_se_spgf_all_evals
+2/6 Test #2: batch_two_fermions_se_spgf_all_evals ...   Passed    1.31 sec
+    Start 3: batch_unitary_invariance_all_evals
+3/6 Test #3: batch_unitary_invariance_all_evals .....   Passed    2.09 sec
+    Start 4: batch_dlr
+4/6 Test #4: batch_dlr ..............................   Passed    0.74 sec
+    Start 5: batch_api
+5/6 Test #5: batch_api ..............................***Failed    0.56 sec
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BatchAPI
+[ RUN      ] BatchAPI.InvalidPrefixRecoveryAndLongIndices
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_small/test_api.cpp:19: Failure
+Expected: compare(tensor(value[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=2.694366e-31 abs=5.967651e-31 rel=2.214863e+00".
+
+[  FAILED  ] BatchAPI.InvalidPrefixRecoveryAndLongIndices (262 ms)
+[ RUN      ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting
+[       OK ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting (15 ms)
+[ RUN      ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation
+unknown file: Failure
+C++ exception with description "comparison failed: norm=3.835845e-14 abs=4.031222e-24 rel=1.050935e-10" thrown in the test body.
+
+[  FAILED  ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation (33 ms)
+[----------] 3 tests from BatchAPI (312 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (312 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 2 tests, listed below:
+[  FAILED  ] BatchAPI.InvalidPrefixRecoveryAndLongIndices
+[  FAILED  ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation
+
+ 2 FAILED TESTS
+
+    Start 6: fused_primitives
+6/6 Test #6: fused_primitives .......................   Passed    0.41 sec
+
+83% tests passed, 1 tests failed out of 6
+
+Total Test time (real) =   7.04 sec
+
+The following tests FAILED:
+	  5 - batch_api (Failed)
+Errors while running CTest

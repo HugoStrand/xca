@@ -1,0 +1,42 @@
+[  4%] Building CUDA object CMakeFiles/fused_kernels.dir/kernels.cu.o
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60826vertexEPKPK7double2S4_PKPS0_iS0_S0_' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60826vertexEPKPK7double2S4_PKPS0_iS0_S0_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 0 barriers, 416 bytes cmem[0]
+ptxas info    : Compile time = 3.686 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60827productEPK7double2S2_PS0_iS0_S0_' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60827productEPK7double2S2_PS0_iS0_S0_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 0 barriers, 416 bytes cmem[0]
+ptxas info    : Compile time = 3.253 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60829add_scaleEPK7double2PS0_id' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca60829add_scaleEPK7double2PS0_id
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, used 0 barriers, 384 bytes cmem[0]
+ptxas info    : Compile time = 1.023 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca608212weighted_addEPK7double2S2_S2_PS0_ii' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__72fabe38_10_kernels_cu_2aca608212weighted_addEPK7double2S2_S2_PS0_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 24 registers, used 0 barriers, 392 bytes cmem[0]
+ptxas info    : Compile time = 1.849 ms
+[  8%] Linking CUDA static library libfused_kernels.a
+[  8%] Built target fused_kernels
+[ 26%] Built target fused_small
+[ 30%] Linking CXX executable fused_small_benchmark
+[ 47%] Building CXX object CMakeFiles/batch_one_fermion_se_spgf_all_evals.dir/one_fermion_se_spgf_all_evals.cpp.o
+[ 47%] Linking CXX executable batch_api
+[ 47%] Building CXX object CMakeFiles/batch_unitary_invariance_all_evals.dir/unitary_invariance_all_evals.cpp.o
+[ 47%] Building CXX object CMakeFiles/batch_two_fermions_se_spgf_all_evals.dir/two_fermions_se_spgf_all_evals.cpp.o
+[ 52%] Linking CXX executable batch_dlr
+[ 56%] Built target fused_small_benchmark
+[ 69%] Built target batch_dlr
+[ 73%] Built target batch_api
+[ 78%] Linking CXX executable fused_primitives
+[ 86%] Built target fused_primitives
+[ 91%] Linking CXX executable batch_unitary_invariance_all_evals
+[ 95%] Linking CXX executable batch_two_fermions_se_spgf_all_evals
+[ 95%] Built target batch_unitary_invariance_all_evals
+[ 95%] Built target batch_two_fermions_se_spgf_all_evals
+[100%] Linking CXX executable batch_one_fermion_se_spgf_all_evals
+[100%] Built target batch_one_fermion_se_spgf_all_evals

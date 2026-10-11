@@ -1,0 +1,18 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-fused
+Test project /home/hugstr/dev/xca/cbuild-experiment-fused
+    Start 1: batch_one_fermion_se_spgf_all_evals
+1/6 Test #1: batch_one_fermion_se_spgf_all_evals ....   Passed    1.95 sec
+    Start 2: batch_two_fermions_se_spgf_all_evals
+2/6 Test #2: batch_two_fermions_se_spgf_all_evals ...   Passed    1.27 sec
+    Start 3: batch_unitary_invariance_all_evals
+3/6 Test #3: batch_unitary_invariance_all_evals .....   Passed    2.01 sec
+    Start 4: batch_dlr
+4/6 Test #4: batch_dlr ..............................   Passed    0.72 sec
+    Start 5: batch_api
+5/6 Test #5: batch_api ..............................   Passed   16.42 sec
+    Start 6: fused_primitives
+6/6 Test #6: fused_primitives .......................   Passed    0.48 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =  22.86 sec
