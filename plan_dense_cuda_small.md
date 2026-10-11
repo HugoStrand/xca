@@ -1,9 +1,10 @@
 # Plan: small-matrix CUDA optimization experiments
 
-Status: benchmark preparation and plan review complete, 2026-10-11. Ready for
-exploration by GPT-6.1 Sol / medium. Benchmark/plan preparation and
-optimization exploration are separate persistent goals. Production baseline064b64e
-is retained and checked by `experiments/dense_cuda_small/baseline/verify.py`.
+Status: exploration complete,2026-10-11. E1–E4 have checked prototypes and measured
+results; E3+E4 combinations are measured, and the trace-justified custom-solve follow-up
+is numerically rejected. [Comparison/recommendations](experiments/dense_cuda_small/COMPARISON.md)
+and [final checkpoint](work_log_dense_cuda_small.md) record the outcome. No experiment
+was promoted; production064b64e and all23 protected hashes remain unchanged.
 
 ## Objective and limits
 
@@ -273,3 +274,23 @@ for Sol6.1/medium: implement the bounded ordinary-SE `serial_stream/` prototype 
 run the quick cases; then pursue `index_batch/` even if graph/stream work is favorable.
 Use E1 as the graph prerequisite, record each strategy independently, and follow the
 persistent exploration goal until its measured comparison report is complete.
+
+## Recorded outcome — 2026-10-11
+
+E1 owned stream and E2 content-keyed graph replay reduce submission overhead but
+remain slower than CPU for single small matrices. E3 shared-LU cross-index batches
+reach about2.9× CPU throughput at128 indices. E4 grouped real FMA products plus E3
+reach14.0–14.8× matching CPU at N4/r16/orders6–8 in three processes. Pointwise fusion
+alone is under2%; no material independent win claimed. Single calls still favor CPU.
+
+Strict parity, high orders, ranks16/26/36, tails, duplicates/empty/changed inputs,
+long indices, dense complex basis tests and applicable C++/sanitizer checks pass for
+the recommended ordinary-SE prototype. A pageable-upload race was corrected using
+an event handoff; rejected arithmetic controls remain recorded. Full API/setup/first/
+context costs, cache/padding cliffs, memory and kernel/copy traces are documented.
+
+After custom products, solves dominate. The planned conditional triangular-solve
+probe uses cached factors/pivots and reconstructs accurately, but public parity fails;
+library solves remain. Optional lower-priority work is deferred. Next work needs
+review: adaptive tails/schedule cache, ordered accumulation, reusable staging, and
+numerically verified solve improvements. Production/promotion is outside this goal.

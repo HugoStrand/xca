@@ -2,30 +2,24 @@
 
 ## Current checkpoint — 2026-10-11
 
-Preparation goal is COMPLETE. The separate optimization-exploration goal is ACTIVE.
-Subsequent turns are gpt-6.1-sol / medium / standard. E1/E2 are implemented and
-measured; upload-ordering fix3d7c826 revalidated both with three fresh strict-parity
-quick repeats. E3 batch prototype3d7c826 has measured results0d53440/31e22e7:
-full N4/r16 B128 orders6/8 repeat32.73/44.48ms, about2.9× CPU and18× frozen CUDA.
-Padding/tail/cache-miss costs are explicit. Next E4 custom fused kernels and useful
-combinations, then comparison/recommendations. Production23 protected hashes intact.
+Preparation and optimization work are COMPLETE; the final persistent-goal transition
+follows this committed checkpoint. All priorities E1–E4 have checked prototypes and
+measured evidence. E3+E4 is the recommended ordinary-SE experiment; custom pivoted
+solve is numerically rejected. Read experiments/dense_cuda_small/COMPARISON.md.
 
-Quota watcher remains exact-goal-bound and reports thread_active; do not recreate
-this active exploration goal. Boot registration uses exploration config.
+Results18cb4b9; final CPU-only controld013395. Best N4/r16 full128 warm API: order6
+6.815–6.869ms, order8 9.135–9.197ms,14.0–14.8× matching CPU in three processes.
+Single-index calls still favor CPU. No production promotion, no push. Post-handoff
+benchmark evidence includes708 backend/case groups plus4 final CPU-only groups.
 
-Previous sequence80285 is terminal: E3 API/DLR memcheck0 errors, trace audit passes;
-E4 configure/build passed, initial pointwise API failed strict parity. Investigated
-without weaker gates: normal FMA plus input-first complex multiplication reproduces
-DGMM exactly. Six E4 tests pass mode1. First custom interleaved complex dot failed;
-grouped real FMA dots pass all six mode2 tests, including high-order/long/tails.
-E4 prototypea30708d committed separately; failed/passed controls preserved.
-
-LIVE native measurement sequence62308 (poll before GPU/build/test work): library
-mode0 B1 quick, pointwise mode1 B1 quick and custom N4 mode2 B1 quick passed;
-mode1 B128 then mode2 throughput/three B1+B128 repeats/coverage/r26/r36/tails/seed/
-uncached controls are serialized. Exact benchmark CUDA parity so far. Results are
-not yet all archived. After terminal: E4 memcheck/profile B1+B128, archive/report,
-useful combinations/final comparison. No production promotion or push.
+All native sequences62308/10148/80198/20942/41151 are terminal. No GPU/build/test job
+remains. Recommended E4 six CTest entries pass (four API regressions including dense
+complex rotated operators and changed G); API/custom primitive memchecks0 errors.
+E3 API/DLR memchecks0 errors. Both corrected E1/E2 suites and repeats pass.
+Custom-solve mode fails strict gates as documented; library-control six entries pass,
+and its primitive memcheck0 errors. Baseline23 hashes match064b64e. Unrelated user
+files remain untouched. Supervisor stays exact-goal-bound; completion must leave it
+inactive, never create another exploration goal automatically.
 
 Branch dev_cuda. Production CPU/CUDA evaluators at baseline commit064b64e remain
 unchanged. Keep experiments in individual folders under experiments/dense_cuda_small/;
@@ -356,3 +350,36 @@ all6 mode2 entries pass. Negative/positive controls retained, no tolerance chang
 Broader primary benchmark gates are running in62308. Initial B1 order8 mode0/1/2
 4.207/4.150/3.359ms, exact reference parity; this remains slower than CPU. Full-batch
 custom product benefit and additional rank controls still pending.
+
+## Final exploration checkpoint — 2026-10-11
+
+Implemented/retained separate serial_stream, graphs, index_batch, fused_small and
+fused_solve folders. Main code/results18cb4b9, CPU-only controld013395; this plan/log
+checkpoint is separate. E4 primary17 runs/250 groups have exact sampled CUDA parity,
+including ranks16/26/36/order12/second seed/tails. Dense complex basis and same-address
+G changes pass at capacities1/8/128. Three-process B1 andB128 repeats are recorded.
+Mode0 library and mode1 pointwise controls show the dominant gain comes from N4
+products, with E3 cross-index width providing throughput. Padding/tail/cache-miss
+costs are explicit; context (~156ms) is separately recorded, not hidden as API work.
+Initialized-process setup/first4.48/10.8–14.4ms; adding measured context estimates
+about2 full-batch calls to amortize against CPU, not a full cold-library measurement.
+
+E4 order6 B128 trace396 kernels/~5.9–6.2ms active, no inneralloc/free/host transfers,
+44 custom products/vertices~.40ms versus E3's26.37ms,40 rank GEMMs1.16ms, solves~3.6ms.
+Known arrays23.63MB, observed peak74.75MB includes references/libs. B1 known221KB,
+peak51.31MB,243 kernels. Full API retains two malloc/free calls and benchmark fences;
+runtime/geometry CSVs accompany raw samples. No peak-occupancy claim.
+
+Trace-justified solver probe reconstructs at~1e-16 and is faster in isolation, but
+fails coefficient/public strict parity. Cached pivots/factors/complex double preserved,
+no tolerance adjustment. Public rejection reproduced with source-hashed failure
+manifest; library control passes. Micro final CSV measures both reconstruction
+residuals; earlier zero library residual placeholder is explicitly identified. Keep
+library LU in recommended experiment. Failed controls/prototype are retained for review.
+
+Final archive audit passes:17 accepted fusion manifests,250 groups, zero sampled
+parity errors, clean sanitizers, retained numerical rejection. CPU prefix final
+backend-cpu smoke passes4 groups. Production hashes unchanged, user work preserved.
+No remaining required strategy, combination, report or checkpoint work. Mark the
+existing persistent optimization goal complete after this commit and confirm the
+watcher observes the completed goal. Do not push or promote automatically.
