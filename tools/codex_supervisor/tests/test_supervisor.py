@@ -97,6 +97,62 @@ class RecoveryTests(unittest.TestCase):
         start = next(p for m, p in self.rpc.calls if m == 'turn/start')
         self.assertEqual((start['model'], start['effort']), ('gpt-6-astra', 'high'))
 
+    def test_system_error_quota_reset_recovers_for_both_goal_states(self):
+        for status in ('active', 'usageLimited'):
+            with self.subTest(status=status):
+                self.setUp()
+                self.rpc.goal['status'] = status
+                self.rpc.thread['status']['type'] = 'systemError'
+                self.rpc.turn.update(status='failed', error={'codexErrorInfo': 'usageLimitExceeded'})
+                self.rpc.limits['ordinaryUsageAllowed'] = False
+                self.assertEqual(self.tick(), 'waiting_quota')
+                self.assertEqual(self.tick(10000), 'waiting_quota')
+                self.assertFalse(self.rpc.mutations())
+                self.rpc.limits['ordinaryUsageAllowed'] = True
+                self.assertEqual(self.tick(10030), 'idle_grace')
+                self.assertEqual(self.tick(10150), 'resumed')
+                self.assertEqual(self.tick(10180), 'thread_active')
+                self.assertEqual(len([m for m, _ in self.rpc.calls if m == 'turn/start']), 1)
+                self.assertNotIn('thread/resume', [m for m, _ in self.rpc.calls])
+
+    def test_system_error_without_terminal_quota_failure_stays_blocked(self):
+        self.rpc.thread['status']['type'] = 'systemError'
+        for status, error in [('completed', None), ('interrupted', {'codexErrorInfo': 'usageLimitExceeded'}),
+                              ('failed', {'codexErrorInfo': 'sandboxError'}), ('failed', None),
+                              ('failed', {'codexErrorInfo': {'other': 'unknown'}})]:
+            with self.subTest(status=status, error=error):
+                self.rpc.turn.update(status=status, error=error)
+                self.assertEqual(self.tick(10000), 'waiting_thread_error')
+        self.assertFalse(self.rpc.mutations())
+
+    def test_system_error_rechecks_latest_failure_before_start(self):
+        self.rpc.thread['status']['type'] = 'systemError'
+        self.rpc.turn.update(status='failed', error={'codexErrorInfo': 'rateLimitExceeded'})
+        self.tick()
+        reads = 0
+        def hook(method, params):
+            nonlocal reads
+            if method == 'thread/turns/list':
+                reads += 1
+                if reads == 2:
+                    return {'data': [{'id': 'newer', 'status': 'failed',
+                                      'error': {'codexErrorInfo': 'sandboxError'}}]}
+        self.rpc.hook = hook
+        self.assertEqual(self.tick(120), 'thread_became_active')
+        self.assertFalse(self.rpc.mutations())
+
+    def test_permission_revoked_during_final_checks_does_not_resume(self):
+        self.tick()
+        reads = 0
+        def hook(method, params):
+            nonlocal reads
+            if method == 'account/rateLimits/read':
+                reads += 1
+                if reads == 2: return {'ordinaryUsageAllowed': False}
+        self.rpc.hook = hook
+        self.assertEqual(self.tick(120), 'waiting_quota')
+        self.assertFalse(self.rpc.mutations())
+
     def test_quota_wait_after_idle_restarts_grace(self):
         self.assertEqual(self.tick(), 'idle_grace')
         self.rpc.limits['ordinaryUsageAllowed'] = False

@@ -129,6 +129,7 @@ class TransportTests(unittest.TestCase):
     def test_end_to_end_quota_reset_then_single_resumption(self):
         fake = FakeRpc()
         fake.goal['status'] = 'usageLimited'
+        fake.thread['status']['type'] = 'systemError'
         fake.turn.update(status='failed', error={'codexErrorInfo': 'usageLimitExceeded'})
         fake.limits = {'ordinaryUsageAllowed': False, 'rateLimits': {
             'primary': {'usedPercent': 100, 'resetsAt': 50}}}

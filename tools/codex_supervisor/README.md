@@ -18,6 +18,11 @@ there are no additional packages or TCP listeners.
 - After 120 seconds of stable idle state, recover `usageLimited` with automatic
   mutation provenance and start a continuation at GPT-6.1 Sol / medium / standard
   speed. Active goals also have an idle fallback if built-in continuation stalls.
+- A terminal quota failure can leave the loaded thread in `systemError`. Treat
+  that state as recoverable only when its latest turn is failed with
+  `usageLimitExceeded` or `rateLimitExceeded`, and the backend permits usage.
+  Recheck the same failed turn immediately before starting, including after goal
+  recovery. Other error states remain blocked. No thread reload is necessary.
 - Preserve the resumed thread's existing tools, environments and permission review.
   Recheck live status immediately before starting; the shared server serializes
   turns on this thread, including a racing UI request. A final race can add input
@@ -30,8 +35,9 @@ there are no additional packages or TCP listeners.
 
 ## Local installation on ts
 
-Machine-specific configuration and all runtime state are in ignored
-`cbuild-supervisor/`; the code and tests are tracked here. A dedicated tmux server
+Machine-specific configuration and all runtime state are in ignored build folders;
+the current optimization goal uses `cbuild-supervisor-small/exploration/` (the
+completed original port used `cbuild-supervisor/`). Code and tests are tracked here. A dedicated tmux server
 (`xca-cuda-supervisor`, session `dense_cuda`) survives SSH logout. A user crontab
 `@reboot` entry runs `launch.py`, which starts the managed Codex daemon if absent
 and creates the detached supervisor session if absent. It never restarts a running
@@ -41,13 +47,13 @@ Codex authentication. Hardware/network/service failures can still require repair
 From the repository root:
 
 ```bash
-python3 tools/codex_supervisor/launch.py --config "$PWD/cbuild-supervisor/config.json"
-cat cbuild-supervisor/state.json
-tail -n 20 cbuild-supervisor/supervisor.log
+python3 tools/codex_supervisor/launch.py --config "$PWD/cbuild-supervisor-small/exploration/config.json"
+cat cbuild-supervisor-small/exploration/state.json
+tail -n 20 cbuild-supervisor-small/exploration/supervisor.log
 ```
 
 To pause the **goal**, use `/goal pause` in the session. To disable only custom
-restarts, create `cbuild-supervisor/PAUSE`; remove it to enable observation again.
+restarts, create `cbuild-supervisor-small/exploration/PAUSE`; remove it to enable observation again.
 That file does not interrupt an already running turn or pause built-in Goal
 continuation. To stop the detached supervisor itself:
 
@@ -65,7 +71,7 @@ runtime lock protects all invocations):
 
 ```bash
 python3 tools/codex_supervisor/supervisor.py \
-  --config "$PWD/cbuild-supervisor/config.json" --once --dry-run
+  --config "$PWD/cbuild-supervisor-small/exploration/config.json" --once --dry-run
 ```
 
 ## Validation
@@ -81,6 +87,11 @@ quoting, WebSocket framing/fragmentation/pings, and end-to-end simulated reset.
 Live checks read the current session and included-usage permission. No real account
 quota is deliberately exhausted; the next natural reset remains the production
 validation of backend recovery. Boot registration is checked without rebooting ts.
+
+`state.json` records each poll's time, runtime thread status and latest inspected
+turn ID/status/error code. The log prints action changes only; an unchanged log
+does not mean the watcher stopped. A quota reset is simulated with a thread that
+remains `systemError` until `turn/start`, matching the observed missed-restart case.
 
 Protocol reference: [official Codex app-server documentation](https://learn.chatgpt.com/docs/app-server).
 The generated protocol schema for the installed CLI also documents

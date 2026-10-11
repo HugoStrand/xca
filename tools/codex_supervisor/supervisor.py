@@ -65,6 +65,24 @@ class Supervisor:
             print(time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now)), action, flush=True)
         return action
 
+    def ready_to_start(self, rpc, tid, last):
+        """A quota-failed loaded thread remains systemError until the next turn.
+
+        Recheck its latest terminal turn so a new failure or active UI request
+        cannot inherit the earlier quota error's authorization to recover.
+        """
+        runtime = rpc.call('thread/read', {'threadId': tid, 'includeTurns': False})['thread']['status']['type']
+        if runtime == 'idle':
+            return True
+        if runtime != 'systemError':
+            return False
+        turns = rpc.call('thread/turns/list', {'threadId': tid, 'limit': 1,
+                         'sortDirection': 'desc', 'itemsView': 'summary'})['data']
+        latest = turns[0] if turns else {}
+        error = (latest.get('error') or {}).get('codexErrorInfo')
+        return (latest.get('id') == last.get('id') and latest.get('status') == 'failed'
+                and isinstance(error, str) and error in QUOTA_ERRORS)
+
     def tick(self, rpc, now=None, dry_run=False):
         now = time.time() if now is None else now
         cfg, state = self.config, self.state
@@ -88,18 +106,23 @@ class Supervisor:
         if Path(thread['cwd']).resolve() != Path(cfg['repo']).resolve():
             return self.record('waiting_workspace_identity', now), 300
         runtime = thread['status']['type']
+        state['thread_status'] = runtime
         if runtime == 'active':
             state.pop('idle_since', None)
             return self.record('thread_active', now), 30
-        if runtime not in {'idle', 'notLoaded'}:
+        if runtime not in {'idle', 'notLoaded', 'systemError'}:
             return self.record('waiting_thread_error', now), 300
         turns = rpc.call('thread/turns/list', {'threadId': tid, 'limit': 1,
                          'sortDirection': 'desc', 'itemsView': 'summary'})['data']
         last = turns[0] if turns else {}
         error = (last.get('error') or {}).get('codexErrorInfo')
         if not isinstance(error, str): error = None
+        state.update(last_turn=last.get('id'), last_turn_status=last.get('status'), last_turn_error=error)
         if last.get('status') == 'inProgress':
             return self.record('waiting_unfinished_turn', now), 60
+        if runtime == 'systemError' and not (last.get('status') == 'failed' and error in QUOTA_ERRORS):
+            state.pop('idle_since', None)
+            return self.record('waiting_thread_error', now), 300
         if state.get('pending'):
             if last.get('id') == state.get('before_turn'):
                 return self.record('uncertain_start', now, halted=True), 900
@@ -122,13 +145,18 @@ class Supervisor:
             return self.record('goal_changed', now), 30
         if runtime == 'notLoaded':
             rpc.call('thread/resume', {'threadId': tid, 'excludeTurns': True})
-        if rpc.call('thread/read', {'threadId': tid, 'includeTurns': False})['thread']['status']['type'] != 'idle':
+        if not self.ready_to_start(rpc, tid, last):
             state.pop('idle_since', None)
             return self.record('thread_became_active', now), 30
+        # The idle grace and preceding RPC calls must not outlive quota recovery.
+        wait, delay = quota_wait(rpc.call('account/rateLimits/read'), now, cfg['model'])
+        if wait:
+            state.pop('idle_since', None)
+            return self.record(wait, now), delay
         if status == 'usageLimited':
             # Automatic provenance preserves user pauses and requires backend recovery.
             rpc.call('thread/goal/set', {'threadId': tid, 'status': 'active', 'origin': 'automatic'})
-            if rpc.call('thread/read', {'threadId': tid, 'includeTurns': False})['thread']['status']['type'] != 'idle':
+            if not self.ready_to_start(rpc, tid, last):
                 return self.record('thread_became_active', now), 30
         # Journal before starting; a lost response is reconciled rather than retried.
         state.update(pending=True, before_turn=last.get('id'), request_id=str(uuid.uuid4()))
