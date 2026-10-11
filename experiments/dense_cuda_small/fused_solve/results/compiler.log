@@ -1,0 +1,63 @@
+[  3%] Building CUDA object CMakeFiles/fused_kernels.dir/kernels.cu.o
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd15transpose_solveEPK7double2PKiS2_PS0_ii' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd15transpose_solveEPK7double2PKiS2_PS0_ii
+    640 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 47 registers, used 0 barriers, 640 bytes cumulative stack size, 392 bytes cmem[0]
+ptxas info    : Compile time = 42.918 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd6vertexEPKPK7double2S4_PKPS0_iS0_S0_' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd6vertexEPKPK7double2S4_PKPS0_iS0_S0_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 0 barriers, 416 bytes cmem[0]
+ptxas info    : Compile time = 2.579 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd7productEPK7double2S2_PS0_iS0_S0_' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd7productEPK7double2S2_PS0_iS0_S0_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 0 barriers, 416 bytes cmem[0]
+ptxas info    : Compile time = 3.041 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd9add_scaleEPK7double2PS0_id' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd9add_scaleEPK7double2PS0_id
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, used 0 barriers, 384 bytes cmem[0]
+ptxas info    : Compile time = 0.846 ms
+ptxas info    : Compiling entry function '_ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd12weighted_addEPK7double2S2_S2_PS0_ii' for 'sm_86'
+ptxas info    : Function properties for _ZN43_GLOBAL__N__7e77859f_10_kernels_cu_653356bd12weighted_addEPK7double2S2_S2_PS0_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 24 registers, used 0 barriers, 392 bytes cmem[0]
+ptxas info    : Compile time = 1.836 ms
+[  7%] Linking CUDA static library libfused_kernels.a
+[  7%] Built target fused_kernels
+[ 11%] Building CXX object CMakeFiles/fused_solve.dir/diagram_evaluator.cpp.o
+[ 14%] Building CXX object CMakeFiles/fused_solve.dir/dlr_ops.cpp.o
+[ 18%] Building CXX object CMakeFiles/fused_solve.dir/device_ops.cpp.o
+[ 22%] Linking CXX static library libfused_solve.a
+[ 22%] Built target fused_solve
+[ 25%] Building CXX object CMakeFiles/batch_one_fermion_se_spgf_all_evals.dir/one_fermion_se_spgf_all_evals.cpp.o
+[ 33%] Building CXX object CMakeFiles/fused_solve_benchmark.dir/benchmark.cpp.o
+[ 33%] Building CXX object CMakeFiles/batch_unitary_invariance_all_evals.dir/unitary_invariance_all_evals.cpp.o
+[ 37%] Building CXX object CMakeFiles/batch_two_fermions_se_spgf_all_evals.dir/two_fermions_se_spgf_all_evals.cpp.o
+[ 40%] Building CXX object CMakeFiles/batch_dlr.dir/test_dlr.cpp.o
+[ 44%] Building CXX object CMakeFiles/batch_api.dir/test_api.cpp.o
+[ 48%] Building CXX object CMakeFiles/batch_dlr.dir/home/hugstr/dev/xca/experiments/dense_cuda_small/serial_stream/device_ops.cpp.o
+[ 51%] Building CXX object CMakeFiles/batch_dlr.dir/home/hugstr/dev/xca/experiments/dense_cuda_small/serial_stream/dlr_ops.cpp.o
+[ 55%] Linking CXX executable fused_solve_benchmark
+[ 55%] Built target fused_solve_benchmark
+[ 59%] Building CXX object CMakeFiles/fused_primitives.dir/test_fusion.cpp.o
+[ 62%] Linking CXX executable batch_api
+[ 62%] Built target batch_api
+[ 66%] Building CXX object CMakeFiles/solve_micro.dir/micro.cpp.o
+[ 70%] Linking CXX executable batch_dlr
+[ 74%] Linking CXX executable batch_unitary_invariance_all_evals
+[ 77%] Linking CXX executable batch_two_fermions_se_spgf_all_evals
+[ 77%] Built target batch_dlr
+[ 81%] Building CXX object CMakeFiles/solve_micro.dir/home/hugstr/dev/xca/experiments/dense_cuda_small/index_batch/device_ops.cpp.o
+[ 81%] Built target batch_unitary_invariance_all_evals
+[ 85%] Building CXX object CMakeFiles/solve_micro.dir/home/hugstr/dev/xca/experiments/dense_cuda_small/index_batch/dlr_ops.cpp.o
+[ 85%] Built target batch_two_fermions_se_spgf_all_evals
+[ 88%] Building CXX object CMakeFiles/fused_primitives.dir/home/hugstr/dev/xca/experiments/dense_cuda_small/index_batch/device_ops.cpp.o
+[ 92%] Linking CXX executable batch_one_fermion_se_spgf_all_evals
+[ 92%] Built target batch_one_fermion_se_spgf_all_evals
+[ 96%] Linking CXX executable fused_primitives
+[ 96%] Built target fused_primitives
+[100%] Linking CXX executable solve_micro
+[100%] Built target solve_micro

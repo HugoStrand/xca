@@ -1,0 +1,1197 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-solve
+Test project /home/hugstr/dev/xca/cbuild-experiment-solve
+    Start 1: batch_one_fermion_se_spgf_all_evals
+1/6 Test #1: batch_one_fermion_se_spgf_all_evals ....   Passed    1.90 sec
+    Start 2: batch_two_fermions_se_spgf_all_evals
+2/6 Test #2: batch_two_fermions_se_spgf_all_evals ...   Passed    1.30 sec
+    Start 3: batch_unitary_invariance_all_evals
+3/6 Test #3: batch_unitary_invariance_all_evals .....   Passed    2.04 sec
+    Start 4: batch_dlr
+4/6 Test #4: batch_dlr ..............................***Failed    0.70 sec
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from BatchDlr
+[ RUN      ] BatchDlr.WideRhsAndRankTransformsMatchIndependentLanes
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.7038567385483748e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 0
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=1
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.7038567385483748e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 0
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.276331157904631e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 1
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.1136208819569266e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 2
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1221280895190782e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 3
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.686825125841293e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 4
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0212145821502728e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 5
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1212991413024955e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 6
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.7883600329826541e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 7
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.7038567385483748e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 0
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.276331157904631e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 1
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.1136208819569266e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 2
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1221280895190782e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 3
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.686825125841293e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 4
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0212145821502728e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 5
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1212991413024955e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 6
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.7883600329826541e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 7
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.9309553904321815e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 8
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.6718869951503872e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 9
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.7103439343763337e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 10
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.2410434274769616e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 11
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8077202875488737e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 12
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.4084502960669216e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 13
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.5753512962240839e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 14
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.7971461337459608e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 15
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7376052545925244e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 16
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0286121479813075e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 17
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2682785672231868e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 18
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0696903432689759e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 19
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2840999962987992e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 20
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.0272305519922559e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 21
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.4566803368571626e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 22
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.0263664778402832e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 23
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.92919966725005e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 24
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2167289354079256e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 25
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.6034697171042917e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 26
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.9941957450411355e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 27
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.6391896046805151e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 28
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.9171161167111538e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 29
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2780402278797984e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 30
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7314937236219003e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 31
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=32
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.7038567385483748e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 0
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.276331157904631e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 1
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.1136208819569266e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 2
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1221280895190782e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 3
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.686825125841293e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 4
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0212145821502728e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 5
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.1212991413024955e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 6
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.7883600329826541e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 7
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.9309553904321815e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 8
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.6718869951503872e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 9
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.7103439343763337e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 10
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.2410434274769616e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 11
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8077202875488737e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 12
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.4084502960669216e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 13
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.5753512962240839e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 14
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.7971461337459608e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 15
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7376052545925244e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 16
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0286121479813075e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 17
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2682785672231868e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 18
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0696903432689759e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 19
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2840999962987992e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 20
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.0272305519922559e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 21
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.4566803368571626e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 22
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.0263664778402832e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 23
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.92919966725005e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 24
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2167289354079256e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 25
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.6034697171042917e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 26
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.9941957450411355e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 27
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.6391896046805151e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 28
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.9171161167111538e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 29
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2780402278797984e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 30
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7314937236219003e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 31
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.1396220470566304e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 32
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 4.9126600889534284e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 33
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2542502580986321e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 34
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.13285899380178e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 35
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.3022649375856044e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 36
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.1276842923316309e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 37
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.1170314572109685e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 38
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7743782598963164e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 39
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.0891476187396614e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 40
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.8438895989487784e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 41
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.1384161551991213e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 42
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.5504330800269892e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 43
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.6578967182982838e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 44
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.1651355835458131e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 45
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.6146245237119037e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 46
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.0651650038693435e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 47
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.4427547430744361e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 48
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.6295475844797258e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 49
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.1090793717210622e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 50
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.8752527207032784e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 51
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0191169965358789e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 52
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.0458626224779538e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 53
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.966781718209286e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 54
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.9570786402185123e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 55
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.1096789466550547e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 56
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.140593908104038e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 57
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.9676202313559222e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 58
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.6022393759836679e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 59
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.3289110356329906e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 60
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.6394278540175544e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 61
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.9628560087304063e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 62
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.3449846389019664e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 63
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.178148585171596e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 64
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.1248833365818662e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 65
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.9336630451190314e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 66
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8187876008810424e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 67
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.9351935974158819e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 68
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.641857312945837e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 69
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.4451550917841929e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 70
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8990348165711997e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 71
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.8804899728635259e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 72
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.394812924510914e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 73
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.1342774973402049e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 74
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0698214299648927e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 75
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.0376797907110602e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 76
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.8891739661916285e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 77
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.9188189385048752e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 78
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.399421343117933e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 79
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.2332987420481423e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 80
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.5465174626067453e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 81
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0318920616434665e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 82
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.0306728042563711e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 83
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.0200901630510148e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 84
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.6946929943802807e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 85
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0779409015331176e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 86
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.6863329807010999e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 87
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 4.0874724257355127e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 88
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.5900963515670222e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 89
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.2749400607588091e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 90
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.0575563869335522e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 91
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.3329859299320448e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 92
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.9337670987069417e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 93
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.2762262979471908e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 94
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.4133948144570415e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 95
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0316710096926745e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 96
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.3883227583100517e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 97
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.7344419386475466e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 98
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2878531125699955e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 99
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.0698519777796084e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 100
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2304940537838604e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 101
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.2180781883618488e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 102
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.5479061993853318e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 103
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.283148063289227e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 104
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.5536478167316253e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 105
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.9965445196911251e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 106
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.6401120103470674e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 107
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.6201814380761927e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 108
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.255784717322148e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 109
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.2054497224199916e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 110
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.4562896739088342e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 111
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2915585983881854e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 112
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.3744924735069e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 113
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 4.1610249787089718e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 114
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 6.7236583565795408e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 115
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.2903098024038198e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 116
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8732216077657482e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 117
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 5.3773139243770216e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 118
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.7796995580968691e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 119
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.1734919705172295e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 120
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.8222669404949674e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 121
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 9.3406782076554089e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 122
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.674503016610336e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 123
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.645966233158288e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 124
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 8.5842122705826225e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 125
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 1.0175152524113525e-06 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 126
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:65: Failure
+Expected: (nda::max_element(nda::abs(got - nda::to_host(s)))) <= (1e-12), actual: 7.9476232664361399e-07 vs 9.9999999999999998e-13
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:48: 127
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_dlr.cpp:11: lambda=40 B=128
+
+[  FAILED  ] BatchDlr.WideRhsAndRankTransformsMatchIndependentLanes (450 ms)
+[ RUN      ] BatchDlr.PendingDefaultStreamUploadIsOrderedBeforeOwnedStream
+[       OK ] BatchDlr.PendingDefaultStreamUploadIsOrderedBeforeOwnedStream (27 ms)
+[----------] 2 tests from BatchDlr (478 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (478 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] BatchDlr.WideRhsAndRankTransformsMatchIndependentLanes
+
+ 1 FAILED TEST
+
+    Start 5: batch_api
+5/6 Test #5: batch_api ..............................***Failed    1.17 sec
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 3 tests from BatchAPI
+[ RUN      ] BatchAPI.InvalidPrefixRecoveryAndLongIndices
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:19: Failure
+Expected: compare(tensor(value[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=2.694366e-31 abs=3.091171e-31 rel=1.147272e+00".
+
+[  FAILED  ] BatchAPI.InvalidPrefixRecoveryAndLongIndices (262 ms)
+[ RUN      ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting
+[       OK ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting (14 ms)
+[ RUN      ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation
+unknown file: Failure
+C++ exception with description "comparison failed: norm=3.547163e-14 abs=4.059168e-24 rel=1.144342e-10" thrown in the test body.
+
+[  FAILED  ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation (17 ms)
+[----------] 3 tests from BatchAPI (294 ms total)
+
+[----------] 1 test from FusedAPI
+[ RUN      ] FusedAPI.DenseComplexBasisAndChangedPropagator
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=9.536293e-17 abs=5.830512e-23 rel=6.114024e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=8.538254e-17 abs=4.329645e-23 rel=5.070878e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=5.899681e-22 abs=3.799120e-30 rel=6.439535e-09".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=5.074109e-22 abs=5.281325e-30 rel=1.040838e-08".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=6.048124e-34 abs=2.140291e-33 rel=3.538769e+00".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=12
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=2.177627e-33 abs=2.774096e-33 rel=1.273908e+00".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=1 order=12
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=6.128273e-17 abs=4.299930e-23 rel=7.016544e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=5.486906e-17 abs=1.831361e-23 rel=3.337694e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=3.228148e-22 abs=3.754926e-30 rel=1.163183e-08".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=2.776417e-22 abs=2.982701e-30 rel=1.074299e-08".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=1.077784e-33 abs=2.529049e-33 rel=2.346526e+00".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=12
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=1.207200e-34 abs=2.961255e-34 rel=2.452994e+00".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=8 order=12
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=3.938187e-17 abs=2.699606e-23 rel=6.854946e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=3.526029e-17 abs=1.955235e-23 rel=5.545148e-07".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=6
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=1.766357e-22 abs=3.744027e-30 rel=2.119632e-08".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=1.519182e-22 abs=1.832612e-30 rel=1.206315e-08".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=8
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=1.303904e-34 abs=8.022571e-34 rel=6.152731e+00".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=12
+
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:131: Failure
+Expected: compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)) doesn't throw an exception.
+  Actual: it throws std::runtime_error with description "comparison failed: norm=2.472789e-35 abs=6.028255e-34 rel=2.437837e+01".
+Google Test trace:
+/home/hugstr/dev/xca/experiments/dense_cuda_small/fused_solve/test_api.cpp:124: B=128 order=12
+
+[  FAILED  ] FusedAPI.DenseComplexBasisAndChangedPropagator (632 ms)
+[----------] 1 test from FusedAPI (632 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 2 test suites ran. (927 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 3 tests, listed below:
+[  FAILED  ] BatchAPI.InvalidPrefixRecoveryAndLongIndices
+[  FAILED  ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation
+[  FAILED  ] FusedAPI.DenseComplexBasisAndChangedPropagator
+
+ 3 FAILED TESTS
+
+    Start 6: fused_primitives
+6/6 Test #6: fused_primitives .......................   Passed    0.46 sec
+
+67% tests passed, 2 tests failed out of 6
+
+Total Test time (real) =   7.59 sec
+
+The following tests FAILED:
+	  4 - batch_dlr (Failed)
+	  5 - batch_api (Failed)
+Errors while running CTest

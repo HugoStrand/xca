@@ -12,7 +12,7 @@ Cached library LU and rank GEMMs are retained.
 Mode2 additionally probes custom complex-double N4 products/vertex products;
 non-N4 products use libraries. Interleaved complex-dot rounding failed strict high-order checks; the grouped real
 FMA version passes all six CTest entries, including long-index/order12 and tails.
-Broader benchmark acceptance is pending. No tolerance is weakened.
+Broader benchmark gates pass:17 runs/250 backend-case groups, sampled errors zero. No tolerance is weakened.
 
 XCA_BATCH_CAPACITY=1 (default) measures fusion independently of cross-index width;
 8/32/128 probe useful E3+E4 combinations. E3 metadata cache, lane tails, sequential
@@ -39,4 +39,5 @@ XCA_FUSED_MODE=1 XCA_BATCH_CAPACITY=128 \
   --output cbuild-small-runs/my-fused-run --profile throughput -- --methods se
 ```
 
-Timings, mode2 gates and trace acceptance are pending; see work log.
+Timings, strict gates, sanitizer checks and traversal audits pass. See RESULTS.md
+and ../COMPARISON.md for capacity selection, cold-context costs and limitations.

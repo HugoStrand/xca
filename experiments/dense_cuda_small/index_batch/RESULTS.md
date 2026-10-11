@@ -38,8 +38,11 @@ With cache disabled,128 indices cost36.973/49.913ms (orders6/8), still about2.6�
 This measures complete metadata preparation each call as a changing-index control;
 actual index contents are fixed so exact comparisons are retained. Fresh first-call
 costs are36.9–37.1/49.8–49.9ms, and constructor setup7.4–7.5ms. Cache reuse saves
-about4.2/5.4ms per call; the very first call already beats frozen CUDA and current CPU
-including setup. Comparing an uncached call with a cached call of equal first/setup
+about4.2/5.4ms per call; in an initialized process the first call plus constructor already beats frozen CUDA
+and current CPU. This excludes separately recorded CUDA context startup (~162ms in
+repeat01), and validation warms common library caches. Adding the measured context
+probe gives roughly2–3 full-batch calls to amortize against CPU; it is an estimate,
+not a measurement of all standalone cold-library initialization. Comparing an uncached call with a cached call of equal first/setup
 cost has no extra creation cost to amortize: the second identical call realizes reuse.
 
 Four capacities/throughput profiles, three full-batch repeats, uncached control,

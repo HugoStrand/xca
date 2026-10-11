@@ -1,0 +1,22 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 3 tests from BatchAPI
+[ RUN      ] BatchAPI.InvalidPrefixRecoveryAndLongIndices
+[       OK ] BatchAPI.InvalidPrefixRecoveryAndLongIndices (949 ms)
+[ RUN      ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting
+[       OK ] BatchAPI.OwnedSolverIgnoresSharedNdaSynchronizationSetting (98 ms)
+[ RUN      ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation
+[       OK ] BatchAPI.TailsAndContentCacheWithDeterministicAccumulation (250355 ms)
+[----------] 3 tests from BatchAPI (251403 ms total)
+
+[----------] 1 test from FusedAPI
+[ RUN      ] FusedAPI.DenseComplexBasisAndChangedPropagator
+[       OK ] FusedAPI.DenseComplexBasisAndChangedPropagator (11546 ms)
+[----------] 1 test from FusedAPI (11546 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 2 test suites ran. (262950 ms total)
+[  PASSED  ] 4 tests.
+========= ERROR SUMMARY: 0 errors

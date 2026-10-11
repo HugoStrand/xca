@@ -90,3 +90,37 @@ TEST(BatchAPI, TailsAndContentCacheWithDeterministicAccumulation) {
     EXPECT_GT(candidate.cache_builds(), builds);
   }
 }
+TEST(FusedAPI, DenseComplexBasisAndChangedPropagator) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  nda::matrix<complex> U(4, 4), Ud(4, 4);
+  for (int i = 0; i < 4; ++i)
+    for (int j = 0; j < 4; ++j) U(i, j) = std::exp(complex{0., 2. * std::numbers::pi * i * j / 4. + .23 * j * j}) / 2.;
+  Ud = nda::conj(nda::transpose(U));
+  for (int a = 0; a < 2; ++a) {
+    f.Fs(a, all, all) = nda::linalg::matmul(U, nda::linalg::matmul(nda::make_regular(f.Fs(a, all, all)), Ud));
+    f.Fd(a, all, all) = nda::conj(nda::transpose(f.Fs(a, all, all)));
+  }
+  for (long t = 0; t < f.itops.rank(); ++t)
+    f.G[0].data()(t, all, all) = nda::linalg::matmul(U, nda::linalg::matmul(nda::make_regular(f.G[0].data()(t, all, all)), Ud));
+  f.fset         = std::make_unique<triqs_xca::dense::FSet>(f.Fs, f.Fd, f.coefficients);
+  f.cpu          = std::make_unique<triqs_xca::dense::DiagramEvaluator>(f.options.beta, 1e-12, f.itops, f.poles, f.coefficients, *f.fset);
+  auto reference = baseline(f);
+  for (int B : {1, 8, 128}) {
+    xca_experiments::fused_small::DiagramEvaluator candidate(f.options.beta, 1e-12, f.itops, f.poles, f.coefficients, *f.fset, B);
+    for (int order : {3, 6, 8, 12}) {
+      SCOPED_TRACE(::testing::Message() << "B=" << B << " order=" << order);
+      auto t   = topology(order, "crossing");
+      auto ix  = select_indices(candidate.get_num_self_energy_backbones(t), 3, 31415);
+      auto run = [&] {
+        auto actual = candidate.compute_self_energy(f.G, t, ix);
+        EXPECT_NO_THROW(compare(tensor(actual[0].data()), reference.evaluate("se", t, ix)));
+      };
+      run();
+      auto pointer = f.G[0].data().data();
+      f.G[0].data() *= complex{.99, .001};
+      run();
+      EXPECT_EQ(pointer, f.G[0].data().data());
+    }
+  }
+}

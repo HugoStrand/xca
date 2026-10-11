@@ -283,7 +283,7 @@ namespace xca_experiments::fused_small {
                                       tensor_view out) const {
     validate(in);
     validate(out);
-    require(w.size() == r_ && parity.size() == r_, "fused weights shape");
+    require(w.size() == r_ && parity.size() == r_ && w.strides()[0] == 1 && parity.strides()[0] == 1, "fused weights shape/contiguity");
     disjoint(in.data(), count_, out.data(), count_);
     nda::device_error_check(xca_fused_weighted_add(nda::cucplx(in.data()), nda::cucplx(w.data()), nda::cucplx(parity.data()), nda::cucplx(out.data()),
                                                    count_, stride_, stream_),

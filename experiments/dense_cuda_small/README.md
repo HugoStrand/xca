@@ -9,14 +9,17 @@ Read [the plan](../../plan_dense_cuda_small.md) and
 Each strategy receives its own folder, implementation namespace, opt-in build target,
 README and results. Do not put exploratory code in the production evaluator.
 
-Planned folders, created when their experiments start:
+Measured experiments (see [comparison and recommendations](COMPARISON.md)):
 
 - `serial_stream/`: owned stream/handles/status, fewer synchronization points.
 - `graphs/`: reusable schedule with separately charged graph setup.
 - `index_batch/`: independent index lanes, wide shared-LU RHS/rank transforms.
 - `fused_small/`: specialized complex-double4×4 operations and fused stages.
-- `cpu_hoist_control/`: optional CPU convolution control.
-- Named combination folders only after individual strategies have measured evidence.
+- `fused_solve/`: trace-justified cached-LU follow-up, numerically rejected.
+
+`fused_small` has capacity1 independent controls and128-lane E3+E4 combinations.
+The optional CPU hoisting route remains unimplemented. Every priority E1–E4 has
+checked evidence; the baseline is retained.
 
 A candidate factory plugs into `dense_cuda_bench::run` in the shared harness. Keep
 unsupported methods explicit. Archive source and negative results; keep build products

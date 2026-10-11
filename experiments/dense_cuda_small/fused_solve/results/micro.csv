@@ -1,0 +1,7 @@
+rank,capacity,backend,median_ms,max_coefficient_abs_error,max_coefficient_relative_error,max_reconstruction_error
+16,128,library,0.304611,0,0,0
+16,128,custom,0.104185,6.26665e-17,2.83605e-15,7.07631e-17
+26,128,library,0.443272,0,0,0
+26,128,custom,0.264226,1.64597e-06,0.000121042,7.24442e-17
+36,128,library,0.617238,0,0,0
+36,128,custom,0.480301,7.26e-07,7.39241e-05,8.32667e-17

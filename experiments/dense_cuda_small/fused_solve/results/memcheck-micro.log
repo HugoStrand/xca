@@ -1,0 +1,9 @@
+========= COMPUTE-SANITIZER
+rank,capacity,backend,median_ms,max_coefficient_abs_error,max_coefficient_relative_error,max_reconstruction_error
+16,128,library,1.59916,0,0,0
+16,128,custom,1.10272,6.26665e-17,2.83605e-15,7.07631e-17
+26,128,library,2.63874,0,0,0
+26,128,custom,2.49875,1.64597e-06,0.000121042,7.24442e-17
+36,128,library,4.06088,0,0,0
+36,128,custom,5.09241,7.26e-07,7.39241e-05,8.32667e-17
+========= ERROR SUMMARY: 0 errors

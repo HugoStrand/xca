@@ -1,0 +1,15 @@
+kernel,grid_x,grid_y,grid_z,block_x,registers_per_thread,local_bytes_per_thread,calls,active_ms
+"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)1, (bool)0, (bool)1, (bool)1, (bool)0>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)",128,1,1,256,48,0,20,2.607725
+void cutlass::Kernel2<cutlass_80_tensorop_z884gemm_32x16_16x3_nn_align1>(T1::Params),8,8,1,64,108,0,40,1.163672
+"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)1, (bool)0, (bool)1, (bool)0, (bool)1>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)",128,1,1,256,32,0,20,0.590488
+"<unnamed>::product(const double2 *, const double2 *, double2 *, int, double2, double2)",256,1,1,128,40,0,30,0.274686
+"void laswp_kernel2_reverse<double2, (bool)0, int>(int, T1 *, unsigned long, int, int, const T3 *, int)",32,1,1,4,40,0,20,0.264638
+"void axpy_kernel_val<double2, double2>(cublasAxpyParamsVal<T1, T1, T2>)",1,1,1,384,40,0,128,0.254427
+"void dgmm_readWrite_alignment_kernel<int, double2, (bool)0, (int)5, (int)4, (int)4>(cublasDgmmParams<T1, T2>, const T2 *, const T2 *, T2 *)",1,128,1,16,31,0,40,0.173024
+"<unnamed>::vertex(const double2 *const *, const double2 *const *, double2 *const *, int, double2, double2)",256,1,1,128,40,0,14,0.13296
+"copy_info_kernel(int, int *)",1,1,1,1,16,0,20,0.131679
+"void transpose_readWrite_alignment_kernel<double2, double2, (int)1, (bool)0, (int)5, (int)4, (int)4>(cublasTransposeParams<T2>, const T1 *, T1 *, const T2 *)",1,64,1,256,32,0,20,0.115231
+"void transpose_readWrite_alignment_kernel<double2, double2, (int)1, (bool)0, (int)5, (int)4, (int)4>(cublasTransposeParams<T2>, const T1 *, T1 *, const T2 *)",64,1,1,256,32,0,20,0.081216
+"<unnamed>::add_scale(const double2 *, double2 *, int, double)",256,1,1,128,16,0,10,0.033344
+"void axpy_kernel_val<double2, double2>(cublasAxpyParamsVal<T1, T1, T2>)",86,1,1,384,40,0,10,0.029792
+"<unnamed>::weighted_add(const double2 *, const double2 *, const double2 *, double2 *, int, int)",256,1,1,128,24,0,4,0.018816

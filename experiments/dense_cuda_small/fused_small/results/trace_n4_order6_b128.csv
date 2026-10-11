@@ -1,0 +1,5 @@
+trace,tracked_peak_device_allocation_bytes,range,occurrence,wall_ms,allocation_events,deallocation_events,host_copy_bytes,max_host_copy_bytes,uvm_copy_bytes,max_uvm_copy_bytes,d2d_copy_bytes,kernel_launches,kernel_ms,gemm_ms,solve_ms
+n4-r16-order6-b128.sqlite,74747573,xca.self_energy.traversal,1,6.656455,0,0,0,0,8192,4096,6295552,396,5.871698,1.163672,3.59453
+n4-r16-order6-b128.sqlite,74747573,xca.self_energy.traversal,2,6.985283,0,0,0,0,8192,4096,6295552,396,6.215763,1.16316,3.938592
+n4-r16-order6-b128.sqlite,74747573,xca.self_energy.traversal,3,7.181931,0,0,0,0,8192,4096,6295552,396,6.063927,1.163645,3.785603
+n4-r16-order6-b128.sqlite,74747573,xca.self_energy.traversal,4,6.622812,0,0,0,0,8192,4096,6295552,396,5.851671,1.163198,3.574533
