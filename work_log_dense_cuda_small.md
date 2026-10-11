@@ -2,11 +2,16 @@
 
 ## Current checkpoint — 2026-10-11
 
-Preparation benchmark and reviewed plan are complete. All final measurements and
-profiling jobs have ended successfully. Next transition: complete preparation goal,
-set subsequent turns to gpt-6.1-sol / medium / standard, create the separate persistent
-exploration goal, and rebind the custom supervisor using a fresh runtime. Then begin
-E1 serial_stream ordinary-SE prototype; evaluate E1–E4 per plan, preserve baseline.
+Preparation goal is COMPLETE. The separate optimization-exploration goal is ACTIVE.
+Subsequent thread turns are verified as gpt-6.1-sol / medium / standard. The current
+turn performs only handoff bookkeeping; optimization implementation starts on the
+next turn with E1 serial_stream ordinary-SE. Then evaluate all priority strategies
+per plan, using separate folders and preserving the frozen baseline.
+
+Custom quota recovery is active in cbuild-supervisor-small/exploration/; exact new
+goal binding and thread_active were verified. Boot registration points to this config.
+Preparation watcher was stopped; the shared Codex server was not restarted. No live
+benchmark/build/profiler job remains. Do not recreate the exploration goal.
 
 Branch dev_cuda. Production CPU/CUDA evaluators at baseline commit064b64e remain
 unchanged. Keep experiments in individual folders under experiments/dense_cuda_small/;
@@ -119,3 +124,20 @@ c1a87d7 (fresh timing/profile boundaries),889dc11 (isolation rules), plus final 
 commit. Plan and this work log are separately committed. No push; unrelated user work
 is preserved. Native jobs97265/83256 and all build/test jobs are terminal; no live
 benchmark remains. Read current checkpoint and AGENTS.md before continuing.
+
+
+## Handoff completed
+
+Preparation evidence commit6add3f7, plan-only97ed376, preparation checkpoint5e06d91.
+Preparation goal completed after159,364 recorded tokens and1,526s (about25min).
+`thread/settings/update` selected gpt-6.1-sol/medium/default; thread/read verified
+model and reasoningEffort. Separate exploration goal created and active; current
+server goal and ignored exploration config contain its full exact objective.
+
+Immediate next action: read the plan, verify protected baseline hashes and current
+status, create experiments/dense_cuda_small/serial_stream/ with a bounded ordinary-SE
+prototype and independent build target. Begin with owned stream/handles and safe
+status/pointer-table lifetime. Do not infer that deleting synchronization calls alone
+is safe. Implement/measure the other E1–E4 priorities and useful combinations under
+the new goal; report supported methods and negative results honestly. Model handoff
+is now configured, so no further model-switch or preparation work is required.
