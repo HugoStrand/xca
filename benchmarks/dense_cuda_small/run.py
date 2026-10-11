@@ -70,6 +70,7 @@ def main():
     parser.add_argument('--binary',type=Path,default=ROOT/'cbuild-cuda/examples/dense_cuda_small_benchmark')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--profile',choices=PROFILES,default='quick')
+    parser.add_argument('--candidate-sources',type=Path,help='Experiment source directory to hash alongside the baseline')
     parser.add_argument('extra',nargs=argparse.REMAINDER)
     args=parser.parse_args();binary=args.binary.resolve();out=args.output.resolve()
     if not binary.is_file(): parser.error(f'binary not found: {binary}')
@@ -81,6 +82,12 @@ def main():
     sources=[ROOT/'c++/triqs_xca/dense/diagram_evaluator.cpp',ROOT/'c++/triqs_xca/dense/diagram_evaluator.hpp']
     sources+=sorted((ROOT/'c++/triqs_xca/dense/cuda').glob('*.[ch]pp'))
     sources += [Path(__file__),ROOT/'benchmarks/dense_cuda_small/harness.hpp',ROOT/'examples/dense_cuda_small_benchmark.cpp']
+    if args.candidate_sources:
+        directory=args.candidate_sources.resolve()
+        if not directory.is_dir() or not directory.is_relative_to(ROOT):
+            parser.error('candidate sources must be a directory within the repository')
+        sources += sorted(p for p in directory.rglob('*') if p.is_file() and
+                          (p.suffix in {'.cpp','.hpp','.cu','.cuh','.py'} or p.name=='CMakeLists.txt'))
     manifest=dict(started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),command=cmd,
                   revision=capture(['git','rev-parse','HEAD']),status=capture(['git','status','--short']),
                   binary_sha256=digest(binary),sources_sha256={str(p.relative_to(ROOT)):digest(p) for p in sources},

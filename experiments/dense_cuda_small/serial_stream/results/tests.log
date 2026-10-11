@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-stream
+Test project /home/hugstr/dev/xca/cbuild-experiment-stream
+    Start 1: stream_one_fermion_se_spgf_all_evals
+1/5 Test #1: stream_one_fermion_se_spgf_all_evals ....   Passed    1.99 sec
+    Start 2: stream_two_fermions_se_spgf_all_evals
+2/5 Test #2: stream_two_fermions_se_spgf_all_evals ...   Passed    1.42 sec
+    Start 3: stream_unitary_invariance_all_evals
+3/5 Test #3: stream_unitary_invariance_all_evals .....   Passed    2.78 sec
+    Start 4: stream_dlr
+4/5 Test #4: stream_dlr ..............................   Passed    0.50 sec
+    Start 5: stream_api
+5/5 Test #5: stream_api ..............................   Passed    0.55 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   7.24 sec
