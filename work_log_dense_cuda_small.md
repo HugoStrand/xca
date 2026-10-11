@@ -273,3 +273,33 @@ parity failure without weakening gates. Then E4 fused N4 and useful combinations
 
 Code/results and checkpoint remain separately committed; no push. All23 baseline
 hashes match064b64e. User work preserved; goal remains active under the supervisor.
+
+## E3 bounded prototype and upload handoff checkpoint — 2026-10-11
+
+Committed3d7c826. Isolated index_batch implements ordinary SE with physical(r,B,N,N)
+storage, shared cached r-by-r LU with B*N*N RHS, wide rank transforms, lane-specific
+immutable metadata and content-keyed single-chunk schedule reuse. Capacity1..128,
+long indices, inactive tails, deterministic sequential device accumulation; production
+23 baseline hashes unchanged. First/cache-miss metadata cost remains charged to API.
+
+Five E3 CTest entries pass (analytic adapters, rotations, wide primitives and API).
+Capacities1/8/32/128, different per-lane data, r16/r26, duplicate/empty/changed inputs,
+cache invalidation, B+1/2B+3 tails and >INT_MAX are checked without weaker tolerances.
+Initial uncached probes through order12 matched unchanged CUDA exactly. Primary
+source-hashed cached timings, memory traces and sanitizer evidence remain pending.
+
+A wide primitive exposed an upload race absent from the original fixture checks:
+pageable default-stream cudaMemcpy may return before DMA completion, while our owned
+nonblocking stream is independent. r16/B128 reconstruction error was0.14100087395.
+A diagnostic default-stream fence removed the error. All three experiments now use
+an explicit persistent CUDA event handoff at external/default-stream upload boundaries,
+without introducing per-GEMM synchronization. No arithmetic/tolerance change. Delayed
+producer regression fails when its handoff is deliberately omitted, then both primitive
+tests pass with restored source. Negative/positive logs plus all three serial CTest
+summaries are tracked under index_batch/results/validation/. E1/E2 timing reports
+explicitly identify earlier measurements as historical; post-fix repeats are next.
+
+No build/test/GPU job remains from the negative-control sequence. Next: cached versus
+uncached capacities and tails, three-process promising repeats, E1/E2 post-fix repeats,
+E3 memcheck/profile; then independent E4 fused N4 and useful combinations. Keep result
+and checkpoint commits separate. Goal remains active; no push or production promotion.
