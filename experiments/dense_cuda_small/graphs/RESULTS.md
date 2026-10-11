@@ -63,3 +63,13 @@ inside the charged complete API range (`xca.graph.build`).
 Conclusion: graph replay helps fixed-schedule reuse, with a setup penalty for changing
 indices. Retain it as a possible combination with batching, not as a substitute for
 E3. No automatic production promotion; proceed to wide shared-LU cross-index batching.
+
+## Upload-handoff revalidation at3d7c826
+
+Three fresh quick processes pass strict CUDA parity after the event handoff.
+Order6 B1:2.816/2.817/2.852ms; order8:3.906/3.906/4.014ms.
+Raw samples, source/binary hashes and matching baseline comparisons are in
+results/graphs-handoff-quick-{01,02,03}/. The relevant analytic/API/primitive
+CTest suites also pass (summaries retained under index_batch/results/validation).
+These results validate the repaired stream contract; earlier measurements remain
+recorded at their original revisions.

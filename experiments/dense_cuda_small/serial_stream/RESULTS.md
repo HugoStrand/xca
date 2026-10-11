@@ -67,3 +67,13 @@ Example setup amortization (order6 B1, first repetition): constructor3.439ms ver
 baseline2.093ms; first call3.105ms versus4.413ms. About two repeated calls recover
 the1.346ms extra setup at this case’s1.316ms warm-call saving. This is a case-specific
 example; all first/setup samples remain available rather than hidden in warm medians.
+
+## Upload-handoff revalidation at3d7c826
+
+Three fresh quick processes pass strict CUDA parity after the event handoff.
+Order6 B1:3.048/3.391/3.062ms; order8:4.240/4.339/4.342ms.
+Raw samples, source/binary hashes and matching baseline comparisons are in
+results/serial_stream-handoff-quick-{01,02,03}/. The relevant analytic/API/primitive
+CTest suites also pass (summaries retained under index_batch/results/validation).
+These results validate the repaired stream contract; earlier measurements remain
+recorded at their original revisions.
