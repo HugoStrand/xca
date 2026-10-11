@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("trace", type=Path)
     parser.add_argument("--phases", action="store_true", help="report phase ranges contained in traversal (excludes constructor warmup)")
+    parser.add_argument("--within", help="only audit traversals inside this exact NVTX range name")
     args = parser.parse_args()
     db = sqlite3.connect(f"file:{args.trace}?mode=ro", uri=True)
     tables = {r[0] for r in db.execute("select name from sqlite_master where type='table'")}
@@ -26,6 +27,11 @@ def main():
     ranges = list(db.execute("select start,end,text from NVTX_EVENTS where text like 'xca.%traversal' order by start"))
     if not ranges or any(end is None for _, end, _ in ranges):
         raise RuntimeError("missing or incomplete traversal ranges")
+    if args.within:
+        parents = list(db.execute("select start,end from NVTX_EVENTS where text=? and end is not null", (args.within,)))
+        ranges = [row for row in ranges if any(begin <= row[0] and row[1] <= finish for begin, finish in parents)]
+        if not ranges:
+            raise RuntimeError("no traversal in requested enclosing range")
     if args.phases:
         traversals = ranges
         ranges = [row for row in db.execute("select start,end,text from NVTX_EVENTS where text like 'xca.phase.%' order by start")

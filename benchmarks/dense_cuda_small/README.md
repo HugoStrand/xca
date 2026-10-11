@@ -46,8 +46,8 @@ select different indices. Compare candidates on exactly matching cases/index lis
 
 Each case records first full-vector timing (sample -1), performs untimed warmups,
 then alternates CPU/candidate execution order across repeated measurements. Setup
-and CUDA context initialization are separate. First means after untimed correctness
-checks, not cold process startup. Wall time includes the complete host-facing call,
+and CUDA context initialization are separate. Each timed evaluator is freshly constructed after untimed correctness checks, so
+first-call graph/schedule preparation is charged. The process/context is already warm. Wall time includes the complete host-facing call,
 uploads/downloads, final synchronization and normalization to an owning NDA tensor.
 `owned_bytes` covers the candidate; the separate reference evaluator also remains
 alive. This is not peak process/device memory. Nsight supplies kernel/copy evidence;

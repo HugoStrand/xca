@@ -3,6 +3,7 @@
 #pragma once
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
+#include <triqs_xca/dense/cuda/profile_range.hpp>
 #include <cppdlr/cppdlr.hpp>
 #include <algorithm>
 #include <bit>
@@ -294,7 +295,23 @@ namespace dense_cuda_bench {
                 compare(candidate->evaluate(method, t, ix), reference->evaluate(method, t, ix));
                 f.G[0].data()() = saved;
               }
+              // Validation may populate graph/schedule caches. Fresh measured
+              // objects charge their own construction and lazy preparation.
+              f.cpu.reset();
+              auto cpu_begin = clock::now();
+              f.cpu          = std::make_unique<triqs_xca::dense::DiagramEvaluator>(o.beta, 1e-12, f.itops, f.poles, f.coefficients, *f.fset);
+              f.cpu_setup_ms = elapsed(cpu_begin);
+              if (candidate) {
+                candidate.reset();
+                auto candidate_begin = clock::now();
+                candidate            = std::make_unique<Candidate>(factory(f));
+                fence();
+                setup = elapsed(candidate_begin);
+              }
               auto measure = [&](bool gpu, int sample) {
+#ifdef NDA_HAVE_CUDA
+                triqs_xca::dense::cuda::ProfileRange timed_range(gpu ? "bench.cuda.sample" : "bench.cpu.sample");
+#endif
                 if (gpu) fence();
                 auto begin  = clock::now();
                 auto result = gpu ? candidate->evaluate(method, t, ix) : cpu_evaluate(f, method, t, ix);
@@ -303,7 +320,7 @@ namespace dense_cuda_bench {
                 auto e    = compare(result, gpu ? expected : cpu_expected);
                 auto ce   = compare(result, cpu_expected, gpu && order <= 3);
                 if (sample >= -1)
-                  std::cout << "dense-small-v1," << (gpu ? candidate->name : "cpu") << ',' << o.N << ',' << f.itops.rank() << ',' << f.n << ",2,"
+                  std::cout << "dense-small-v2," << (gpu ? candidate->name : "cpu") << ',' << o.N << ',' << f.itops.rank() << ',' << f.n << ",2,"
                             << o.beta << ',' << o.lambda << ',' << order << ',' << name << ',' << method << ',' << requested << ',' << ix.size()
                             << ',' << total << ',' << encode(ix) << ',' << sample << ',' << ms << ',' << ms * 1e6 / ix.size() << ','
                             << (gpu ? setup : f.cpu_setup_ms) << ',' << (gpu ? context : 0.) << ',' << (gpu ? candidate->bytes() : 0) << ',' << e.norm
