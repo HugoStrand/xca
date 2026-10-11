@@ -90,6 +90,13 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual([m for m, _ in mutations], ['thread/goal/set', 'turn/start'])
         self.assertEqual(mutations[0][1]['origin'], 'automatic')
 
+    def test_configured_model_effort_is_preserved(self):
+        self.config.update(model='gpt-6-astra', effort='high')
+        self.tick()
+        self.assertEqual(self.tick(120), 'resumed')
+        start = next(p for m, p in self.rpc.calls if m == 'turn/start')
+        self.assertEqual((start['model'], start['effort']), ('gpt-6-astra', 'high'))
+
     def test_quota_wait_after_idle_restarts_grace(self):
         self.assertEqual(self.tick(), 'idle_grace')
         self.rpc.limits['ordinaryUsageAllowed'] = False

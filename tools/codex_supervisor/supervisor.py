@@ -135,7 +135,7 @@ class Supervisor:
         self.record('starting_turn', now)
         result = rpc.call('turn/start', {
             'threadId': tid, 'input': [{'type': 'text', 'text': cfg['resume_prompt']}],
-            'model': cfg['model'], 'effort': 'medium', 'serviceTier': 'default',
+            'model': cfg['model'], 'effort': cfg.get('effort', 'medium'), 'serviceTier': 'default',
             'clientUserMessageId': state['request_id']})
         state.pop('pending', None)
         state.pop('idle_since', None)
