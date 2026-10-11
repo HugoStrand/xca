@@ -1,0 +1,29 @@
+{
+  "baseline_revision": "064b64e",
+  "description": "Production CPU/CUDA implementation before small-matrix optimization experiments",
+  "sha256": {
+    "c++/triqs_xca/backbone.cpp": "33cc16eaa81520ed27038ad84552419410a54fe9c6a06d00c12d50f69553edc6",
+    "c++/triqs_xca/backbone.hpp": "33134f7395fdffaace6f140214abc80a0c5c64d081cf460fd665871411eb708f",
+    "c++/triqs_xca/dense/atom_diag.cpp": "cbcc0e25b9c1120e8dc74a78fffeff792deeddbb99b3478323a6b3badd8f2a31",
+    "c++/triqs_xca/dense/atom_diag.hpp": "7ccdeb7ee2556b4c7fa6166bbd8616d2ea4c863112ecbc11f733ec0897e99e8f",
+    "c++/triqs_xca/dense/cuda/device_ops.cpp": "322443ca741e09bd3cc04243e21eb822eba4196782806211573767d716975c6f",
+    "c++/triqs_xca/dense/cuda/device_ops.hpp": "bea5bf5485fb0d5e9056b0d6ffa6d38ef8e520a5cc8567d74eec33cdb3f7b2d5",
+    "c++/triqs_xca/dense/cuda/diagram_evaluator.cpp": "4ae0672ac30f7c417dedf8f52354d55b0a03e3ea479e44fd901ce4c1acb3985f",
+    "c++/triqs_xca/dense/cuda/diagram_evaluator.hpp": "11052836497f83b8914c92bacce0e9ba89808cf087f19e33fc22839007245c4b",
+    "c++/triqs_xca/dense/cuda/dlr_ops.cpp": "eaaf780fbb8195e52e1f90bc2c5fd55d371af1b6d1ced949973a7c159574ca86",
+    "c++/triqs_xca/dense/cuda/dlr_ops.hpp": "f347b5ba78ab318c8ccbe392d2fcd386448a8a073c1f7fb986d064fa07cd1cbd",
+    "c++/triqs_xca/dense/cuda/profile_range.hpp": "63ece551df0a1c630f952deb75b0b730762d8a6bfa30c7d24893e18fc42df96d",
+    "c++/triqs_xca/dense/diagram_evaluator.cpp": "10729e456db42c47ba8a036aa6baff1140093387c8433b30098e0b4169008ff9",
+    "c++/triqs_xca/dense/diagram_evaluator.hpp": "2854b320e7bf771678f652b7c732d5c98b8b3a18664eef59f8494aad444e1408",
+    "c++/triqs_xca/dense/dynint.cpp": "588375632b6ad9dc25dfe1c6a34be173c398edcbc1063c56f31eb7edaff15abc",
+    "c++/triqs_xca/dense/dynint.hpp": "2ff574501216c928eccfbb35cc53f74e250d1facd42557184f820b05fd9310f4",
+    "c++/triqs_xca/dense/fset.cpp": "c8521f9ceef6d8c6681c43a14e832ee8ce0cf8a38d4315427b4d4fab6f878c0a",
+    "c++/triqs_xca/dense/fset.hpp": "590f6a5ca1dffb1fc213dd2368fe983652eba605bb8a63a344e3df0810d4f1c0",
+    "c++/triqs_xca/dense/manual/sigma.cpp": "504daf148dff336f9d77f36702fae0cc828ef6ec691d0890c8c55253e0508dac",
+    "c++/triqs_xca/dense/manual/sigma.hpp": "e7887b23f38c96706637be2a47f0e9f176d3028c2992f19f0960eb052c3f8507",
+    "c++/triqs_xca/dense/manual/spgf.cpp": "a7cdf0f1f6414ecdd5cfe0481fd4f8308c80be5ea912d69c23f01cc678267182",
+    "c++/triqs_xca/dense/manual/spgf.hpp": "70ec0e6fad12de3001a7242be90aa2a5dca019714956d8b20142f73728e4a6af",
+    "c++/triqs_xca/hyb.cpp": "4169712c3a06b7485c05cd8445b20d4c169a51c9d9d8a4d560326cf1d39992ef",
+    "c++/triqs_xca/hyb.hpp": "6721f274f48922fd7a078e43fc119f7bfe2bc10eb088d9ef1ace858bdb0fa6b3"
+  }
+}
