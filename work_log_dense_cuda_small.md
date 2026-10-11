@@ -2,8 +2,8 @@
 
 ## Current checkpoint — 2026-10-11
 
-Preparation and optimization work are COMPLETE; the final persistent-goal transition
-follows this committed checkpoint. All priorities E1–E4 have checked prototypes and
+Preparation and optimization persistent goals are COMPLETE. The optimization goal
+was marked complete after checkpoint0809f85. All priorities E1–E4 have checked prototypes and
 measured evidence. E3+E4 is the recommended ordinary-SE experiment; custom pivoted
 solve is numerically rejected. Read experiments/dense_cuda_small/COMPARISON.md.
 
@@ -383,3 +383,11 @@ backend-cpu smoke passes4 groups. Production hashes unchanged, user work preserv
 No remaining required strategy, combination, report or checkpoint work. Mark the
 existing persistent optimization goal complete after this commit and confirm the
 watcher observes the completed goal. Do not push or promote automatically.
+
+## Goal closure and watcher confirmation — 2026-10-11
+
+Persistent goal tool confirms COMPLETE (recorded elapsed work6079s, about1h41m).
+The watcher next observed no_goal at1791749930.2408204 and exited, as designed when
+there is no active goal. Its tmux session is gone; no resumption was queued. Config/
+boot registration remain but cannot recreate a completed goal. Final results and
+separate checkpoint are committed; production baseline and user files preserved.
