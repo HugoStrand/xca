@@ -51,7 +51,8 @@ The benchmark's strict CUDA-reference and low-order CPU gates remain unchanged.
 Existing analytic/rotation tests use an ordinary-SE adapter; unsupported methods
 remain baseline CUDA checks. Primitive and API tests cover wide solves, rank/edge
 operations, tails, duplicates, input changes, content cache invalidation, long indices
-and partial invalid prefixes. Results are pending verification and measurement.
+and partial invalid prefixes. Correctness suites and memcheck API/primitive runs pass;
+measured capacity/cache tradeoffs and repeats are documented in RESULTS.md.
 
 External NDA/default-stream uploads are handed to the owned nonblocking stream with
 an explicit event. This is required even for cudaMemcpy without an Async suffix:

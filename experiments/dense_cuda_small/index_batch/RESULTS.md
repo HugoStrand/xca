@@ -69,5 +69,6 @@ use grid(8,8,1), totaling1.162ms. Counts match10 convolutions (30 tiny+40 rank) 
 14 vertex products. Tiny products are the dominant cost, not the wide rank transform. Solver specialization is lower priority given the current11%
 solve fraction. The custom N4/fusion experiment is next.
 
-Sanitizer evidence and additional rank/shape controls are pending; see work log for
-live job status. No claim of universal CPU speedup or optimal capacity is made.
+CUDA memcheck passes all3 API tests and both DLR primitive tests with0 errors;
+logs are tracked under results/validation/. Broader rank/shape performance controls
+may refine the recommendation. No universal CPU speedup or optimal capacity claim.
