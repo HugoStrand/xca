@@ -13,7 +13,28 @@ never replace the production baseline. Commit code separately from plan/log, no 
 Preserve modified .gitignore and untracked AGENTS.md, AGENTS.md.bak-20261009,
 test/c++/test_nda_cuda_smoke.cpp and test/python/exp_order_conv/.
 
-## In progress
+## Preparation progress (supersedes initial numerical investigation below)
+
+Benchmark contract v2 is committed in9bedfa9/c1a87d7. Both CPU/CUDA builds and three
+benchmark-contract tests pass; all bounded se/pairs/spgf smoke cases through order12
+pass against the unchanged CUDA baseline. CPU discrepancies at high order are
+reported separately, low-order CPU agreement remains required, and the relative
+parity gate rejects zero even for1e-41 contributions. Changed-input/duplicate/empty
+cases are validated. Fresh timed evaluators charge setup and first-call lazy caches.
+
+Final serial measurement batch is native session97265: quick01/02/03, throughput,
+coverage, rank26. A queued CPU-prefix command omitted --backend cpu and is expected
+to fail after those six GPU runs; preserve the failed output under cbuild-small-runs/
+and rerun the CPU control with the flag, then run the planned N4 order6 profile.
+Do not restart any live benchmark or run GPU work concurrently. Old preliminary
+prewarm-contract data was moved intact to cbuild-small-runs/prewarm-contract-baseline.
+
+Draft plan_dense_cuda_small.md exists with detailed E1–E4 strategies, reviewed
+stream/status/pointer-table hazards, shared-LU batching layout, and success/stop rules.
+Still needs measured baseline/profile findings and final self-review before model
+handoff. No optimization implementation has begun.
+
+## Initial investigation (historical)
 
 New shared harness `benchmarks/dense_cuda_small/harness.hpp`, executable
 `examples/dense_cuda_small_benchmark.cpp`, runner/CSV comparison scripts are written.
