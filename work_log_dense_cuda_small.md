@@ -5,8 +5,9 @@
 Preparation goal is COMPLETE. The separate optimization-exploration goal is ACTIVE.
 Subsequent thread turns are configured as gpt-6.1-sol / medium / standard. E1
 serial_stream ordinary-SE is implemented, verified, measured and committed74f2adf.
-Next evaluate E2 graph replay using E1's owned adapters, then E3 cross-index batching
-and E4 fused kernels, preserving each experiment and the frozen production baseline.
+E2 graph replay is implemented, verified, measured and committedc98801b. Next
+implement E3 cross-index batching and E4 fused kernels, preserving each experiment
+and the frozen production baseline. The exploration goal remains ACTIVE.
 
 Custom quota recovery is active in cbuild-supervisor-small/exploration/; exact new
 goal binding and thread_active were verified. Boot registration points to this config.
@@ -220,3 +221,55 @@ No live GPU/build/test job remains. Code/results are committed separately from t
 log. Next: E2 graph capture feasibility and replay with charged first-call cost,
 content-keyed topology/index cache, changed G uploaded on every call, strict parity
 and cache miss/rebuild tests; then implement E3 even if graphs help.
+
+## E2 graph replay accepted — 2026-10-11
+
+Committedc98801b: separate graphs folder/namespace, copied owned solver/evaluator,
+retained E1 DeviceOps, one content-keyed cached graph/executable, ordinary indexed SE
+limited to128 indices per call. Current G upload and output zeroing happen on every
+call outside capture. First/cache-miss capture/instantiation is charged inside the
+API timing and marked xca.graph.build; replay plus completion is inside traversal.
+No production or E1 implementation change. E1 results additionally document setup
+amortization. The runner hashes the parent experiment tree to include E1 dependencies.
+
+Four isolated CTest entries pass: existing one-/two-fermion and complex-rotation
+suites via an indexed graph adapter, and graph API regressions. Ordinary SE uses
+graphs; unsupported methods remain baseline tests. API checks cover same-address
+index/topology changes, cache hit/miss counts, empty vectors without replay,
+>INT_MAX indices, invalid-prefix recovery, capacity rejection and shared-NDA-setting
+independence. Memcheck API tests report zero errors. An initial test wrongly used
+move assignment while asserting stable topology storage; changing assignment through
+a view made the intended same-address test valid. No parity failure occurred.
+
+Seven runs/210 backend-case groups pass strict exact CUDA-reference parity, including
+high orders through12, rank26 and second seed. Three graph B1 medians: order6
+2.859/3.132/2.833ms (1.41–1.56x frozen CUDA), order8 3.949/3.923/4.017ms
+(1.55–1.59x). Order8 gains6.5–8.5% over E1; order6 is more variable and one repeat
+regresses against its E1 counterpart. B128 warm338.2/464.0ms (orders6/8), first
+529.3/739.3ms; against E1 measured first/setup penalty amortizes after about8/7
+total calls. Still far slower than CPU; fixed-index reuse matters, not merely graphs.
+
+Initial Nsight default graph-level recording hid replay node kernels/copies. Kept
+that explicitly incomplete CSV/raw trace, then repeated with --cuda-graph-trace=node.
+Auditor now rejects traversals with no visible kernels; rejection was checked against
+the incomplete trace, and E1/node-level graphs re-audited successfully. Node-level
+graph traversal:257 kernels,53248D2Dbytes, one graph launch/stream fence, no
+allocations/frees or explicit host/device copies. Managed status131072bytes migrate
+per call. Owned known arrays370496bytes exclude opaque graph/library allocations;
+observed peak51,459,509bytes includes reference/library caches, not physical residency.
+Raw node-level reports stay ignored in cbuild-small-profile/graphs/; data/reports are
+tracked under graphs/results/. No live GPU/build/test job remains.
+
+Next E3 implementation: use (r,B,N,N) storage, r*B tiny-matrix products and shared
+r-by-r cached LU with B*N*N RHS columns. Operator/kernel/sign choices vary by lane,
+so prepare immutable pointer tables and per-node row weights from lane Backbones
+outside traversal; never overwrite queued metadata. Fixed-capacity chunk buffers
+must mask inactive tails. Initially preserve sequential accumulation exactly by
+gathering each finished lane into contiguous persistent device scratch (pitched D2D
+copy), then the unchanged complex cuBLAS axpy in caller order. This avoids prematurely
+introducing a reduction kernel or CPU summation reassociation; its overhead must be
+measured. Wide GEMM/solve algorithms may alter rounding, so investigate any strict
+parity failure without weakening gates. Then E4 fused N4 and useful combinations.
+
+Code/results and checkpoint remain separately committed; no push. All23 baseline
+hashes match064b64e. User work preserved; goal remains active under the supervisor.
