@@ -3,10 +3,10 @@
 ## Current checkpoint — 2026-10-11
 
 Preparation goal is COMPLETE. The separate optimization-exploration goal is ACTIVE.
-Subsequent thread turns are verified as gpt-6.1-sol / medium / standard. The current
-turn performs only handoff bookkeeping; optimization implementation starts on the
-next turn with E1 serial_stream ordinary-SE. Then evaluate all priority strategies
-per plan, using separate folders and preserving the frozen baseline.
+Subsequent thread turns are configured as gpt-6.1-sol / medium / standard. E1
+serial_stream ordinary-SE is implemented, verified, measured and committed74f2adf.
+Next evaluate E2 graph replay using E1's owned adapters, then E3 cross-index batching
+and E4 fused kernels, preserving each experiment and the frozen production baseline.
 
 Custom quota recovery is active in cbuild-supervisor-small/exploration/; exact new
 goal binding and thread_active were verified. Boot registration points to this config.
@@ -176,3 +176,47 @@ from this checkpoint. No CUDA evaluator changes, no push, unrelated work preserv
 
 Exploration goal remains active. Resume the bounded ordinary-SE serial_stream
 prototype next, following the plan and frozen baseline constraints above.
+
+## E1 owned stream accepted — 2026-10-11
+
+User requested persistent continuation. Fresh backend usage permission allowed
+restoring the exploration goal from usageLimited to active (automatic provenance).
+Do not recreate or complete this goal. Supervisor remains bound to it.
+
+Committed74f2adf: isolated serial_stream namespace/standalone build, copied baseline
+arithmetic with direct owned-stream cuBLAS/cuSOLVER adapters, immutable constructor
+vertex pointer tables,65536 distinct persistent managed solver status slots, one
+return-boundary stream fence and no shared NDA setting changes. Factory supports
+ordinary SE only; unsupported methods reject. Headers retain unused copied API
+declarations, but no experiment support is claimed for them. Calls are serialized.
+
+Five isolated CTest entries pass: reused one-/two-fermion analytic and complex
+rotation tests (experimental ordinary SE; baseline fallback for other methods),
+reused DLR primitive tests and new API regressions. Invalid-prefix recovery,
+>INT_MAX indices and owned-solver independence from NDA's shared synchronization
+setting pass. Memcheck API tests report zero errors. All23 protected baseline
+source hashes match064b64e; no production build/source change was required.
+
+Seven serial benchmark runs contain210 backend/case groups: three quick repeats,
+throughput B1/8/32/128, order12 coverage, rank26 and second seed31415. Per-index,
+aggregate, changed-input, duplicate and empty parity are exact against frozen CUDA;
+low-order CPU checks pass, high-order CPU diagnostics remain recorded separately.
+Raw data/manifests/source hashes/comparisons are in serial_stream/results/.
+
+N4/r16 crossing B1: order6 medians3.091/3.065/3.437ms vsbaseline4.407ms
+(1.28–1.44x); order8 4.241/4.255/4.277ms vs6.236ms (1.46–1.47x).
+B128 order6 362.9ms vsCPU92.44ms, order8 511.0ms vsCPU128.0ms. Throughput
+remains nearly linear and about4x slower than CPU. E1 helps but is insufficient.
+
+Trace N4/order6:257 kernels per index, zero traversal allocations/frees or explicit
+host/device copies; one owned-stream fence. Complete API retains two malloc/free
+calls and the benchmark's two device fences. Managed status migration131072bytes
+per call is reported explicitly. Owned bytes370496; observed peak51,459,509bytes
+includes reference/library allocations, not physical candidate residency. Async
+phase ranges are host submission only; traversal encloses actual completion.
+Raw Nsight artifacts are ignored under cbuild-small-profile/stream/.
+
+No live GPU/build/test job remains. Code/results are committed separately from this
+log. Next: E2 graph capture feasibility and replay with charged first-call cost,
+content-keyed topology/index cache, changed G uploaded on every call, strict parity
+and cache miss/rebuild tests; then implement E3 even if graphs help.
