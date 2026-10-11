@@ -3,16 +3,22 @@
 ## Current checkpoint — 2026-10-11
 
 Preparation goal is COMPLETE. The separate optimization-exploration goal is ACTIVE.
-Subsequent thread turns are configured as gpt-6.1-sol / medium / standard. E1
-serial_stream ordinary-SE is implemented, verified, measured and committed74f2adf.
-E2 graph replay is implemented, verified, measured and committedc98801b. Next
-implement E3 cross-index batching and E4 fused kernels, preserving each experiment
-and the frozen production baseline. The exploration goal remains ACTIVE.
+Subsequent turns are gpt-6.1-sol / medium / standard. E1/E2 are implemented and
+measured; upload-ordering fix3d7c826 revalidated both with three fresh strict-parity
+quick repeats. E3 batch prototype3d7c826 has measured results0d53440/31e22e7:
+full N4/r16 B128 orders6/8 repeat32.73/44.48ms, about2.9× CPU and18× frozen CUDA.
+Padding/tail/cache-miss costs are explicit. Next E4 custom fused kernels and useful
+combinations, then comparison/recommendations. Production23 protected hashes intact.
 
-Custom quota recovery is active in cbuild-supervisor-small/exploration/; exact new
-goal binding and thread_active were verified. Boot registration points to this config.
-Preparation watcher was stopped; the shared Codex server was not restarted. No live
-benchmark/build/profiler job remains. Do not recreate the exploration goal.
+Quota watcher remains exact-goal-bound and reports thread_active; do not recreate
+this active exploration goal. Boot registration uses exploration config.
+
+Current native GPU/build sequence80285: completed Nsight profile/export and API
+memcheck (3 tests,0 errors,255.6s); DLR memcheck, trace audit, then copying temporary
+E4 draft into experiments/dense_cuda_small/fused_small and configure/build/CTest.
+Poll80285 before any GPU/build/test work; do not duplicate it. Temporary E4 source
+at /tmp/xca-fused-small-draft has mode0 library control, mode1 pointwise fusion,
+mode2 custom N4 products. No acceptance claimed until tests and benchmark gates.
 
 Branch dev_cuda. Production CPU/CUDA evaluators at baseline commit064b64e remain
 unchanged. Keep experiments in individual folders under experiments/dense_cuda_small/;
@@ -303,3 +309,25 @@ No build/test/GPU job remains from the negative-control sequence. Next: cached v
 uncached capacities and tails, three-process promising repeats, E1/E2 post-fix repeats,
 E3 memcheck/profile; then independent E4 fused N4 and useful combinations. Keep result
 and checkpoint commits separate. Goal remains active; no push or production promotion.
+
+## E3 performance checkpoint — 2026-10-11
+
+Code3d7c826, results0d53440 and CSV normalization31e22e7; checkpoint separate.
+Twelve E3 runs/290 backend-case groups pass strict parity (sampled errors0): capacities
+1/8/32/128 throughput, three fresh128 repeats, uncached metadata, orders through12,
+rank26, seed31415 and129-index tails. Six repaired E1/E2 repeats add168 groups.
+Full128 batch crossing orders6/8 medians32.727/32.741/32.787 and44.459/44.472/44.500ms;
+current CPU95.245/129.747ms, frozen CUDA599.061/831.037ms. First37/50ms and setup7.5ms
+still beat CPU at this width. Uncached37/50ms shows metadata preparation cost; tails129
+69.684/94.788ms and small padding remain real regressions. No universal speedup.
+
+Nsight audit passes:414 kernels,~31.853ms active,~32.63ms traversal, zero inner
+alloc/free/explicit host transfers,6295552D2D and8192UVM bytes. Peak74747573B includes
+refs/libs, known arrays23629888B. Geometry attributes26.369ms to44 tiny4×4 products/
+vertices (gridZ2048=rB), only1.162ms to40 wide rank transforms. Solves3.57ms (~11%).
+Thus E4 should retain pivoted library LU and target tiny products before custom solving.
+Raw trace stays in ignored cbuild-small-profile/batch; tracked CSV/geometry evidence.
+
+API memcheck complete0 errors; DLR sanitizer/build/fusion validation remain queued in
+80285. Work tree user files untouched, no push. Future checkpoint must clear live-job
+entry only after polling its terminal result; maintain source hashes and strict gates.
