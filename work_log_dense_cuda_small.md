@@ -2,10 +2,11 @@
 
 ## Current checkpoint — 2026-10-11
 
-Preparation goal active: build/validate a small reproducible high-order benchmark,
-then write/review the optimization plan. Only then switch this thread's subsequent
-turns to `gpt-6.1-sol` / medium and create the separately authorized exploration goal.
-Current preparation model is `gpt-6-astra` / high. User requested both persistent goals.
+Preparation benchmark and reviewed plan are complete. All final measurements and
+profiling jobs have ended successfully. Next transition: complete preparation goal,
+set subsequent turns to gpt-6.1-sol / medium / standard, create the separate persistent
+exploration goal, and rebind the custom supervisor using a fresh runtime. Then begin
+E1 serial_stream ordinary-SE prototype; evaluate E1–E4 per plan, preserve baseline.
 
 Branch dev_cuda. Production CPU/CUDA evaluators at baseline commit064b64e remain
 unchanged. Keep experiments in individual folders under experiments/dense_cuda_small/;
@@ -66,3 +67,55 @@ Then create plan_dense_cuda_small.md with strategy priorities, isolated experime
 layout, robust numerical gates, measured success/stop criteria and handoff. Complete
 preparation goal only after its artifacts are committed; create exploration goal and
 hand off to the requested model. Read this checkpoint, AGENTS.md and status on resume.
+
+
+## Final preparation acceptance — 2026-10-11
+
+Benchmark contract v2: fresh timed evaluator per case after correctness checks, setup
+and lazy first-call costs visible, exact index selection preserved, raw samples and
+provenance recorded. Seven successful baseline runs total224 backend/case groups.
+Three quick repeats, throughput counts1/8/32/128, orders through12/method coverage,
+rank26 control and CPU-only-prefix control are committed. Initial v1 runs and failed
+CPU invocation (missing --backend cpu) are preserved under ignored cbuild-small-runs/;
+corrected CPU control passed. Final measurements are under
+benchmarks/dense_cuda_small/baseline/ and interpreted in RESULTS.md.
+
+N4/r16 crossing B1: order6 CUDA4.43ms vsCPU.75ms; order8 CUDA6.27ms vsCPU1.03ms.
+Throughput currently scales essentially linearly with index count. N4 order6 trace:
+257 kernels and about335 device synchronizations per complete call. Three timed
+traversals and123 contained phase ranges have no allocations/deallocations or explicit
+host/device copies. Complete API has two malloc/free calls outside traversal; their
+ownership is an experimental investigation target. Trace peak includes reference and
+candidate/library allocations. Raw report/SQLite ignored in cbuild-small-profile/.
+
+Both CPU/CUDA builds and all three benchmark-contract tests pass; actual GPU
+per-index/aggregate checks, changed input, empty and duplicate indices pass through
+order12 se/pairs/spgf. Five malformed CLI cases reject; mismatched comparison case sets
+reject; self-comparison returns1x. Supervisor24 tests pass with phase-specific effort.
+No production evaluator source changed:23 protected hashes match baseline064b64e,
+also checked against every run's manifest. The previous production analytic suites
+remain required for experimental changes; no production code change warranted
+repeating all of them merely for this benchmark-only milestone.
+
+Numerical limitation is explicit: high-order CUDA-reference parity is the experiment
+gate (relative1e-10 with1e-280 floor); low-order CPU agreement also required. CPU
+high-order discrepancy is reported separately. One order10 lane differs1.35 relatively,
+while all individual absolute differences in that case are <=3.54e-34. Tiny cancelling
+contributions need further accuracy investigation before scientific interpretation;
+no gate was loosened to bless an optimization, and zero substitution is tested to fail.
+
+Plan self-review used the measured profile and source/API constraints. Revisions cover
+fresh-object timing, exact input/index parity, status/pointer-table asynchronous
+hazards, graph invalidation/setup amortization, wide shared-LU RHS batching, tails,
+deterministic reduction and bounded memory. Priority experiments:serial_stream,
+graphs,index_batch,fused_small; CPU hoisting is an optional control. Each gets its own
+folder/namespace/target/results, baseline source remains untouched. Successful and
+negative measurements count; speculative rejection alone does not. See the plan's
+explicit success and completion rules. No exploration code was written during
+preparation. No subagents were used.
+
+Implementation/benchmark commits:6095840 (effort-aware supervisor),9bedfa9 (harness),
+c1a87d7 (fresh timing/profile boundaries),889dc11 (isolation rules), plus final data
+commit. Plan and this work log are separately committed. No push; unrelated user work
+is preserved. Native jobs97265/83256 and all build/test jobs are terminal; no live
+benchmark remains. Read current checkpoint and AGENTS.md before continuing.
