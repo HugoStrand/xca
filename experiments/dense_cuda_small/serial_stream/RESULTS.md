@@ -35,7 +35,7 @@ N4/order6 measured-call trace:257 kernels, one owned-stream fence in traversal,
 zero traversal allocation/free events and zero explicit host/device copies.
 Complete API has two device synchronizations (benchmark fences), one stream fence,
 and two malloc/free calls, retained from baseline host-facing materialization.
-Four complete measured calls include the first plus two samples and one validation
+Four complete measured calls include the first plus two samples and one unreported
 warmup. Kernel active time2.806–2.813ms; profiled traversal wall3.181–3.190ms.
 Asynchronous phase NVTX ranges measure host submission and must not be interpreted
 as GPU phase time. The full traversal encloses actual completion.
@@ -56,3 +56,8 @@ remaining throughput gap. Production evaluator is untouched and E1 is not promot
 Timing-source hashes match the current implementation. The only later build-recipe
 change added the separate API regression target; its measured recipe is retained as
 results/measured_CMakeLists.txt. It did not change the timed executable sources.
+
+Example setup amortization (order6 B1, first repetition): constructor3.439ms versus
+baseline2.093ms; first call3.105ms versus4.413ms. About two repeated calls recover
+the1.346ms extra setup at this case’s1.316ms warm-call saving. This is a case-specific
+example; all first/setup samples remain available rather than hidden in warm medians.

@@ -61,6 +61,9 @@ def main():
         if any(kind not in range(1,14) for _, kind in copies):
             raise RuntimeError("unknown memory-copy kind")
         kernels = list(db.execute("select k.end-k.start,s.value from CUPTI_ACTIVITY_KIND_KERNEL k join StringIds s on s.id=k.demangledName where k.start>=? and k.start<?", (start, end)))
+        if not kernels:
+            raise RuntimeError("no kernel activity in traversal: for CUDA graphs record --cuda-graph-trace=node; "
+                               "asynchronous phase ranges require correlation-based attribution")
         gemm = sum(t for t, n in kernels if "gemm" in n.lower() or "splitkreduce" in n.lower())
         solve = sum(t for t, n in kernels if any(x in n.lower() for x in ("trsm", "laswp", "copy_info")))
         output.writerow(dict(zip(headers, [args.trace.name, peak, name, seen[name], (end-start)/1e6, allocations, deallocations, sum(host), max(host, default=0), sum(uvm), max(uvm, default=0), sum(size for size, kind in copies if kind==8), len(kernels), sum(t for t,_ in kernels)/1e6, gemm/1e6, solve/1e6])))
