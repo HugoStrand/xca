@@ -1,0 +1,42 @@
+{
+  "started_utc": "2026-10-11T09:02:51.643440+00:00",
+  "command": [
+    "/home/hugstr/dev/xca/cbuild-cuda/examples/dense_cuda_small_benchmark",
+    "--orders",
+    "1,3,6,8",
+    "--indices",
+    "1,8",
+    "--samples",
+    "5"
+  ],
+  "revision": "c1a87d78c6c11f02463a03c419523a0e760e9468",
+  "status": "M .gitignore\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? benchmarks/dense_cuda_small/__pycache__/\n?? benchmarks/dense_cuda_small/baseline/\n?? plan_dense_cuda_small.md\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/",
+  "binary_sha256": "a9657f4d378bdf6137020c161a586473b726663df385c43248d3d2a5a236fe73",
+  "sources_sha256": {
+    "c++/triqs_xca/dense/diagram_evaluator.cpp": "10729e456db42c47ba8a036aa6baff1140093387c8433b30098e0b4169008ff9",
+    "c++/triqs_xca/dense/diagram_evaluator.hpp": "2854b320e7bf771678f652b7c732d5c98b8b3a18664eef59f8494aad444e1408",
+    "c++/triqs_xca/dense/cuda/device_ops.cpp": "322443ca741e09bd3cc04243e21eb822eba4196782806211573767d716975c6f",
+    "c++/triqs_xca/dense/cuda/device_ops.hpp": "bea5bf5485fb0d5e9056b0d6ffa6d38ef8e520a5cc8567d74eec33cdb3f7b2d5",
+    "c++/triqs_xca/dense/cuda/diagram_evaluator.cpp": "4ae0672ac30f7c417dedf8f52354d55b0a03e3ea479e44fd901ce4c1acb3985f",
+    "c++/triqs_xca/dense/cuda/diagram_evaluator.hpp": "11052836497f83b8914c92bacce0e9ba89808cf087f19e33fc22839007245c4b",
+    "c++/triqs_xca/dense/cuda/dlr_ops.cpp": "eaaf780fbb8195e52e1f90bc2c5fd55d371af1b6d1ced949973a7c159574ca86",
+    "c++/triqs_xca/dense/cuda/dlr_ops.hpp": "f347b5ba78ab318c8ccbe392d2fcd386448a8a073c1f7fb986d064fa07cd1cbd",
+    "c++/triqs_xca/dense/cuda/profile_range.hpp": "63ece551df0a1c630f952deb75b0b730762d8a6bfa30c7d24893e18fc42df96d",
+    "benchmarks/dense_cuda_small/run.py": "728dc8f89a628a8c9bd7218dc05e481d088c0e90ae1d68a7e885f010fba8449a",
+    "benchmarks/dense_cuda_small/harness.hpp": "ac8cc7b5f5c09afb3c73d2d58def9b5d05c96540d56bdccb857305f52b27c49a",
+    "examples/dense_cuda_small_benchmark.cpp": "e0f84a4cb76aa1b4066647c58c6e986863dc4e5220d3ed2b65a0673cd020d52a"
+  },
+  "cpu": "x86_64",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "gpu": "NVIDIA RTX A4000, 580.178.04, 16376 MiB",
+  "libraries": "linux-vdso.so.1 (0x000075bd3ea5b000)\n\tlibtriqs.so.4.0 => /home/hugstr/apps/triqs-cuda/lib/libtriqs.so.4.0 (0x000075bd3e863000)\n\tlibcppdlr_c.so.1.3 => /home/hugstr/apps/triqs-cuda/lib/libcppdlr_c.so.1.3 (0x000075bd3e842000)\n\tlibnda_c.so.2.0 => /home/hugstr/apps/triqs-cuda/lib/libnda_c.so.2.0 (0x000075bd3e807000)\n\tlibmpi_cxx.so.40 => /lib/x86_64-linux-gnu/libmpi_cxx.so.40 (0x000075bd3e7d6000)\n\tlibmpi.so.40 => /lib/x86_64-linux-gnu/libmpi.so.40 (0x000075bd3e6a2000)\n\tlibh5_c.so.2.0 => /home/hugstr/apps/triqs-cuda/lib/libh5_c.so.2.0 (0x000075bd3e683000)\n\tlibomp.so.5 => /lib/x86_64-linux-gnu/libomp.so.5 (0x000075bd3e553000)\n\tlibcutensor.so.2 => /usr/lib/x86_64-linux-gnu/libcutensor/13/libcutensor.so.2 (0x000075bd2ac00000)\n\tlibcudart.so.13 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libcudart.so.13 (0x000075bd2a800000)\n\tlibcusolver.so.12 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libcusolver.so.12 (0x000075bd20400000)\n\tlibcublas.so.13 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libcublas.so.13 (0x000075bd1ca00000)\n\tlibcublasLt.so.13 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libcublasLt.so.13 (0x000075bcf5200000)\n\tlibcusparse.so.12 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libcusparse.so.12 (0x000075bce9c00000)\n\tlibnvJitLink.so.13 => /usr/local/cuda-13.4/targets/x86_64-linux/lib/libnvJitLink.so.13 (0x000075bce3800000)\n\tlibgmp.so.10 => /lib/x86_64-linux-gnu/libgmp.so.10 (0x000075bd3e4cd000)\n\tlibfftw3.so.3 => /lib/x86_64-linux-gnu/libfftw3.so.3 (0x000075bce3400000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x000075bce3000000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x000075bd3e3e2000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x000075bd2abd2000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x000075bce2c00000)\n\tlibhdf5_serial.so.103 => /lib/x86_64-linux-gnu/libhdf5_serial.so.103 (0x000075bce2800000)\n\tlibopenblas.so.0 => /lib/x86_64-linux-gnu/libopenblas.so.0 (0x000075bce0420000)\n\t/lib64/ld-linux-x86-64.so.2 (0x000075bd3ea5d000)\n\tlibopen-pal.so.40 => /lib/x86_64-linux-gnu/libopen-pal.so.40 (0x000075bd2ab1e000)\n\tlibopen-rte.so.40 => /lib/x86_64-linux-gnu/libopen-rte.so.40 (0x000075bd20344000)\n\tlibhwloc.so.15 => /lib/x86_64-linux-gnu/libhwloc.so.15 (0x000075bd1c99f000)\n\tlibhdf5_serial_hl.so.100 => /lib/x86_64-linux-gnu/libhdf5_serial_hl.so.100 (0x000075bd2aaf9000)\n\tlibrt.so.1 => /lib/x86_64-linux-gnu/librt.so.1 (0x000075bd3e3d9000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x000075bd2aaf4000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x000075bd2aaef000)\n\tlibcrypto.so.3 => /lib/x86_64-linux-gnu/libcrypto.so.3 (0x000075bcdfe00000)\n\tlibcurl.so.4 => /lib/x86_64-linux-gnu/libcurl.so.4 (0x000075bd1c8de000)\n\tlibsz.so.2 => /lib/x86_64-linux-gnu/libsz.so.2 (0x000075bd2aae8000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x000075bd2aacc000)\n\tlibgfortran.so.5 => /lib/x86_64-linux-gnu/libgfortran.so.5 (0x000075bcdfa00000)\n\tlibevent_core-2.1.so.7 => /lib/x86_64-linux-gnu/libevent_core-2.1.so.7 (0x000075bd1c8a9000)\n\tlibevent_pthreads-2.1.so.7 => /lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7 (0x000075bd2aac5000)\n\tlibudev.so.1 => /lib/x86_64-linux-gnu/libudev.so.1 (0x000075bd1c876000)\n\tlibnghttp2.so.14 => /lib/x86_64-linux-gnu/libnghttp2.so.14 (0x000075bd20319000)\n\tlibidn2.so.0 => /lib/x86_64-linux-gnu/libidn2.so.0 (0x000075bd1c854000)\n\tlibrtmp.so.1 => /lib/x86_64-linux-gnu/librtmp.so.1 (0x000075bcf51e2000)\n\tlibssh.so.4 => /lib/x86_64-linux-gnu/libssh.so.4 (0x000075bcf5170000)\n\tlibpsl.so.5 => /lib/x86_64-linux-gnu/libpsl.so.5 (0x000075bd2a7ea000)\n\tlibssl.so.3 => /lib/x86_64-linux-gnu/libssl.so.3 (0x000075bce3756000)\n\tlibgssapi_krb5.so.2 => /lib/x86_64-linux-gnu/libgssapi_krb5.so.2 (0x000075bce3702000)\n\tlibldap.so.2 => /lib/x86_64-linux-gnu/libldap.so.2 (0x000075bce36a4000)\n\tliblber.so.2 => /lib/x86_64-linux-gnu/liblber.so.2 (0x000075bd1c844000)\n\tlibzstd.so.1 => /lib/x86_64-linux-gnu/libzstd.so.1 (0x000075bce3346000)\n\tlibbrotlidec.so.1 => /lib/x86_64-linux-gnu/libbrotlidec.so.1 (0x000075bcf5162000)\n\tlibaec.so.0 => /lib/x86_64-linux-gnu/libaec.so.0 (0x000075bcf5159000)\n\tlibcap.so.2 => /lib/x86_64-linux-gnu/libcap.so.2 (0x000075bcf514c000)\n\tlibunistring.so.5 => /lib/x86_64-linux-gnu/libunistring.so.5 (0x000075bce2e53000)\n\tlibgnutls.so.30 => /lib/x86_64-linux-gnu/libgnutls.so.30 (0x000075bcdf805000)\n\tlibhogweed.so.6 => /lib/x86_64-linux-gnu/libhogweed.so.6 (0x000075bce365c000)\n\tlibnettle.so.8 => /lib/x86_64-linux-gnu/libnettle.so.8 (0x000075bce32f1000)\n\tlibkrb5.so.3 => /lib/x86_64-linux-gnu/libkrb5.so.3 (0x000075bce0357000)\n\tlibk5crypto.so.3 => /lib/x86_64-linux-gnu/libk5crypto.so.3 (0x000075bce3630000)\n\tlibcom_err.so.2 => /lib/x86_64-linux-gnu/libcom_err.so.2 (0x000075bd20313000)\n\tlibkrb5support.so.0 => /lib/x86_64-linux-gnu/libkrb5support.so.0 (0x000075bce9bf3000)\n\tlibsasl2.so.2 => /lib/x86_64-linux-gnu/libsasl2.so.2 (0x000075bce32d7000)\n\tlibbrotlicommon.so.1 => /lib/x86_64-linux-gnu/libbrotlicommon.so.1 (0x000075bce32b4000)\n\tlibp11-kit.so.0 => /lib/x86_64-linux-gnu/libp11-kit.so.0 (0x000075bcdf661000)\n\tlibtasn1.so.6 => /lib/x86_64-linux-gnu/libtasn1.so.6 (0x000075bce329e000)\n\tlibkeyutils.so.1 => /lib/x86_64-linux-gnu/libkeyutils.so.1 (0x000075bce9bec000)\n\tlibresolv.so.2 => /lib/x86_64-linux-gnu/libresolv.so.2 (0x000075bce328c000)\n\tlibffi.so.8 => /lib/x86_64-linux-gnu/libffi.so.8 (0x000075bce3624000)",
+  "environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "TRIQS_ROOT": "/home/hugstr/apps/triqs-cuda",
+    "LD_LIBRARY_PATH": "/home/hugstr/apps/xca-cuda/lib:/home/hugstr/apps/triqs-cuda/lib:/home/hugstr/apps/triqs-cuda/lib:/home/hugstr/apps/duperty/lib:/home/hugstr/apps/clair/lib"
+  },
+  "profile": "quick",
+  "exit_code": 0,
+  "finished_utc": "2026-10-11T09:02:55.726407+00:00"
+}

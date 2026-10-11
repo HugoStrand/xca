@@ -1,5 +1,7 @@
 # Small-matrix dense evaluator benchmark
 
+[Recorded baseline and profiling results](RESULTS.md).
+
 A bounded C++ benchmark for optimization experiments, with the production CPU and
 CUDA evaluators as references. Default: N=4, rank16, orders1/3/6/8, crossing/chain
 topologies and one/eight selected indices. No combinatorial topology enumeration.
