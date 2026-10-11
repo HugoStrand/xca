@@ -13,12 +13,19 @@ combinations, then comparison/recommendations. Production23 protected hashes int
 Quota watcher remains exact-goal-bound and reports thread_active; do not recreate
 this active exploration goal. Boot registration uses exploration config.
 
-Current native GPU/build sequence80285: completed Nsight profile/export and API
-memcheck (3 tests,0 errors,255.6s); DLR memcheck, trace audit, then copying temporary
-E4 draft into experiments/dense_cuda_small/fused_small and configure/build/CTest.
-Poll80285 before any GPU/build/test work; do not duplicate it. Temporary E4 source
-at /tmp/xca-fused-small-draft has mode0 library control, mode1 pointwise fusion,
-mode2 custom N4 products. No acceptance claimed until tests and benchmark gates.
+Previous sequence80285 is terminal: E3 API/DLR memcheck0 errors, trace audit passes;
+E4 configure/build passed, initial pointwise API failed strict parity. Investigated
+without weaker gates: normal FMA plus input-first complex multiplication reproduces
+DGMM exactly. Six E4 tests pass mode1. First custom interleaved complex dot failed;
+grouped real FMA dots pass all six mode2 tests, including high-order/long/tails.
+E4 prototypea30708d committed separately; failed/passed controls preserved.
+
+LIVE native measurement sequence62308 (poll before GPU/build/test work): library
+mode0 B1 quick, pointwise mode1 B1 quick and custom N4 mode2 B1 quick passed;
+mode1 B128 then mode2 throughput/three B1+B128 repeats/coverage/r26/r36/tails/seed/
+uncached controls are serialized. Exact benchmark CUDA parity so far. Results are
+not yet all archived. After terminal: E4 memcheck/profile B1+B128, archive/report,
+useful combinations/final comparison. No production promotion or push.
 
 Branch dev_cuda. Production CPU/CUDA evaluators at baseline commit064b64e remain
 unchanged. Keep experiments in individual folders under experiments/dense_cuda_small/;
@@ -331,3 +338,21 @@ Raw trace stays in ignored cbuild-small-profile/batch; tracked CSV/geometry evid
 API memcheck complete0 errors; DLR sanitizer/build/fusion validation remain queued in
 80285. Work tree user files untouched, no push. Future checkpoint must clear live-job
 entry only after polling its terminal result; maintain source hashes and strict gates.
+
+## E4 numerical investigation checkpoint — 2026-10-11
+
+E3 sanitizer resultf20806e. E4 prototypea30708d with isolated nvcc/CUDA target,
+normal FMA, pointwise weighting+parity+accumulation and final convolution add/scale.
+Mode0 is library control; mode1 pointwise; mode2 custom N4 products plus pointwise.
+One thread/output element,128 threads/block,40 registers for N4,24 weighting and16
+add/scale (compiler report retained). Library LU/rank transforms unchanged.
+
+Disabling FMA or reversing complex weighting operands failed high-order parity,
+though low-order analytic checks passed. Input-first multiply under normal CUDA FMA
+matches the retained DGMM primitive exactly and all6 mode1 CTests pass. Sequential
+interleaved complex custom dot also failed high-order gates (rel1.014 at norm2.69e-31);
+grouping real dot products using explicit __fma_rn fixes the tested discrepancy and
+all6 mode2 entries pass. Negative/positive controls retained, no tolerance changes.
+Broader primary benchmark gates are running in62308. Initial B1 order8 mode0/1/2
+4.207/4.150/3.359ms, exact reference parity; this remains slower than CPU. Full-batch
+custom product benefit and additional rank controls still pending.
