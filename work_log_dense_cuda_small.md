@@ -141,3 +141,38 @@ status/pointer-table lifetime. Do not infer that deleting synchronization calls 
 is safe. Implement/measure the other E1–E4 priorities and useful combinations under
 the new goal; report supported methods and negative results honestly. Model handoff
 is now configured, so no further model-switch or preparation work is required.
+
+## Supervisor missed restart: 2026-10-11
+
+User requested diagnosis of a missed restart after the expected 22:00 quota reset.
+The detached watcher was alive, but its action stayed `waiting_thread_error` from
+09:11:41 UTC until the user manually resumed the session. This branch returned
+before querying quota permission. The installed protocol defines `systemError` as
+a runtime thread state; only that error state could reach this branch among the
+protocol's four states. The latest preceding turn failed at 09:11:35 UTC with
+`usageLimitExceeded` and a workspace-credit message. During diagnosis the fresh
+backend snapshot reported `ordinaryUsageAllowed: true`, primary usage 3%, secondary
+16%, and no spend-control block. No historical quota snapshots exist to establish
+the exact reset time or distinguish the backend's earlier credit message from a
+window limit. A reset clock alone is never treated as permission to resume.
+
+Fixed both the initial runtime gate and final pre-start checks: a loaded
+`systemError` thread may recover only from its latest terminal quota failure, with
+fresh explicit usage permission, the same failed turn rechecked, and existing
+goal/branch/pause/grace/journaling guards preserved. Added a final quota-permission
+recheck and persisted runtime/latest-turn diagnostic fields. The earlier reset
+tests incorrectly modeled failed threads as `idle`; the transport regression now
+keeps `systemError` until the new turn starts. Four added regression tests cover
+both active/usageLimited goals, unrelated error states, a changed failure racing
+recovery, and revoked permission during final checks. All 28 supervisor tests pass.
+
+Stopped and relaunched only the dedicated tmux watcher; shared app-server and
+active session were preserved. Live dry-run and relaunched process report
+`thread_active`, with no pending start. Lock PID194125 and the existing @reboot
+registration target the exploration config. This validates deployment and active
+session isolation; automatic resumption after the next natural exhaustion still
+needs production observation. Supervisor code/tests/docs are committed separately
+from this checkpoint. No CUDA evaluator changes, no push, unrelated work preserved.
+
+Exploration goal remains active. Resume the bounded ordinary-SE serial_stream
+prototype next, following the plan and frozen baseline constraints above.
