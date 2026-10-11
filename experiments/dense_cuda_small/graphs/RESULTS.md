@@ -1,3 +1,9 @@
+Upload-ordering note: this report describes the original experiment revision. E3
+exposed a pending pageable-upload race at larger sizes; event-based handoff has
+been added. Earlier benchmark inputs passed parity but are insufficient evidence
+for the general stream contract. Post-handoff tests/timings supersede these where
+available; preserve the original data as historical evidence.
+
 # E2 graph replay results
 
 CUDA graph capture is feasible with E1's owned adapters and gives a modest further

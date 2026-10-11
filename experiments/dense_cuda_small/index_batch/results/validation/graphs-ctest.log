@@ -1,0 +1,14 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-graphs
+Test project /home/hugstr/dev/xca/cbuild-experiment-graphs
+    Start 1: graph_one_fermion_se_spgf_all_evals
+1/4 Test #1: graph_one_fermion_se_spgf_all_evals ....   Passed    2.07 sec
+    Start 2: graph_two_fermions_se_spgf_all_evals
+2/4 Test #2: graph_two_fermions_se_spgf_all_evals ...   Passed    1.51 sec
+    Start 3: graph_unitary_invariance_all_evals
+3/4 Test #3: graph_unitary_invariance_all_evals .....   Passed    3.27 sec
+    Start 4: graph_api
+4/4 Test #4: graph_api ..............................   Passed    0.71 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   7.56 sec

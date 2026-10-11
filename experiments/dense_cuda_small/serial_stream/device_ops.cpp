@@ -47,12 +47,15 @@ namespace xca_experiments::serial_stream {
     checked_product(count_, sizeof(complex));
     nda::device_error_check(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking), "create owned stream");
     try {
+      nda::device_error_check(cudaEventCreateWithFlags(&upload_ready_, cudaEventDisableTiming), "create upload event");
       check(cublasCreate(&handle_), "create handle");
       check(cublasSetStream(handle_, stream_), "set default stream");
       check(cublasSetPointerMode(handle_, CUBLAS_POINTER_MODE_HOST), "set scalar pointer mode");
     } catch (...) {
       cublasDestroy(handle_);
       handle_ = nullptr;
+      if (upload_ready_) cudaEventDestroy(upload_ready_);
+      upload_ready_ = nullptr;
       cudaStreamDestroy(stream_);
       stream_ = nullptr;
       throw;
@@ -61,7 +64,12 @@ namespace xca_experiments::serial_stream {
   DeviceOps::~DeviceOps() {
     if (stream_) cudaStreamSynchronize(stream_);
     if (handle_) cublasDestroy(handle_);
+    if (upload_ready_) cudaEventDestroy(upload_ready_);
     if (stream_) cudaStreamDestroy(stream_);
+  }
+  void DeviceOps::wait_for_default_uploads() const {
+    nda::device_error_check(cudaEventRecord(upload_ready_, nullptr), "record default uploads");
+    nda::device_error_check(cudaStreamWaitEvent(stream_, upload_ready_, 0), "wait for default uploads");
   }
   void DeviceOps::finish() const {
     nda::device_error_check(cudaStreamSynchronize(stream_), "serial_stream completion");

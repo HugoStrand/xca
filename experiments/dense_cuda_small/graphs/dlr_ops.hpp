@@ -31,6 +31,7 @@ namespace xca_experiments::graphs {
     int status_count() const { return used_status_; }
     void set_status_count(int n) { used_status_ = n; }
     void finish();
+    void wait_for_default_uploads() { ops_.wait_for_default_uploads(); }
     DlrOps(DlrOps const &)            = delete;
     DlrOps &operator=(DlrOps const &) = delete;
     std::size_t workspace_bytes() const;

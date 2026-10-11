@@ -105,6 +105,7 @@ namespace xca_experiments::graphs {
     }
     ops.prepare_vertex(Fs_(0,a,a), G_, T_, true);
     ops.prepare_vertex(Fs_(0,a,a), G_, T_, false);
+    ops.wait_for_default_uploads();
     ops.zero(G_);
     ops.zero(T_);
     ops.left_product(Fs_(0, a, a), G_, T_);
@@ -260,6 +261,7 @@ namespace xca_experiments::graphs {
   void DiagramEvaluator::upload_tensor(nda::array_const_view<complex, 3> h) {
     if (h.shape() != std::array<long, 3>{r_, N_, N_}) throw std::invalid_argument("CUDA evaluator propagator shape mismatch");
     G_ = nda::make_regular(h);
+    dlr_.wait_for_default_uploads();
     dlr_.device_ops().zero(sum_);
   }
   void DiagramEvaluator::upload(gf_vt g) {

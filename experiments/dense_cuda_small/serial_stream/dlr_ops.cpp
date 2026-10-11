@@ -38,6 +38,7 @@ namespace xca_experiments::serial_stream {
     H_          = nda::cumatrix<complex>(H);
     Q_          = nda::cumatrix<complex>(Q);
     reflection_ = nda::cumatrix<complex>(host.reflect(identity));
+    ops_.wait_for_default_uploads();
     if (cusolverDnCreate(&solver_) != CUSOLVER_STATUS_SUCCESS) throw std::runtime_error("solver create failed");
     if (cusolverDnSetStream(solver_, ops_.stream()) != CUSOLVER_STATUS_SUCCESS) {
       cusolverDnDestroy(solver_); solver_ = nullptr;

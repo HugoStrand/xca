@@ -35,6 +35,7 @@ namespace xca_experiments::serial_stream {
     std::map<Key, std::unique_ptr<Tables>> tables_;
     cublasHandle_t handle_ = nullptr;
     cudaStream_t stream_ = nullptr;
+    cudaEvent_t upload_ready_ = nullptr;
     void validate(tensor_const_view a) const;
     void validate_operator(matrix_const_view a) const;
     void vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left, complex alpha, complex beta);
@@ -51,6 +52,8 @@ namespace xca_experiments::serial_stream {
 
     cudaStream_t stream() const { return stream_; }
     void finish() const;
+    // Call after external NDA/default-stream uploads, before owned-stream reads.
+    void wait_for_default_uploads() const;
     void prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left);
     void zero(tensor_view out) const;
     void copy(tensor_const_view in, tensor_view out) const;

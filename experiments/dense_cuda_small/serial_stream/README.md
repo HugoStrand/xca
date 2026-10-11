@@ -49,3 +49,12 @@ is inapplicable to the owned solver and is excluded.
 See `results/` and RESULTS.md for timing, parity, memory and trace evidence once
 collected. Setup, first call and complete API timings follow dense-small-v2; no
 prewarming beyond constructor work is hidden from the harness.
+
+Upload-ordering correction discovered during E3: pageable NDA host-to-device copies
+use the default stream and can return before DMA completes. The owned nonblocking
+stream now waits on an explicit event at constructor/input-upload boundaries.
+Low-level DLR/DeviceOps callers must call wait_for_default_uploads() after external
+NDA/default-stream uploads before submitting owned-stream reads. The event is
+outside captured traversal; arithmetic and precision gates are unchanged. Earlier
+measurements are historical and are being revalidated after this correction.
+See [CUDA copy semantics](https://docs.nvidia.com/cuda/cuda-runtime-api/api-sync-behavior.html).

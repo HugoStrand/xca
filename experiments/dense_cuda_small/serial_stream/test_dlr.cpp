@@ -38,6 +38,7 @@ TEST(DenseCudaDlr, CachedLUAndInPlaceConversion) {
   DlrOps device(host, 3);
   auto fc = coefficients(host.rank(), 3, .2), values = host.coefs2vals(fc);
   tensor input(values), output(3, 3, 3), reconstructed(3, 3, 3);
+  device.wait_for_default_uploads();
   device.vals2coefs(input, output);
   device.finish(); EXPECT_ARRAY_NEAR(fc, nda::to_host(output), 1e-12);
   device.finish(); EXPECT_ARRAY_NEAR(host.vals2coefs(values), nda::to_host(output), 1e-12);
@@ -57,6 +58,7 @@ TEST(DenseCudaDlr, RealMeshesReconstructionReflectionAndCoefficientConvolution) 
       auto fc = coefficients(r, N, .1), gc = coefficients(r, N, .9);
       auto fv = host.coefs2vals(fc), gv = host.coefs2vals(gc);
       tensor fcd(fc), gcd(gc), fvd(fv), out(r, N, N), solved(r, N, N), reconstructed(r, N, N);
+      device.wait_for_default_uploads();
       device.vals2coefs(fvd, solved);
       device.coefs2vals(solved, reconstructed);
       device.finish(); EXPECT_ARRAY_NEAR(fv, nda::to_host(reconstructed), 1e-12);
@@ -76,6 +78,7 @@ TEST(DenseCudaDlr, RealMeshesReconstructionReflectionAndCoefficientConvolution) 
       }
       // Composed edge pipeline exercises the actual evaluator use of both solves.
       tensor gvd(gv), gsolved(r, N, N);
+      device.wait_for_default_uploads();
       device.vals2coefs(gvd, gsolved);
       device.convolve(2., solved, gsolved, out);
       auto expected = host.convolve(2., host.vals2coefs(fv), host.vals2coefs(gv), cppdlr::TIME_ORDERED);
@@ -91,6 +94,7 @@ TEST(DenseCudaDlr, CancellationInputsBufferReuseAndAliasedConvolution) {
   fc(1, all, all) = -fc(0, all, all) + complex{1e-11, -2e-11} * fc(2, all, all);
   tensor fd(fc), gd(gc), out(3, 2, 2);
   auto expected = host.convolve(3., fc, gc, cppdlr::TIME_ORDERED);
+  device.wait_for_default_uploads();
   device.convolve(3., fd, gd, out);
   device.finish(); EXPECT_ARRAY_NEAR(expected, nda::to_host(out), 1e-12);
   device.convolve(3., fd, gd, fd);
@@ -98,6 +102,7 @@ TEST(DenseCudaDlr, CancellationInputsBufferReuseAndAliasedConvolution) {
   // Reupload changed input into the same allocation; scratch must not retain it.
   fc = coefficients(3, 2, 1.3);
   fd = fc;
+  device.wait_for_default_uploads();
   device.convolve(.7, fd, gd, gd);
   device.finish(); EXPECT_ARRAY_NEAR(host.convolve(.7, fc, gc, cppdlr::TIME_ORDERED), nda::to_host(gd), 1e-12);
 }

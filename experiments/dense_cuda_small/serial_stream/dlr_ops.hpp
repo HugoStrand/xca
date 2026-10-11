@@ -29,6 +29,7 @@ namespace xca_experiments::serial_stream {
     ~DlrOps();
     void begin() { used_status_ = 0; }
     void finish();
+    void wait_for_default_uploads() { ops_.wait_for_default_uploads(); }
     DlrOps(DlrOps const &)            = delete;
     DlrOps &operator=(DlrOps const &) = delete;
     std::size_t workspace_bytes() const;
