@@ -1,0 +1,5 @@
+backend,fixture,N,r,n,p,beta,lambda,order,topology,method,requested_indices,indices,total_indices,index_list,seed,samples,first_ms,median_ms,min_ms,max_ms,mad_ms,median_ns_per_index,setup_ms,context_ms,owned_bytes,result_norm,max_abs_error,max_relative_error,cpu_abs_error,cpu_relative_error,index_cpu_abs_error,index_cpu_relative_error
+cpu,dense-small-v2,4,16,2,2,2,10,1,crossing,se,1,1,2,1,1729,5,0.021521,0.020077,0.019967,0.020108,3.0000000000002247e-05,20077.0,1.436124,0,0,0.8052755339374668,0.0,0.0,0.0,0.0,0.0,0.0
+cpu,dense-small-v2,4,16,2,2,2,10,1,crossing,se,8,2,2,0:1,1729,5,0.040576,0.039384,0.039324,0.044855,6.0000000000004494e-05,19692.0,1.4003570000000001,0,0,0.9914745707073436,0.0,0.0,0.0,0.0,0.0,0.0
+cpu,dense-small-v2,4,16,2,2,2,10,3,crossing,se,1,1,128,111,1729,5,0.324849,0.310844,0.309791,0.371988,0.0010530000000000261,310844.0,1.419052,0,0,2.052807337251881e-06,0.0,0.0,0.0,0.0,0.0,0.0
+cpu,dense-small-v2,4,16,2,2,2,10,3,crossing,se,8,8,128,15:31:42:58:79:86:97:123,1729,5,2.488618,2.46287,2.451899,2.474913,0.005078999999999834,307858.75,1.39686,0,0,0.0001416481103200951,0.0,0.0,0.0,0.0,0.0,0.0
