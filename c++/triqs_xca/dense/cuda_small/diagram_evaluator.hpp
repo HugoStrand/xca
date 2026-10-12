@@ -12,8 +12,10 @@
 namespace triqs_xca::dense::cuda_small {
   // Immutable model snapshots and owned stream/handles. Serialize calls per instance.
   class DiagramEvaluator {
+    public:
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
+    private:
     triqs::mesh::dlr_imtime mesh_;
     double beta_;
     cppdlr::imtime_ops itops_;
@@ -46,9 +48,16 @@ namespace triqs_xca::dense::cuda_small {
     void upload_tensor(nda::array_const_view<complex, 3> g);
     void upload(gf_vt g);
     nda::array<complex, 3> correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap,
-                                     nda::array_const_view<long, 1> indices, bool all, bool fermionic);
+                                     nda::array_const_view<long, 1> indices, bool all, bool fermionic, long first = 0, long last = -1);
     gf_t result();
-    gf_t compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all, bool pairs);
+    gf_t compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all, bool pairs, long first = 0, long last = -1);
+
+    template <bool C>
+    nda::array<complex, 3> one_time_impl(gf_vt g,
+      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+      std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+      triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology,
+      nda::array_const_view<long, 1> indices, bool all, long first, long last);
 
     public:
     DiagramEvaluator(double beta, double eps, cppdlr::imtime_ops &itops, nda::vector_const_view<double> poles,
@@ -71,6 +80,16 @@ namespace triqs_xca::dense::cuda_small {
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, long index);
     gf_t compute_self_energy_by_pairs(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    // Half-open native work ranges; paired ranges select fb(0)==0 just like
+    // the unrestricted paired evaluator. No full index vector is materialized.
+    gf_t compute_self_energy_range(gf_vt g, nda::array_const_view<int, 2> topology, long first, long last);
+    gf_t compute_self_energy_by_pairs_range(gf_vt g, nda::array_const_view<int, 2> topology, long first, long last);
+    nda::array<complex, 3> compute_single_ptcle_gf_range(gf_vt g, nda::array_const_view<int, 2> topology, long first, long last);
+    template <bool C>
+    nda::array<complex, 3> compute_one_time_correlator_range(gf_vt g,
+      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+      std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+      triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology, long first, long last);
     // Application-owned device/unified allocations; excludes library handles,
     // context caches and caller inputs. Nsight traces account for those separately.
     std::size_t workspace_bytes() const;
