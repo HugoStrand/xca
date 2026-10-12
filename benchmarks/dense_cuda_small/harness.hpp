@@ -56,7 +56,7 @@ namespace dense_cuda_bench {
     for (int i = 1; i < argc; ++i) {
       std::string key = argv[i];
       if (key == "--help") {
-        std::cout << "--dimension 4 [2,4,8,16] --orders 1,3,6,8 [1..12] --topologies crossing,chain\n"
+        std::cout << "--dimension 4 [2,4,8,16,32,64] --orders 1,3,6,8 [1..12] --topologies crossing,chain\n"
                      "--indices 1,8 [1..4096] --methods se,pairs,spgf --samples 5 --warmup 1\n"
                      "--lambda 10 [5..120] --seed 1729 --backend both|cpu|candidate\n"
                      "CSV stdout; correctness failures exit nonzero. Candidate is CUDA in the baseline executable.\n";
@@ -70,7 +70,7 @@ namespace dense_cuda_bench {
         return x;
       };
       if (key == "--dimension")
-        o.N = integer(v, 2, 16);
+        o.N = integer(v, 2, 64);
       else if (key == "--orders")
         o.orders = ints(1, 12);
       else if (key == "--indices")
