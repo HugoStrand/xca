@@ -36,6 +36,12 @@ foreach(input IN LISTS inputs)
     string(REPLACE "mode_ = (rank == 16 && (N_ == 4 || N_ == 8)) ? 2 : 0;"
       "${probe_mode}" contents "${contents}")
   endif()
+  # This explicit experiment evaluates unqualified environments/shapes. Its
+  # batch-counter assertion and strict reference gate must pass before promotion.
+  string(REPLACE "if (!qualified_environment(environment)) mode_ = 0;"
+    "// Environment admission intentionally bypassed by the explicit rank probe." contents "${contents}")
+  string(REPLACE "if (dlr_.device_ops().mode() != 2) return false;"
+    "// Product/library controls both exercise batching in this explicit probe." contents "${contents}")
   file(WRITE "${snapshot}/${name}" "${contents}")
 endforeach()
 if(XCA_PROBE_PRODUCTS)
@@ -55,3 +61,25 @@ target_link_libraries(native_rank_probe PUBLIC triqs cppdlr::cppdlr_c CUDA::cuda
 add_executable(native_rank_benchmark "${snapshot}/benchmark.cpp")
 target_link_libraries(native_rank_benchmark PRIVATE native_rank_probe
   "${XCA_NATIVE_BUILD}/c++/triqs_xca/libtriqs_xca_c.a")
+
+# Reuse complete independent physics/API suites with the actual probe class.
+# No adapter delegates observables or dynamic interactions to retained CUDA.
+enable_testing()
+foreach(source one_fermion_se_spgf_all_evals two_fermions_se_spgf_all_evals
+    unitary_invariance_all_evals dynint_spin_rotation flat_index_range propagator_layout
+    dense/dynint_parity dense/correlator_statistics)
+  file(READ "${XCA_ROOT}/test/c++/${source}.cpp" contents)
+  string(REPLACE "triqs_xca/dense/cuda/diagram_evaluator.hpp" "diagram_evaluator.hpp" contents "${contents}")
+  string(REPLACE "dense::cuda::" "dense::cuda_small_probe::" contents "${contents}")
+  string(REPLACE "NDA_HAVE_CUDA" "XCA_HAVE_CUDA_SMALL" contents "${contents}")
+  string(REPLACE "/" "_" suffix "${source}")
+  set(target "native_rank_${suffix}")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${target}.cpp" "${contents}")
+  add_executable(${target} "${CMAKE_CURRENT_BINARY_DIR}/${target}.cpp")
+  target_include_directories(${target} PRIVATE "${XCA_ROOT}/test/c++" "${XCA_NATIVE_BUILD}/deps/GTest_src/googletest/include")
+  target_link_libraries(${target} PRIVATE native_rank_probe
+    "${XCA_NATIVE_BUILD}/test/c++/libtriqs_xca_test_utils.a"
+    "${XCA_NATIVE_BUILD}/lib/libgtest_main.a" "${XCA_NATIVE_BUILD}/lib/libgtest.a"
+    "${XCA_NATIVE_BUILD}/c++/triqs_xca/libtriqs_xca_c.a")
+  add_test(NAME ${target} COMMAND ${target})
+endforeach()
