@@ -1,0 +1,6 @@
+kind,calls,bytes,total_ms
+Device-to-Device,267,6815744,0.371453
+Device-to-Host,1,4096,0.001568
+Host-to-Device,101,2288704,0.230686
+Unified Device-to-Host,1,4096,0.001504
+Unified Host-to-Device,1,4096,0.001824

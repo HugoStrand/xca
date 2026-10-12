@@ -1,0 +1,31 @@
+{
+  "revision": "b31e04c7c03c77ee8d45f484962a98555cfd3195",
+  "status": " M .gitignore\n M c++/triqs_xca/dense/cuda_small/README.md\n M c++/triqs_xca/dense/cuda_small/diagram_evaluator.cpp\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? benchmarks/dense_cuda_small/NATIVE_RESULTS.md\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "binary_sha256": "ee0dd0a249731c846dc6e373cc2a1ef1326c7def0ed88619eaf51947ae02ff13",
+  "sources_sha256": {
+    "c++/triqs_xca/dense/cuda_small/device_ops.cpp": "1b89652a90a3bc6b1fd9e0622a79ae0000bb99b7d1f1e9ac61f804825e824744",
+    "c++/triqs_xca/dense/cuda_small/diagram_evaluator.cpp": "9439dff9f684daa1f6d537370f651e52363abac506f1bccc8f3ea6410cbf4ee7",
+    "c++/triqs_xca/dense/cuda_small/batch_evaluator.cpp": "be1f4615510bc8bede813d288f1873db470d5a2e8231f58c5dd2acd798b296ac",
+    "c++/triqs_xca/dense/cuda_small/dlr_ops.cpp": "d390a7b2a79e68cde084fa34111873933c96c63f9982c668e8d3bbf591758931",
+    "c++/triqs_xca/dense/cuda_small/batch_evaluator.hpp": "f73fb604e9226d1058bbb8f45786ffbb26b5809e1e4c706aa8d94c3ed23a43b4",
+    "c++/triqs_xca/dense/cuda_small/device_ops.hpp": "a4a6ad4dde07a08e4940204344f918241d772174ace97a1a1a889175b23f905c",
+    "c++/triqs_xca/dense/cuda_small/device_context.hpp": "9054b055d9d2bd263386a842f1d94b0cb5a8ac73a6185a192e4d120fbdddf56b",
+    "c++/triqs_xca/dense/cuda_small/diagram_evaluator.hpp": "2076210e8c2f06adbed47aa353a4ffe3b34e630f4db67dda665ce8c6ee67bcd5",
+    "c++/triqs_xca/dense/cuda_small/kernels.hpp": "1ed4882eb290344742c288e4ed135bf97f798811578fe9c93d234329c806a5ee",
+    "c++/triqs_xca/dense/cuda_small/dlr_ops.hpp": "5d48aa348f6f1057bfc040da7ef0da0189fec4690b5b78cb61ef5d8c01c94a37",
+    "c++/triqs_xca/dense/cuda_small/profile_range.hpp": "884ff71b48b4587351511bf8b50d5d06c66a2fe364f348d1979d845d4019983b",
+    "benchmarks/dense_cuda_small/harness.hpp": "e4fa0fcfb4095551fbbc67427942b9a97f02982bca8090e705a71b25524c4a0b",
+    "examples/dense_cuda_small_native_benchmark.cpp": "46b9e5e4e98700cf7d6e03b33bf90b695df093bf5c414d1a6e31bb0cfa28c209"
+  },
+  "target": "RTX A4000 local control; GH200-class qualification unavailable",
+  "command": "NSYS_NVTX_PROFILER_REGISTER_ONLY=0 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 nsys profile --trace=cuda,nvtx --sample=none --cpuctxsw=none --cuda-memory-usage=true --capture-range=nvtx --nvtx-capture=bench.cuda.sample --capture-range-end=repeat:2 --output=/tmp/xca-small-native-reuse-profile cbuild-cuda/examples/dense_cuda_small_native_benchmark --dimension 4 --orders 6 --indices 128 --methods se --topologies crossing --samples 1 --warmup 0 --backend candidate",
+  "captures": {
+    "1": "first call after fresh candidate construction",
+    "2": "warm measured call"
+  },
+  "reports_sha256": {
+    "capture1": "430473407741be9816b23b741fb8b3784034ffcd18d80ef7253808e5fea7df78",
+    "capture2": "4bd28bc8e06242f905ec821a1b0d1c431c7bf37261345a2500409722e6c8bfe8"
+  },
+  "warm_cuda_allocation_api_count": 0
+}

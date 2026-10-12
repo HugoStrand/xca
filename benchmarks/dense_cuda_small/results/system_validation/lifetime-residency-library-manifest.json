@@ -1,0 +1,15 @@
+{
+  "lifetime_revision": "503c260",
+  "storage_reuse_revision": "6a2f143",
+  "library_configuration": "XCA_CUDA_SMALL=OFF; no CUDA compiler configured; Release clang19; checked-in wrappers; cached dependency source links",
+  "library_install_prefix": "/tmp/xca-library-cuda-stage",
+  "gpu": "single RTX A4000; two-device test skipped; target GH200 unavailable",
+  "logs_sha256": {
+    "xca-small-device-lifetime-tests.log": "9e6d424f307ba81ccb2f0394019bc5c565a91c57f4f6715a9398f91d29335c86",
+    "xca-small-lifetime-memcheck.log": "522144698d0dbdf1c797985ac473daa2d72c5ee93c10dcc2cea0621b67dafcfc",
+    "xca-small-lifetime-cpu-tests.log": "b60a12fb0a3db4b268bf84764447bac7c5e963166834be0c954623c88e645b6f",
+    "xca-small-library-python-tests.log": "2f4e00fa7dd3cb72dbb06e6e797c248dad757655b13f8cc7de7a4122d98d0ad1",
+    "xca-small-library-python-import.log": "3380c1ec44992f211407ca2db585e232f53fba7fc1d5a2217a6d279c89a87db3",
+    "xca-small-reuse-tests.log": "c6fd03cb9c52f9b87f4b43ec1e4c37d9d22ecf6e215b824b97d04313377c5581"
+  }
+}

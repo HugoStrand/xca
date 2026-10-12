@@ -1,0 +1,3 @@
+Starting serial run at: 2026-10-12 21:13:06.974843
+Warning: could not identify MPI environment!
+Installed library-only CUDA import and availability pass: /tmp/xca-library-cuda-stage/lib/python3.12/site-packages/triqs_xca/__init__.py
