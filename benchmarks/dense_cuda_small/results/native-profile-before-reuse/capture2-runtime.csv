@@ -1,0 +1,17 @@
+name,calls,total_ms
+cudaStreamSynchronize_v3020,4,3.557903
+cudaLaunchKernel_v7000,356,1.329722
+cudaMemcpy2DAsync_v3020,256,1.269245
+cuLaunchKernel,40,0.144474
+cuKernelGetName,356,0.067229
+cudaMemcpyAsync_v3020,11,0.066303
+cudaMemsetAsync_v3020,5,0.048519
+cudaMemcpy_v3020,2,0.046477
+cudaDeviceSynchronize_v3020,2,0.029476
+cudaMalloc_v3020,2,0.028343
+cuStreamGetGreenCtx,80,0.01696
+cudaFree_v3020,2,0.016119
+cuKernelGetFunction,40,0.01483
+cudaMemcpy2D_v3020,1,0.009578
+cudaEventRecord_v3020,2,0.007544
+cudaStreamWaitEvent_v3020,2,0.004348
