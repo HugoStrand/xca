@@ -82,6 +82,9 @@ def main():
     sources=[ROOT/'c++/triqs_xca/dense/diagram_evaluator.cpp',ROOT/'c++/triqs_xca/dense/diagram_evaluator.hpp']
     sources+=sorted((ROOT/'c++/triqs_xca/dense/cuda').glob('*.[ch]pp'))
     sources += [Path(__file__),ROOT/'benchmarks/dense_cuda_small/harness.hpp',ROOT/'examples/dense_cuda_small_benchmark.cpp']
+    entry_source=ROOT/'examples'/f'{binary.name}.cpp'
+    if entry_source.is_file() and entry_source not in sources:
+        sources.append(entry_source)
     if args.candidate_sources:
         directory=args.candidate_sources.resolve()
         if not directory.is_dir() or not directory.is_relative_to(ROOT):
