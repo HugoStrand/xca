@@ -759,3 +759,32 @@ repeat promising rank policies in fresh processes/two seeds, expand independent
 physical/dynamic coverage, and finish host/device/library memory reporting.
 Goal remains active; original23-file baseline unchanged. GH200 and multi-device
 qualification remain unavailable locally and all A4000 defaults provisional.
+
+## Wider screens and submitted-failure recovery — 2026-10-12
+
+Rank36 N4 and rank26 N8 native probe screens each pass84 backend/case groups,
+with the same orders/topologies/methods/counts/seed as rank26 N4. Candidate/reference
+aggregate errors are exactly zero across these records. Screens retained and committed;
+no production eligibility changed. All screen processes ended. Next: rank36 N8,
+independent process/seed repeats and varied physical/dynamic fixtures before promotion.
+
+Resource audit identified a replay hazard: try_batch caught bad_alloc/length_error
+around both preparation and execution. A failure after output contributions were
+submitted could have caused serial replay. Split preparation from execution; only
+preparation errors select fallback. Execution errors drain submitted work, preserve
+the original exception and propagate. Successful stream draining now avoids creating
+an allocated diagnostic string. A test-only friend injects both error types after
+contribution submission; both must propagate and a subsequent call must recover with
+the strict reference result. No production runtime fault hook was added.
+
+Focused native/Python entries pass2/2 in52.58s. Compute Sanitizer on the injected-
+failure test passes,0 errors and0 bytes/allocations leaked. Code and test evidence
+committed separately from this checkpoint. All live execution handles in this turn
+are complete; no GPU or build process left from these commands.
+
+Remaining: explicit host/device/library memory accounting and budgets/temporary peaks;
+rank/dimension/method crossover qualification and repeats; Solver.solve collective
+initialization-failure audit (keep standalone initialization noncollective); updated
+MPI/install/full-suite validation after remaining changes; requirement-by-requirement
+completion audit. GH200/multi-GPU qualification unavailable locally and explicitly
+provisional; goal active, original baseline and all experiments preserved.
