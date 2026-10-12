@@ -633,3 +633,31 @@ seed qualification and repeatable real-workload timings; profiling/residency aud
 resource accounting/lifetime review and library-only optional-extension tests. Target
 GH200 hardware remains unavailable and target defaults provisional. Goal active;
 full-suite success does not prove every plan requirement or end the implementation.
+
+## Process device placement — 2026-10-12
+
+Supervisor configuration verified: gpt-6.1-sol, medium effort, standard service tier;
+its log confirms this thread is active. Persistent implementation goal remains active.
+The supervisor selects these settings on resumption; this check alone does not verify
+or change the model serving the current turn.
+
+Solver now accepts gpu_device=None or a nonnegative visible ordinal, selects it before
+GPU evaluator construction, and preserves the preference in copies/HDF5. None respects
+the current CUDA device and CUDA_VISIBLE_DEVICES. Subsequent initialization rejects a
+conflicting process device or an externally changed current device. CPU imports remain
+independent of the optional CUDA runtime bindings. Old archives default to None.
+Bindings expose device count/current/select functions in both optional modules.
+
+Initial generation omitted functions because c2py matches fully qualified names with
+a leading ::; corrected filter and regenerated both wrappers. Nine backend tests pass
+on CUDA; all nine pass on each of two real MPI ranks sharing the single A4000. CPU
+backend test entry passes after refreshing configured build-tree Python sources (GPU
+cases skipped). Mocked device-conflict checks supplement actual ordinal selection;
+they do not establish multi-GPU behavior. Baseline verifier reports all23 files unchanged.
+
+This defines one unchanged device per process as a caller requirement. Native C++
+entry-point/destruction guards and checks for an external device switch between
+initialization and evaluation are still pending, as are multi-device hardware tests.
+Continue with that lifetime audit, then rank/dimension/method/seed qualification,
+repeatable workload timings/profiling and library-only optional-extension validation.
+GH200-class defaults remain provisional. Code and this checkpoint are separate commits.
