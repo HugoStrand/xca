@@ -170,6 +170,21 @@ TEST(CudaSmallBatch, PairedBatchesKeepMethodCacheAndRangeOrder) {
   }
 }
 
+TEST(CudaSmallBatch, CorrelatorBudgetFailureIsRecoverable) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  triqs_xca::dense::cuda_small::DiagramEvaluator candidate(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  triqs_xca::dense::cuda::DiagramEvaluator reference(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto t=topology(2,"crossing");
+  triqs_xca::backbone::CorrelatorBackbone b(t,f.n), gold(t,f.n);
+  candidate.set_workspace_budget(candidate.workspace_bytes());
+  EXPECT_THROW(candidate.eval_correlator(f.G[0].data(),b,f.Fs,f.Fd,0L),std::length_error);
+  candidate.set_workspace_budget(512*1024*1024);
+  auto expected=reference.eval_correlator(f.G[0].data(),gold,f.Fs,f.Fd,0L);
+  auto actual=candidate.eval_correlator(f.G[0].data(),b,f.Fs,f.Fd,0L);
+  EXPECT_NO_THROW(compare(actual,expected));
+}
+
 #else
 TEST(CudaSmallBatch, DISABLED_RequiresCudaSmall) {}
 #endif

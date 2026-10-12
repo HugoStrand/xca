@@ -55,6 +55,7 @@ namespace triqs_xca::dense::cuda_small {
     nda::array<complex, 3> correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap,
                                      nda::array_const_view<long, 1> indices, bool all, bool fermionic, long first = 0, long last = -1);
     gf_t result();
+    void prepare_table_budget(std::size_t temporary = 0);
     gf_t compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all, bool pairs, long first = 0, long last = -1);
 
     template <bool C>

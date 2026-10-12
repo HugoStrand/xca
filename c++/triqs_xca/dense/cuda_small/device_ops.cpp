@@ -83,6 +83,9 @@ namespace triqs_xca::dense::cuda_small {
   void DeviceOps::prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left) {
     Key key{op.data(), in.data(), out.data(), left};
     if (tables_.contains(key)) return;
+    auto bytes = checked_product(3, checked_product(r_, sizeof(complex *)));
+    if (bytes > table_budget_) throw std::length_error("CUDA-small vertex table exceeds workspace budget");
+    if (checked_sum(workspace_bytes(), bytes) > table_budget_) clear_tables();
     auto table = std::make_unique<Tables>(r_);
     nda::vector<complex const *> ap(r_), bp(r_);
     nda::vector<complex *> cp(r_);

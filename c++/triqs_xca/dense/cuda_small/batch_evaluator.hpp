@@ -16,7 +16,7 @@ namespace triqs_xca::dense::cuda_small {
     triqs::mesh::dlr_imtime mesh_;
     double beta_;
     triqs_xca::hyb::Hybridization hyb_;
-    int r_, N_, n_, B_;
+    int r_, N_, n_, n_int_, B_;
     DlrOps dlr_;
     tensor G_, T_, U_, tmp_, GKt_, gc_, tc_, Tmu_, parity_tmp_, lane_;
     tensor_view sum_;
@@ -36,7 +36,7 @@ namespace triqs_xca::dense::cuda_small {
     static int capacity(int b);
     public:
     BatchEvaluator(triqs::mesh::dlr_imtime mesh, cppdlr::imtime_ops const &itops, nda::vector_const_view<double> poles,
-                     nda::array_const_view<complex, 3> coefficients, triqs_xca::dense::FSet fset, int b, std::size_t budget);
+                     nda::array_const_view<complex, 3> coefficients, triqs_xca::dense::FSet fset, int n_int, int b, std::size_t budget);
     matrix_const_view op(Backbone &b, int v, int o, int p = -1) const;
     nda::cuvector<complex> *add_weight(tensor_const_view in, tensor_view out, std::function<complex(int, int)> const &value, bool enqueue = true);
     void add_vertex(tensor_const_view in, tensor_view out, bool left, std::function<matrix_const_view(int)> const &value, complex beta = 0.);

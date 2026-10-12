@@ -29,6 +29,7 @@ namespace triqs_xca::dense::cuda_small {
     int r_, N_, stride_, count_, rank_, B_;
     int mode_ = 1;
     bool rank_lanes_ = false;
+    std::size_t table_budget_ = std::size_t(-1);
     using Key = std::tuple<complex const *, complex const *, complex *, bool>;
     struct Tables {
       nda::cuvector<complex const *> a, b;
@@ -73,6 +74,7 @@ namespace triqs_xca::dense::cuda_small {
     void wait_for_default_uploads() const;
     void axpy_flat(int count, complex alpha, complex const *in, complex *out) const;
     void clear_tables();
+    void set_table_budget(std::size_t bytes) { table_budget_ = bytes; }
     void prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left);
     void zero(tensor_view out) const;
     void copy(tensor_const_view in, tensor_view out) const;

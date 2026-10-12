@@ -12,13 +12,14 @@ namespace triqs_xca::dense::cuda_small {
     return b;
   }
   BatchEvaluator::BatchEvaluator(triqs::mesh::dlr_imtime mesh, cppdlr::imtime_ops const &itops, nda::vector_const_view<double> poles,
-                                     nda::array_const_view<complex, 3> coefficients, triqs_xca::dense::FSet fset, int b, std::size_t budget)
+                                     nda::array_const_view<complex, 3> coefficients, triqs_xca::dense::FSet fset, int n_int, int b, std::size_t budget)
      : mesh_(mesh),
        beta_(mesh.beta()),
        hyb_(mesh, poles, coefficients, -1.),
        r_(DeviceOps::checked_blas_int(itops.rank())),
        N_(DeviceOps::checked_blas_int(fset.Fs.extent(1))),
        n_(DeviceOps::checked_blas_int(fset.Fs.extent(0))),
+       n_int_(n_int),
        B_(capacity(b)),
        dlr_(itops, N_, B_),
        G_(r_ * B_, N_, N_),
@@ -165,7 +166,7 @@ namespace triqs_xca::dense::cuda_small {
     backbones_.clear();
     backbones_.reserve(active_);
     for (long i : indices) {
-      backbones_.emplace_back(topology, n_);
+      backbones_.emplace_back(topology, n_, n_int_);
       backbones_.back().set_flat_index(i, hyb_.poles);
     }
     schedule_.push_back([this] { dlr_.device_ops().copy(G_, T_); });
@@ -204,7 +205,7 @@ namespace triqs_xca::dense::cuda_small {
     if (indices.size() == 0 || indices.size() > B_) throw std::invalid_argument("batch index width mismatch");
     sum_.rebind(output);
     try {
-      Backbone check(topology, n_);
+      Backbone check(topology, n_, n_int_);
       for (long i : indices) check.set_flat_index(i, hyb_.poles);
       dlr_.begin();
       prepare(topology, indices, pairs);

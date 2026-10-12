@@ -89,6 +89,29 @@ class BackendTests(unittest.TestCase):
             np.testing.assert_allclose(S.d.compute_one_time_correlator(S.G0,tau,zero,S.atom_diag,t,ix),reference.d.compute_one_time_correlator(reference.G0,tau,zero,reference.atom_diag,t,ix),rtol=1e-10,atol=1e-13)
 
     @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
+    def test_fitted_dynamic_channels_match_library_and_cpu(self):
+        # Supply fitted channel data directly to isolate evaluator integration
+        # from the independent interaction fitting tests.
+        solvers=[]
+        for backend in ['cpu','cuda','cuda_small']:
+            S=make_solver(backend)
+            S.has_dynamic_interactions=True
+            S.dynint_ops=[n('0',0),c_dag('0',0)*c('0',1)+c_dag('0',1)*c('0',0)]
+            S.dynint_coeffs=np.array([[[.02,.004j],[-.004j,.03]],[[.015,0.],[0.,.02]]],dtype=complex)
+            S.init_diagram_evaluator()
+            solvers.append(S)
+        reference,library,actual=solvers
+        t=np.array([[0,3],[1,4],[2,5]],dtype=np.int32)
+        indices=np.arange(129,dtype=np.int64)
+        before=actual.d.batch_chunks()
+        for name in ['compute_self_energy','compute_self_energy_by_pairs']:
+            expected=getattr(library.d,name)(library.G0,t,indices)[0].data
+            value=getattr(actual.d,name)(actual.G0,t,indices)[0].data
+            np.testing.assert_allclose(value,expected,rtol=1e-10,atol=1e-280)
+            np.testing.assert_allclose(value,getattr(reference.d,name)(reference.G0,t,indices)[0].data,rtol=1e-9,atol=1e-13)
+        self.assertGreater(actual.d.batch_chunks(),before)
+
+    @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
     def test_self_consistency_matches_cpu(self):
         reference=make_solver()
         actual=make_solver('cuda_small')

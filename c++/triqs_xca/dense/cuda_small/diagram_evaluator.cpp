@@ -262,6 +262,12 @@ namespace triqs_xca::dense::cuda_small {
     Backbone b(topology, n_, n_int_);
     return get_num_self_energy_backbones(b);
   }
+  void DiagramEvaluator::prepare_table_budget(std::size_t temporary) {
+    auto &ops = dlr_.device_ops();
+    auto other = DeviceOps::checked_sum(workspace_bytes() - ops.workspace_bytes(), temporary);
+    if (other > workspace_budget_) throw std::length_error("CUDA-small resident workspace exceeds budget");
+    ops.set_table_budget(workspace_budget_ - other);
+  }
   void DiagramEvaluator::set_batch_capacity(int capacity) {
     if (capacity < 1) throw std::invalid_argument("CUDA-small batch capacity must be positive");
     dlr_.finish();
@@ -277,7 +283,7 @@ namespace triqs_xca::dense::cuda_small {
   bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs) {
     // Qualification is currently local and restricted to ordinary/paired SE, rank16,
     // full-fermion N4/N8. Other cases retain the native sequential traversal.
-    if (n_int_ || r_ != 16 || (N_ != 4 && N_ != 8)) return false;
+    if (r_ != 16 || (N_ != 4 && N_ != 8)) return false;
     int slot = indices.size() == 128 ? 2 : indices.size() == 32 ? 1 : indices.size() == 8 ? 0 : -1;
     if (slot < 0) return false;
     dlr_.finish(); // Caller-owned input/output are ready for the batch stream.
@@ -291,7 +297,7 @@ namespace triqs_xca::dense::cuda_small {
           DeviceOps::checked_product(std::size_t(r_) * indices.size(), DeviceOps::checked_product(N_ * N_, sizeof(complex))));
         auto available = workspace_budget_ > resident ? workspace_budget_ - resident : 0;
         if (estimate > available) return false;
-        batch = std::make_unique<BatchEvaluator>(mesh_, itops_, nda::make_regular(hyb_.poles / beta_), hyb_.coeffs, fset_, indices.size(), available);
+        batch = std::make_unique<BatchEvaluator>(mesh_, itops_, nda::make_regular(hyb_.poles / beta_), hyb_.coeffs, fset_, n_int_, indices.size(), available);
         resident = workspace_bytes();
       }
       auto other = resident - batch->workspace_bytes();
@@ -320,6 +326,7 @@ namespace triqs_xca::dense::cuda_small {
       for (long index : indices) { check.set_flat_index(index, hyb_.poles); check.reset_all_inds(); }
     }
     upload(g);
+    prepare_table_budget();
     long group = pairs && all ? total / b.fb_ix_max : 1;
     nda::vector<long> chunk(128);
     for (long offset = 0; offset < count;) {
@@ -336,6 +343,7 @@ namespace triqs_xca::dense::cuda_small {
       for (int lane = 0; lane < width; ++lane) chunk(lane) = all ? first + offset + lane : indices(offset + lane);
       auto selected = chunk(nda::range(width));
       if (width == 1 || !try_batch(topology, selected, pairs)) {
+        prepare_table_budget();
         for (long index : selected)
           if (!pairs || !all || (index / group) % 2 == 0) evaluate(b, index, pairs);
       }
@@ -395,18 +403,25 @@ namespace triqs_xca::dense::cuda_small {
     auto entries  = mul(m, mul(r_, k));
     auto bytes    = mul(entries, sizeof(complex));
     int row_count = DeviceOps::checked_blas_int(mul(r_, k));
-    auto host     = nda::zeros<complex>(r_, m, k);
     mul(mul(k, mul(N_, N_)), sizeof(complex));
     mul(mul(m, mul(N_, N_)), sizeof(complex));
-    // Conservatively include old persistent buffers plus all replacement buffers
-    // before any resize allocation. This bounds overlapping resize lifetimes.
-    auto replacements = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(mul(r_, k), sizeof(complex)));
-    replacements      = DeviceOps::checked_sum(replacements, DeviceOps::checked_product(mul(m, N_ * N_), sizeof(complex)));
-    replacements      = DeviceOps::checked_sum(replacements, DeviceOps::checked_product(mul(k, N_ * N_), sizeof(complex)));
-    (void)DeviceOps::checked_sum(workspace_bytes(), replacements);
-    ProfileRange boundary("xca.correlator.endpoints_and_result");
+    // Bound overlapping replacement lifetimes and temporary endpoint packing.
+    auto add = DeviceOps::checked_sum;
+    std::size_t replacements = 0;
+    if (mu_ops_.shape() != mu.shape()) replacements = add(replacements, mul(mul(m, N_ * N_), sizeof(complex)));
+    if (packed_ops_.shape() != std::array<long,2>{k,N_*N_}) replacements = add(replacements, mul(mul(k, N_*N_), sizeof(complex)));
+    if (trace_values_.shape() != std::array<long,2>{r_,k}) replacements = add(replacements, mul(mul(r_,k), sizeof(complex)));
+    if (corr_sum_.shape() != std::array<long,3>{m,r_,k}) replacements = add(replacements, bytes);
+    auto temporary = add(bytes, mul(mul(2 * std::size_t(m+k), N_*N_), sizeof(complex)));
+    auto peak_addition = add(replacements, temporary);
     dlr_.finish();
     dlr_.device_ops().clear_tables();
+    if (add(workspace_bytes(), peak_addition) > workspace_budget_)
+      for (auto &batch : batches_) batch.reset();
+    if (add(workspace_bytes(), peak_addition) > workspace_budget_)
+      throw std::length_error("CUDA-small correlator resize exceeds workspace budget");
+    auto host = nda::zeros<complex>(r_, m, k);
+    ProfileRange boundary("xca.correlator.endpoints_and_result");
     if (mu_ops_.shape() != mu.shape()) mu_ops_ = tensor(mu.shape());
     mu_ops_ = nda::make_regular(mu);
     nda::matrix<complex> packed(k, N_ * N_);
@@ -417,6 +432,7 @@ namespace triqs_xca::dense::cuda_small {
     packed_ops_ = packed;
     if (trace_values_.shape() != std::array<long, 2>{r_, k}) trace_values_ = nda::cumatrix<complex>(r_, k);
     if (corr_sum_.shape() != std::array<long, 3>{m, r_, k}) corr_sum_ = tensor(m, r_, k);
+    prepare_table_budget(temporary);
     dlr_.wait_for_default_uploads();
     nda::device_error_check(cudaMemsetAsync(corr_sum_.data(), 0, bytes, dlr_.device_ops().stream()), "CUDA correlator reset");
     auto &ops           = dlr_.device_ops();
@@ -461,10 +477,13 @@ namespace triqs_xca::dense::cuda_small {
         for (long i : indices) evaluate_index(i);
     }
     dlr_.finish();
-    auto result = nda::to_host(corr_sum_);
+    // Copy each endpoint slab directly into the caller's output layout, avoiding
+    // a second full host result buffer and its overlapping allocation lifetime.
     for (long q = 0; q < m; ++q)
-      for (int t = 0; t < r_; ++t)
-        for (long j = 0; j < k; ++j) host(t, q, j) = result(q, t, j);
+      nda::device_error_check(cudaMemcpy2DAsync(host.data() + q * k, mul(mul(m,k),sizeof(complex)),
+        corr_sum_(q,a,a).data(), mul(k,sizeof(complex)), mul(k,sizeof(complex)), r_,
+        cudaMemcpyDeviceToHost, dlr_.device_ops().stream()), "CUDA-small correlator download");
+    dlr_.finish();
     return host;
   }
   long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) {
