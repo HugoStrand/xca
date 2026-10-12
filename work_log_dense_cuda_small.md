@@ -734,3 +734,28 @@ host snapshots/metadata and opaque CUDA-library allocations, then completion aud
 Supervisor process219671 verified live with the implementation config; model/effort
 still Sol6.1 medium for resumption. Multi-GPU and GH200 tests remain unavailable;
 local A4000 evidence is provisional. Goal active; unrelated user files preserved.
+
+## Native rank26 screen and refreshed library install — 2026-10-12
+
+Rank26 N4 tile4 native probe passes84 backend/case groups: orders1/3/6/8,
+crossing/chain, ordinary/paired SE, counts8/128/129, seed31415, three timed samples.
+Actual batch-counter checks pass. Candidate/reference aggregate errors in the
+crossing128/129 high-order cases are exactly zero. Crossing128 medians: ordinary
+12.669/17.608ms and paired12.830/17.317ms at orders6/8. This is one process/seed;
+production rank eligibility remains unchanged until repeats and broader coverage.
+Complete run retained and committed separately from this log.
+
+Library-only build refreshed after the default-device archive repair and reinstalled.
+Smoke/backend/archive/dynamic CTest entries pass4/4 in7.59s. Actual staged-package
+backend script passes10 tests with3 Small-only skips; library CUDA cases execute.
+Current installed Solver serialization now includes the repair rather than the
+older source copy. Evidence retained in system_validation.
+
+Tracked exec session10408 now runs rank36 N4 screen (lambda120), followed by rank26
+N8 screen (lambda40), serially. Do not restart or launch other GPU work while this
+handle is live. Terminal failure must retain raw samples/provenance and guide the
+next numerical control. After completion: larger dimension physical fixtures,
+repeat promising rank policies in fresh processes/two seeds, expand independent
+physical/dynamic coverage, and finish host/device/library memory reporting.
+Goal remains active; original23-file baseline unchanged. GH200 and multi-device
+qualification remain unavailable locally and all A4000 defaults provisional.
