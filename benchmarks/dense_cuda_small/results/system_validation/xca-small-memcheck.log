@@ -1,0 +1,19 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = CudaSmallBatch.PairedBatchesKeepMethodCacheAndRangeOrder:CudaSmallBatch.CorrelatorBudgetFailureIsRecoverable:CudaSmallBatch.NativeOneTimeRangesMatchIndexedWork
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from CudaSmallBatch
+[ RUN      ] CudaSmallBatch.NativeOneTimeRangesMatchIndexedWork
+[       OK ] CudaSmallBatch.NativeOneTimeRangesMatchIndexedWork (3038 ms)
+[ RUN      ] CudaSmallBatch.PairedBatchesKeepMethodCacheAndRangeOrder
+[       OK ] CudaSmallBatch.PairedBatchesKeepMethodCacheAndRangeOrder (143454 ms)
+[ RUN      ] CudaSmallBatch.CorrelatorBudgetFailureIsRecoverable
+[       OK ] CudaSmallBatch.CorrelatorBudgetFailureIsRecoverable (45 ms)
+[----------] 3 tests from CudaSmallBatch (146537 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (146537 ms total)
+[  PASSED  ] 3 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

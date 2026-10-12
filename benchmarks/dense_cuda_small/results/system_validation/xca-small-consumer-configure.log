@@ -1,0 +1,28 @@
+-- The CXX compiler identification is Clang 19.1.1
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++-19 - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found suitable version "1.83.0", minimum required is "1.70")
+-- Found Boost Headers: /usr/include
+-- Found Cpp2PyConfig.cmake with version 3.3.0, hash = 4721d6484237ba0e402648cd963ff036b2557c67, root = /home/hugstr/apps/triqs-cuda
+-- Found Python: /usr/bin/python3 (found version "3.12.3") found components: Interpreter Development NumPy Development.Module Development.Embed
+-- Found itertools-config.cmake with version 2.0.0, hash = d32d2b20a1beda709a43bd56ac85ea6d41efcdef, root = /home/hugstr/apps/triqs-cuda
+-- Found mpi-config.cmake with version 2.0.0, hash = 27e1c9353320b3ed80a6e7e3bf0414bf405039d6, root = /home/hugstr/apps/triqs-cuda
+-- Found HDF5: /usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so;/usr/lib/x86_64-linux-gnu/libcrypto.so;/usr/lib/x86_64-linux-gnu/libcurl.so;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/libsz.so;/usr/lib/x86_64-linux-gnu/libz.so;/usr/lib/x86_64-linux-gnu/libdl.a;/usr/lib/x86_64-linux-gnu/libm.so (found version "1.10.10") found components: C HL
+-- Found h5-config.cmake with version 2.0.0, hash = bdbb040157088e156032edb33714a915d7782f3b, root = /home/hugstr/apps/triqs-cuda
+-- Found OpenMP_CXX: -fopenmp=libomp (found version "5.1")
+-- Found OpenMP: TRUE (found version "5.1") found components: CXX
+-- Found CUDAToolkit: /usr/local/cuda/targets/x86_64-linux/include (found version "13.4.92")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found nda-config.cmake with version 2.0.0, hash = 4e590772784c2ca855dd9b6218300047dea5abcb, root = /home/hugstr/apps/triqs-cuda
+-- Found cppdlr-config.cmake with version 1.3.0, hash = 7a0f60cba2da69d64361971613b6859bb8c078ce, root = /home/hugstr/apps/triqs-cuda
+-- Found TRIQSConfig.cmake with version 4.0.0, hash = 29301201c26de3b2c9d824718a406f981d3adea7, root = /home/hugstr/apps/triqs-cuda
+-- Found cppdlr-config.cmake with version 1.3.0, hash = 7a0f60cba2da69d64361971613b6859bb8c078ce, root = /home/hugstr/apps/triqs-cuda
+-- Found triqs_xca-config.cmake with version 0.1.0, hash = 2a7cd04abf46e9f9233fa791cec252050dd1f131, root = /tmp/xca-small-stage
+-- Configuring done (1.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/xca-small-consumer/build

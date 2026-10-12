@@ -1,0 +1,22 @@
+{
+  "revision": "99bd702bbd672353abc73ca86ac9847341ab3635",
+  "scope": "A4000 local validation; GH200 not available",
+  "sources_sha256": {
+    "c++/triqs_xca/dense/cuda_small/device_ops.cpp": "05b54503a89484fb5d46747d4b3374cef33f9f1327453f07307a2c6360279afa",
+    "c++/triqs_xca/dense/cuda_small/diagram_evaluator.cpp": "7e3166a4e0d3289c7b0ca341f92abe726f0f9b519f2587169cdd982fda7b524e",
+    "c++/triqs_xca/dense/cuda_small/batch_evaluator.cpp": "895e8b60b14cf43187fa6bec5b95453b401806b3465877ae281d294ba8984d6a",
+    "c++/triqs_xca/dense/cuda_small/dlr_ops.cpp": "d8501b7e85340c8a3dc742684426791fab03e2c5208b1043ed3526ac4cfbedf1",
+    "c++/triqs_xca/dense/cuda_small/batch_evaluator.hpp": "7c13f2f2a704470b97e47afe12676f8ef3113cfd8091932d9ad411f97839efb0",
+    "c++/triqs_xca/dense/cuda_small/device_ops.hpp": "9b25e870f430e1d167fdc2590cb538b22d5662626e577cb4c633b03d28ddd073",
+    "c++/triqs_xca/dense/cuda_small/diagram_evaluator.hpp": "f301414a8ee152d68588eeccc2c79805b730c2c3c12e8ebc8952df5ed4bc8889",
+    "c++/triqs_xca/dense/cuda_small/kernels.hpp": "1ed4882eb290344742c288e4ed135bf97f798811578fe9c93d234329c806a5ee",
+    "c++/triqs_xca/dense/cuda_small/dlr_ops.hpp": "a824d1a70773a7f16645e4e5dfcc784ee3a02d8ed1ded5d3a48966e03c469d72",
+    "c++/triqs_xca/dense/cuda_small/profile_range.hpp": "884ff71b48b4587351511bf8b50d5d06c66a2fe364f348d1979d845d4019983b",
+    "c++/triqs_xca/dense/cuda_small/kernels.cu": "c5674503a0358710f3a392640fd880b8e0606781b473f079e55065e0003d0bcc"
+  },
+  "binaries_sha256": {
+    "cbuild-cuda/test/c++/dense/cuda_small/batch_api": "e8bb83928c6226c995220020ceebabf511fdcb94aee50559556a3cbd84b9d0a6",
+    "/tmp/xca-small-consumer/build/consumer": "328d83f06d1da3f7b97350d85999b492df35e0042e839ea6e99bfdbf0ec9cbf7"
+  },
+  "logs": "trailing whitespace normalized"
+}

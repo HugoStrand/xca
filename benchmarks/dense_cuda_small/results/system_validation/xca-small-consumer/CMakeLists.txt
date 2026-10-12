@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22)
+project(consumer LANGUAGES CXX)
+find_package(TRIQS 4.0 REQUIRED)
+find_package(cppdlr REQUIRED)
+find_package(triqs_xca CONFIG REQUIRED)
+add_executable(consumer main.cpp)
+target_compile_features(consumer PRIVATE cxx_std_23)
+target_link_libraries(consumer PRIVATE triqs_xca::triqs_xca_c)
