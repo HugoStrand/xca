@@ -4,6 +4,39 @@
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
 #include "../../../../benchmarks/dense_cuda_small/harness.hpp"
 
+namespace triqs_xca::dense::cuda_small {
+  struct BatchFailureProbe {
+    static void arm(DiagramEvaluator &e, bool length_error) {
+      e.batches_[2]->schedule_.push_back([length_error] {
+        if (length_error) throw std::length_error("injected failure after contribution submission");
+        throw std::bad_alloc();
+      });
+    }
+    static void disarm(DiagramEvaluator &e) {
+      if (e.batches_[2]) e.batches_[2]->schedule_.pop_back();
+    }
+  };
+}
+
+TEST(CudaSmallBatch, SubmittedFailuresAreNotReplayed) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  triqs_xca::dense::cuda_small::DiagramEvaluator candidate(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto reference=baseline(f);
+  auto t=topology(3,"crossing");
+  auto indices=select_indices(candidate.get_num_self_energy_backbones(t),128,1729);
+  auto expected=reference.evaluate("se",t,indices);
+  candidate.compute_self_energy(f.G,t,indices); // Populate the content-keyed schedule.
+  for (bool length_error : {false,true}) {
+    triqs_xca::dense::cuda_small::BatchFailureProbe::arm(candidate,length_error);
+    if (length_error) EXPECT_THROW(candidate.compute_self_energy(f.G,t,indices),std::length_error);
+    else EXPECT_THROW(candidate.compute_self_energy(f.G,t,indices),std::bad_alloc);
+    triqs_xca::dense::cuda_small::BatchFailureProbe::disarm(candidate);
+    auto actual=candidate.compute_self_energy(f.G,t,indices);
+    EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+  }
+}
+
 TEST(CudaSmallBatch, OrderedWidthsTailsAndChangedInputs) {
   using namespace dense_cuda_bench;
   for (int N : {4, 8}) {

@@ -81,7 +81,12 @@ namespace triqs_xca::dense::cuda_small {
     nda::device_error_check(cudaEventRecord(upload_ready_, nullptr), "record default uploads");
     nda::device_error_check(cudaStreamWaitEvent(stream_, upload_ready_, 0), "wait for default uploads");
   }
-  void DeviceOps::finish() const { context_.require_current(); nda::device_error_check(cudaStreamSynchronize(stream_), "serial_stream completion"); }
+  void DeviceOps::finish() const {
+    context_.require_current();
+    // Successful draining must not allocate an error-message string.
+    auto status = cudaStreamSynchronize(stream_);
+    if (status != cudaSuccess) nda::device_error_check(status, "serial_stream completion");
+  }
   void DeviceOps::prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left) {
     Key key{op.data(), in.data(), out.data(), left};
     if (tables_.contains(key)) return;

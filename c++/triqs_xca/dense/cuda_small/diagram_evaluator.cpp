@@ -305,9 +305,7 @@ namespace triqs_xca::dense::cuda_small {
       }
       auto other = resident - batch->workspace_bytes();
       batch->set_budget(workspace_budget_ > other ? workspace_budget_ - other : 0);
-      batch->accumulate(G_, topology, indices, sum_, pairs);
-      ++batch_chunks_;
-      return true;
+      batch->prepare_accumulation(topology, indices, sum_, pairs);
     } catch (std::length_error const &) {
       // Budget errors occur during preparation, before any contribution is added.
       batch.reset();
@@ -316,6 +314,11 @@ namespace triqs_xca::dense::cuda_small {
       batch.reset();
       return false;
     }
+    // After submission, output may contain contributions. Propagate any failure;
+    // replaying this chunk through serial fallback would double count them.
+    batch->execute_accumulation(G_);
+    ++batch_chunks_;
+    return true;
   }
   DiagramEvaluator::gf_t DiagramEvaluator::compute(gf_vt g, nda::array_const_view<int, 2> topology,
                                                    nda::array_const_view<long, 1> indices, bool all, bool pairs, long first, long last) {

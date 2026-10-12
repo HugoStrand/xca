@@ -200,25 +200,34 @@ namespace triqs_xca::dense::cuda_small {
     cached_pairs_ = pairs;
     ++cache_builds_;
   }
-  void BatchEvaluator::accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology,
-                                  nda::array_const_view<long, 1> indices, tensor_view output, bool pairs) {
+  void BatchEvaluator::prepare_accumulation(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices,
+                                             tensor_view output, bool pairs) {
     context_.require_current();
     if (indices.size() == 0 || indices.size() > B_) throw std::invalid_argument("batch index width mismatch");
+    Backbone check(topology, n_, n_int_);
+    for (long i : indices) check.set_flat_index(i, hyb_.poles);
     sum_.rebind(output);
+    dlr_.begin();
+    prepare(topology, indices, pairs);
+  }
+  void BatchEvaluator::execute_accumulation(tensor_const_view g) {
+    context_.require_current();
     try {
-      Backbone check(topology, n_, n_int_);
-      for (long i : indices) check.set_flat_index(i, hyb_.poles);
-      dlr_.begin();
-      prepare(topology, indices, pairs);
       dlr_.wait_for_default_uploads();
-      dlr_.device_ops().broadcast(g, G_, indices.size());
+      dlr_.device_ops().broadcast(g, G_, active_);
       for (auto const &operation : schedule_) operation();
       dlr_.finish();
       ++chunks_;
     } catch (...) {
-      dlr_.finish();
+      // Preserve the original failure after draining already submitted work.
+      try { dlr_.finish(); } catch (...) {}
       throw;
     }
+  }
+  void BatchEvaluator::accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology,
+                                  nda::array_const_view<long, 1> indices, tensor_view output, bool pairs) {
+    prepare_accumulation(topology, indices, output, pairs);
+    execute_accumulation(g);
   }
   std::size_t BatchEvaluator::workspace_bytes() const {
     auto bytes = dlr_.workspace_bytes();

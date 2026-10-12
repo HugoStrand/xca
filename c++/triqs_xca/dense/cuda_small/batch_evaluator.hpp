@@ -10,6 +10,7 @@
 #include <triqs_xca/hyb.hpp>
 namespace triqs_xca::dense::cuda_small {
   class BatchEvaluator {
+    friend struct BatchFailureProbe; // Failure injection in the resource-recovery test.
     DeviceContext context_;
     using gf_t     = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt    = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
@@ -48,6 +49,8 @@ namespace triqs_xca::dense::cuda_small {
     void prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs);
 
     ~BatchEvaluator() { context_.begin_cleanup(); try { dlr_.finish(); } catch (...) {} }
+    void prepare_accumulation(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output, bool pairs);
+    void execute_accumulation(tensor_const_view g);
     void accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output, bool pairs);
     std::size_t workspace_bytes() const;
     void set_budget(std::size_t bytes) { budget_ = bytes; }

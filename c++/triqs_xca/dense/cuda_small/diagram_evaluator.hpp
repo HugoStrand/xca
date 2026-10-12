@@ -17,6 +17,7 @@
 namespace triqs_xca::dense::cuda_small {
   // Immutable model snapshots and owned stream/handles. Serialize calls per instance.
   class DiagramEvaluator {
+    friend struct BatchFailureProbe; // Failure injection in the resource-recovery test.
     DeviceContext context_;
     public:
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
