@@ -1,0 +1,8 @@
+{
+  "scope": "Owned device/unified payloads; conservative host snapshots/metadata; budget cache growth and fallback; excludes CUDA-library/context storage, allocator overhead, shared mesh and caller inputs/results",
+  "logs_sha256": {
+    "xca-small-memory-tests2.log": "5940586abc7affedd97bae48c8c4ae59d43752616553eace805fa5afa5fd1b45",
+    "xca-small-memory-memcheck.log": "3acb38c1df307a2e834b72290002ce411639b9d233375e54451a0433e7342aa9",
+    "xca-small-memory-cpu-tests.log": "52fa0acccd4df322e3cdee4ad7e74e25d12dc9e17c706c93f9c41300f5e60847"
+  }
+}

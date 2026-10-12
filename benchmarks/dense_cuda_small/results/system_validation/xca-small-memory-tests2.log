@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 17: dense/cuda_small/batch_api
+1/2 Test #17: dense/cuda_small/batch_api .......   Passed   52.45 sec
+    Start 46: Py_cuda_backends
+2/2 Test #46: Py_cuda_backends .................   Passed    1.81 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  54.26 sec
