@@ -13,8 +13,9 @@ Half-open work-range methods cover ordinary/paired SE, SPGF and one-time correla
 including paired fb(0)==0 filtering, without materializing a full index list.
 Python Solver now supports explicit dense_backend='cuda_small' and submits native
 ranges for MPI work. CPU and library CUDA are separate choices; GPU imports are lazy.
-Backend preferences survive copies/HDF5. Dynamic-interaction batching, broader
-qualification and the remaining validation work still need completion.
+Backend and visible-device preferences survive copies/HDF5. Dynamic interaction
+channels are included in ordinary/paired batching. Broader performance qualification
+and profiling remain in progress.
 
 Rank16 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
 other dimensions/ranks use library products. Vertex products currently use library
@@ -29,13 +30,26 @@ ON requires both; OFF disables custom kernels. `XCA_HAVE_CUDA_SMALL` is the publ
 availability definition. Set `CMAKE_CUDA_ARCHITECTURES` for the deployment hardware
 (e.g.86 on the local A4000); the source does not hardcode that GPU architecture.
 Installed target exports include the custom kernel library and CUDA runtime dependency.
-Installed consumers and compiler-unavailable library builds still need validation.
+A staged external C++ consumer and installed Python backend tests pass. AUTO
+without a CUDA compiler has an isolated configure check; optional library-only
+Python-extension validation remains in progress.
 
 Nine `dense/cuda_small/*` CTest entries reuse existing C++ test sources with the
 native class substituted. These cover physics, paired evaluations, dynamic operator
 rotations/parity, statistics, layouts and flat-index APIs; no baseline-delegating
 adapter is involved. CPU-only static library and CUDA-small static library builds
 pass. Library-only CUDA with OFF also builds and runs all four NDA GPU smoke cases.
-CPU-only ON rejects the configuration clearly. Full CPU/CUDA suites, sanitizers,
-complete resource policies, Python/MPI integration,
-installed builds and full-API performance acceptance remain outstanding.
+CPU-only ON rejects the configuration clearly. Full CPU/CUDA suites and staged
+Python/C++ consumers pass. Two-rank Python Solver tests pass with both ranks sharing
+the local GPU. Selected cache, correlator and lifetime paths pass memory/leak checks;
+this is not sanitizer coverage of every path. Broader performance and resource
+accounting qualification remains in progress.
+
+Choose the visible GPU before constructing CUDA objects: Solver accepts
+`gpu_device=None` (current device, respecting `CUDA_VISIBLE_DEVICES`) or a visible
+ordinal. Keep one unchanged device per process. Native evaluation checks the
+construction device before GPU work; destruction temporarily selects that device
+through member cleanup and restores the caller's selection. Device-switch rejection
+and restoration have a two-GPU regression, skipped on the single-GPU local machine.
+Independent instances and cross-thread destruction are tested locally; concurrent
+calls on the same instance remain unsupported.

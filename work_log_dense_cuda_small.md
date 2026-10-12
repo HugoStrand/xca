@@ -686,3 +686,51 @@ strict harness. Wait for its tracked process before any other GPU benchmark. The
 repeat in fresh processes, screen higher ranks/dimensions, and retain capability and
 crossover evidence. Library-only optional extensions and broader profiling remain
 pending. GH200 hardware/default qualification remains unavailable locally. Goal active.
+
+## Repeated workloads, residency and library-only Python — 2026-10-12
+
+Six fresh native benchmark processes (three each N4/N8, seeds31415/1729/31415)
+pass strict individual/aggregate CUDA gates for ordinary/paired SE, crossing,
+rank16, orders6/8, counts128/129, samples3. N4 B128 medians6.875–9.284ms;
+N8 medians20.172–28.253ms across methods/orders. CPU speedups roughly13–15x
+for these fixtures. Raw data/provenance retained; report in
+benchmarks/dense_cuda_small/NATIVE_RESULTS.md. These records precede storage reuse.
+Recorder now includes the native entry source; earlier entry hashes transparently
+backfilled from each recorded revision. High-order CPU error remains diagnostic.
+
+Timed-region Nsight profiling found two transient4096-byte device allocations in
+warm ordinary SE: upload assignment replaced storage, and NDA regular-array host
+conversion copied the device result by value. Changed both to view-based operations.
+Strict batch_api/Python tests pass; updated warm capture has no CUDA allocation/free
+APIs, one propagator upload and one result download. Solver status still causes one
+4096-byte unified migration in each direction. Scope: N4/order6/128 ordinary SE only.
+Saved cold/warm runtime/kernel/copy/allocation tables and provenance; do not infer
+allocation freedom for every API/shape. Code6a2f143 separate from evidence/docs.
+
+Separate cbuild-library-cuda uses XCA_CUDA_SMALL=OFF, no CUDA compiler configured,
+Release clang19 and source links to existing dependency checkouts. Full build passes;
+library-only Python and NDA GPU smoke entries pass2/2. Staged package import at
+/tmp/xca-library-cuda-stage exposes retained CUDA and reports Small unavailable.
+It must be refreshed for the later default-device serialization repair below.
+
+Full CPU/CUDA suites exposed gpu_device=None failing HDF5 writes in existing archive
+and dynamic tests. Focused earlier test used explicit ordinal0 and missed the default.
+Omit the default field so constructor restoration supplies None; add default archive
+round-trip regression. Repair b0020e2. Focused archive/backend/dynamic entries pass
+in both trees, then full suites pass67/67 CPU(48.05s) and75/75 CUDA(112.36s).
+Failure and repaired logs retained. No tolerance changed; protected baseline23 files
+remain the comparison control.
+
+Native rank experiment in experiments/dense_cuda_small/native_ranks generates a
+separate namespace from the current native code and changes only N4/N8 rank eligibility.
+ON/OFF product controls and an actual batch-counter assertion prevent mistaking serial
+fallback for a batching result. Snapshot generator/entry/code are hashed by the runner.
+First rank26 N4 screen is running (tracked exec session86664); wait for terminal state
+before any other GPU work. Production remains rank16-only until qualification/repeats.
+
+Next: finish rank26/36 screens and broader dimension/method coverage, refresh library-
+only/install Python after archive repair, split memory reporting into owned device,
+host snapshots/metadata and opaque CUDA-library allocations, then completion audit.
+Supervisor process219671 verified live with the implementation config; model/effort
+still Sol6.1 medium for resumption. Multi-GPU and GH200 tests remain unavailable;
+local A4000 evidence is provisional. Goal active; unrelated user files preserved.
