@@ -10,18 +10,18 @@
 -- triqs_xca Git hash: 68be63d63673035639ef30891142a3b2dd8dbb9b
 -- -------- CMAKE_INSTALL_PREFIX: /home/hugstr/apps/xca --------
 -- -------- BUILD-TYPE: Release --------
---  =============== Configuring Dependency c2py =============== 
+--  =============== Configuring Dependency c2py ===============
 -- -------- c2py version and git hash detection -------------
 -- c2py version : 1.0.0
 -- c2py Git hash: 58e0586a32cd3e4bc197b2ca753b51f128db39d2
 -- -------- Python detection -------------
---  =============== End c2py Configuration =============== 
---  =============== Configuring Dependency adapol =============== 
---  =============== End adapol Configuration =============== 
---  =============== Configuring Dependency pyed =============== 
---  =============== End pyed Configuration =============== 
---  =============== Configuring Dependency GTest =============== 
---  =============== End GTest Configuration =============== 
+--  =============== End c2py Configuration ===============
+--  =============== Configuring Dependency adapol ===============
+--  =============== End adapol Configuration ===============
+--  =============== Configuring Dependency pyed ===============
+--  =============== End pyed Configuration ===============
+--  =============== Configuring Dependency GTest ===============
+--  =============== End GTest Configuration ===============
 CMake Error at c++/triqs_xca/dense/cuda_small/CMakeLists.txt:12 (message):
   XCA_CUDA_SMALL=ON requires CUDA-enabled NDA/TRIQS
 

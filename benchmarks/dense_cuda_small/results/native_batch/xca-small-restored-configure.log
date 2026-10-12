@@ -10,25 +10,25 @@
 -- triqs_xca Git hash: 68be63d63673035639ef30891142a3b2dd8dbb9b
 -- -------- CMAKE_INSTALL_PREFIX: /home/hugstr/apps/xca-cuda --------
 -- -------- BUILD-TYPE: Release --------
---  =============== Configuring Dependency c2py =============== 
+--  =============== Configuring Dependency c2py ===============
 -- -------- c2py version and git hash detection -------------
 -- c2py version : 1.0.0
 -- c2py Git hash: 58e0586a32cd3e4bc197b2ca753b51f128db39d2
 -- -------- Python detection -------------
---  =============== End c2py Configuration =============== 
---  =============== Configuring Dependency adapol =============== 
---  =============== End adapol Configuration =============== 
---  =============== Configuring Dependency pyed =============== 
---  =============== End pyed Configuration =============== 
---  =============== Configuring Dependency GTest =============== 
---  =============== End GTest Configuration =============== 
+--  =============== End c2py Configuration ===============
+--  =============== Configuring Dependency adapol ===============
+--  =============== End adapol Configuration ===============
+--  =============== Configuring Dependency pyed ===============
+--  =============== End pyed Configuration ===============
+--  =============== Configuring Dependency GTest ===============
+--  =============== End GTest Configuration ===============
 -- CUDA-small enabled; architectures=86
 -- *********************************************************************************
--- * Custom install Location. Use:                                                  
--- *                                                                                
--- *   source /home/hugstr/apps/xca-cuda/share/triqs_xca/triqs_xcavars.sh  
--- *                                                                                
--- * to set up the environment variables                                            
+-- * Custom install Location. Use:
+-- *
+-- *   source /home/hugstr/apps/xca-cuda/share/triqs_xca/triqs_xcavars.sh
+-- *
+-- * to set up the environment variables
 -- *********************************************************************************
 -- Configuring done (0.8s)
 -- Generating done (0.2s)
