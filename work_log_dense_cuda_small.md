@@ -572,3 +572,35 @@ budget hardening, binding regeneration ON/OFF and compiler-unavailable/library-o
 validation with the new extensions. Complete installed consumers, sanitizers/profiling,
 repeatable real workload timing and full CPU/CUDA/Python suites. GH200 defaults remain
 unqualified/provisional. Goal active; do not declare completion from these narrow checks.
+
+## Interaction batching and resource checks — 2026-10-12
+
+Batched backbones now carry n_int so fermionic/bosonic parity and mixed channel
+bookkeeping match native serial traversal. A fitted density/spin-channel test exercises
+129 ordinary/paired evaluations, proves batches executed, and passes strict retained
+CUDA comparison plus CPU diagnostics. Python backend suite passes after this change.
+Dynamic fitting itself remains covered separately by existing tests; this new case
+intentionally isolates already-fitted channel data.
+
+Benchmark comparison rejects nonfinite norms/errors/relative metrics in addition to
+nonfinite values. Negative tests cover NaN, infinity, overflowing finite-component
+norms and tiny incorrect zero-reference outputs; no tolerance changed.
+
+Serial vertex metadata now has a budget and drains/evicts completed tables before
+reallocation. Correlator resizing checks overlapping replacements and temporary
+endpoint/output storage, evicts batch caches if needed, and fails before allocation
+when the budget is insufficient. Direct slab downloads eliminate the second full
+host output buffer. Table budgets refresh after batch allocation and reserve temporary
+storage during correlators. A correlator budget-failure/recovery test passes.
+
+Binding regeneration ON succeeds for both optional extensions and yields no tracked
+wrapper differences; normal OFF restored. Native batch_api plus Python backend tests
+pass2/2 in51.12s after regeneration; all jobs ended. These checks do not replace full
+CPU/CUDA suites, sanitizers, installed consumers or target-hardware qualification.
+Original23 source hashes remain unchanged; unrelated work preserved.
+
+Next: broaden dimension/rank/method/seed qualification and performance repeats,
+explicit GPU placement/lifetimes, allocation/metadata lifetime audits, compiler-missing
+AUTO and library-only extension checks, install/consumer verification, sanitizers and
+profiling. Run full CPU/CUDA/Python and MPI suites after the remaining changes. Target
+GH200 defaults remain provisional. Goal active; no completion claim or push.
