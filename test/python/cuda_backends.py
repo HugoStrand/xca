@@ -1,0 +1,115 @@
+import copy
+import tempfile
+from pathlib import Path
+from h5 import HDFArchive
+import unittest
+from unittest.mock import patch
+import numpy as np
+from triqs.operators import n, c, c_dag
+import triqs.utility.mpi as mpi
+from triqs_xca import Solver
+from triqs_xca.solver import scatter_range_bounds
+from triqs_xca._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
+
+
+def make_solver(backend='cpu'):
+    H = -.2*(n('0',0)+n('0',1)) + .4*n('0',0)*n('0',1)
+    S = Solver(H,2.,5.,1e-12,[['0',2]],conserved_operators=[],verbose=False,dense_backend=backend)
+    coefficients=np.zeros((2,2,2),complex)
+    coefficients[0]=np.eye(2)*.3
+    coefficients[1]=np.eye(2)*.2
+    S.set_hybridization_poles_and_coefficients(np.array([-1.5,.6]),coefficients)
+    return S
+
+
+class BackendTests(unittest.TestCase):
+    def test_range_partition_and_collective_failure(self):
+        for count in [0,1,7,17,2**60]:
+            bounds=[]
+            for rank in range(4):
+                with patch('triqs_xca.solver.mpi.rank',rank), patch('triqs_xca.solver.mpi.size',4):
+                    bounds.append(scatter_range_bounds(count))
+            self.assertEqual(bounds[0][0],0)
+            self.assertEqual(bounds[-1][1],count)
+            for left,right in zip(bounds,bounds[1:]): self.assertEqual(left[1],right[0])
+            self.assertLessEqual(max(end-start for start,end in bounds)-min(end-start for start,end in bounds),1)
+        S=make_solver()
+        def operation():
+            if mpi.rank==0: raise ValueError('injected rank failure')
+            return 0
+        with self.assertRaisesRegex(RuntimeError,'Native dense evaluation failed'):
+            S._native_range_call(operation)
+
+    def test_preference_copy_and_old_archive_defaults(self):
+        S=make_solver('cuda_small')
+        if CUDA_SMALL_ENABLED: S.init_diagram_evaluator()
+        self.assertNotIn('d',S.__reduce_to_dict__())
+        clone=copy.deepcopy(S)
+        self.assertEqual(clone.dense_backend,'cuda_small')
+        self.assertEqual(clone.dense_batch_capacity,128)
+        with tempfile.TemporaryDirectory() as folder:
+            path=str(Path(folder)/'solver.h5')
+            with HDFArchive(path,'w') as archive: archive['solver']=S
+            with HDFArchive(path,'r') as archive: restored=archive['solver']
+            self.assertEqual(restored.dense_backend,'cuda_small')
+            self.assertEqual(restored.dense_workspace_budget,S.dense_workspace_budget)
+            self.assertFalse(hasattr(restored,'d'))
+        data=S.__reduce_to_dict__()
+        for key in ['dense_backend','dense_batch_capacity','dense_workspace_budget']:
+            data.pop(key)
+        restored=Solver.__factory_from_dict__('Solver',data)
+        self.assertEqual(restored.dense_backend,'cpu')
+        self.assertFalse(hasattr(restored,'d'))
+
+    def test_invalid_configuration_and_unavailable_backend(self):
+        with self.assertRaises(ValueError):
+            Solver(n('0',0),2.,5.,1e-12,[['0',1]],dense_backend='cuda_small',verbose=False)
+        with self.assertRaises(ValueError):
+            Solver(n('0',0),2.,5.,1e-12,[['0',1]],conserved_operators=[],dense_backend='typo',verbose=False)
+        if not CUDA_SMALL_ENABLED:
+            with self.assertRaisesRegex(RuntimeError,'unavailable'):
+                make_solver('cuda_small').init_diagram_evaluator()
+
+    @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
+    def test_gpu_methods_match_cpu(self):
+        reference=make_solver()
+        reference.init_diagram_evaluator()
+        t=np.array([[0,2],[1,3]],dtype=np.int32)
+        for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
+            S=make_solver(backend)
+            S.init_diagram_evaluator()
+            ix=np.arange(min(17,S.d.get_num_self_energy_backbones(t)),dtype=np.int64)
+            for name in ['compute_self_energy','compute_self_energy_by_pairs']:
+                a=getattr(S.d,name)(S.G0,t,ix)
+                b=getattr(reference.d,name)(reference.G0,t,ix)
+                np.testing.assert_allclose(a[0].data,b[0].data,rtol=1e-10,atol=1e-13)
+            ix=np.arange(min(9,S.d.get_num_single_ptcle_gf_backbones(t)),dtype=np.int64)
+            np.testing.assert_allclose(S.d.compute_single_ptcle_gf(S.G0,t,ix),reference.d.compute_single_ptcle_gf(reference.G0,t,ix),rtol=1e-10,atol=1e-13)
+            tau=[c('0',0),c('0',1)]; zero=[c_dag('0',0),c_dag('0',1)]
+            np.testing.assert_allclose(S.d.compute_one_time_correlator(S.G0,tau,zero,S.atom_diag,t,ix),reference.d.compute_one_time_correlator(reference.G0,tau,zero,reference.atom_diag,t,ix),rtol=1e-10,atol=1e-13)
+
+    @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
+    def test_self_consistency_matches_cpu(self):
+        reference=make_solver()
+        actual=make_solver('cuda_small')
+        for S in [reference,actual]:
+            S.solve(max_order=1,maxiter=2,tol=1e-8,spgf_max_order=1,verbose=False,hyb_comp=False)
+        np.testing.assert_allclose(actual.G[0].data,reference.G[0].data,rtol=1e-9,atol=1e-12)
+        np.testing.assert_allclose(actual.Sigma[0].data,reference.Sigma[0].data,rtol=1e-9,atol=1e-12)
+        np.testing.assert_allclose(actual.G_tau['0'].data,reference.G_tau['0'].data,rtol=1e-9,atol=1e-12)
+
+    @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
+    def test_solver_uses_native_ranges(self):
+        S=make_solver('cuda_small'); S.init_diagram_evaluator()
+        reference=make_solver(); reference.init_diagram_evaluator()
+        with patch('triqs_xca.solver.scatter_range_over_ranks',side_effect=AssertionError('materialized index array')):
+            actual=S.eval_pseudo_particle_self_energy_order_by_pairs(S.G0,2)
+            spgf=S.eval_single_particle_greens_function(S.G0,2)
+            corr=S.eval_one_time_correlator(S.G0,2,[n('0',0)],[n('0',1)])
+        expected=reference.eval_pseudo_particle_self_energy_order_by_pairs(reference.G0,2)
+        np.testing.assert_allclose(actual[0].data,expected[0].data,rtol=1e-10,atol=1e-13)
+        np.testing.assert_allclose(spgf.data,reference.eval_single_particle_greens_function(reference.G0,2).data,rtol=1e-10,atol=1e-13)
+        np.testing.assert_allclose(corr.data,reference.eval_one_time_correlator(reference.G0,2,[n('0',0)],[n('0',1)]).data,rtol=1e-10,atol=1e-13)
+
+
+if __name__=='__main__': unittest.main()

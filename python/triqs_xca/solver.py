@@ -25,6 +25,28 @@ def is_root():
     return mpi.is_master_node()
 
 
+def scatter_range_bounds(n):
+    """Half-open work bounds for this rank, matching np.array_split."""
+    chunk, extra = divmod(n, mpi.size)
+    start = mpi.rank * chunk + min(mpi.rank, extra)
+    return start, start + chunk + (mpi.rank < extra)
+
+
+def _dense_evaluator_class(backend):
+    if backend == 'cpu':
+        return DenseDiagramEvaluator
+    from ._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
+    if not (CUDA_SMALL_ENABLED if backend == 'cuda_small' else CUDA_ENABLED):
+        raise RuntimeError(f"Requested dense backend {backend!r} is unavailable in this build")
+    from importlib import import_module
+    module_name = '_dense_cuda_small' if backend == 'cuda_small' else '_dense_cuda'
+    class_name = 'DenseCudaSmallDiagramEvaluator' if backend == 'cuda_small' else 'DenseCudaDiagramEvaluator'
+    try:
+        return getattr(import_module('.' + module_name, __package__), class_name)
+    except ImportError as error:
+        raise RuntimeError(f"Requested dense backend {backend!r} is unavailable: {error}") from error
+
+
 def scatter_range_over_ranks(n):
     """ This rank's chunk of range(n), split as np.array_split does, as int64 flat indices; the whole range is never built. """
     chunk, extra = divmod(n, mpi.size)
@@ -66,6 +88,14 @@ class Solver(object):
     verbose : bool/int, optional
         Verbosity flag controlling level of printouts. Default: ``True``.
 
+    dense_backend : {'cpu', 'cuda', 'cuda_small'}, optional
+        Dense evaluator choice; CPU is the default. CUDA choices require
+        conserved_operators=[] and are checked when evaluation is initialized.
+    dense_batch_capacity : int, optional
+        Maximum indexed batch width for cuda_small (default 128).
+    dense_workspace_budget : int, optional
+        Reported native workspace budget in bytes for cuda_small (default 512 MiB).
+
     Notes
     -----
 
@@ -81,8 +111,23 @@ class Solver(object):
 
     def __init__(self, H_loc, beta, w_max, eps, gf_struct, 
                  conserved_operators='automatic', dlr_symmetrize=False,
-                 timer=None, atom_diag=None, verbose=True):
+                 timer=None, atom_diag=None, verbose=True,
+                 dense_backend='cpu', dense_batch_capacity=128,
+                 dense_workspace_budget=512 * 1024 * 1024):
 
+        if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
+            raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
+        if dense_backend != 'cpu' and conserved_operators != []:
+            raise ValueError("A CUDA dense backend requires conserved_operators=[]")
+        from operator import index
+        if isinstance(dense_batch_capacity, bool) or isinstance(dense_workspace_budget, bool):
+            raise ValueError("Dense capacity and workspace budget must be positive integers")
+        dense_batch_capacity, dense_workspace_budget = index(dense_batch_capacity), index(dense_workspace_budget)
+        if dense_batch_capacity < 1 or dense_workspace_budget < 1:
+            raise ValueError("Dense capacity and workspace budget must be positive integers")
+        self.dense_backend = dense_backend
+        self.dense_batch_capacity = dense_batch_capacity
+        self.dense_workspace_budget = dense_workspace_budget
         self.dlr_symmetrize = dlr_symmetrize
         self.H_loc = H_loc
         self.gf_struct = gf_struct
@@ -327,19 +372,37 @@ class Solver(object):
 
     @timer('DiagramEvaluator Init')
     def init_diagram_evaluator(self):
-        #if is_root(): print(f'Initializing diagram evaluator with use_dense_solver = {self.use_dense_solver}')
+        if self.dense_backend != 'cpu' and not self.use_dense_solver:
+            raise ValueError("A CUDA dense backend requires conserved_operators=[]")
         if self.use_dense_solver:
+            evaluator_class = _dense_evaluator_class(self.dense_backend)
             if self.has_dynamic_interactions:
-                self.d = DenseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
+                self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
             else:
-                self.d = DenseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
+                self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
         else:
             if self.has_dynamic_interactions:
                 self.d = BlockSparseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
             else:
                 self.d = BlockSparseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
+        if self.use_dense_solver and self.dense_backend == 'cuda_small':
+            self.d.set_batch_capacity(self.dense_batch_capacity)
+            self.d.set_workspace_budget(self.dense_workspace_budget)
         #if is_root(): print(f'done.')
 
+
+    def _native_range_call(self, operation):
+        result, error = None, None
+        try:
+            result = operation()
+        except Exception as caught:
+            error = caught
+        failed = mpi.all_reduce(int(error is not None))
+        if failed:
+            if error is not None:
+                raise RuntimeError(f"Native dense evaluation failed: {error}") from error
+            raise RuntimeError("Native dense evaluation failed on another MPI rank")
+        return result
 
     def solve(self, max_order, tol=1e-4, maxiter=10, mix=1., hyb_tol=None, hyb_comp=True, normalization='classic', spgf_max_order=None, verbose=True):
         """ Solve the impurity problem using pseudo particle self-consistent perturbation theory.
@@ -754,11 +817,13 @@ class Solver(object):
         # connected to vertex 0, so pass only the f_ix whose own fb(0) == 0. That bit sits above the
         # orbital and pole indices in the flat index, with stride n_max // 2**order.
         n_p = n_max // (2**order)
-        n_vec = scatter_range_over_ranks(n_max)
-        n_vec = n_vec[(n_vec // n_p) % 2 == 0]
-
-        Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy_by_pairs(G, topology, n_vec)
+        if self.dense_backend == 'cuda_small':
+            first, last = scatter_range_bounds(n_max)
+            Sigma = self._native_range_call(lambda: self.d.compute_self_energy_by_pairs_range(G, topology, first, last))
+        else:
+            n_vec = scatter_range_over_ranks(n_max)
+            n_vec = n_vec[(n_vec // n_p) % 2 == 0]
+            Sigma = self.d.compute_self_energy_by_pairs(G, topology, n_vec)
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -774,10 +839,12 @@ class Solver(object):
 
         order = len(topology)
         n_max = self.d.get_num_self_energy_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
-
-        Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy(G, topology, n_vec)
+        if self.dense_backend == 'cuda_small':
+            first, last = scatter_range_bounds(n_max)
+            Sigma = self._native_range_call(lambda: self.d.compute_self_energy_range(G, topology, first, last))
+        else:
+            n_vec = scatter_range_over_ranks(n_max)
+            Sigma = self.d.compute_self_energy(G, topology, n_vec)
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -833,10 +900,13 @@ class Solver(object):
     def __eval_single_particle_greens_function_topology_loop(self, G, topology):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
-
         spgf = self.get_zero_single_particle_greens_function()
-        spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, n_vec)
+        if self.dense_backend == 'cuda_small':
+            first, last = scatter_range_bounds(n_max)
+            spgf.data[:] = self._native_range_call(lambda: self.d.compute_single_ptcle_gf_range(G, topology, first, last))
+        else:
+            n_vec = scatter_range_over_ranks(n_max)
+            spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, n_vec)
         spgf.data[:] = mpi.all_reduce(spgf.data)
 
         return spgf
@@ -878,10 +948,14 @@ class Solver(object):
     def __inplace_eval_one_time_correlator_topology_loop(self, corr, G, topology, ops_tau, ops_0, prefactor):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
-
-        corr_arr = prefactor * self.d.compute_one_time_correlator(
-            G, ops_tau, ops_0, self.atom_diag, topology, n_vec)
+        if self.dense_backend == 'cuda_small':
+            first, last = scatter_range_bounds(n_max)
+            value = self._native_range_call(lambda: self.d.compute_one_time_correlator_range(
+                G, ops_tau, ops_0, self.atom_diag, topology, first, last))
+        else:
+            n_vec = scatter_range_over_ranks(n_max)
+            value = self.d.compute_one_time_correlator(G, ops_tau, ops_0, self.atom_diag, topology, n_vec)
+        corr_arr = prefactor * value
         corr.data[:] += mpi.all_reduce(corr_arr)
 
 
@@ -1348,11 +1422,11 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],
-                  **{ key : d[key] for key in argv_keys })
+                  **{ key : d[key] for key in argv_keys if key in d })
         ret.__dict__.update(d)
         ret.verbose = verbose
         return ret

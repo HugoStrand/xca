@@ -1,0 +1,3 @@
+# Generated from the configured build; stale extension files do not enable backends.
+CUDA_ENABLED = "@nda_WITH_CUDA_SUPPORT@".upper() in {"ON", "TRUE", "1", "YES"}
+CUDA_SMALL_ENABLED = "@XCA_WITH_CUDA_SMALL@".upper() in {"ON", "TRUE", "1", "YES"}

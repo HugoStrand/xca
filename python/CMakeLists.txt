@@ -26,6 +26,12 @@ function(xca_add_python_package pkg)
   foreach(module_src ${module_sources})
     get_filename_component(module_name ${module_src} NAME_WE)
     get_filename_component(module_dir ${module_src} DIRECTORY)
+    if(module_name STREQUAL "_dense_cuda" AND NOT nda_WITH_CUDA_SUPPORT)
+      continue()
+    endif()
+    if(module_name STREQUAL "_dense_cuda_small" AND NOT XCA_WITH_CUDA_SMALL)
+      continue()
+    endif()
 
     Python_add_library(${module_name} MODULE ${module_src})
     set_target_properties(${module_name} PROPERTIES
