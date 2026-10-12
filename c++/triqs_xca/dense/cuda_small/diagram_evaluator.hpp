@@ -34,6 +34,7 @@ namespace triqs_xca::dense::cuda_small {
     int batch_capacity_ = 128;
     std::size_t batch_chunks_ = 0;
     std::size_t workspace_budget_ = 512 * 1024 * 1024;
+    std::size_t device_memory_reserve_ = 64 * 1024 * 1024;
     bool try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs);
 
     tensor G_, T_, U_, sum_, tmp_, GKt_, gc_, tc_, Tmu_;
@@ -111,6 +112,10 @@ namespace triqs_xca::dense::cuda_small {
     std::size_t batch_chunks() const { return batch_chunks_; }
     void set_workspace_budget(std::size_t bytes);
     std::size_t workspace_budget() const { return workspace_budget_; }
+    // Advisory free-device headroom for creating another batch cache. Opaque
+    // library allocations and concurrent processes can still cause allocation failure.
+    void set_device_memory_reserve(std::size_t bytes);
+    std::size_t device_memory_reserve() const { return device_memory_reserve_; }
 
     int num_orbitals() const { return n_; }
     int num_interactions() const { return n_int_; }

@@ -300,6 +300,11 @@ namespace triqs_xca::dense::cuda_small {
     if (bytes < workspace_bytes()) throw std::invalid_argument("CUDA-small budget is below resident workspace");
     workspace_budget_ = bytes;
   }
+  void DiagramEvaluator::set_device_memory_reserve(std::size_t bytes) {
+    dlr_.finish();
+    for (auto &batch : batches_) batch.reset();
+    device_memory_reserve_ = bytes;
+  }
   bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs) {
     // Qualification is currently local and restricted to ordinary/paired SE, rank16,
     // full-fermion N4/N8. Other cases retain the native sequential traversal.
@@ -317,6 +322,9 @@ namespace triqs_xca::dense::cuda_small {
           DeviceOps::checked_product(std::size_t(r_) * indices.size(), DeviceOps::checked_product(N_ * N_, sizeof(complex))));
         auto available = workspace_budget_ > resident ? workspace_budget_ - resident : 0;
         if (estimate > available) return false;
+        std::size_t free_device = 0, total_device = 0;
+        nda::device_error_check(cudaMemGetInfo(&free_device, &total_device), "CUDA-small free memory");
+        if (free_device <= device_memory_reserve_ || estimate > free_device - device_memory_reserve_) return false;
         batch = std::make_unique<BatchEvaluator>(mesh_, itops_, nda::make_regular(hyb_.poles / beta_), hyb_.coeffs, fset_, n_int_, indices.size(), available);
         resident = workspace_bytes();
       }
@@ -364,8 +372,17 @@ namespace triqs_xca::dense::cuda_small {
       for (int eligible : {128, 32, 8})
         if (eligible <= batch_capacity_ && eligible <= remaining) { width = eligible; break; }
       for (int lane = 0; lane < width; ++lane) chunk(lane) = all ? first + offset + lane : indices(offset + lane);
+      bool batched = false;
+      for (int eligible : {128, 32, 8}) {
+        if (eligible > width) continue;
+        if (try_batch(topology, chunk(nda::range(eligible)), pairs)) {
+          width = eligible;
+          batched = true;
+          break;
+        }
+      }
       auto selected = chunk(nda::range(width));
-      if (width == 1 || !try_batch(topology, selected, pairs)) {
+      if (!batched) {
         prepare_table_budget();
         for (long index : selected)
           if (!pairs || !all || (index / group) % 2 == 0) evaluate(b, index, pairs);

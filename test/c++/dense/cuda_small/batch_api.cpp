@@ -68,6 +68,35 @@ TEST(CudaSmallBatch, StorageBoundsChangedSchedulesAndFallback) {
   }
 }
 
+TEST(CudaSmallBatch, DeviceHeadroomSelectsResidentFallback) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  triqs_xca::dense::cuda_small::DiagramEvaluator candidate(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto reference=baseline(f);
+  auto t=topology(3,"crossing");
+  auto indices=select_indices(candidate.get_num_self_energy_backbones(t),128,1729);
+  candidate.compute_self_energy(f.G,t,indices); // A cached batch must be evicted.
+  auto default_reserve=candidate.device_memory_reserve();
+  candidate.set_device_memory_reserve(std::numeric_limits<std::size_t>::max());
+  auto before=candidate.batch_chunks();
+  auto expected=reference.evaluate("se",t,indices);
+  auto actual=candidate.compute_self_energy(f.G,t,indices);
+  EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+  EXPECT_EQ(candidate.batch_chunks(),before);
+  candidate.set_device_memory_reserve(0);
+  std::size_t free_device=0,total_device=0;
+  nda::device_error_check(cudaMemGetInfo(&free_device,&total_device),"headroom width test");
+  ASSERT_GT(free_device,6*1024*1024);
+  candidate.set_device_memory_reserve(free_device-6*1024*1024);
+  actual=candidate.compute_self_energy(f.G,t,indices);
+  EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+  EXPECT_EQ(candidate.batch_chunks(),before+4); // Four qualified32-lane chunks.
+  candidate.set_device_memory_reserve(default_reserve);
+  actual=candidate.compute_self_energy(f.G,t,indices);
+  EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+  EXPECT_GT(candidate.batch_chunks(),before);
+}
+
 TEST(CudaSmallBatch, OrderedWidthsTailsAndChangedInputs) {
   using namespace dense_cuda_bench;
   for (int N : {4, 8}) {

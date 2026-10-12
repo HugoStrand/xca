@@ -43,12 +43,14 @@ class BackendTests(unittest.TestCase):
     def test_preference_copy_and_old_archive_defaults(self):
         S=make_solver('cuda_small')
         S.gpu_device=0
+        S.dense_device_memory_reserve=32*1024*1024
         if CUDA_SMALL_ENABLED: S.init_diagram_evaluator()
         self.assertNotIn('d',S.__reduce_to_dict__())
         clone=copy.deepcopy(S)
         self.assertEqual(clone.dense_backend,'cuda_small')
         self.assertEqual(clone.dense_batch_capacity,128)
         self.assertEqual(clone.gpu_device,0)
+        self.assertEqual(clone.dense_device_memory_reserve,32*1024*1024)
         with tempfile.TemporaryDirectory() as folder:
             path=str(Path(folder)/'solver.h5')
             with HDFArchive(path,'w') as archive: archive['solver']=S
@@ -56,13 +58,15 @@ class BackendTests(unittest.TestCase):
             self.assertEqual(restored.dense_backend,'cuda_small')
             self.assertEqual(restored.dense_workspace_budget,S.dense_workspace_budget)
             self.assertEqual(restored.gpu_device,0)
+            self.assertEqual(restored.dense_device_memory_reserve,32*1024*1024)
             self.assertFalse(hasattr(restored,'d'))
         data=S.__reduce_to_dict__()
-        for key in ['dense_backend','dense_batch_capacity','dense_workspace_budget','gpu_device']:
+        for key in ['dense_backend','dense_batch_capacity','dense_workspace_budget','gpu_device','dense_device_memory_reserve']:
             data.pop(key)
         restored=Solver.__factory_from_dict__('Solver',data)
         self.assertEqual(restored.dense_backend,'cpu')
         self.assertIsNone(restored.gpu_device)
+        self.assertEqual(restored.dense_device_memory_reserve,64*1024*1024)
         self.assertFalse(hasattr(restored,'d'))
 
     def test_default_gpu_device_archive(self):
@@ -104,6 +108,11 @@ class BackendTests(unittest.TestCase):
                 _configure_gpu_device('cuda_small',1)
             with self.assertRaisesRegex(ValueError,'unavailable'):
                 _configure_gpu_device('cuda_small',2)
+
+    def test_invalid_device_reserve(self):
+        for reserve in [-1,True]:
+            with self.assertRaises(ValueError):
+                Solver(n('0',0),2.,5.,1e-12,[['0',1]],verbose=False,dense_device_memory_reserve=reserve)
 
     @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
     def test_gpu_initialization_failure_is_collective(self):

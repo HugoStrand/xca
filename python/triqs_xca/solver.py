@@ -116,6 +116,11 @@ class Solver(object):
         for cuda_small (default 512 MiB). CUDA-library/context allocations, allocator
         overhead, shared mesh storage and caller inputs/results are excluded.
 
+    dense_device_memory_reserve : int, optional
+        Advisory free-device headroom when creating a cuda_small batch cache
+        (default 64 MiB). Insufficient headroom selects resident serial evaluation;
+        this does not reserve memory or guarantee against concurrent allocations.
+
     gpu_device : int or None, optional
         Visible CUDA ordinal assigned to this MPI process. None respects the
         current device/CUDA_VISIBLE_DEVICES. Keep one device per process and choose
@@ -138,7 +143,8 @@ class Solver(object):
                  conserved_operators='automatic', dlr_symmetrize=False,
                  timer=None, atom_diag=None, verbose=True,
                  dense_backend='cpu', dense_batch_capacity=128,
-                 dense_workspace_budget=512 * 1024 * 1024, gpu_device=None):
+                 dense_workspace_budget=512 * 1024 * 1024, gpu_device=None,
+                 dense_device_memory_reserve=64 * 1024 * 1024):
 
         if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
             raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
@@ -154,6 +160,12 @@ class Solver(object):
             if isinstance(gpu_device, bool): raise ValueError("gpu_device must be a nonnegative ordinal or None")
             gpu_device = index(gpu_device)
             if gpu_device < 0: raise ValueError("gpu_device must be a nonnegative ordinal or None")
+        if isinstance(dense_device_memory_reserve, bool):
+            raise ValueError("Dense device memory reserve must be a nonnegative integer")
+        dense_device_memory_reserve = index(dense_device_memory_reserve)
+        if dense_device_memory_reserve < 0:
+            raise ValueError("Dense device memory reserve must be a nonnegative integer")
+        self.dense_device_memory_reserve = dense_device_memory_reserve
         self.gpu_device = gpu_device
         self.dense_backend = dense_backend
         self.dense_batch_capacity = dense_batch_capacity
@@ -420,6 +432,7 @@ class Solver(object):
         if self.use_dense_solver and self.dense_backend == 'cuda_small':
             self.d.set_batch_capacity(self.dense_batch_capacity)
             self.d.set_workspace_budget(self.dense_workspace_budget)
+            self.d.set_device_memory_reserve(self.dense_device_memory_reserve)
         #if is_root(): print(f'done.')
 
 
@@ -1461,7 +1474,7 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],
