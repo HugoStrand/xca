@@ -533,3 +533,42 @@ benchmark, compiler-unavailable AUTO/install/consumer tests, sanitizers/profilin
 full CPU/CUDA/Python suites. Target defaults remain provisional without GH200 evidence.
 Goal stays active; implementation/qualification is incomplete. Preserve unrelated
 files, original experiments, baseline and terse [scope] commits; no push.
+
+## Paired batching and Python Solver integration — 2026-10-12
+
+Codef951c70 batches paired SE using a preserved prefix and both special-vertex line
+directions. Shared schedules key ordinary/paired method identity. Half-open paired
+ranges skip excluded direction intervals without enumerating them. Strict N4/N8
+checks compare retained CUDA results across widths8/32/128, duplicates, tails,
+ordinary/paired cache transitions and filtered range boundaries; batch_api passes49.20s.
+Dynamic-interaction batching remains pending; its existing native serial path remains.
+
+Code00ead97 adds optional _dense_cuda and _dense_cuda_small extensions, generated
+bindings and Solver dense_backend='cpu'|'cuda'|'cuda_small' selection. CPU default
+and symmetry selection retained. The library facade forwards arithmetic to the
+protected CUDA evaluator and preserves its shared-NDA serialization requirement.
+Small exposes atom_diag constructors and native work ranges; C++-only overloads
+are ignored only by binding generation. CPU/import availability is governed by a
+generated build config, so stale extension files cannot advertise disabled backends.
+GPU imports are lazy; archive inspection/copies do not require GPU initialization.
+Capacity/workspace preferences survive copies/HDF5; old archives default to CPU.
+
+Small Solver MPI paths use one native half-open range for ordinary/paired SE, SPGF
+and one-time correlators, never a full rank-local np.arange. Collectives occur after
+local work, with coordinated error flags before output reduction. CPU/library legacy
+index-array paths are preserved; their full-local materialization remains a limitation.
+No new GPU ordinal selector yet; current tests use the launch environment/default
+visible device. Explicit placement/device lifetime coverage remains outstanding.
+
+Six physical Python backend tests pass in serial and on each of two real MPI ranks,
+including CPU/GPU method comparisons, proof native paths avoid the array helper,
+empty/uneven range partition arithmetic, injected collective failure, self-consistency
+and HDF5/copy reconstruction. CPU-only backend/import, h5_io and solver_copy CTests
+pass3/3. Original23 protected hashes unchanged; all active build/test handles ended.
+
+Next: dynamic interaction batching and broader rank/method qualification; explicit
+GPU placement/lifetime contract, finite comparison-metric overflow rejection, resource
+budget hardening, binding regeneration ON/OFF and compiler-unavailable/library-only
+validation with the new extensions. Complete installed consumers, sanitizers/profiling,
+repeatable real workload timing and full CPU/CUDA/Python suites. GH200 defaults remain
+unqualified/provisional. Goal active; do not declare completion from these narrow checks.

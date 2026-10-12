@@ -5,13 +5,16 @@ self-energy, dynamic interactions, SPGF and correlators. Calls are serialized pe
 instance, with owned nonblocking stream, BLAS/solver handles and upload event handoff.
 Other instances do not rely on the shared NDA solver synchronization setting.
 
-Ordinary SE batches rank16 dimensions4/8 using widths8/32/128. Smaller tails use
+Ordinary and paired SE batch rank16 dimensions4/8 using widths8/32/128. Smaller tails use
 native serial traversal; each contribution accumulates into the same device output
 in caller order. Metadata grows within a workspace budget rather than fixed prototype
 limits; three width caches are bounded. Other shapes/methods remain native sequential.
 Half-open work-range methods cover ordinary/paired SE, SPGF and one-time correlators,
 including paired fb(0)==0 filtering, without materializing a full index list.
-Python does not yet select this backend. Passing C++ tests does not complete the plan.
+Python Solver now supports explicit dense_backend='cuda_small' and submits native
+ranges for MPI work. CPU and library CUDA are separate choices; GPU imports are lazy.
+Backend preferences survive copies/HDF5. Dynamic-interaction batching, broader
+qualification and the remaining validation work still need completion.
 
 Rank16 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
 other dimensions/ranks use library products. Vertex products currently use library
