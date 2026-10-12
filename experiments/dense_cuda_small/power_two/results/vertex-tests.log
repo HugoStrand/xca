@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-power-two
+Test project /home/hugstr/dev/xca/cbuild-experiment-power-two
+    Start 6: fused_primitives
+1/1 Test #6: fused_primitives .................   Passed    6.37 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   6.38 sec

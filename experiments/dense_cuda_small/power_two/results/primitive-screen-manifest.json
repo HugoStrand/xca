@@ -1,0 +1,28 @@
+{
+  "gpu": "RTX A4000",
+  "architecture": 86,
+  "mode": 2,
+  "command": "XCA_FUSED_MODE=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 cbuild-experiment-power-two/primitive_benchmark",
+  "scope": "single-process primitive screen; not full-API or GH200 qualification",
+  "sources_sha256": {
+    "experiments/dense_cuda_small/power_two/test_fusion.cpp": "592970b77d99940ed251ad667da57e92b6e7258db17906f26448f1a469acab0b",
+    "experiments/dense_cuda_small/power_two/device_ops.cpp": "83cd235b44a06fdedc60544faeb2b3f33e56fdfc119ae277b79b527da9bbede5",
+    "experiments/dense_cuda_small/power_two/diagram_evaluator.cpp": "13b841bfd6733d436a68197e0804e71fb89f424920e71020157a2b1a240f4457",
+    "experiments/dense_cuda_small/power_two/benchmark.cpp": "464e2f090f315aa0c4fb686435d08022e5ecce7401701f53fa611d5f88628daf",
+    "experiments/dense_cuda_small/power_two/primitive_benchmark.cpp": "54a60b0ceba33479b22bef3d5483870adb00acbc1eb0cc0ac27e043364ab694a",
+    "experiments/dense_cuda_small/power_two/test_dlr.cpp": "687ec677124d99d7eae295363234fe0d756535735bdb5ba2b61f7c1b0454b929",
+    "experiments/dense_cuda_small/power_two/dlr_ops.cpp": "4aea36d55f8290214388d4a5cae32d579e5dc34c79a5d0278ed1f46cd6d6de72",
+    "experiments/dense_cuda_small/power_two/test_api.cpp": "3340899b3a84aeadd09e3137bc6393eea10ad5a72cad4cc251edf60520215188",
+    "experiments/dense_cuda_small/power_two/test_adapter.hpp": "edcdb49ff508b83f74bd33e25121d772a4f7c21777614e84176a4ef7421a6f41",
+    "experiments/dense_cuda_small/power_two/device_ops.hpp": "1cac0a8f8de901a61b535182028543ed947d1d8096eceb35fe36e3f521ee8de4",
+    "experiments/dense_cuda_small/power_two/diagram_evaluator.hpp": "6939ede0b5ece0f6e3794bad19e3c35135eefc2f05c2b1298e2a900e0f2de581",
+    "experiments/dense_cuda_small/power_two/kernels.hpp": "f65ad53e666683cb9e6ed048d1024da7416b5e44073b264a304b56f09a18a8f3",
+    "experiments/dense_cuda_small/power_two/dlr_ops.hpp": "4e492dfdf9f7555efaec6753fb3ab1fe944aa19f66c4dd550773a9d5b27ba0ec",
+    "experiments/dense_cuda_small/power_two/profile_range.hpp": "ee756384a3501ebb2567b1bdc4294a9b00a7575841e097ab10d74b5f16c0b62f",
+    "experiments/dense_cuda_small/power_two/kernels.cu": "48a24699a7c5474d7e918a68bb2869d92f47cf6374499df00174c224423e88c5",
+    "experiments/dense_cuda_small/power_two/CMakeLists.txt": "aced9009567020f4c167db2714a94da34f8654d63538906e8cacf39cb3d4c327",
+    "experiments/dense_cuda_small/index_batch/device_ops.cpp": "741323160333af13ee1429d4c5748ccb27e484289027880ea0318d41e4337872",
+    "experiments/dense_cuda_small/index_batch/device_ops.hpp": "88a61ba0aec9fe8b4253f25c20a670aa73f07c16e99845f87df449a75a2caae5"
+  },
+  "binary_sha256": "1706826de049511b65c6369ccc223fd11135533be46afd92ad4056d852beef6e"
+}

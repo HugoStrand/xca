@@ -215,7 +215,7 @@ namespace dense_cuda_bench {
   struct Error {
     double norm = 0., absolute = 0., relative = 0.;
   };
-  inline Error compare(tensor const &actual, tensor const &expected, bool enforce = true) {
+  inline Error compare(tensor const &actual, tensor const &expected, bool enforce = true, char const *context = "comparison") {
     if (actual.shape() != expected.shape()) throw std::runtime_error("result shape differs");
     Error e;
     auto a = actual.begin(), b = expected.begin();
@@ -232,7 +232,7 @@ namespace dense_cuda_bench {
     // This does not replace the existing analytic/unit tests.
     if (enforce && e.absolute > 1e-280 + 1e-10 * e.norm) {
       std::ostringstream msg;
-      msg << std::scientific << "comparison failed: norm=" << e.norm << " abs=" << e.absolute << " rel=" << e.relative;
+      msg << context << std::scientific << " failed: norm=" << e.norm << " abs=" << e.absolute << " rel=" << e.relative;
       throw std::runtime_error(msg.str());
     }
     return e;
@@ -280,8 +280,8 @@ namespace dense_cuda_bench {
                 for (long index : ix) {
                   nda::vector<long> one{index};
                   auto gold = reference->evaluate(method, t, one);
-                  compare(candidate->evaluate(method, t, one), gold);
-                  auto ce       = compare(gold, cpu_evaluate(f, method, t, one), order <= 3);
+                  compare(candidate->evaluate(method, t, one), gold, true, "candidate/CUDA individual");
+                  auto ce       = compare(gold, cpu_evaluate(f, method, t, one), order <= 3, "baseline CUDA/CPU individual");
                   index_cpu_abs = std::max(index_cpu_abs, ce.absolute);
                   index_cpu_rel = std::max(index_cpu_rel, ce.relative);
                 }
@@ -317,8 +317,8 @@ namespace dense_cuda_bench {
                 auto result = gpu ? candidate->evaluate(method, t, ix) : cpu_evaluate(f, method, t, ix);
                 if (gpu) fence();
                 double ms = elapsed(begin);
-                auto e    = compare(result, gpu ? expected : cpu_expected);
-                auto ce   = compare(result, cpu_expected, gpu && order <= 3);
+                auto e    = compare(result, gpu ? expected : cpu_expected, true, "timed result/reference");
+                auto ce   = compare(result, cpu_expected, gpu && order <= 3, "timed result/CPU");
                 if (sample >= -1)
                   std::cout << "dense-small-v2," << (gpu ? candidate->name : "cpu") << ',' << o.N << ',' << f.itops.rank() << ',' << f.n << ",2,"
                             << o.beta << ',' << o.lambda << ',' << order << ',' << name << ',' << method << ',' << requested << ',' << ix.size()
