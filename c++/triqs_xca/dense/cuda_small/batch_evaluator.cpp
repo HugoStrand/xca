@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "batch_evaluator.hpp"
 #include "profile_range.hpp"
+#include "memory_usage.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <cmath>
 #include <stdexcept>
@@ -63,7 +64,7 @@ namespace triqs_xca::dense::cuda_small {
     for (int t = 0; t < r_; ++t)
       for (int b = 0; b < B_; ++b) h(t * B_ + b) = b < active_ ? value(b, t) : complex{1.};
     *w = h;
-    if (enqueue) schedule_.push_back([this, in, out, w] { dlr_.device_ops().weight_rows(in, *w, out); });
+    if (enqueue) add_step([this, in, out, w] { dlr_.device_ops().weight_rows(in, *w, out); });
     return w;
   }
   void BatchEvaluator::add_vertex(tensor_const_view in, tensor_view out, bool left, std::function<matrix_const_view(int)> const &value,
@@ -76,7 +77,7 @@ namespace triqs_xca::dense::cuda_small {
     std::vector<complex const *> operators(B_, Fs_.data());
     for (int b = 0; b < active_; ++b) operators[b] = value(b).data();
     dlr_.device_ops().prepare_lanes(*table, operators, in, out, left);
-    schedule_.push_back([this, table, beta] { dlr_.device_ops().lane_vertex(*table, 1., beta); });
+    add_step([this, table, beta] { dlr_.device_ops().lane_vertex(*table, 1., beta); });
   }
   void BatchEvaluator::vertex(int v) {
     add_vertex(T_, tmp_, true, [&](int i) {
@@ -95,13 +96,13 @@ namespace triqs_xca::dense::cuda_small {
     else {
       auto in  = tensor_const_view{tmp_};
       auto out = tensor_view{T_};
-      schedule_.push_back([this, in, out] { dlr_.device_ops().copy(in, out); });
+      add_step([this, in, out] { dlr_.device_ops().copy(in, out); });
     }
   }
   void BatchEvaluator::edge(int e) {
     auto in  = tensor_const_view{G_};
     auto out = tensor_view{GKt_};
-    schedule_.push_back([this, in, out] { dlr_.device_ops().copy(in, out); });
+    add_step([this, in, out] { dlr_.device_ops().copy(in, out); });
     for (int x = 0; x < backbones_[0].m - 1; ++x) {
       bool weighted = false;
       for (auto &b : backbones_) weighted |= b.get_edge(e, x) != 0;
@@ -115,7 +116,7 @@ namespace triqs_xca::dense::cuda_small {
       }
     }
     auto g = tensor_const_view{GKt_};
-    schedule_.push_back([this, g] {
+    add_step([this, g] {
       dlr_.vals2coefs(g, gc_);
       dlr_.vals2coefs(T_, tc_);
       dlr_.convolve(beta_, gc_, tc_, T_);
@@ -123,9 +124,9 @@ namespace triqs_xca::dense::cuda_small {
   }
   void BatchEvaluator::special(int v, tensor_view target) {
     for (int k = 0; k < n_; ++k) add_vertex(target, Tkaps_(k, all, all, all), false, [&](int i) { return op(backbones_[i], 0, k); });
-    schedule_.push_back([this, target] { dlr_.device_ops().zero(target); });
+    add_step([this, target] { dlr_.device_ops().zero(target); });
     for (int m = 0; m < n_; ++m) {
-      schedule_.push_back([this] { dlr_.device_ops().zero(Tmu_); });
+      add_step([this] { dlr_.device_ops().zero(Tmu_); });
       for (int k = 0; k < n_; ++k) {
         for (auto &b : backbones_) b.set_orb_inds_of_0_and_vct0(k, m);
         bool fuse  = dlr_.device_ops().mode() != 0;
@@ -134,9 +135,9 @@ namespace triqs_xca::dense::cuda_small {
            input, tmp_, [&](int i, int t) { return backbones_[i].has_vertex_dag(v) ? hyb_.values(t, m, k) : hyb_.values_reflect(t, k, m); }, !fuse);
         auto *parity = add_weight(tmp_, parity_tmp_, [&](int i, int) { return complex{double(backbones_[i].get_parity())}; }, !fuse);
         if (fuse)
-          schedule_.push_back([this, input, w, parity] { dlr_.device_ops().weighted_accumulate(input, *w, *parity, Tmu_); });
+          add_step([this, input, w, parity] { dlr_.device_ops().weighted_accumulate(input, *w, *parity, Tmu_); });
         else
-          schedule_.push_back([this] { dlr_.device_ops().axpy(1., parity_tmp_, Tmu_); });
+          add_step([this] { dlr_.device_ops().axpy(1., parity_tmp_, Tmu_); });
       }
       add_vertex(Tmu_, target, true, [&](int i) { return op(backbones_[i], v, m); }, 1.);
     }
@@ -162,6 +163,7 @@ namespace triqs_xca::dense::cuda_small {
     cached_topology_.clear();
     cached_indices_.clear();
     schedule_.clear();
+    capture_bound_bytes_ = 0;
     weight_cursor_ = table_cursor_ = 0;
     backbones_.clear();
     backbones_.reserve(active_);
@@ -169,19 +171,19 @@ namespace triqs_xca::dense::cuda_small {
       backbones_.emplace_back(topology, n_, n_int_);
       backbones_.back().set_flat_index(i, hyb_.poles);
     }
-    schedule_.push_back([this] { dlr_.device_ops().copy(G_, T_); });
+    add_step([this] { dlr_.device_ops().copy(G_, T_); });
     int v0 = backbones_[0].get_topology(0, 1);
     for (int v = 1; v < v0; ++v) {
       vertex(v);
       edge(v);
     }
-    if (pairs) schedule_.push_back([this] { dlr_.device_ops().copy(T_, U_); });
+    if (pairs) add_step([this] { dlr_.device_ops().copy(T_, U_); });
     special(v0, T_);
     if (pairs) {
       for (auto &b : backbones_) b.reverse_hyb_line_zero();
       special(v0, U_);
       for (auto &b : backbones_) b.reverse_hyb_line_zero();
-      schedule_.push_back([this] { dlr_.device_ops().axpy(-1., U_, T_); });
+      add_step([this] { dlr_.device_ops().axpy(-1., U_, T_); });
     }
     for (int v = v0 + 1; v < 2 * backbones_[0].m; ++v) {
       edge(v - 1);
@@ -192,7 +194,7 @@ namespace triqs_xca::dense::cuda_small {
       int sign = b.m % 2 == 0 ? -1 : 1;
       if (b.get_fb(0) == 0) sign *= -1;
       double alpha = prefactor(b) * sign * b.prefactor_sign;
-      schedule_.push_back([this, i, alpha] { dlr_.device_ops().accumulate_lane(T_, lane_, sum_, i, alpha); });
+      add_step([this, i, alpha] { dlr_.device_ops().accumulate_lane(T_, lane_, sum_, i, alpha); });
     }
     reserve_metadata(0);
     cached_topology_ = std::move(key_topology);
@@ -229,8 +231,8 @@ namespace triqs_xca::dense::cuda_small {
     prepare_accumulation(topology, indices, output, pairs);
     execute_accumulation(g);
   }
-  std::size_t BatchEvaluator::workspace_bytes() const {
-    auto bytes = dlr_.workspace_bytes();
+  std::size_t BatchEvaluator::device_workspace_bytes() const {
+    auto bytes = dlr_.device_workspace_bytes();
     auto add   = [&](auto const &a) { bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(a.size(), sizeof(complex))); };
     add(G_);
     add(T_);
@@ -250,6 +252,16 @@ namespace triqs_xca::dense::cuda_small {
     for (auto const &w : weights_) add(*w);
     bytes = DeviceOps::checked_sum(
        bytes, DeviceOps::checked_product(tables_.size(), DeviceOps::checked_product(3, std::size_t(r_) * B_ * sizeof(complex *))));
+    return bytes;
+  }
+  std::size_t BatchEvaluator::unified_workspace_bytes() const { return dlr_.unified_workspace_bytes(); }
+  std::size_t BatchEvaluator::host_workspace_bound_bytes() const {
+    auto bytes = DeviceOps::checked_sum(sizeof(*this), dlr_.host_workspace_bound_bytes());
+    bytes = DeviceOps::checked_sum(bytes, capture_bound_bytes_);
+    bytes = DeviceOps::checked_sum(bytes, weights_.capacity() * sizeof(decltype(weights_)::value_type));
+    bytes = DeviceOps::checked_sum(bytes, weights_.size() * sizeof(nda::cuvector<complex>));
+    bytes = DeviceOps::checked_sum(bytes, tables_.capacity() * sizeof(decltype(tables_)::value_type));
+    bytes = DeviceOps::checked_sum(bytes, tables_.size() * sizeof(DeviceOps::LaneTables));
     bytes = DeviceOps::checked_sum(bytes, schedule_.capacity() * sizeof(std::function<void()>));
     bytes = DeviceOps::checked_sum(bytes, cached_indices_.capacity() * sizeof(long) + cached_topology_.capacity() * sizeof(int));
     bytes = DeviceOps::checked_sum(bytes, backbones_.capacity() * sizeof(Backbone));
@@ -259,9 +271,10 @@ namespace triqs_xca::dense::cuda_small {
       bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(16 * sizeof(int), DeviceOps::checked_product(m, m)));
       bytes = DeviceOps::checked_sum(bytes, b.vertices.capacity() * sizeof(triqs_xca::backbone::BackboneVertex));
     }
-    bytes = DeviceOps::checked_sum(bytes, sizeof(complex) * (hyb_.coeffs.size() + hyb_.values.size() + hyb_.values_reflect.size()));
-    bytes = DeviceOps::checked_sum(bytes, sizeof(double) * (hyb_.poles.size() + hyb_.k_it_p.size() + hyb_.k_it_m.size() + hyb_.k_0_p.size() + hyb_.k_0_m.size()));
-    return bytes;
+    return DeviceOps::checked_sum(bytes, hybridization_host_bytes(hyb_));
+  }
+  std::size_t BatchEvaluator::workspace_bytes() const {
+    return DeviceOps::checked_sum(device_workspace_bytes(), DeviceOps::checked_sum(unified_workspace_bytes(), host_workspace_bound_bytes()));
   }
 } // namespace triqs_xca::dense::cuda_small
 

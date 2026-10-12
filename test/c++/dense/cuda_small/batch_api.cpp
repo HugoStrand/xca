@@ -37,6 +37,37 @@ TEST(CudaSmallBatch, SubmittedFailuresAreNotReplayed) {
   }
 }
 
+TEST(CudaSmallBatch, StorageBoundsChangedSchedulesAndFallback) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  triqs_xca::dense::cuda_small::DiagramEvaluator candidate(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto reference=baseline(f);
+  auto t=topology(3,"crossing");
+  auto indices=select_indices(candidate.get_num_self_energy_backbones(t),128,1729);
+  auto initial_device=candidate.device_workspace_bytes();
+  auto initial_host=candidate.host_workspace_bound_bytes();
+  auto initial_unified=candidate.unified_workspace_bytes();
+  std::size_t free_before=0,total=0,free_after=0;
+  nda::device_error_check(cudaMemGetInfo(&free_before,&total),"memory before cache");
+  candidate.compute_self_energy(f.G,t,indices);
+  nda::device_error_check(cudaMemGetInfo(&free_after,&total),"memory after cache");
+  EXPECT_GT(candidate.device_workspace_bytes(),initial_device);
+  EXPECT_GT(candidate.host_workspace_bound_bytes(),initial_host);
+  EXPECT_GT(candidate.unified_workspace_bytes(),initial_unified);
+  // CUDA-library storage and allocation granularity may exceed reported payloads.
+  auto observed=free_before>free_after ? free_before-free_after : 0;
+  EXPECT_GE(observed+2*1024*1024,candidate.device_workspace_bytes()-initial_device);
+  auto budget=candidate.workspace_bytes();
+  candidate.set_workspace_budget(budget); // Evict caches; subsequent growth must fit.
+  for (int seed : {31415,1729,27182}) {
+    indices=select_indices(candidate.get_num_self_energy_backbones(t),129,seed);
+    f.G[0].data()*=complex{.99,.001};
+    auto actual=candidate.compute_self_energy(f.G,t,indices);
+    EXPECT_NO_THROW(compare(tensor(actual[0].data()),reference.evaluate("se",t,indices)));
+    EXPECT_LE(candidate.workspace_bytes(),budget);
+  }
+}
+
 TEST(CudaSmallBatch, OrderedWidthsTailsAndChangedInputs) {
   using namespace dense_cuda_bench;
   for (int N : {4, 8}) {

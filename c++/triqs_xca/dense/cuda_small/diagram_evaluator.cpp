@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "diagram_evaluator.hpp"
 #include "profile_range.hpp"
+#include "memory_usage.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/dynint.hpp>
@@ -124,9 +125,9 @@ namespace triqs_xca::dense::cuda_small {
   INSTANTIATE(true)
   INSTANTIATE(false)
 #undef INSTANTIATE
-  std::size_t DiagramEvaluator::workspace_bytes() const {
-    auto bytes   = dlr_.workspace_bytes();
-    for (auto const &batch : batches_) if (batch) bytes = DeviceOps::checked_sum(bytes, batch->workspace_bytes());
+  std::size_t DiagramEvaluator::device_workspace_bytes() const {
+    auto bytes   = dlr_.device_workspace_bytes();
+    for (auto const &batch : batches_) if (batch) bytes = DeviceOps::checked_sum(bytes, batch->device_workspace_bytes());
     auto include = [&](auto const &x) { bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(x.size(), sizeof(complex))); };
     include(G_);
     include(T_);
@@ -151,6 +152,22 @@ namespace triqs_xca::dense::cuda_small {
     include(packed_ops_);
     include(trace_values_);
     return bytes;
+  }
+  std::size_t DiagramEvaluator::unified_workspace_bytes() const {
+    auto bytes = dlr_.unified_workspace_bytes();
+    for (auto const &batch : batches_) if (batch) bytes = DeviceOps::checked_sum(bytes, batch->unified_workspace_bytes());
+    return bytes;
+  }
+  std::size_t DiagramEvaluator::host_workspace_bound_bytes() const {
+    auto add = DeviceOps::checked_sum;
+    auto bytes = add(sizeof(*this), dlr_.host_workspace_bound_bytes());
+    bytes = add(bytes, add(operator_host_bytes(fset_), hybridization_host_bytes(hyb_)));
+    bytes = add(bytes, imtime_host_bound_bytes(itops_));
+    for (auto const &batch : batches_) if (batch) bytes = add(bytes, batch->host_workspace_bound_bytes());
+    return bytes;
+  }
+  std::size_t DiagramEvaluator::workspace_bytes() const {
+    return DeviceOps::checked_sum(device_workspace_bytes(), DeviceOps::checked_sum(unified_workspace_bytes(), host_workspace_bound_bytes()));
   }
   matrix_const_view DiagramEvaluator::op(Backbone &b, int v, int o, int p) const {
     if (p >= 0 && b.has_vertex_bar(v)) return b.has_vertex_dag(v) ? bars_(o, p, a, a) : bars_refl_(o, p, a, a);

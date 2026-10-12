@@ -185,50 +185,62 @@ static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod(
       long first, long last) -> decltype(auto) { return self.compute_single_ptcle_gf_range(g, topology, first, last); },
    "self", "g", "topology", "first", "last")};
 
-// dimension
+// device_workspace_bytes
 static auto const _c2py_fun_10 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.device_workspace_bytes(); }, "self")};
+
+// dimension
+static auto const _c2py_fun_11 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.dimension(); }, "self")};
 
 // get_num_self_energy_backbones
-static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_0 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_self_energy_backbones(topology); },
    "self", "topology")};
 
 // get_num_single_ptcle_gf_backbones
-static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_0 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_single_ptcle_gf_backbones(topology); },
    "self", "topology")};
 
+// host_workspace_bound_bytes
+static auto const _c2py_fun_14 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.host_workspace_bound_bytes(); }, "self")};
+
 // num_interactions
-static auto const _c2py_fun_13 =
+static auto const _c2py_fun_15 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.num_interactions(); }, "self")};
 
 // num_orbitals
-static auto const _c2py_fun_14 =
+static auto const _c2py_fun_16 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.num_orbitals(); }, "self")};
 
 // rank
-static auto const _c2py_fun_15 =
+static auto const _c2py_fun_17 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.rank(); }, "self")};
 
 // set_batch_capacity
-static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 &self, int capacity) -> decltype(auto) { return self.set_batch_capacity(capacity); }, "self", "capacity")};
 
 // set_workspace_budget
-static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{
    c2py::cmethod([](_c2py_cls_0 &self, unsigned long bytes) -> decltype(auto) { return self.set_workspace_budget(bytes); }, "self", "bytes")};
 
+// unified_workspace_bytes
+static auto const _c2py_fun_20 =
+   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.unified_workspace_bytes(); }, "self")};
+
 // workspace_budget
-static auto const _c2py_fun_18 =
+static auto const _c2py_fun_21 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.workspace_budget(); }, "self")};
 
 // workspace_bytes
-static auto const _c2py_fun_19 =
+static auto const _c2py_fun_22 =
    c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 const &self) -> decltype(auto) { return self.workspace_bytes(); }, "self")};
 
 static const auto _c2py_doc_0  = _c2py_fun_0.doc(R"DOC()DOC");
@@ -251,6 +263,9 @@ static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC()DOC");
 static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC()DOC");
 static const auto _c2py_doc_18 = _c2py_fun_18.doc(R"DOC()DOC");
 static const auto _c2py_doc_19 = _c2py_fun_19.doc(R"DOC()DOC");
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC()DOC");
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(R"DOC()DOC");
+static const auto _c2py_doc_22 = _c2py_fun_22.doc(R"DOC()DOC");
 
 // ----- Method table ----
 template <>
@@ -265,16 +280,19 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {"compute_self_energy_range", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
    {"compute_single_ptcle_gf", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
    {"compute_single_ptcle_gf_range", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
-   {"dimension", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
-   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
-   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
-   {"num_interactions", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
-   {"num_orbitals", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
-   {"rank", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
-   {"set_batch_capacity", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
-   {"set_workspace_budget", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
-   {"workspace_budget", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
-   {"workspace_bytes", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
+   {"device_workspace_bytes", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"dimension", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
+   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
+   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
+   {"host_workspace_bound_bytes", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"num_interactions", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"num_orbitals", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
+   {"rank", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
+   {"set_batch_capacity", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
+   {"set_workspace_budget", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
+   {"unified_workspace_bytes", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"workspace_budget", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"workspace_bytes", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
@@ -283,23 +301,23 @@ template <> const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC()DOC" + c2py::tp
 // ==================== module functions ====================
 
 // cuda_current_device
-static auto const _c2py_fun_20 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_current_device(); })};
+static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_current_device(); })};
 
 // cuda_device_count
-static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_device_count(); })};
+static auto const _c2py_fun_24 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_device_count(); })};
 
 // cuda_select_device
-static auto const _c2py_fun_22 = c2py::dispatcher_f_kw_t{c2py::cfun([](int device) { return xca_python::cuda_select_device(device); }, "device")};
+static auto const _c2py_fun_25 = c2py::dispatcher_f_kw_t{c2py::cfun([](int device) { return xca_python::cuda_select_device(device); }, "device")};
 
-static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC()DOC");
-static const auto _c2py_doc_21 = _c2py_fun_21.doc(R"DOC()DOC");
-static const auto _c2py_doc_22 = _c2py_fun_22.doc(R"DOC()DOC");
+static const auto _c2py_doc_23 = _c2py_fun_23.doc(R"DOC()DOC");
+static const auto _c2py_doc_24 = _c2py_fun_24.doc(R"DOC()DOC");
+static const auto _c2py_doc_25 = _c2py_fun_25.doc(R"DOC()DOC");
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"cuda_current_device", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
-   {"cuda_device_count", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
-   {"cuda_select_device", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
+   {"cuda_current_device", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
+   {"cuda_device_count", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
+   {"cuda_select_device", (PyCFunction)c2py::pyfkw<_c2py_fun_25>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_25.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

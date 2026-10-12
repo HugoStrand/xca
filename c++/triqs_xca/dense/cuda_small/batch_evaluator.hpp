@@ -4,6 +4,8 @@
 #include "dlr_ops.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <functional>
+#include <type_traits>
+#include <utility>
 #include <triqs/gfs.hpp>
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/fset.hpp>
@@ -28,6 +30,20 @@ namespace triqs_xca::dense::cuda_small {
     std::vector<std::unique_ptr<nda::cuvector<complex>>> weights_;
     std::vector<std::unique_ptr<DeviceOps::LaneTables>> tables_;
     std::vector<std::function<void()>> schedule_;
+    std::size_t capture_bound_bytes_ = 0;
+    template <typename Operation> void add_step(Operation &&operation) {
+      auto capture = sizeof(std::decay_t<Operation>);
+      if (schedule_.size() == schedule_.capacity()) {
+        auto capacity = schedule_.capacity() ? DeviceOps::checked_product(2, schedule_.capacity()) : 1;
+        // The old vector remains live while reserve allocates its replacement.
+        reserve_metadata(DeviceOps::checked_sum(capture, DeviceOps::checked_product(capacity, sizeof(std::function<void()>))));
+        schedule_.reserve(capacity);
+      }
+      reserve_metadata(capture);
+      auto bound = DeviceOps::checked_sum(capture_bound_bytes_, capture);
+      schedule_.emplace_back(std::forward<Operation>(operation));
+      capture_bound_bytes_ = bound;
+    }
     std::vector<Backbone> backbones_;
     int active_ = 0, weight_cursor_ = 0, table_cursor_ = 0;
     std::size_t chunks_ = 0, cache_builds_ = 0;
@@ -53,6 +69,9 @@ namespace triqs_xca::dense::cuda_small {
     void execute_accumulation(tensor_const_view g);
     void accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output, bool pairs);
     std::size_t workspace_bytes() const;
+    std::size_t device_workspace_bytes() const;
+    std::size_t unified_workspace_bytes() const;
+    std::size_t host_workspace_bound_bytes() const;
     void set_budget(std::size_t bytes) { budget_ = bytes; }
     int batch_capacity() const { return B_; }
     void reserve_metadata(std::size_t additional) const;

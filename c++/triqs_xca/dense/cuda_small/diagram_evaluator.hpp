@@ -99,9 +99,13 @@ namespace triqs_xca::dense::cuda_small {
       std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
       std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
       triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology, long first, long last);
-    // Application-owned device/unified allocations; excludes library handles,
-    // context caches and caller inputs. Nsight traces account for those separately.
+    // Owned array payloads and conservative host metadata/snapshot bounds.
+    // Excludes CUDA-library/context allocations, allocator overhead, shared mesh
+    // storage and caller inputs/results. Nsight traces report library use separately.
     std::size_t workspace_bytes() const;
+    std::size_t device_workspace_bytes() const;
+    std::size_t unified_workspace_bytes() const;
+    std::size_t host_workspace_bound_bytes() const;
     void set_batch_capacity(int capacity);
     int batch_capacity() const { return batch_capacity_; }
     std::size_t batch_chunks() const { return batch_chunks_; }

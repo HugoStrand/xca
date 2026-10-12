@@ -42,6 +42,8 @@ namespace triqs_xca::dense::cuda_small {
     cublasHandle_t handle_    = nullptr;
     cudaStream_t stream_      = nullptr;
     cudaEvent_t upload_ready_ = nullptr;
+    static std::size_t table_host_bound_bytes();
+    std::size_t table_entry_bytes() const;
     void validate(tensor_const_view a) const;
     void validate_operator(matrix_const_view a) const;
     void vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left, complex alpha, complex beta);
@@ -49,6 +51,8 @@ namespace triqs_xca::dense::cuda_small {
     public:
     static std::size_t checked_sum(std::size_t a, std::size_t b);
     std::size_t workspace_bytes() const;
+    std::size_t device_workspace_bytes() const;
+    std::size_t host_workspace_bound_bytes() const;
     static std::size_t checked_product(std::size_t a, std::size_t b);
     static int checked_blas_int(long value);
     DeviceOps(long rank, long dimension, int capacity = 1);

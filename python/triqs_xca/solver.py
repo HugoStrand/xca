@@ -112,7 +112,9 @@ class Solver(object):
     dense_batch_capacity : int, optional
         Maximum indexed batch width for cuda_small (default 128).
     dense_workspace_budget : int, optional
-        Reported native workspace budget in bytes for cuda_small (default 512 MiB).
+        Owned device/unified payloads plus conservative host snapshot/metadata bounds
+        for cuda_small (default 512 MiB). CUDA-library/context allocations, allocator
+        overhead, shared mesh storage and caller inputs/results are excluded.
 
     gpu_device : int or None, optional
         Visible CUDA ordinal assigned to this MPI process. None respects the

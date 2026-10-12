@@ -186,6 +186,9 @@ class BackendTests(unittest.TestCase):
     @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
     def test_solver_uses_native_ranges(self):
         S=make_solver('cuda_small'); S.init_diagram_evaluator()
+        self.assertGreater(S.d.device_workspace_bytes(),0)
+        self.assertGreater(S.d.unified_workspace_bytes(),0)
+        self.assertGreater(S.d.host_workspace_bound_bytes(),0)
         reference=make_solver(); reference.init_diagram_evaluator()
         with patch('triqs_xca.solver.scatter_range_over_ranks',side_effect=AssertionError('materialized index array')):
             actual=S.eval_pseudo_particle_self_energy_order_by_pairs(S.G0,2)

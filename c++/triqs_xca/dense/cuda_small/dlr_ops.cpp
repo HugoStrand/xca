@@ -66,11 +66,16 @@ namespace triqs_xca::dense::cuda_small {
     used_status_ = 0;
   }
 
-  std::size_t DlrOps::workspace_bytes() const {
+  std::size_t DlrOps::device_workspace_bytes() const {
     auto mul      = DeviceOps::checked_product;
     auto add      = DeviceOps::checked_sum;
     auto elements = add(mul(5, mul(r_, r_)), mul(5, mul(r_, columns_)));
-    return add(status_.size() * sizeof(int), add(ops_.workspace_bytes(), add(mul(elements, sizeof(complex)), mul(r_, sizeof(int)))));
+    return add(ops_.device_workspace_bytes(), add(mul(elements, sizeof(complex)), mul(r_, sizeof(int))));
+  }
+  std::size_t DlrOps::unified_workspace_bytes() const { return DeviceOps::checked_product(status_.size(), sizeof(int)); }
+  std::size_t DlrOps::host_workspace_bound_bytes() const { return ops_.host_workspace_bound_bytes(); }
+  std::size_t DlrOps::workspace_bytes() const {
+    return DeviceOps::checked_sum(device_workspace_bytes(), DeviceOps::checked_sum(unified_workspace_bytes(), host_workspace_bound_bytes()));
   }
   void DlrOps::validate(tensor_const_view input) const {
     if (input.shape() != std::array<long, 3>{r_ * B_, N_, N_} || input.strides() != std::array<long, 3>{N_ * N_, N_, 1})

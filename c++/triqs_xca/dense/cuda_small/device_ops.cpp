@@ -32,9 +32,18 @@ namespace triqs_xca::dense::cuda_small {
     if (a > SIZE_MAX - b) throw std::overflow_error("dense CUDA workspace size overflow");
     return a + b;
   }
-  std::size_t DeviceOps::workspace_bytes() const {
+  std::size_t DeviceOps::table_host_bound_bytes() {
+    // Map payload/node links plus the separately allocated Tables object.
+    return checked_sum(sizeof(std::pair<Key const, std::unique_ptr<Tables>>) + 4 * sizeof(void *), sizeof(Tables));
+  }
+  std::size_t DeviceOps::table_entry_bytes() const {
+    return checked_sum(checked_product(3, checked_product(r_, sizeof(complex *))), table_host_bound_bytes());
+  }
+  std::size_t DeviceOps::device_workspace_bytes() const {
     return checked_product(tables_.size(), checked_product(3, checked_product(r_, sizeof(complex *))));
   }
+  std::size_t DeviceOps::host_workspace_bound_bytes() const { return checked_product(tables_.size(), table_host_bound_bytes()); }
+  std::size_t DeviceOps::workspace_bytes() const { return checked_sum(device_workspace_bytes(), host_workspace_bound_bytes()); }
   std::size_t DeviceOps::checked_product(std::size_t a, std::size_t b) {
     if (b && a > std::numeric_limits<std::size_t>::max() / b) throw std::overflow_error("dense CUDA: allocation/stride overflow");
     return a * b;
@@ -90,7 +99,7 @@ namespace triqs_xca::dense::cuda_small {
   void DeviceOps::prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left) {
     Key key{op.data(), in.data(), out.data(), left};
     if (tables_.contains(key)) return;
-    auto bytes = checked_product(3, checked_product(r_, sizeof(complex *)));
+    auto bytes = table_entry_bytes();
     if (bytes > table_budget_) throw std::length_error("CUDA-small vertex table exceeds workspace budget");
     if (checked_sum(workspace_bytes(), bytes) > table_budget_) clear_tables();
     auto table = std::make_unique<Tables>(r_);

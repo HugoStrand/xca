@@ -36,6 +36,9 @@ namespace triqs_xca::dense::cuda_small {
     DlrOps(DlrOps const &)            = delete;
     DlrOps &operator=(DlrOps const &) = delete;
     std::size_t workspace_bytes() const;
+    std::size_t device_workspace_bytes() const;
+    std::size_t unified_workspace_bytes() const;
+    std::size_t host_workspace_bound_bytes() const;
     DeviceOps &device_ops() { return ops_; }
     // In-place values->coefficients is safe because the solve uses owned RHS
     // storage.
