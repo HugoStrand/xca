@@ -661,3 +661,28 @@ initialization and evaluation are still pending, as are multi-device hardware te
 Continue with that lifetime audit, then rank/dimension/method/seed qualification,
 repeatable workload timings/profiling and library-only optional-extension validation.
 GH200-class defaults remain provisional. Code and this checkpoint are separate commits.
+
+## Native device lifetimes — 2026-10-12
+
+Native owners now record their construction device. Evaluator uploads and correlator
+work reject a changed current device before allocation/submission; stream completion
+and default-upload handoff also enforce that device. Resource owners temporarily
+select their device for destruction and restore the caller selection only after all
+member buffers/handles are released. Context members are declared first to outlive
+those resources. One instance still requires serialized calls.
+
+New tests interleave independent evaluators with different batch widths and changed
+inputs, then destroy one on another host thread and continue using the other. Focused
+native batch_api/Python entries pass2/2 in52.50s. CPU compatibility entries pass2/2;
+the CPU native test remains disabled. Compute Sanitizer memcheck/leak-check on the
+new lifetime tests passes one actual test with0 errors and0 bytes/allocations leaked.
+The two-visible-device regression is skipped on the single A4000; it covers rejected
+work after a device switch and caller-device restoration following destruction, but
+is not locally validated. No multi-device hardware claim is made.
+
+Code committed as503c260 separately from this checkpoint. Native ordinary/paired
+rank16 N4 throughput qualification with seed31415 has started under the existing
+strict harness. Wait for its tracked process before any other GPU benchmark. Then
+repeat in fresh processes, screen higher ranks/dimensions, and retain capability and
+crossover evidence. Library-only optional extensions and broader profiling remain
+pending. GH200 hardware/default qualification remains unavailable locally. Goal active.
