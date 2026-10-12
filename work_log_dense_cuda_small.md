@@ -879,3 +879,31 @@ These code changes are not built/tested yet; wait for measurement sequence compl
 then build/test policy and probe suites before committing code. Existing probe binary/
 snapshots are unchanged during the repeat sequence. Preserve all raw results, including
 failures. Finish with capability/crossover report and policy decisions backed by data.
+
+## Repeated rank evidence and environment admission — 2026-10-12
+
+Tracked sequence85377 completed: rank36 N8 screen84 groups and twelve fresh-process
+repeats(three per rank26/36 and dimension4/8), two seeds, crossing ordinary/paired SE,
+orders6/8, counts128/129, samples3. All13 processes exit0; saved aggregate candidate/
+reference errors exactly zero. Raw data/provenance committed c52ba70. Comparative
+medians/tails/CPU speedups recorded in native_ranks/RESULTS.md, with high-order CPU
+checks explicitly diagnostic and retained CUDA not timed in these cohorts.
+
+Production product/batch admission now uses the local measured hardware/library
+key: RTX A4000 CC8.6, compiled/runtime13040, driver API13000, cuBLAS13.8.0,
+cuSOLVER12.3.4. Unknown environments retain native sequential library work; GH200
+remains the optimization target and needs independent qualification. Versions checked
+using headers and CPU-only runtime/library property queries. Rank eligibility remains
+16 N4/N8; no wider production promotion yet. Code commit separate from docs.
+
+Explicit rank probe bypasses environment admission for qualification. Eight reused
+complete physics/API suites compile/run against the actual probe class with no
+observable/dynamic delegation;8/8 pass10.98s. Production policy/native/Python entries
+pass3/3 in53.90s. CPU-only environment-rejection policy test passes. Evidence retained.
+All live handles from this turn are terminal; no benchmark/build/GPU work remains.
+
+Next: varied pole/channel and targeted rank26/36 dynamic/observable coverage, decide
+wider local rank policy from evidence; larger power-of-two physical/crossover fixtures;
+real dynamic/observable performance and final complete MPI/install/full-suite audit.
+Original baseline and every experiment preserved. Target hardware/multi-GPU tests
+unavailable locally, A4000 controls provisional; persistent goal remains active.

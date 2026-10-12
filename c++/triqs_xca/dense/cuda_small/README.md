@@ -80,3 +80,11 @@ fail. The default is conservative and provisional for GH200-class qualification.
 iterations. Direct `init_diagram_evaluator()` remains local. Two-rank tests inject an
 invalid ordinal on one rank, require coherent failure, then recover and solve with a
 valid device. This does not establish multi-device hardware behavior.
+
+Optimized product/batch admission currently matches the local control tuple:
+RTX A4000 CC8.6, compiled/runtime CUDA13.4, driver API13.0, cuBLAS13.8.0 and
+cuSOLVER12.3.4. Unknown environments keep native sequential library operations.
+This conservatively restricts numerical qualification; it does not designate the
+A4000 as the optimization target. GH200-class cards need their own measured table
+entry. The explicit rank experiment bypasses admission to collect that evidence,
+with unchanged strict gates and actual batch-counter checks.
