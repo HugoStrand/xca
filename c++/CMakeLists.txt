@@ -107,3 +107,5 @@ add_subdirectory(triqs_soehyb)
 
 # triqs_xca: the block-sparse arbitrary crossing approximation solver
 add_subdirectory(triqs_xca)
+
+set(XCA_WITH_CUDA_SMALL ${XCA_WITH_CUDA_SMALL} PARENT_SCOPE)

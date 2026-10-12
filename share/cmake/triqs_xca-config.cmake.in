@@ -23,6 +23,12 @@ set(@PROJECT_NAME@_ROOT @CMAKE_INSTALL_PREFIX@ CACHE STRING "@PROJECT_NAME@ root
 #endfunction()
 #find_dep(depname 1.0)
 
+set(triqs_xca_WITH_CUDA_SMALL @XCA_WITH_CUDA_SMALL@)
+if(triqs_xca_WITH_CUDA_SMALL)
+  include(CMakeFindDependencyMacro)
+  find_dependency(CUDAToolkit)
+endif()
+
 # Include the exported targets of this project
 include(@CMAKE_INSTALL_FULL_LIBDIR@/cmake/@PROJECT_NAME@/@PROJECT_NAME@-targets.cmake)
 

@@ -54,3 +54,23 @@ foreach(test ${all_tests})
     )
   endif()
 endforeach()
+
+# Exercise the complete native small evaluator with the same independent physics
+# and API checks as library CUDA. Each executable owns its GoogleTest registry.
+if(XCA_WITH_CUDA_SMALL)
+  foreach(source one_fermion_se_spgf_all_evals two_fermions_se_spgf_all_evals
+      unitary_invariance_all_evals dynint_spin_rotation flat_index_range propagator_layout
+      dense/dynint_parity dense/correlator_statistics)
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${source}.cpp" contents)
+    string(REPLACE "dense/cuda/" "dense/cuda_small/" contents "${contents}")
+    string(REPLACE "dense::cuda::" "dense::cuda_small::" contents "${contents}")
+    string(REPLACE "NDA_HAVE_CUDA" "XCA_HAVE_CUDA_SMALL" contents "${contents}")
+    string(REPLACE "/" "_" suffix "${source}")
+    set(target "cuda_small_${suffix}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${target}.cpp" "${contents}")
+    add_executable(${target} "${CMAKE_CURRENT_BINARY_DIR}/${target}.cpp")
+    target_link_libraries(${target} PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c
+      ${PROJECT_NAME}_test_utils ${PROJECT_NAME}_warnings gtest_main)
+    add_test(NAME "dense/cuda_small/${suffix}" COMMAND ${target})
+  endforeach()
+endif()
