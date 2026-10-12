@@ -855,3 +855,27 @@ remaining temporary/resource policy audit and final MPI/install/full-suite verif
 No GH200 or multi-device hardware qualification is claimed. Target remains GH200-class
 cards; A4000 results/defaults provisional. Persistent goal active and original baseline,
 experiments and unrelated user files preserved.
+
+## Wider policy qualification in progress — 2026-10-12
+
+Updated native probe snapshots built from3f5c6c5. Missing rank36 N8 screen passes84
+backend/case groups with zero candidate/reference error. Three fresh-process cohorts
+for rank26 N4/N8 and rank36 N4 have completed, two seeds, ordinary/paired SE,
+orders6/8, counts128/129, samples3. Current rank36 N8 cohort is still running under
+tracked exec session85377; repeat1 complete, repeat2 progressing, repeat3 queued.
+Do not start GPU tests/builds that disturb measurements or restart the live sequence.
+
+Uncommitted preparation: qualification.hpp describes the measured local environment
+(RTX A4000, CC8.6, compiled/runtime13040, driver API13000, cuBLAS13.8.0,
+cuSOLVER12.3.4), checked using headers and CPU-only library property/version calls.
+DeviceOps will disable optimized products outside it, and native batching will require
+that mode. Numerical/performance target remains GH200-class hardware; unknown target
+hardware uses native sequential library operations until separately qualified.
+Production still uses rank16 N4/N8 eligibility; no wider policy promotion yet.
+
+The explicit rank probe bypasses environment admission for qualification and now
+prepares eight reused complete physics/API suites against the actual probe class.
+These code changes are not built/tested yet; wait for measurement sequence completion,
+then build/test policy and probe suites before committing code. Existing probe binary/
+snapshots are unchanged during the repeat sequence. Preserve all raw results, including
+failures. Finish with capability/crossover report and policy decisions backed by data.
