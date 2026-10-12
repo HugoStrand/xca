@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <thread>
+#include <future>
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
 #include "../../../../benchmarks/dense_cuda_small/harness.hpp"
@@ -324,6 +325,31 @@ TEST(CudaSmallBatch, InterleavedInstancesAndCrossThreadDestruction) {
   auto expected=reference.evaluate("se",t,indices);
   auto actual=second->compute_self_energy(f.G,t,indices);
   EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+}
+
+TEST(CudaSmallBatch, IndependentInstancesRunConcurrently) {
+  using namespace dense_cuda_bench;
+  Options a_options,b_options; b_options.N=8;
+  Fixture a(a_options),b(b_options);
+  using Evaluator=triqs_xca::dense::cuda_small::DiagramEvaluator;
+  Evaluator first(a.options.beta,1e-12,a.itops,a.poles,a.coefficients,*a.fset);
+  Evaluator second(b.options.beta,1e-12,b.itops,b.poles,b.coefficients,*b.fset);
+  auto topology=dense_cuda_bench::topology(3,"crossing");
+  auto ai=select_indices(first.get_num_self_energy_backbones(topology),129,1729);
+  auto bi=select_indices(second.get_num_self_energy_backbones(topology),129,31415);
+  auto ar=baseline(a),br=baseline(b);
+  auto expected_a=ar.evaluate("se",topology,ai),expected_b=br.evaluate("pairs",topology,bi);
+  int device=0; nda::device_error_check(cudaGetDevice(&device),"concurrent device");
+  auto left=std::async(std::launch::async,[&] {
+    nda::device_error_check(cudaSetDevice(device),"left device");
+    for(int repeat=0;repeat<3;++repeat) compare(tensor(first.compute_self_energy(a.G,topology,ai)[0].data()),expected_a);
+  });
+  auto right=std::async(std::launch::async,[&] {
+    nda::device_error_check(cudaSetDevice(device),"right device");
+    for(int repeat=0;repeat<3;++repeat) compare(tensor(second.compute_self_energy_by_pairs(b.G,topology,bi)[0].data()),expected_b);
+  });
+  EXPECT_NO_THROW(left.get());
+  EXPECT_NO_THROW(right.get());
 }
 
 TEST(CudaSmallBatch, DeviceSwitchRejectsWorkAndCleanupRestoresCaller) {
