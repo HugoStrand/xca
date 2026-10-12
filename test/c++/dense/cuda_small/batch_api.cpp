@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <future>
+#include <chrono>
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
 #include "../../../../benchmarks/dense_cuda_small/harness.hpp"
@@ -350,6 +351,28 @@ TEST(CudaSmallBatch, IndependentInstancesRunConcurrently) {
   });
   EXPECT_NO_THROW(left.get());
   EXPECT_NO_THROW(right.get());
+}
+
+TEST(CudaSmallBatch, OwnedStreamWaitsForDelayedDefaultUpload) {
+  using namespace triqs_xca::dense::cuda_small;
+  DeviceOps ops(16,4);
+  tensor input(16,4,4),output(16,4,4);
+  ops.zero(input); ops.finish();
+  struct Pinned {
+    complex *data=nullptr;
+    Pinned() { nda::device_error_check(cudaHostAlloc(reinterpret_cast<void **>(&data),16*16*sizeof(complex),cudaHostAllocDefault),"pinned producer"); }
+    ~Pinned() { if(data) cudaFreeHost(data); }
+  } host;
+  for(int i=0;i<256;++i) host.data[i]=complex{.01*i,-.003*i};
+  nda::device_error_check(cudaLaunchHostFunc(nullptr,[](void *) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  },nullptr),"delayed producer");
+  nda::device_error_check(cudaMemcpyAsync(input.data(),host.data,256*sizeof(complex),cudaMemcpyHostToDevice,nullptr),"delayed upload");
+  ops.wait_for_default_uploads();
+  ops.copy(input,output);
+  ops.finish();
+  auto actual=nda::to_host(output());
+  for(int i=0;i<256;++i) EXPECT_EQ(actual.data()[i],host.data[i]);
 }
 
 TEST(CudaSmallBatch, DeviceSwitchRejectsWorkAndCleanupRestoresCaller) {
