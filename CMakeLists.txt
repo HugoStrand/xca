@@ -25,6 +25,9 @@ cmake_policy(VERSION ${CMAKE_VERSION})
 # ############
 # Define Project
 project(triqs_xca VERSION 0.1.0 LANGUAGES CXX)
+# Keep runtime paths for external dependencies in installed extensions, including
+# CUDA/cuTENSOR libraries that are not registered in the system loader cache.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
 
 # ############
