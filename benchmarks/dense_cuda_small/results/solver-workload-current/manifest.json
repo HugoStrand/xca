@@ -1,0 +1,13 @@
+{
+  "revision": "88df2d6ab8191b38427bc19e0bd3396deb3d6b73",
+  "status": " M .gitignore\n M test/c++/dense/cuda_small/batch_api.cpp\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? benchmarks/dense_cuda_small/results/solver-workload-current/\n?? benchmarks/dense_cuda_small/solver_workload.py\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "source_sha256": "f95ba015b4d1aa06768e92c8daa1fc2fc46fb5474ef8d7c54e12946e53ad5537",
+  "target": "RTX A4000 local control; GH200-class optimization target unqualified",
+  "numerical": "real Solver comparison rtol1e-9 atol1e-12; C++ optimization gate unchanged",
+  "samples": 3,
+  "backends": [
+    "cpu",
+    "cuda",
+    "cuda_small"
+  ]
+}

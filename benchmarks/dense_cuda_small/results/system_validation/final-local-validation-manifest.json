@@ -1,0 +1,25 @@
+{
+  "revision": "1718ca1b7714ee2bd07d95176c268aa328375c72",
+  "CPU_CTest": "67/67",
+  "CUDA_CTest": "75/75 including delayed upload",
+  "library_CTest": "67/67",
+  "MPI": "two ranks each12 backend tests",
+  "installed": "normal CUDA-small12 tests; library-only12 tests with3 Small skips; fresh external C++ consumer",
+  "supervisor": "live process219671; implementation configgpt-6.1-sol medium;28 isolated tests",
+  "scope": "single RTX A4000 local verification; GH200 and true multi-device qualification unavailable",
+  "logs_sha256": {
+    "xca-small-concurrent-tests.log": "3d93bb514d94c9df0a89bca8cc54b45b30c1c45a9a1d997869176bf04c1efb7e",
+    "xca-small-concurrent-memcheck.log": "c829ae2e4ef9bf1777a4bf142e85296145ed184ccca32ea916bdf036f61c0b92",
+    "xca-small-delayed-upload-tests.log": "2a47e4be2a5e222e3c181b05bdbb875fa67149ecbd128efdcb8818ea48c34163",
+    "xca-small-final-supervisor-tests.log": "85045d579fe69e865deb3cf0f3a5493afa6379d16bc3069229688fa5c83b98a5",
+    "xca-small-final-cpu-tests.log": "1c54212f74278ef65f0d839fbb7406ea6dcfcc96d2c52895fde19478194b92e5",
+    "xca-small-final-cuda-tests.log": "a3bbb6cd1420dbfa5f1e5b7895fb09cdae3ea333f34abbf6e8ad07abed9b3c88",
+    "xca-small-final-cuda-tests-with-upload.log": "afa5f8d85879b798524539d8e997df6bd5a7fc9a1243a0c78e3fee9432498933",
+    "xca-small-final-mpi.log": "1503ae0a71103ebf49c5ebe9d643f0cac88b9c45191c61ec8965c2ae91190462",
+    "xca-small-final-library-tests.log": "8ca9afaf179619ceae1415ab857ad3c1c357c36dda33252d7dc035f6728299f9",
+    "xca-small-final-library-installed-tests.log": "57e39a4bc3957fae6fea1913f30d22aa1781ae79cb074e9818bb6391bce124ab",
+    "xca-small-final-installed-tests.log": "00b53c131db5de96d5330a1c5b09759badab6578db738b8c6cb2eb00299e70b7",
+    "xca-small-final-consumer-run.log": "4aaf280c5cd97d40b0271d675124b584474c6a5ea581aff322f62b99c653f3cc",
+    "xca-small-current-version-installed-tests.log": "85669aa947a62018ee9eafd4dc412bbe5be3ca55703ba86f576dd9c2d2f86a97"
+  }
+}

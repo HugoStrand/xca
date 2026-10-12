@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/usr/local/cuda/bin/nvcc",
+    "-DXCA_POW2_DOT_TILE=4",
+    "--options-file",
+    "CMakeFiles/triqs_xca_small_kernels.dir/includes_CUDA.rsp",
+    "-O3",
+    "-DNDEBUG",
+    "-std=c++17",
+    "--generate-code=arch=compute_86,code=[compute_86,sm_86]",
+    "-Xcompiler=-fPIC",
+    "--fmad=true",
+    "-Xptxas=-v",
+    "-c",
+    "/home/hugstr/dev/xca/c++/triqs_xca/dense/cuda_small/kernels.cu",
+    "-o",
+    "/tmp/xca-small-kernel-metadata.o"
+  ],
+  "cwd": "/home/hugstr/dev/xca/cbuild-cuda/c++/triqs_xca/dense/cuda_small",
+  "elapsed_seconds": 1.4050461220322177,
+  "exit_code": 0,
+  "source_sha256": "c5674503a0358710f3a392640fd880b8e0606781b473f079e55065e0003d0bcc",
+  "object_bytes": 148992,
+  "object_sha256": "1aa2cff1a0c373eb490277933a804141a9b3b086dd651b666c58395efc3864cb",
+  "production_archive_bytes": 149742,
+  "native_library_bytes": 4233512,
+  "qualifier": "Single isolated thin-target compilation; whole xca build time not implied; local arch86, GH200 unqualified"
+}
