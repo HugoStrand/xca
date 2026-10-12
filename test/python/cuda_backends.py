@@ -65,6 +65,18 @@ class BackendTests(unittest.TestCase):
         self.assertIsNone(restored.gpu_device)
         self.assertFalse(hasattr(restored,'d'))
 
+    def test_default_gpu_device_archive(self):
+        S=make_solver()
+        self.assertIsNone(S.gpu_device)
+        self.assertNotIn('gpu_device',S.__reduce_to_dict__())
+        with tempfile.TemporaryDirectory() as folder:
+            path=str(Path(folder)/'solver.h5')
+            with HDFArchive(path,'w') as archive: archive['solver']=S
+            with HDFArchive(path,'r') as archive: restored=archive['solver']
+            self.assertIsNone(restored.gpu_device)
+            self.assertEqual(S,restored)
+        self.assertIsNone(copy.deepcopy(S).gpu_device)
+
     def test_invalid_configuration_and_unavailable_backend(self):
         with self.assertRaises(ValueError):
             Solver(n('0',0),2.,5.,1e-12,[['0',1]],dense_backend='cuda_small',verbose=False)

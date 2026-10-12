@@ -1437,6 +1437,8 @@ class Solver(object):
         d = self.__dict__.copy()
         keys = set(d.keys()).intersection(self.__skip_keys())
         for key in keys: del d[key]
+        # TRIQS HDF5 cannot encode None; omission restores the constructor default.
+        if d.get('gpu_device') is None: d.pop('gpu_device', None)
         return d
 
 
