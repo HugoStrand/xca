@@ -424,3 +424,36 @@ integration. Full functionality is the objective, not just a baseline-delegating
 facade. Check source manifests before changes; preserve the original baseline while
 adding cuda_small and necessary build/Python integration. Qualify only locally measured
 policies; document unavailable GH200 validation rather than inventing performance.
+
+## M1 power-of-two screen — 2026-10-12
+
+Progress: isolated power_two experiment committed in81ac16d, source/evidence and
+comparison labels in9e6ccd1; additional labelled failure manifests committed separately.
+All original experiments and23 protected baseline source files remain unchanged.
+New kernels template dimensions2/4/8/16/32/64 with distinct namespace/C ABI and
+configurable CUDA architecture. Library LU/rank products retained. Six inherited
+CTest entries pass; expanded product/left-right vertex checks pass through64.
+A finite-checked device-event primitive benchmark records dimensions2–64 and lanes
+1/8/32/128. No production implementation is claimed yet.
+
+Strict full-API screen: N4 custom B128 passes28 groups (orders6/8 crossing6.827/9.170ms).
+N8 custom fails but library B128 passes28 groups. N2 B128 fails in both custom and
+library controls; serial B1 library passes28 groups. N16 custom fails candidate/CUDA;
+serial and batched library controls also expose pre-existing baseline CUDA/CPU
+individual discrepancy at order3 (relative2.493e-10). Added comparison labels without
+changing numerical gates. Followup custom-only screen labels all N2/N8/N16 failures
+candidate/CUDA individual, retained with hashes. Do not weaken tolerance or promote
+primitive success as evaluator acceptance. See power_two/RESULTS.md and results/.
+
+Primitive B128 product crossover is around32–64 on A4000 (single-process screen),
+not a usable whole-evaluator cutoff given parity failures; GH200 remains unmeasured.
+All build/test/benchmark handles from this turn completed; no GPU job left running.
+Build: cbuild-experiment-power-two, source ~/env/xca-cuda.sh, mode XCA_FUSED_MODE=2.
+
+Next actions: isolate N2 rank/solve width differences and N8/N16 custom arithmetic
+(without weakening gates); test qualified width/kernel combinations and preserve
+whole-baseline fallback for rejected configurations. Extend physical fixture coverage
+and three-process/rank/seed controls for actual dispatch choices. Then progress M2–M5
+at c++/triqs_xca/dense/cuda_small, retaining full native paired/dynamic/SPGF/correlator
+scope, bounded resource/submission APIs, Python MPI integration and three build modes.
+M1 is incomplete, goal active. Do not mistake this screening report for completion.
