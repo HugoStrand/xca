@@ -244,7 +244,8 @@ namespace triqs_xca::dense::cuda_small {
     context_.require_current();
     if (h.shape() != std::array<long, 3>{r_, N_, N_}) throw std::invalid_argument("CUDA evaluator propagator shape mismatch");
     dlr_.finish();
-    G_ = nda::make_regular(h);
+    // Assign through a view to preserve resident storage across uploads.
+    G_() = nda::make_regular(h);
     dlr_.wait_for_default_uploads();
     dlr_.device_ops().zero(sum_);
   }
@@ -254,7 +255,8 @@ namespace triqs_xca::dense::cuda_small {
   }
   DiagramEvaluator::gf_t DiagramEvaluator::result() {
     dlr_.finish();
-    auto h = nda::to_host(sum_);
+    // NDA regular-to-regular conversion otherwise copies a device array by value.
+    auto h = nda::to_host(sum_());
     auto g = triqs::gfs::gf<triqs::mesh::dlr_imtime>(mesh_, h);
     return std::vector{g};
   }
