@@ -202,6 +202,7 @@ namespace triqs_xca::dense::cuda_small {
   }
   void BatchEvaluator::accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology,
                                   nda::array_const_view<long, 1> indices, tensor_view output, bool pairs) {
+    context_.require_current();
     if (indices.size() == 0 || indices.size() > B_) throw std::invalid_argument("batch index width mismatch");
     sum_.rebind(output);
     try {

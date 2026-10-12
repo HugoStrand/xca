@@ -17,6 +17,7 @@
 namespace triqs_xca::dense::cuda_small {
   // Immutable model snapshots and owned stream/handles. Serialize calls per instance.
   class DiagramEvaluator {
+    DeviceContext context_;
     public:
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
@@ -78,6 +79,7 @@ namespace triqs_xca::dense::cuda_small {
     XCA_SMALL_CXX_ONLY long get_num_self_energy_backbones(Backbone &b);
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
     ~DiagramEvaluator() {
+      context_.begin_cleanup();
       try { dlr_.finish(); } catch (...) {}
     }
     gf_t compute_self_energy(gf_vt g, nda::array_const_view<int, 2> topology);

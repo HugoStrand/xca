@@ -14,6 +14,7 @@ namespace triqs_xca::dense::cuda_small {
   // solve. Status is inspected only after stream completion; no shared NDA
   // settings.
   class DlrOps {
+    DeviceContext context_;
     int r_, N_, columns_, B_;
     DeviceOps ops_;
     nda::cumatrix<complex> lu_, C_, H_, Q_, reflection_;
@@ -29,7 +30,7 @@ namespace triqs_xca::dense::cuda_small {
     public:
     DlrOps(cppdlr::imtime_ops const &host, long dimension, int capacity = 1);
     ~DlrOps();
-    void begin() { used_status_ = 0; }
+    void begin() { context_.require_current(); used_status_ = 0; }
     void finish();
     void wait_for_default_uploads() { ops_.wait_for_default_uploads(); }
     DlrOps(DlrOps const &)            = delete;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 #include <nda/nda.hpp>
+#include "device_context.hpp"
 
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <cstddef>
@@ -26,6 +27,7 @@ namespace triqs_xca::dense::cuda_small {
   // operations enqueue and finish() completes them. Immutable pointer tables are
   // prepared before traversal; not thread-safe.
   class DeviceOps {
+    DeviceContext context_;
     int r_, N_, stride_, count_, rank_, B_;
     int mode_ = 1;
     bool rank_lanes_ = false;

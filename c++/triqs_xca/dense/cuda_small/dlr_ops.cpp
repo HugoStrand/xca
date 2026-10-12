@@ -53,6 +53,7 @@ namespace triqs_xca::dense::cuda_small {
     }
   }
   DlrOps::~DlrOps() {
+    context_.begin_cleanup();
     try {
       finish();
     } catch (...) {}

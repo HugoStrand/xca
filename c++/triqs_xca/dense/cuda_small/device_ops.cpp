@@ -70,16 +70,18 @@ namespace triqs_xca::dense::cuda_small {
     }
   }
   DeviceOps::~DeviceOps() {
+    context_.begin_cleanup();
     if (stream_) cudaStreamSynchronize(stream_);
     if (handle_) cublasDestroy(handle_);
     if (upload_ready_) cudaEventDestroy(upload_ready_);
     if (stream_) cudaStreamDestroy(stream_);
   }
   void DeviceOps::wait_for_default_uploads() const {
+    context_.require_current();
     nda::device_error_check(cudaEventRecord(upload_ready_, nullptr), "record default uploads");
     nda::device_error_check(cudaStreamWaitEvent(stream_, upload_ready_, 0), "wait for default uploads");
   }
-  void DeviceOps::finish() const { nda::device_error_check(cudaStreamSynchronize(stream_), "serial_stream completion"); }
+  void DeviceOps::finish() const { context_.require_current(); nda::device_error_check(cudaStreamSynchronize(stream_), "serial_stream completion"); }
   void DeviceOps::prepare_vertex(matrix_const_view op, tensor_const_view in, tensor_view out, bool left) {
     Key key{op.data(), in.data(), out.data(), left};
     if (tables_.contains(key)) return;

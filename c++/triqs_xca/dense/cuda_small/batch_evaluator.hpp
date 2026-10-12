@@ -10,6 +10,7 @@
 #include <triqs_xca/hyb.hpp>
 namespace triqs_xca::dense::cuda_small {
   class BatchEvaluator {
+    DeviceContext context_;
     using gf_t     = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt    = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
     using Backbone = triqs_xca::backbone::Backbone;
@@ -46,7 +47,7 @@ namespace triqs_xca::dense::cuda_small {
     double prefactor(Backbone &b) const;
     void prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs);
 
-    ~BatchEvaluator() { try { dlr_.finish(); } catch (...) {} }
+    ~BatchEvaluator() { context_.begin_cleanup(); try { dlr_.finish(); } catch (...) {} }
     void accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output, bool pairs);
     std::size_t workspace_bytes() const;
     void set_budget(std::size_t bytes) { budget_ = bytes; }

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <thread>
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
 #include "../../../../benchmarks/dense_cuda_small/harness.hpp"
@@ -183,6 +184,58 @@ TEST(CudaSmallBatch, CorrelatorBudgetFailureIsRecoverable) {
   auto expected=reference.eval_correlator(f.G[0].data(),gold,f.Fs,f.Fd,0L);
   auto actual=candidate.eval_correlator(f.G[0].data(),b,f.Fs,f.Fd,0L);
   EXPECT_NO_THROW(compare(actual,expected));
+}
+
+TEST(CudaSmallBatch, InterleavedInstancesAndCrossThreadDestruction) {
+  using namespace dense_cuda_bench;
+  Fixture f(Options{});
+  using Evaluator=triqs_xca::dense::cuda_small::DiagramEvaluator;
+  auto first=std::make_unique<Evaluator>(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto second=std::make_unique<Evaluator>(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  first->set_batch_capacity(8);
+  second->set_batch_capacity(128);
+  auto reference=baseline(f);
+  auto t=topology(3,"crossing");
+  auto indices=select_indices(first->get_num_self_energy_backbones(t),129,31415);
+  for (int repeat=0; repeat<2; ++repeat) {
+    auto expected=reference.evaluate("se",t,indices);
+    auto actual=first->compute_self_energy(f.G,t,indices);
+    EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+    auto paired=second->compute_self_energy_by_pairs(f.G,t,indices);
+    EXPECT_NO_THROW(compare(tensor(paired[0].data()),reference.evaluate("pairs",t,indices)));
+    f.G[0].data()*=complex{.97,.002};
+  }
+  EXPECT_GT(first->batch_chunks(),0);
+  EXPECT_GT(second->batch_chunks(),0);
+  std::thread cleanup([owned=std::move(first)]() mutable { owned.reset(); });
+  cleanup.join();
+  auto expected=reference.evaluate("se",t,indices);
+  auto actual=second->compute_self_energy(f.G,t,indices);
+  EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+}
+
+TEST(CudaSmallBatch, DeviceSwitchRejectsWorkAndCleanupRestoresCaller) {
+  using namespace dense_cuda_bench;
+  int count=0,owner=0;
+  nda::device_error_check(cudaGetDeviceCount(&count),"device count");
+  if (count<2) GTEST_SKIP() << "requires two visible CUDA devices";
+  nda::device_error_check(cudaGetDevice(&owner),"current device");
+  struct Restore { int device; ~Restore() { cudaSetDevice(device); } } restore{owner};
+  Fixture f(Options{});
+  using Evaluator=triqs_xca::dense::cuda_small::DiagramEvaluator;
+  auto candidate=std::make_unique<Evaluator>(f.options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+  auto t=topology(3,"crossing");
+  auto indices=select_indices(candidate->get_num_self_energy_backbones(t),128,1729);
+  candidate->compute_self_energy(f.G,t,indices); // Include a resident batch owner.
+  int other=(owner+1)%count;
+  nda::device_error_check(cudaSetDevice(other),"select other device");
+  EXPECT_THROW(candidate->compute_self_energy(f.G,t,indices),std::runtime_error);
+  EXPECT_THROW(candidate->compute_single_ptcle_gf(f.G,t,indices),std::runtime_error);
+  EXPECT_THROW(candidate->set_batch_capacity(32),std::runtime_error);
+  candidate.reset();
+  int current=-1;
+  nda::device_error_check(cudaGetDevice(&current),"device after cleanup");
+  EXPECT_EQ(current,other);
 }
 
 #else

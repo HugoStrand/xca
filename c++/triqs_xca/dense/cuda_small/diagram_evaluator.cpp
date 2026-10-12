@@ -241,6 +241,7 @@ namespace triqs_xca::dense::cuda_small {
     return pref;
   }
   void DiagramEvaluator::upload_tensor(nda::array_const_view<complex, 3> h) {
+    context_.require_current();
     if (h.shape() != std::array<long, 3>{r_, N_, N_}) throw std::invalid_argument("CUDA evaluator propagator shape mismatch");
     dlr_.finish();
     G_ = nda::make_regular(h);
@@ -380,6 +381,7 @@ namespace triqs_xca::dense::cuda_small {
   nda::array<complex, 3> DiagramEvaluator::correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
                                                      nda::array_const_view<complex, 3> kap, nda::array_const_view<long, 1> indices, bool all,
                                                      bool fermionic, long first, long last) {
+    context_.require_current();
     if (all) {
       long total = b.num_flat_indices(hyb_.poles.size());
       if (last == -1) last = total;
