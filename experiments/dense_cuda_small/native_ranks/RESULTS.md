@@ -1,6 +1,6 @@
 # Native rank qualification results
 
-Local RTX A4000 control, CUDA runtime13.4, driver API13.0, cuBLAS13.8.0, cuSOLVER12.3.4. GH200-class cards remain the optimization target and are unqualified locally. No production rank expansion is implied by this report.
+Local RTX A4000 control, CUDA runtime13.4, driver API13.0, cuBLAS13.8.0, cuSOLVER12.3.4. GH200-class cards remain the optimization target and are unqualified locally. Measured rank26/36 N4/N8 policies are now admitted only in this qualified local environment.
 
 The current rank36/N8 screen passes84 backend/case groups. Together with earlier rank26/N4, rank36/N4 and rank26/N8 screens, coverage includes ordinary/paired self-energy, crossing/chain, orders1/3/6/8, counts8/128/129 and strict individual/aggregate CUDA comparisons. Current repeat cohorts use the same generated native snapshot in three fresh processes per rank/dimension, seeds31415/1729/31415, three timed samples per case, crossing, orders6/8, counts128/129. All processes exit0; aggregate candidate/reference errors in the saved repeat summaries are exactly zero.
 
@@ -25,6 +25,6 @@ The current rank36/N8 screen passes84 backend/case groups. Together with earlier
 
 Ranges combine seed/process variation, not confidence intervals. First-call/setup/context costs, owned-storage reports, exact selected indices and high-order CPU diagnostics remain in raw CSV/JSON records. CPU comparisons at high order are diagnostic; no tolerance changed. The retained CUDA evaluator is a correctness reference here and is not timed in these cohorts.
 
-All eight direct reused analytic/dynamic/unitary/index/layout/SPGF/correlator suites against the actual probe pass (10.98s). Wider rank eligibility must await that evidence and varied channel/pole fixtures. Shape2 remains serial library because safe per-lane LU batching lost performance in earlier experiments. Larger powers of two require physical/crossover coverage; compiled kernels are not sufficient qualification.
+All eight direct reused analytic/dynamic/unitary/index/layout/SPGF/correlator suites against the actual probe pass (10.98s). An additional sixteen complex atom_diag model fixtures at ranks26/36, dimensions4/8, poles2/3 and channels0/2 pass strict ordinary/paired, SPGF and one-time tests, with low-order CPU reference checks. Production batching tests confirm actual rank26/36 execution. Shape2 remains serial library because safe per-lane LU batching lost performance in earlier experiments. Larger powers of two require physical/crossover coverage; compiled kernels are not sufficient qualification.
 
 Production environment admission is now restricted to the measured local hardware/library tuple; focused native/Python/policy tests pass3/3 and the CPU policy check passes. Unknown environments retain native sequential library work; the explicit experiment bypasses admission to collect new hardware evidence, with strict gates and batch-counter assertions. Only GH200-class measurements may justify target defaults.

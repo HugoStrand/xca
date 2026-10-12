@@ -5,7 +5,7 @@ self-energy, dynamic interactions, SPGF and correlators. Calls are serialized pe
 instance, with owned nonblocking stream, BLAS/solver handles and upload event handoff.
 Other instances do not rely on the shared NDA solver synchronization setting.
 
-Ordinary and paired SE batch rank16 dimensions4/8 using widths8/32/128. Smaller tails use
+Ordinary and paired SE batch ranks16/26/36 dimensions4/8 using widths8/32/128. Smaller tails use
 native serial traversal; each contribution accumulates into the same device output
 in caller order. Metadata grows within a workspace budget rather than fixed prototype
 limits; three width caches are bounded. Other shapes/methods remain native sequential.
@@ -17,7 +17,7 @@ Backend and visible-device preferences survive copies/HDF5. Dynamic interaction
 channels are included in ordinary/paired batching. Broader performance qualification
 and profiling remain in progress.
 
-Rank16 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
+Ranks16/26/36 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
 other dimensions/ranks use library products. Vertex products currently use library
 operations. Cached pivoted library LU is retained. The small kernel target compiles
 power-of-two product families; compiled availability is not numerical qualification.

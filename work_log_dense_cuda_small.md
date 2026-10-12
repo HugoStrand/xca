@@ -907,3 +907,33 @@ wider local rank policy from evidence; larger power-of-two physical/crossover fi
 real dynamic/observable performance and final complete MPI/install/full-suite audit.
 Original baseline and every experiment preserved. Target hardware/multi-GPU tests
 unavailable locally, A4000 controls provisional; persistent goal remains active.
+
+## Wider rank promotion and larger library controls — 2026-10-12
+
+Targeted probe test covers sixteen complex atom_diag models: dimensions4/8,
+ranks26/36, poles2/3, channels0/2. Ordinary/paired SE at widths8/32 and129 tail,
+crossing/chain, changed G, SPGF and density one-time correlators pass unchanged strict
+CUDA comparisons; low-order retained CUDA also passes independent CPU checks.
+Targeted test passes44.51s. Together with repeats and eight full physics/API suites,
+this supports rank26/36 N4/N8 admission in the measured local environment.
+
+Production qualified_shape now includes16/26/36 and4/8; environment restriction
+unchanged. A direct production test requires actual batching and strict agreement
+for ordinary/paired129-index calls across all four wider rank/dimension cases.
+Focused production/Python entries pass2/2 in57.80s. Code29a40d1 and evidenceef49d42
+separate from docs. Current probe generator updated for the named shape predicate.
+
+Benchmark physical fixture accepts powers of two through64 (no arithmetic/tolerance
+change). Eighteen separate native/retained CUDA screens atN16/32/64, rank16, orders
+1/3/6/8, ordinary/paired/SPGF all pass for seed31415. Larger dimensions use native
+sequential library operations, not unqualified fixed-size kernels. Matched timing/CPU
+controls summarized in benchmarks/dense_cuda_small/LARGE_RESULTS.md; raw records
+retained. These are single-process, few-index screens, not a large-batch crossover.
+The earlier N16 CPU-disagreement rejection remains separate evidence and is not erased.
+
+All handles from this turn ended. Next: final capability/dispatch table and remaining
+throughput/crossover gaps; dynamic/observable real-workload timings; resource/temporary
+policy audit; current full CPU/CUDA/library-only/MPI/install verification; supervisor
+checks and completion audit. GH200/multi-device hardware unavailable locally, and only
+GH200-class data can justify target defaults. Goal active; baseline and all experiments
+preserved, unrelated files untouched.
