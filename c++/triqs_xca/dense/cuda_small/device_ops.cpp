@@ -63,7 +63,7 @@ namespace triqs_xca::dense::cuda_small {
        B_(capacity) {
     checked_product(count_, sizeof(complex));
     // Conservative initial eligibility; expand after method/rank qualification.
-    mode_ = (rank == 16 && (N_ == 4 || N_ == 8)) ? 2 : 0;
+    mode_ = qualified_shape(rank, N_) ? 2 : 0;
     nda::device_error_check(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking), "create owned stream");
     try {
       nda::device_error_check(cudaEventCreateWithFlags(&upload_ready_, cudaEventDisableTiming), "create upload event");

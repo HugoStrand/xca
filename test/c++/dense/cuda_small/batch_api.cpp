@@ -97,6 +97,25 @@ TEST(CudaSmallBatch, DeviceHeadroomSelectsResidentFallback) {
   EXPECT_GT(candidate.batch_chunks(),before);
 }
 
+TEST(CudaSmallBatch, WiderQualifiedRanksUseBatches) {
+  using namespace dense_cuda_bench;
+  for(int lambda : {40,120}) for(int N : {4,8}) {
+    Options options; options.lambda=lambda; options.N=N;
+    Fixture f(options);
+    triqs_xca::dense::cuda_small::DiagramEvaluator candidate(options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+    auto reference=baseline(f);
+    ASSERT_EQ(candidate.rank(),lambda==40?26:36);
+    auto t=topology(3,"crossing");
+    auto indices=select_indices(candidate.get_num_self_energy_backbones(t),129,31415);
+    for(bool pairs : {false,true}) {
+      auto before=candidate.batch_chunks();
+      auto actual=pairs?candidate.compute_self_energy_by_pairs(f.G,t,indices):candidate.compute_self_energy(f.G,t,indices);
+      EXPECT_NO_THROW(compare(tensor(actual[0].data()),reference.evaluate(pairs?"pairs":"se",t,indices)));
+      EXPECT_GT(candidate.batch_chunks(),before);
+    }
+  }
+}
+
 TEST(CudaSmallBatch, OrderedWidthsTailsAndChangedInputs) {
   using namespace dense_cuda_bench;
   for (int N : {4, 8}) {

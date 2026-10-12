@@ -10,6 +10,9 @@ namespace triqs_xca::dense::cuda_small {
     int major, minor, compiled_runtime, runtime, driver;
     std::array<int, 3> cublas, cusolver;
   };
+  inline bool qualified_shape(long rank, long dimension) {
+    return (rank == 16 || rank == 26 || rank == 36) && (dimension == 4 || dimension == 8);
+  }
   // Local control entry only. GH200-class cards are the optimization target,
   // but require their own numerical/performance qualification before admission.
   inline bool qualified_environment(QualificationEnvironment const &e) {

@@ -3,6 +3,7 @@
 #include "diagram_evaluator.hpp"
 #include "profile_range.hpp"
 #include "memory_usage.hpp"
+#include "qualification.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/dynint.hpp>
@@ -306,9 +307,9 @@ namespace triqs_xca::dense::cuda_small {
     device_memory_reserve_ = bytes;
   }
   bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs) {
-    // Qualification is currently local and restricted to ordinary/paired SE, rank16,
+    // Qualification is local and restricted to ordinary/paired SE, ranks16/26/36,
     // full-fermion N4/N8. Other cases retain the native sequential traversal.
-    if (r_ != 16 || (N_ != 4 && N_ != 8)) return false;
+    if (!qualified_shape(r_, N_)) return false;
     if (dlr_.device_ops().mode() != 2) return false;
     int slot = indices.size() == 128 ? 2 : indices.size() == 32 ? 1 : indices.size() == 8 ? 0 : -1;
     if (slot < 0) return false;

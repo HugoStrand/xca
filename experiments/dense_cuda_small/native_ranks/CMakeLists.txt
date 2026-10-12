@@ -17,14 +17,14 @@ foreach(input IN LISTS inputs)
   file(READ "${input}" contents)
   string(REPLACE "triqs_xca::dense::cuda_small" "triqs_xca::dense::cuda_small_probe" contents "${contents}")
   if(name STREQUAL "diagram_evaluator.cpp")
-    string(FIND "${contents}" "if (r_ != 16 || (N_ != 4 && N_ != 8)) return false;" guard)
+    string(FIND "${contents}" "if (!qualified_shape(r_, N_)) return false;" guard)
     if(guard LESS 0)
       message(FATAL_ERROR "Native batching guard changed; review probe transformation")
     endif()
-    string(REPLACE "if (r_ != 16 || (N_ != 4 && N_ != 8)) return false;"
+    string(REPLACE "if (!qualified_shape(r_, N_)) return false;"
       "if (N_ != 4 && N_ != 8) return false;" contents "${contents}")
   elseif(name STREQUAL "device_ops.cpp")
-    string(FIND "${contents}" "mode_ = (rank == 16 && (N_ == 4 || N_ == 8)) ? 2 : 0;" guard)
+    string(FIND "${contents}" "mode_ = qualified_shape(rank, N_) ? 2 : 0;" guard)
     if(guard LESS 0)
       message(FATAL_ERROR "Native product guard changed; review probe transformation")
     endif()
@@ -33,7 +33,7 @@ foreach(input IN LISTS inputs)
     else()
       set(probe_mode "mode_ = 0;")
     endif()
-    string(REPLACE "mode_ = (rank == 16 && (N_ == 4 || N_ == 8)) ? 2 : 0;"
+    string(REPLACE "mode_ = qualified_shape(rank, N_) ? 2 : 0;"
       "${probe_mode}" contents "${contents}")
   endif()
   # This explicit experiment evaluates unqualified environments/shapes. Its
@@ -83,3 +83,10 @@ foreach(source one_fermion_se_spgf_all_evals two_fermions_se_spgf_all_evals
     "${XCA_NATIVE_BUILD}/c++/triqs_xca/libtriqs_xca_c.a")
   add_test(NAME ${target} COMMAND ${target})
 endforeach()
+add_executable(native_rank_channels test_channels.cpp)
+target_include_directories(native_rank_channels PRIVATE "${XCA_ROOT}/test/c++" "${XCA_NATIVE_BUILD}/deps/GTest_src/googletest/include")
+target_link_libraries(native_rank_channels PRIVATE native_rank_probe
+  "${XCA_NATIVE_BUILD}/test/c++/libtriqs_xca_test_utils.a"
+  "${XCA_NATIVE_BUILD}/lib/libgtest_main.a" "${XCA_NATIVE_BUILD}/lib/libgtest.a"
+  "${XCA_NATIVE_BUILD}/c++/triqs_xca/libtriqs_xca_c.a")
+add_test(NAME native_rank_channels COMMAND native_rank_channels)
