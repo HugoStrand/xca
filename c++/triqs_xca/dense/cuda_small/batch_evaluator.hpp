@@ -18,7 +18,7 @@ namespace triqs_xca::dense::cuda_small {
     triqs_xca::hyb::Hybridization hyb_;
     int r_, N_, n_, B_;
     DlrOps dlr_;
-    tensor G_, T_, tmp_, GKt_, gc_, tc_, Tmu_, parity_tmp_, lane_;
+    tensor G_, T_, U_, tmp_, GKt_, gc_, tc_, Tmu_, parity_tmp_, lane_;
     tensor_view sum_;
     std::size_t budget_;
     nda::cuarray<complex, 4> Tkaps_, bars_, bars_refl_;
@@ -30,6 +30,7 @@ namespace triqs_xca::dense::cuda_small {
     int active_ = 0, weight_cursor_ = 0, table_cursor_ = 0;
     std::size_t chunks_ = 0, cache_builds_ = 0;
     bool cache_enabled_ = true;
+    bool cached_pairs_ = false;
     std::vector<int> cached_topology_;
     std::vector<long> cached_indices_;
     static int capacity(int b);
@@ -41,12 +42,12 @@ namespace triqs_xca::dense::cuda_small {
     void add_vertex(tensor_const_view in, tensor_view out, bool left, std::function<matrix_const_view(int)> const &value, complex beta = 0.);
     void vertex(int v);
     void edge(int e);
-    void special(int v);
+    void special(int v, tensor_view target);
     double prefactor(Backbone &b) const;
-    void prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    void prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs);
 
     ~BatchEvaluator() { try { dlr_.finish(); } catch (...) {} }
-    void accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output);
+    void accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, tensor_view output, bool pairs);
     std::size_t workspace_bytes() const;
     void set_budget(std::size_t bytes) { budget_ = bytes; }
     int batch_capacity() const { return B_; }

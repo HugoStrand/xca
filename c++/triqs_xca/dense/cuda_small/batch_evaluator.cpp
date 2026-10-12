@@ -23,6 +23,7 @@ namespace triqs_xca::dense::cuda_small {
        dlr_(itops, N_, B_),
        G_(r_ * B_, N_, N_),
        T_(r_ * B_, N_, N_),
+       U_(r_ * B_, N_, N_),
        tmp_(r_ * B_, N_, N_),
        GKt_(r_ * B_, N_, N_),
        gc_(r_ * B_, N_, N_),
@@ -119,9 +120,9 @@ namespace triqs_xca::dense::cuda_small {
       dlr_.convolve(beta_, gc_, tc_, T_);
     });
   }
-  void BatchEvaluator::special(int v) {
-    for (int k = 0; k < n_; ++k) add_vertex(T_, Tkaps_(k, all, all, all), false, [&](int i) { return op(backbones_[i], 0, k); });
-    schedule_.push_back([this] { dlr_.device_ops().zero(T_); });
+  void BatchEvaluator::special(int v, tensor_view target) {
+    for (int k = 0; k < n_; ++k) add_vertex(target, Tkaps_(k, all, all, all), false, [&](int i) { return op(backbones_[i], 0, k); });
+    schedule_.push_back([this, target] { dlr_.device_ops().zero(target); });
     for (int m = 0; m < n_; ++m) {
       schedule_.push_back([this] { dlr_.device_ops().zero(Tmu_); });
       for (int k = 0; k < n_; ++k) {
@@ -136,7 +137,7 @@ namespace triqs_xca::dense::cuda_small {
         else
           schedule_.push_back([this] { dlr_.device_ops().axpy(1., parity_tmp_, Tmu_); });
       }
-      add_vertex(Tmu_, T_, true, [&](int i) { return op(backbones_[i], v, m); }, 1.);
+      add_vertex(Tmu_, target, true, [&](int i) { return op(backbones_[i], v, m); }, 1.);
     }
   }
   double BatchEvaluator::prefactor(Backbone &b) const {
@@ -147,15 +148,15 @@ namespace triqs_xca::dense::cuda_small {
     }
     return p;
   }
-  void BatchEvaluator::prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices) {
+  void BatchEvaluator::prepare(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs) {
     active_ = indices.size();
     std::vector<int> key_topology(topology.begin(), topology.end());
     std::vector<long> key_indices(indices.begin(), indices.end());
-    if (cache_enabled_ && !schedule_.empty() && key_topology == cached_topology_ && key_indices == cached_indices_) return;
+    if (cache_enabled_ && !schedule_.empty() && key_topology == cached_topology_ && key_indices == cached_indices_ && pairs == cached_pairs_) return;
     auto mul = DeviceOps::checked_product;
     auto order = std::size_t(topology.extent(0));
     auto descriptors = mul(active_, DeviceOps::checked_sum(sizeof(Backbone), mul(64 * sizeof(int), mul(order, order))));
-    auto operations = DeviceOps::checked_sum(mul(16, mul(order, order)), DeviceOps::checked_sum(mul(8, mul(n_, n_)), 64));
+    auto operations = DeviceOps::checked_sum(mul(16, mul(order, order)), DeviceOps::checked_sum(mul(pairs ? 16 : 8, mul(n_, n_)), 64));
     reserve_metadata(DeviceOps::checked_sum(descriptors, mul(operations, sizeof(std::function<void()>))));
     cached_topology_.clear();
     cached_indices_.clear();
@@ -173,7 +174,14 @@ namespace triqs_xca::dense::cuda_small {
       vertex(v);
       edge(v);
     }
-    special(v0);
+    if (pairs) schedule_.push_back([this] { dlr_.device_ops().copy(T_, U_); });
+    special(v0, T_);
+    if (pairs) {
+      for (auto &b : backbones_) b.reverse_hyb_line_zero();
+      special(v0, U_);
+      for (auto &b : backbones_) b.reverse_hyb_line_zero();
+      schedule_.push_back([this] { dlr_.device_ops().axpy(-1., U_, T_); });
+    }
     for (int v = v0 + 1; v < 2 * backbones_[0].m; ++v) {
       edge(v - 1);
       vertex(v);
@@ -188,17 +196,18 @@ namespace triqs_xca::dense::cuda_small {
     reserve_metadata(0);
     cached_topology_ = std::move(key_topology);
     cached_indices_  = std::move(key_indices);
+    cached_pairs_ = pairs;
     ++cache_builds_;
   }
   void BatchEvaluator::accumulate(tensor_const_view g, nda::array_const_view<int, 2> topology,
-                                  nda::array_const_view<long, 1> indices, tensor_view output) {
+                                  nda::array_const_view<long, 1> indices, tensor_view output, bool pairs) {
     if (indices.size() == 0 || indices.size() > B_) throw std::invalid_argument("batch index width mismatch");
     sum_.rebind(output);
     try {
       Backbone check(topology, n_);
       for (long i : indices) check.set_flat_index(i, hyb_.poles);
       dlr_.begin();
-      prepare(topology, indices);
+      prepare(topology, indices, pairs);
       dlr_.wait_for_default_uploads();
       dlr_.device_ops().broadcast(g, G_, indices.size());
       for (auto const &operation : schedule_) operation();
@@ -214,6 +223,7 @@ namespace triqs_xca::dense::cuda_small {
     auto add   = [&](auto const &a) { bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(a.size(), sizeof(complex))); };
     add(G_);
     add(T_);
+    add(U_);
     add(tmp_);
     add(GKt_);
     add(gc_);

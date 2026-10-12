@@ -135,6 +135,41 @@ TEST(CudaSmallBatch, NativeOneTimeRangesMatchIndexedWork) {
   }
 }
 
+TEST(CudaSmallBatch, PairedBatchesKeepMethodCacheAndRangeOrder) {
+  using namespace dense_cuda_bench;
+  for (int N : {4,8}) {
+    Options options; options.N=N;
+    Fixture f(options);
+    triqs_xca::dense::cuda_small::DiagramEvaluator candidate(options.beta,1e-12,f.itops,f.poles,f.coefficients,*f.fset);
+    auto reference=baseline(f);
+    auto t=topology(6,"crossing");
+    long total=candidate.get_num_self_energy_backbones(t), group=total/64;
+    for (int count : {8,32,128,129}) {
+      auto ordinal=select_indices(total/2,count,1729);
+      nda::vector<long> indices(count);
+      for (int i=0; i<count; ++i) indices(i)=2*(ordinal(i)/group)*group+ordinal(i)%group;
+      indices(count-1)=indices(0);
+      auto expected=reference.evaluate("pairs",t,indices);
+      for (int repeat=0; repeat<2; ++repeat) {
+        auto ordinary=candidate.compute_self_energy(f.G,t,indices);
+        EXPECT_NO_THROW(compare(tensor(ordinary[0].data()),reference.evaluate("se",t,indices)));
+        auto before=candidate.batch_chunks();
+        auto paired=candidate.compute_self_energy_by_pairs(f.G,t,indices);
+        EXPECT_NO_THROW(compare(tensor(paired[0].data()),expected)) << "N=" << N << " count=" << count;
+        EXPECT_GT(candidate.batch_chunks(),before);
+      }
+    }
+    long first=group-5,last=2*group+9;
+    std::vector<long> selected;
+    for (long i=first; i<last; ++i) if ((i/group)%2==0) selected.push_back(i);
+    nda::vector<long> indices(selected.size());
+    for (long i=0; i<indices.size(); ++i) indices(i)=selected[i];
+    auto expected=reference.evaluate("pairs",t,indices);
+    auto actual=candidate.compute_self_energy_by_pairs_range(f.G,t,first,last);
+    EXPECT_NO_THROW(compare(tensor(actual[0].data()),expected));
+  }
+}
+
 #else
 TEST(CudaSmallBatch, DISABLED_RequiresCudaSmall) {}
 #endif

@@ -4,6 +4,11 @@
 #include "dlr_ops.hpp"
 #include "batch_evaluator.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
+#ifdef CLAIR_C2PY_WRAP_GEN
+#define XCA_SMALL_CXX_ONLY __attribute__((annotate("c2py_ignore")))
+#else
+#define XCA_SMALL_CXX_ONLY
+#endif
 #include <triqs/gfs.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/hyb.hpp>
@@ -27,7 +32,7 @@ namespace triqs_xca::dense::cuda_small {
     int batch_capacity_ = 128;
     std::size_t batch_chunks_ = 0;
     std::size_t workspace_budget_ = 512 * 1024 * 1024;
-    bool try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+    bool try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs);
 
     tensor G_, T_, U_, sum_, tmp_, GKt_, gc_, tc_, Tmu_;
     nda::cuarray<complex, 4> Tkaps_, bars_, bars_refl_;
@@ -60,7 +65,7 @@ namespace triqs_xca::dense::cuda_small {
       nda::array_const_view<long, 1> indices, bool all, long first, long last);
 
     public:
-    DiagramEvaluator(double beta, double eps, cppdlr::imtime_ops &itops, nda::vector_const_view<double> poles,
+    XCA_SMALL_CXX_ONLY DiagramEvaluator(double beta, double eps, cppdlr::imtime_ops &itops, nda::vector_const_view<double> poles,
                      nda::array_const_view<complex, 3> coefficients, FSet &fset);
     template <bool C>
     DiagramEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<complex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
@@ -69,7 +74,7 @@ namespace triqs_xca::dense::cuda_small {
     DiagramEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<complex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
                      triqs::atom_diag::atom_diag<C> const &ad, std::vector<triqs::operators::many_body_operator_complex> const &operators,
                      nda::array_const_view<complex, 3> interaction_coefficients);
-    long get_num_self_energy_backbones(Backbone &b);
+    XCA_SMALL_CXX_ONLY long get_num_self_energy_backbones(Backbone &b);
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
     ~DiagramEvaluator() {
       try { dlr_.finish(); } catch (...) {}
@@ -107,9 +112,9 @@ namespace triqs_xca::dense::cuda_small {
     nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology);
     nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology, long index);
     nda::array<complex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
-    nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
+    XCA_SMALL_CXX_ONLY nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
                                            nda::array_const_view<complex, 3> kap, bool fermionic = true);
-    nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
+    XCA_SMALL_CXX_ONLY nda::array<complex, 3> eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
                                            nda::array_const_view<complex, 3> kap, long index, bool fermionic = true);
     template <bool C>
     nda::array<complex, 3> compute_one_time_correlator(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
@@ -118,4 +123,5 @@ namespace triqs_xca::dense::cuda_small {
                                                        nda::array_const_view<long, 1> indices);
   };
 } // namespace triqs_xca::dense::cuda_small
+#undef XCA_SMALL_CXX_ONLY
 #endif

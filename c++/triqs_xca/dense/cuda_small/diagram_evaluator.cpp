@@ -274,8 +274,8 @@ namespace triqs_xca::dense::cuda_small {
     if (bytes < workspace_bytes()) throw std::invalid_argument("CUDA-small budget is below resident workspace");
     workspace_budget_ = bytes;
   }
-  bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices) {
-    // Qualification is currently local and restricted to ordinary SE, rank16,
+  bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool pairs) {
+    // Qualification is currently local and restricted to ordinary/paired SE, rank16,
     // full-fermion N4/N8. Other cases retain the native sequential traversal.
     if (n_int_ || r_ != 16 || (N_ != 4 && N_ != 8)) return false;
     int slot = indices.size() == 128 ? 2 : indices.size() == 32 ? 1 : indices.size() == 8 ? 0 : -1;
@@ -296,7 +296,7 @@ namespace triqs_xca::dense::cuda_small {
       }
       auto other = resident - batch->workspace_bytes();
       batch->set_budget(workspace_budget_ > other ? workspace_budget_ - other : 0);
-      batch->accumulate(G_, topology, indices, sum_);
+      batch->accumulate(G_, topology, indices, sum_, pairs);
       ++batch_chunks_;
       return true;
     } catch (std::length_error const &) {
@@ -324,12 +324,18 @@ namespace triqs_xca::dense::cuda_small {
     nda::vector<long> chunk(128);
     for (long offset = 0; offset < count;) {
       long remaining = count - offset;
+      if (pairs && all) {
+        long index = first + offset;
+        long until_boundary = group - index % group;
+        if ((index / group) % 2 != 0) { offset += std::min(remaining, until_boundary); continue; }
+        remaining = std::min(remaining, until_boundary);
+      }
       int width = 1;
-      if (!pairs) for (int eligible : {128, 32, 8})
+      for (int eligible : {128, 32, 8})
         if (eligible <= batch_capacity_ && eligible <= remaining) { width = eligible; break; }
       for (int lane = 0; lane < width; ++lane) chunk(lane) = all ? first + offset + lane : indices(offset + lane);
       auto selected = chunk(nda::range(width));
-      if (pairs || width == 1 || !try_batch(topology, selected)) {
+      if (width == 1 || !try_batch(topology, selected, pairs)) {
         for (long index : selected)
           if (!pairs || !all || (index / group) % 2 == 0) evaluate(b, index, pairs);
       }
