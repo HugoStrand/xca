@@ -4,6 +4,8 @@
 #include <cstdlib>
 #ifdef XCA_HAVE_CUDA_SMALL
 #include "kernels.hpp"
+#include "qualification.hpp"
+#include <cusolver_common.h>
 #include <cstdint>
 #include <limits>
 #include <nda/blas.hpp>
@@ -68,6 +70,19 @@ namespace triqs_xca::dense::cuda_small {
       check(cublasCreate(&handle_), "create handle");
       check(cublasSetStream(handle_, stream_), "set default stream");
       check(cublasSetPointerMode(handle_, CUBLAS_POINTER_MODE_HOST), "set scalar pointer mode");
+      cudaDeviceProp property{};
+      int runtime = 0, driver = 0;
+      nda::device_error_check(cudaGetDeviceProperties(&property, context_.device()), "CUDA-small device properties");
+      nda::device_error_check(cudaRuntimeGetVersion(&runtime), "CUDA-small runtime version");
+      nda::device_error_check(cudaDriverGetVersion(&driver), "CUDA-small driver version");
+      std::array<int, 3> blas{}, solver{};
+      for (int i = 0; i < 3; ++i) {
+        check(cublasGetProperty(static_cast<libraryPropertyType>(i), &blas[i]), "cuBLAS library version");
+        if (cusolverGetProperty(static_cast<libraryPropertyType>(i), &solver[i]) != CUSOLVER_STATUS_SUCCESS)
+          throw std::runtime_error("CUDA-small cuSOLVER library version failed");
+      }
+      QualificationEnvironment environment{property.name, property.major, property.minor, CUDART_VERSION, runtime, driver, blas, solver};
+      if (!qualified_environment(environment)) mode_ = 0;
     } catch (...) {
       cublasDestroy(handle_);
       handle_ = nullptr;

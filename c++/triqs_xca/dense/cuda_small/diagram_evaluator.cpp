@@ -309,6 +309,7 @@ namespace triqs_xca::dense::cuda_small {
     // Qualification is currently local and restricted to ordinary/paired SE, rank16,
     // full-fermion N4/N8. Other cases retain the native sequential traversal.
     if (r_ != 16 || (N_ != 4 && N_ != 8)) return false;
+    if (dlr_.device_ops().mode() != 2) return false;
     int slot = indices.size() == 128 ? 2 : indices.size() == 32 ? 1 : indices.size() == 8 ? 0 : -1;
     if (slot < 0) return false;
     dlr_.finish(); // Caller-owned input/output are ready for the batch stream.
