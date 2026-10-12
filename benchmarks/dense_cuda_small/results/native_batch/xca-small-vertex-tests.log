@@ -1,0 +1,24 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 16: dense/cuda_small/batch_api
+1/9 Test #16: dense/cuda_small/batch_api ........................   Passed   39.21 sec
+    Start 36: dense/cuda_small/one_fermion_se_spgf_all_evals
+2/9 Test #36: dense/cuda_small/one_fermion_se_spgf_all_evals ....   Passed    1.84 sec
+    Start 37: dense/cuda_small/two_fermions_se_spgf_all_evals
+3/9 Test #37: dense/cuda_small/two_fermions_se_spgf_all_evals ...   Passed    1.29 sec
+    Start 38: dense/cuda_small/unitary_invariance_all_evals
+4/9 Test #38: dense/cuda_small/unitary_invariance_all_evals .....   Passed    2.37 sec
+    Start 39: dense/cuda_small/dynint_spin_rotation
+5/9 Test #39: dense/cuda_small/dynint_spin_rotation .............   Passed    3.00 sec
+    Start 40: dense/cuda_small/flat_index_range
+6/9 Test #40: dense/cuda_small/flat_index_range .................   Passed    1.35 sec
+    Start 41: dense/cuda_small/propagator_layout
+7/9 Test #41: dense/cuda_small/propagator_layout ................   Passed    0.53 sec
+    Start 42: dense/cuda_small/dense_dynint_parity
+8/9 Test #42: dense/cuda_small/dense_dynint_parity ..............   Passed    0.62 sec
+    Start 43: dense/cuda_small/dense_correlator_statistics
+9/9 Test #43: dense/cuda_small/dense_correlator_statistics ......   Passed    0.96 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =  51.17 sec
