@@ -421,7 +421,7 @@ class Solver(object):
         #if is_root(): print(f'done.')
 
 
-    def _native_range_call(self, operation):
+    def _native_range_call(self, operation, phase="Native dense evaluation"):
         result, error = None, None
         try:
             result = operation()
@@ -430,8 +430,8 @@ class Solver(object):
         failed = mpi.all_reduce(int(error is not None))
         if failed:
             if error is not None:
-                raise RuntimeError(f"Native dense evaluation failed: {error}") from error
-            raise RuntimeError("Native dense evaluation failed on another MPI rank")
+                raise RuntimeError(f"{phase} failed: {error}") from error
+            raise RuntimeError(f"{phase} failed on another MPI rank")
         return result
 
     def solve(self, max_order, tol=1e-4, maxiter=10, mix=1., hyb_tol=None, hyb_comp=True, normalization='classic', spgf_max_order=None, verbose=True):
@@ -490,7 +490,12 @@ class Solver(object):
         #if verbose and is_root(): print(f'hyb_tol = {self.hyb_tol:2.2E}')
 
         self.fit_hybridization(tol=self.hyb_tol, compression=self.hyb_comp, verbose=verbose)
-        self.init_diagram_evaluator() # FIXME! Evaluator takes hyb poles and coeffs in constructor
+        # solve() is collective; coordinate GPU setup errors before any rank enters
+        # the iterations. Standalone init_diagram_evaluator() remains local.
+        if self.dense_backend != 'cpu':
+            self._native_range_call(self.init_diagram_evaluator, phase="Dense GPU initialization")
+        else:
+            self.init_diagram_evaluator() # FIXME! Evaluator takes hyb poles and coeffs in constructor
 
         iter = 0
         for iter in range(1, maxiter+1):

@@ -106,6 +106,19 @@ class BackendTests(unittest.TestCase):
                 _configure_gpu_device('cuda_small',2)
 
     @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
+    def test_gpu_initialization_failure_is_collective(self):
+        from triqs_xca import _dense_cuda as runtime
+        for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
+            S=make_solver(backend)
+            if mpi.rank==0: S.gpu_device=runtime.cuda_device_count()
+            with self.assertRaisesRegex(RuntimeError,'Dense GPU initialization failed'):
+                S.solve(max_order=1,maxiter=1,verbose=False,hyb_comp=False)
+            mpi.barrier() # Every rank must leave the failed initialization.
+            S.gpu_device=None
+            S.solve(max_order=1,maxiter=1,verbose=False,hyb_comp=False)
+            self.assertTrue(np.isfinite(S.G_tau['0'].data).all())
+
+    @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
     def test_visible_gpu_device_selection(self):
         from triqs_xca import _dense_cuda as runtime
         current=runtime.cuda_current_device()
