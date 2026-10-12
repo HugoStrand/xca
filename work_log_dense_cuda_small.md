@@ -457,3 +457,36 @@ and three-process/rank/seed controls for actual dispatch choices. Then progress 
 at c++/triqs_xca/dense/cuda_small, retaining full native paired/dynamic/SPGF/correlator
 scope, bounded resource/submission APIs, Python MPI integration and three build modes.
 M1 is incomplete, goal active. Do not mistake this screening report for completion.
+
+## Arithmetic diagnosis and native production foundation — 2026-10-12
+
+Control/evidence commit38d123d: N8 tile4 products match sampled cuBLAS primitives
+exactly and current-source full screen passes28 groups, crossing B128 order6/8
+20.169/27.724ms (library45.539/61.842). Broader repeats/ranks/seeds pending. Preliminary
+tile4 manifest explicitly excluded because its binary predates finalized control
+source; source-matched rebuild/run supersedes it. All negative controls retained.
+N2 per-lane solves restore parity with wide rank GEMMs; rank-only splitting does not.
+RHS groups2/4/8/16 fail strict evaluator checks; group3 fails coefficient checks.
+Group1 extended N2/N4/N8 DLR tests pass. Three fresh N2 processes pass8 high-order
+case groups each; per-lane solve launch cost leaves it slower than CPU (~95/131ms).
+
+Production code7d00486 adds c++/triqs_xca/dense/cuda_small with owned handles/stream
+and full native evaluator API. This is a sequential traversal foundation, not a
+completed optimized evaluator. No baseline delegation: native dynamic/paired SE,
+SPGF and correlators use the new primitives, explicit upload-event handoff and owned
+flat accumulation. Solver status capacity drains safely rather than rejecting long
+traversals. Kernel tile4; provisional rank16 N4/N8 custom products, other shapes
+library; vertex primitives currently library. Batch work policies remain pending.
+Eight reused native CTest entries pass12.24s, including dynamic spin rotation/parity,
+correlator statistics, layout and flat-index checks. CPU static library build also
+passes and AUTO skips CUDA compiler discovery when NDA lacks CUDA. CUDA-small static
+build passes; optionAUTO/ON/OFF and export dependency introduced. No bindings/Python
+or installed-consumer claim. Original23 protected hashes still unchanged.
+
+All build/test handles from this checkpoint completed; no GPU work left running.
+Supervisor remains active. Next: integrate batched ordinary SE into common native
+backend with qualified N2 solve policy/N4-N8 tile4 and conservative library routes;
+remove experimental resource limits, implement actual-width tails/bounded caching,
+and maintain full native method functionality. Extend build/install/sanitizer tests,
+then bindings/Solver bounded MPI APIs and persistence. Expand rank/order/seed/repeat
+qualification alongside that work. M1/M2 qualification is still incomplete; goalactive.

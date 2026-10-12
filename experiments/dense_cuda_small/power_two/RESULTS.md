@@ -50,3 +50,22 @@ resource/profiling controls and target-hardware qualification remain outstanding
 Keep native/library alternatives and the whole baseline fallback available while
 building full evaluator functionality. Preserve the failed candidates for later
 block-sparse work; do not silently promote them.
+
+## Arithmetic controls and surviving candidates
+
+The tile4 build groups each real-dot stage in four-term chunks. On sampled primitive
+inputs it agrees exactly with cuBLAS for all tested dimensions2–64. A current-source
+N8 full-API screen passes28 groups; crossing order6/8 B12820.169/27.724ms versus
+library45.539/61.842ms. Three-process N8 repeats and wider qualification remain pending.
+The earlier preliminary tile4 run is explicitly excluded from qualification in its
+manifest because the binary predates finalized diagnostic source; the current run
+and primitive source/binary hashes supersede it.
+
+N2 diagnostics: per-lane rank GEMMs alone fail. Per-lane LU solves, with wide rank
+GEMMs retained, pass. Groups of2/4/8/16 RHS lanes fail the strict evaluator gate;
+non-divisible group3 DLR coefficient checks also fail (negative controls retained).
+Group1 plus per-lane rank GEMMs passes extended N2/N4/N8 DLR tests, including tails
+and delayed uploads. Three independent N2 per-lane-solve processes pass8 high-order
+backend/case groups each, but full batches cost approximately95/131ms at orders6/8,
+slower than matching CPU. This is an arithmetic-safe candidate with substantial
+launch overhead, not a performance recommendation. No tolerance was changed.
