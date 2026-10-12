@@ -95,7 +95,7 @@ def main():
                   gpu=capture(['nvidia-smi','--query-gpu=name,driver_version,memory.total','--format=csv,noheader']),
                   libraries=capture(['ldd',str(binary)]),
                   environment={k:env.get(k) for k in ['OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','TRIQS_ROOT','LD_LIBRARY_PATH',
-                                                     'XCA_BATCH_CAPACITY','XCA_BATCH_RANK_MODE','XCA_BATCH_CACHE','XCA_FUSED_MODE','XCA_SOLVE_MODE']},
+                                                     'XCA_BATCH_CAPACITY','XCA_BATCH_RANK_MODE','XCA_BATCH_CACHE','XCA_FUSED_MODE','XCA_SOLVE_MODE','XCA_POW2_RANK_LANES','XCA_POW2_SOLVE_LANES','XCA_POW2_SOLVE_GROUP']},
                   profile=args.profile)
     print('Running:', ' '.join(cmd),flush=True)
     with (out/'samples.csv').open('w') as stdout,(out/'stderr.log').open('w') as stderr:

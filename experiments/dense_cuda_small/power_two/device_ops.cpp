@@ -51,6 +51,10 @@ namespace xca_experiments::power_two {
        rank_(checked_blas_int(rank)),
        B_(capacity) {
     checked_product(count_, sizeof(complex));
+    if (auto value = std::getenv("XCA_POW2_RANK_LANES")) {
+      require(std::string(value) == "0" || std::string(value) == "1", "rank lanes must be 0 or 1");
+      rank_lanes_ = std::string(value) == "1";
+    }
     if (auto value = std::getenv("XCA_FUSED_MODE")) {
       if (std::string(value) != "0" && std::string(value) != "1" && std::string(value) != "2") throw std::invalid_argument("fused mode must be0,1,2");
       mode_ = std::atoi(value);
@@ -155,6 +159,15 @@ namespace xca_experiments::power_two {
     disjoint(op.data(), checked_product(rank_, rank_), out.data(), count_);
     // C-order Y=op*X becomes Y^T=X^T*op^T in column-major storage.
     auto av = nda::cucplx(alpha), bv = nda::cucplx(beta);
+    if (rank_lanes_) {
+      // Keep each lane's logical GEMM shape equal to the serial evaluator while
+      // retaining interleaved storage. Leading dimensions still span all lanes.
+      for (int lane = 0; lane < B_; ++lane)
+        check(cublasZgemm(handle_, CUBLAS_OP_N, CUBLAS_OP_N, stride_, rank_, rank_, &av,
+                         nda::cucplx(in.data() + lane * stride_), stride_ * B_, nda::cucplx(op.data()), rank_, &bv,
+                         nda::cucplx(out.data() + lane * stride_), stride_ * B_), "lane rank transform");
+      return;
+    }
     check(cublasZgemm(handle_, CUBLAS_OP_N, CUBLAS_OP_N, stride_ * B_, rank_, rank_, &av, nda::cucplx(in.data()), stride_ * B_,
                       nda::cucplx(op.data()), rank_, &bv, nda::cucplx(out.data()), stride_ * B_),
           "rank transform");

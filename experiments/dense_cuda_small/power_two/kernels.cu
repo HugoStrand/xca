@@ -19,14 +19,18 @@ namespace {
     double re = 0., im = 0.;
     // Probe grouped real dot products rather than interleaved complex products.
     // All public API parity gates remain required; no weaker GEMM tolerance.
+    constexpr int tile = XCA_POW2_DOT_TILE == 0 || XCA_POW2_DOT_TILE > N ? N : XCA_POW2_DOT_TILE;
 #pragma unroll
-    for (int k = 0; k < N; ++k) re = __fma_rn(cuCreal(a[i * N + k]), cuCreal(b[k * N + j]), re);
+    for (int first = 0; first < N; first += tile) {
 #pragma unroll
-    for (int k = 0; k < N; ++k) re = __fma_rn(-cuCimag(a[i * N + k]), cuCimag(b[k * N + j]), re);
+      for (int k = first; k < first + tile; ++k) re = __fma_rn(cuCreal(a[i * N + k]), cuCreal(b[k * N + j]), re);
 #pragma unroll
-    for (int k = 0; k < N; ++k) im = __fma_rn(cuCreal(a[i * N + k]), cuCimag(b[k * N + j]), im);
+      for (int k = first; k < first + tile; ++k) re = __fma_rn(-cuCimag(a[i * N + k]), cuCimag(b[k * N + j]), re);
 #pragma unroll
-    for (int k = 0; k < N; ++k) im = __fma_rn(cuCimag(a[i * N + k]), cuCreal(b[k * N + j]), im);
+      for (int k = first; k < first + tile; ++k) im = __fma_rn(cuCreal(a[i * N + k]), cuCimag(b[k * N + j]), im);
+#pragma unroll
+      for (int k = first; k < first + tile; ++k) im = __fma_rn(cuCimag(a[i * N + k]), cuCreal(b[k * N + j]), im);
+    }
     return make_cuDoubleComplex(re, im);
   }
   __device__ void store(cuDoubleComplex *out, int element, cuDoubleComplex value, cuDoubleComplex alpha, cuDoubleComplex beta) {

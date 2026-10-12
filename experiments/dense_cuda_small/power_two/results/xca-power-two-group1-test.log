@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-power-two
+Test project /home/hugstr/dev/xca/cbuild-experiment-power-two
+    Start 4: batch_dlr
+1/1 Test #4: batch_dlr ........................   Passed    1.53 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.53 sec

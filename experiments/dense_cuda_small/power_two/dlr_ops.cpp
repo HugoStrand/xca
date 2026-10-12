@@ -4,6 +4,7 @@
 #include "profile_range.hpp"
 #ifdef NDA_HAVE_CUDA
 #include <cmath>
+#include <cstdlib>
 #include <cppdlr/dlr_kernels.hpp>
 #include <nda/lapack.hpp>
 #include <stdexcept>
@@ -24,7 +25,18 @@ namespace xca_experiments::power_two {
        hg_(r_ * B_, N_, N_),
        product_(r_ * B_, N_, N_),
        cross_(r_ * B_, N_, N_),
-       status_(256) {
+       status_(DeviceOps::checked_product(256, capacity)) {
+    if (auto value = std::getenv("XCA_POW2_SOLVE_LANES")) {
+      if (std::string(value) != "0" && std::string(value) != "1") throw std::invalid_argument("solve lanes must be 0 or 1");
+      solve_group_ = std::string(value) == "1" ? 1 : 0;
+    }
+    if (auto value = std::getenv("XCA_POW2_SOLVE_GROUP")) {
+      std::string text(value);
+      std::size_t consumed = 0;
+      int group = std::stoi(text, &consumed);
+      if (consumed != text.size() || group < 1 || group > 128) throw std::invalid_argument("solve group must be 1..128");
+      solve_group_ = group;
+    }
     // Preserve the cached LU's C layout and NDA's corresponding getrs transpose
     // convention. Reordering factors as if they were the unfactored matrix is
     // wrong.
@@ -77,11 +89,16 @@ namespace xca_experiments::power_two {
     ProfileRange phase("xca.phase.vals2coefs");
     validate(values);
     validate(coefficients);
-    if (used_status_ == status_.size()) throw std::invalid_argument("serial_stream solver status capacity exceeded");
+    int group = solve_group_ ? std::min(solve_group_, B_) : B_;
+    int calls = (B_ + group - 1) / group;
+    if (calls > status_.size() - used_status_) throw std::invalid_argument("solver status capacity exceeded");
     ops_.to_fortran(matrix_const_view{nda::reshape(values, r_, columns_)}, rhs_);
-    auto result = cusolverDnZgetrs(solver_, CUBLAS_OP_T, r_, columns_, nda::cucplx(lu_.data()), r_, pivots_.data(), nda::cucplx(rhs_.data()), r_,
-                                   status_.data() + used_status_++);
-    if (result != CUSOLVER_STATUS_SUCCESS) throw std::runtime_error("serial_stream getrs submission failed");
+    for (int first = 0; first < B_; first += group) {
+      int width = std::min(group, B_ - first) * N_ * N_;
+      auto result = cusolverDnZgetrs(solver_, CUBLAS_OP_T, r_, width, nda::cucplx(lu_.data()), r_, pivots_.data(),
+                                    nda::cucplx(rhs_.data() + long(first) * N_ * N_ * r_), r_, status_.data() + used_status_++);
+      if (result != CUSOLVER_STATUS_SUCCESS) throw std::runtime_error("getrs submission failed");
+    }
     ops_.from_fortran(rhs_, matrix_view{nda::reshape(coefficients, r_, columns_)});
   }
 

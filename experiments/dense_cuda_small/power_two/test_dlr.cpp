@@ -6,11 +6,11 @@
 TEST(BatchDlr, WideRhsAndRankTransformsMatchIndependentLanes) {
   using namespace xca_experiments::power_two;
   constexpr auto a = nda::range::all;
-  for (double lambda : {10., 40.})
+  for (int N : {2, 4, 8}) for (double lambda : {10., 40.})
     for (int B : {1, 8, 32, 128}) {
-      SCOPED_TRACE(::testing::Message() << "lambda=" << lambda << " B=" << B);
+      SCOPED_TRACE(::testing::Message() << "N=" << N << " lambda=" << lambda << " B=" << B);
       cppdlr::imtime_ops host(lambda, cppdlr::build_dlr_rf(lambda, 1e-12, false), false);
-      int r = host.rank(), N = 4;
+      int r = host.rank();
       DlrOps batched(host, N, B);
       nda::array<complex, 3> coeff(r * B, N, N), second(r * B, N, N), values(r * B, N, N);
       for (int b = 0; b < B; ++b) {

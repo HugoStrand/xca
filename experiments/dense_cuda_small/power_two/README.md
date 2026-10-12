@@ -40,3 +40,11 @@ gate before timing 100 operations after ten warmups. This measures primitive tim
 not evaluator time; do not infer a production cutoff from it. Repeat in separate
 processes and retain source/binary hashes for decisions. Primitive tests additionally
 cover both vertex directions, complex alpha, and beta=0/1.
+
+Numerical controls: `XCA_POW2_RANK_LANES=1` splits rank GEMMs into serial-shaped
+operations with interleaved leading dimensions; `XCA_POW2_SOLVE_LANES=1` splits
+wide RHS into one library solve per lane. Defaults are zero. These diagnose rounding
+versus launch overhead, with private status slots for every submitted solve.
+`-DXCA_POW2_DOT_TILE=4` changes the grouped real-dot accumulation to tiles of four
+(default0 keeps the original whole-dimension grouping); separate build directories
+preserve controls. Candidate names record tile and runtime width settings.

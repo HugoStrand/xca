@@ -28,6 +28,7 @@ namespace xca_experiments::power_two {
   class DeviceOps {
     int r_, N_, stride_, count_, rank_, B_;
     int mode_ = 1;
+    bool rank_lanes_ = false;
     using Key = std::tuple<complex const *, complex const *, complex *, bool>;
     struct Tables {
       nda::cuvector<complex const *> a, b;

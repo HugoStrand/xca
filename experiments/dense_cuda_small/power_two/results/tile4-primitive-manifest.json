@@ -1,0 +1,26 @@
+{
+  "dot_tile": 4,
+  "architecture": 86,
+  "scope": "single-process A4000 primitive screen",
+  "sources_sha256": {
+    "experiments/dense_cuda_small/power_two/test_fusion.cpp": "592970b77d99940ed251ad667da57e92b6e7258db17906f26448f1a469acab0b",
+    "experiments/dense_cuda_small/power_two/device_ops.cpp": "67e90a2ec56473aa236dc1c723c6909136751a91e6f7d3db5de251e18bc74b06",
+    "experiments/dense_cuda_small/power_two/diagram_evaluator.cpp": "13b841bfd6733d436a68197e0804e71fb89f424920e71020157a2b1a240f4457",
+    "experiments/dense_cuda_small/power_two/benchmark.cpp": "49ff657caaf0f56d6ca867519f6b2c5bb5209fe63fcdabb579eb2b693e946185",
+    "experiments/dense_cuda_small/power_two/primitive_benchmark.cpp": "54a60b0ceba33479b22bef3d5483870adb00acbc1eb0cc0ac27e043364ab694a",
+    "experiments/dense_cuda_small/power_two/test_dlr.cpp": "ef98e9c99c2b9a147d8b831f065d147d7b621c134d972a70fd368efbe04f3680",
+    "experiments/dense_cuda_small/power_two/dlr_ops.cpp": "f0730ea024dde5475b1428a82278f3371a0767c7553389b9600399648504a1af",
+    "experiments/dense_cuda_small/power_two/test_api.cpp": "3340899b3a84aeadd09e3137bc6393eea10ad5a72cad4cc251edf60520215188",
+    "experiments/dense_cuda_small/power_two/test_adapter.hpp": "edcdb49ff508b83f74bd33e25121d772a4f7c21777614e84176a4ef7421a6f41",
+    "experiments/dense_cuda_small/power_two/device_ops.hpp": "d869c2c8a5fc18be5b247b1aa8382098849e3a00b92ec2bde349ba42c86abb73",
+    "experiments/dense_cuda_small/power_two/diagram_evaluator.hpp": "6939ede0b5ece0f6e3794bad19e3c35135eefc2f05c2b1298e2a900e0f2de581",
+    "experiments/dense_cuda_small/power_two/kernels.hpp": "f65ad53e666683cb9e6ed048d1024da7416b5e44073b264a304b56f09a18a8f3",
+    "experiments/dense_cuda_small/power_two/dlr_ops.hpp": "45fd1f01c6684ca20aa891eb693d9ca29b5f8a886d68d4016879ed7d68cd2d85",
+    "experiments/dense_cuda_small/power_two/profile_range.hpp": "ee756384a3501ebb2567b1bdc4294a9b00a7575841e097ab10d74b5f16c0b62f",
+    "experiments/dense_cuda_small/power_two/kernels.cu": "3993e5fd2078d39a4e7452616212a8729a345f31b1c99ecece0315f8c519c7d9",
+    "experiments/dense_cuda_small/power_two/CMakeLists.txt": "2a684427fa13b2a04dbdc0c59f4befed914ef72e179593bc061c7040957b5897",
+    "experiments/dense_cuda_small/index_batch/device_ops.cpp": "741323160333af13ee1429d4c5748ccb27e484289027880ea0318d41e4337872",
+    "experiments/dense_cuda_small/index_batch/device_ops.hpp": "88a61ba0aec9fe8b4253f25c20a670aa73f07c16e99845f87df449a75a2caae5"
+  },
+  "binary_sha256": "d8da3b3eb5ece1b886ec4f66441b231ed332dfbf5b248de39429cdf3eb488a34"
+}

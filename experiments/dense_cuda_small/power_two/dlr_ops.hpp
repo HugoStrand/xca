@@ -23,6 +23,7 @@ namespace xca_experiments::power_two {
     cusolverDnHandle_t solver_ = nullptr;
     nda::vector<int, nda::heap<nda::mem::Unified>> status_;
     int used_status_ = 0;
+    int solve_group_ = 0;
     void validate(tensor_const_view input) const;
 
     public:

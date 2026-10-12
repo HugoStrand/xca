@@ -1,0 +1,1 @@
+fixture,backend,N,r,n,p,beta,lambda,order,topology,method,requested_indices,indices,total_indices,index_list,sample,wall_ms,ns_per_index,setup_ms,context_ms,owned_bytes,result_norm,max_abs_error,relative_error,cpu_abs_error,cpu_relative_error,index_cpu_abs_error,index_cpu_relative_error,seed

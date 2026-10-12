@@ -11,7 +11,10 @@ int main(int argc, char **argv) {
     p->set_cache_enabled(cache);
     int mode = 1;
     if (auto value = std::getenv("XCA_FUSED_MODE")) mode = dense_cuda_bench::integer(value, 0, 2);
-    return dense_cuda_bench::Candidate{"power_two_m" + std::to_string(mode) + "_b" + std::to_string(b) + (cache ? "" : "_uncached"),
+    std::string controls = "_tile" + std::to_string(XCA_POW2_DOT_TILE);
+    for (auto key : {"XCA_POW2_RANK_LANES", "XCA_POW2_SOLVE_LANES", "XCA_POW2_SOLVE_GROUP"})
+      if (auto value = std::getenv(key)) controls += std::string("_") + key + "=" + value;
+    return dense_cuda_bench::Candidate{"power_two_m" + std::to_string(mode) + "_b" + std::to_string(b) + (cache ? "" : "_uncached") + controls,
                                        [p, &f](auto const &m, auto const &t, auto const &ix) {
                                          if (m != "se") throw std::invalid_argument("power_two supports ordinary SE only");
                                          return dense_cuda_bench::tensor(p->compute_self_energy(f.G, t, ix)[0].data());
