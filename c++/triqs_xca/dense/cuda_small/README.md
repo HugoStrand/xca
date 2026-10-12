@@ -53,3 +53,24 @@ through member cleanup and restores the caller's selection. Device-switch reject
 and restoration have a two-GPU regression, skipped on the single-GPU local machine.
 Independent instances and cross-thread destruction are tested locally; concurrent
 calls on the same instance remain unsupported.
+
+Memory reporting separates `device_workspace_bytes()` (owned device array payloads),
+`unified_workspace_bytes()` (owned solver status), and
+`host_workspace_bound_bytes()` (model snapshots and conservative metadata bounds).
+`workspace_bytes()` combines these categories for the resident budget. Host bounds
+include callback payloads, pointer-table objects and the maximum size of cppdlr's
+six private lazy time-domain caches without materializing them. Schedule-vector
+replacement is checked while its old allocation is still live. Small inline callback
+captures may be counted twice, deliberately conservatively.
+
+This is an application storage budget. CUDA-library/context storage, allocator
+bookkeeping, retained shared mesh data and caller inputs/results are excluded.
+Constructor setup and per-call host staging are not a total process-memory cap;
+correlator resize preflight separately bounds its endpoint/output replacement peaks.
+Nsight captures quantify opaque library allocations and unified migrations.
+Free-device-memory admission/capacity selection remains under audit.
+
+`Solver.solve()` coordinates GPU initialization failures before entering MPI
+iterations. Direct `init_diagram_evaluator()` remains local. Two-rank tests inject an
+invalid ordinal on one rank, require coherent failure, then recover and solve with a
+valid device. This does not establish multi-device hardware behavior.

@@ -788,3 +788,42 @@ initialization-failure audit (keep standalone initialization noncollective); upd
 MPI/install/full-suite validation after remaining changes; requirement-by-requirement
 completion audit. GH200/multi-GPU qualification unavailable locally and explicitly
 provisional; goal active, original baseline and all experiments preserved.
+
+## Collective GPU setup and owned-memory categories — 2026-10-12
+
+Solver.solve now coordinates GPU evaluator/device initialization failures across all
+MPI ranks before iterations. Standalone init_diagram_evaluator stays noncollective.
+A real two-rank test assigns an invalid ordinal only on rank0 for both CUDA backends,
+requires all ranks to leave initialization with an error, then resets the preference
+and solves successfully. Serial and two-rank backend scripts pass11 tests each.
+Code4837d50 and retained evidence627e5ce are separate from this checkpoint.
+
+Owned workspace accounting now exposes device payloads, unified status payloads and
+a conservative host bound. Includes root operator/hybridization/imtime snapshots,
+map/table objects, batch pointer/weight wrappers and cached closure payloads. Six
+private cppdlr lazy r-by-r caches are bounded without constructing them. New schedule
+capacity checks account for overlap of old/replacement vector storage. The combined
+bound drives resident budgets; small inline closures may be conservatively counted
+twice. Regenerated optional Small Python bindings expose all categories.
+
+The reported budget explicitly excludes CUDA-library/context allocations, allocator
+bookkeeping, shared mesh storage and caller inputs/results. Constructor/per-call
+host staging is not a total process-memory cap. Correlator preflight continues to
+bound endpoint/output replacement peaks separately. Free-device-memory admission
+and complete transient staging policy remain audit items; do not claim a hard cap
+on all GPU/process memory from this counter.
+
+Changed-schedule/budget tests compare observed CUDA memory growth with device payload
+reporting, keep resident bounds within budget and preserve strict reference results
+under fallback. Focused native/Python tests pass2/2 in54.26s. CPU archive/backend/
+dynamic/copy entries pass4/4 in6.46s. Compute Sanitizer covers changed schedules and
+submitted-failure recovery:2 tests pass,0 errors and0 bytes/allocations leaked.
+Code eeed29a and evidence89169ef separate from docs. All handles from this turn ended.
+
+Next: available-memory admission and environment-keyed policy; rank36 N8 and repeats
+of promising rank policies after updating the probe snapshots; larger power-of-two
+physical/crossover coverage; dynamic/observable workload timings; MPI/install/full-
+suite validation following final changes; completion audit against every plan item.
+Target remains GH200-class GPUs; local A4000 defaults provisional. Hardware-specific
+GH200/multi-GPU qualification unavailable locally. Goal active; baseline/experiments
+and unrelated user work preserved.
