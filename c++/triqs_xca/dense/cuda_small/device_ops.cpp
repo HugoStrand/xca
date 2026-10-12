@@ -179,6 +179,12 @@ namespace triqs_xca::dense::cuda_small {
     }
     auto const &tables = *tables_.at(key);
     auto av = nda::cucplx(alpha), bv = nda::cucplx(beta);
+    if (mode_ == 2) {
+      nda::device_error_check(xca_small_vertex(reinterpret_cast<cuDoubleComplex const *const *>(tables.b.data()),
+        reinterpret_cast<cuDoubleComplex const *const *>(tables.a.data()),
+        reinterpret_cast<cuDoubleComplex *const *>(tables.c.data()), r_, N_, av, bv, stream_), "small vertex kernel");
+      return;
+    }
     check(cublasZgemmBatched(handle_, CUBLAS_OP_N, CUBLAS_OP_N, N_, N_, N_, &av, reinterpret_cast<cuDoubleComplex const *const *>(tables.a.data()),
                              N_, reinterpret_cast<cuDoubleComplex const *const *>(tables.b.data()), N_, &bv,
                              reinterpret_cast<cuDoubleComplex *const *>(tables.c.data()), N_, r_),

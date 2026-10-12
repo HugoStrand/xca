@@ -126,6 +126,7 @@ namespace triqs_xca::dense::cuda_small {
 #undef INSTANTIATE
   std::size_t DiagramEvaluator::workspace_bytes() const {
     auto bytes   = dlr_.workspace_bytes();
+    for (auto const &batch : batches_) if (batch) bytes = DeviceOps::checked_sum(bytes, batch->workspace_bytes());
     auto include = [&](auto const &x) { bytes = DeviceOps::checked_sum(bytes, DeviceOps::checked_product(x.size(), sizeof(complex))); };
     include(G_);
     include(T_);
@@ -261,23 +262,76 @@ namespace triqs_xca::dense::cuda_small {
     Backbone b(topology, n_, n_int_);
     return get_num_self_energy_backbones(b);
   }
-  DiagramEvaluator::gf_t DiagramEvaluator::compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all,
-                                                   bool pairs) {
-    {
-      ProfileRange range("xca.self_energy.upload");
-      upload(g);
+  void DiagramEvaluator::set_batch_capacity(int capacity) {
+    if (capacity < 1) throw std::invalid_argument("CUDA-small batch capacity must be positive");
+    dlr_.finish();
+    for (auto &batch : batches_) batch.reset();
+    batch_capacity_ = capacity;
+  }
+  void DiagramEvaluator::set_workspace_budget(std::size_t bytes) {
+    dlr_.finish();
+    for (auto &batch : batches_) batch.reset();
+    if (bytes < workspace_bytes()) throw std::invalid_argument("CUDA-small budget is below resident workspace");
+    workspace_budget_ = bytes;
+  }
+  bool DiagramEvaluator::try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices) {
+    // Qualification is currently local and restricted to ordinary SE, rank16,
+    // full-fermion N4/N8. Other cases retain the native sequential traversal.
+    if (n_int_ || r_ != 16 || (N_ != 4 && N_ != 8)) return false;
+    int slot = indices.size() == 128 ? 2 : indices.size() == 32 ? 1 : indices.size() == 8 ? 0 : -1;
+    if (slot < 0) return false;
+    dlr_.finish(); // Caller-owned input/output are ready for the batch stream.
+    auto &batch = batches_[slot];
+    try {
+      auto resident = workspace_bytes();
+      if (!batch) {
+        // Conservative storage preflight before allocating the candidate. Model
+        // snapshots and metadata get their own checked budget during preparation.
+        auto estimate = DeviceOps::checked_product(32 + std::size_t(n_),
+          DeviceOps::checked_product(std::size_t(r_) * indices.size(), DeviceOps::checked_product(N_ * N_, sizeof(complex))));
+        auto available = workspace_budget_ > resident ? workspace_budget_ - resident : 0;
+        if (estimate > available) return false;
+        batch = std::make_unique<BatchEvaluator>(mesh_, itops_, nda::make_regular(hyb_.poles / beta_), hyb_.coeffs, fset_, indices.size(), available);
+        resident = workspace_bytes();
+      }
+      auto other = resident - batch->workspace_bytes();
+      batch->set_budget(workspace_budget_ > other ? workspace_budget_ - other : 0);
+      batch->accumulate(G_, topology, indices, sum_);
+      ++batch_chunks_;
+      return true;
+    } catch (std::length_error const &) {
+      // Budget errors occur during preparation, before any contribution is added.
+      batch.reset();
+      return false;
+    } catch (std::bad_alloc const &) {
+      batch.reset();
+      return false;
     }
+  }
+  DiagramEvaluator::gf_t DiagramEvaluator::compute(gf_vt g, nda::array_const_view<int, 2> topology,
+                                                   nda::array_const_view<long, 1> indices, bool all, bool pairs) {
     Backbone b(topology, n_, n_int_);
-    {
-      ProfileRange range(pairs ? "xca.self_energy.pairs.traversal" : "xca.self_energy.traversal");
-      if (all) {
-        long count = get_num_self_energy_backbones(b), group = count / b.fb_ix_max;
-        for (long i = 0; i < count; ++i)
-          if (!pairs || (i / group) % 2 == 0) evaluate(b, i, pairs);
-      } else
-        for (long i : indices) evaluate(b, i, pairs);
+    long count = all ? get_num_self_energy_backbones(b) : indices.size();
+    if (!all) {
+      Backbone check(topology, n_, n_int_);
+      for (long index : indices) { check.set_flat_index(index, hyb_.poles); check.reset_all_inds(); }
     }
-    ProfileRange range("xca.self_energy.download");
+    upload(g);
+    long group = pairs && all ? count / b.fb_ix_max : 1;
+    nda::vector<long> chunk(128);
+    for (long offset = 0; offset < count;) {
+      long remaining = count - offset;
+      int width = 1;
+      if (!pairs) for (int eligible : {128, 32, 8})
+        if (eligible <= batch_capacity_ && eligible <= remaining) { width = eligible; break; }
+      for (int lane = 0; lane < width; ++lane) chunk(lane) = all ? offset + lane : indices(offset + lane);
+      auto selected = chunk(nda::range(width));
+      if (pairs || width == 1 || !try_batch(topology, selected)) {
+        for (long index : selected)
+          if (!pairs || !all || (index / group) % 2 == 0) evaluate(b, index, pairs);
+      }
+      offset += width;
+    }
     return result();
   }
 #define METHODS(NAME, PAIR)                                                                                                                          \

@@ -2,6 +2,7 @@
 set(all_examples 
   dense_cuda_benchmark.cpp
   dense_cuda_small_benchmark.cpp
+  dense_cuda_small_native_benchmark.cpp
   dense_backbone_third_order.cpp
   block_sparse_backbone_third_order.cpp
   )

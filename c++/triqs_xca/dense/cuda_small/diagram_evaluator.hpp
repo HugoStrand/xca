@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 #include "dlr_ops.hpp"
+#include "batch_evaluator.hpp"
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs/gfs.hpp>
 #include <triqs_xca/dense/fset.hpp>
@@ -20,6 +21,12 @@ namespace triqs_xca::dense::cuda_small {
     FSet fset_;
     int r_, n_, N_, n_int_;
     DlrOps dlr_;
+    std::array<std::unique_ptr<BatchEvaluator>, 3> batches_;
+    int batch_capacity_ = 128;
+    std::size_t batch_chunks_ = 0;
+    std::size_t workspace_budget_ = 512 * 1024 * 1024;
+    bool try_batch(nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices);
+
     tensor G_, T_, U_, sum_, tmp_, GKt_, gc_, tc_, Tmu_;
     nda::cuarray<complex, 4> Tkaps_, bars_, bars_refl_;
     tensor Fs_, Fd_, values_, reflected_;
@@ -67,6 +74,12 @@ namespace triqs_xca::dense::cuda_small {
     // Application-owned device/unified allocations; excludes library handles,
     // context caches and caller inputs. Nsight traces account for those separately.
     std::size_t workspace_bytes() const;
+    void set_batch_capacity(int capacity);
+    int batch_capacity() const { return batch_capacity_; }
+    std::size_t batch_chunks() const { return batch_chunks_; }
+    void set_workspace_budget(std::size_t bytes);
+    std::size_t workspace_budget() const { return workspace_budget_; }
+
     int num_orbitals() const { return n_; }
     int num_interactions() const { return n_int_; }
     int dimension() const { return N_; }
