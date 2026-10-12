@@ -1,0 +1,22 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-experiment-native-ranks
+Test project /home/hugstr/dev/xca/cbuild-experiment-native-ranks
+    Start 1: native_rank_one_fermion_se_spgf_all_evals
+1/8 Test #1: native_rank_one_fermion_se_spgf_all_evals ....   Passed    1.90 sec
+    Start 2: native_rank_two_fermions_se_spgf_all_evals
+2/8 Test #2: native_rank_two_fermions_se_spgf_all_evals ...   Passed    1.10 sec
+    Start 3: native_rank_unitary_invariance_all_evals
+3/8 Test #3: native_rank_unitary_invariance_all_evals .....   Passed    1.36 sec
+    Start 4: native_rank_dynint_spin_rotation
+4/8 Test #4: native_rank_dynint_spin_rotation .............   Passed    3.06 sec
+    Start 5: native_rank_flat_index_range
+5/8 Test #5: native_rank_flat_index_range .................   Passed    1.35 sec
+    Start 6: native_rank_propagator_layout
+6/8 Test #6: native_rank_propagator_layout ................   Passed    0.58 sec
+    Start 7: native_rank_dense_dynint_parity
+7/8 Test #7: native_rank_dense_dynint_parity ..............   Passed    0.65 sec
+    Start 8: native_rank_dense_correlator_statistics
+8/8 Test #8: native_rank_dense_correlator_statistics ......   Passed    0.97 sec
+
+100% tests passed, 0 tests failed out of 8
+
+Total Test time (real) =  10.98 sec
