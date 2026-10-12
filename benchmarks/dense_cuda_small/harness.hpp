@@ -226,6 +226,8 @@ namespace dense_cuda_bench {
       e.absolute = std::max(e.absolute, std::abs(*a - *b));
     }
     e.relative = e.absolute / std::max(e.norm, 1e-300);
+    if (!std::isfinite(e.norm) || !std::isfinite(e.absolute) || !std::isfinite(e.relative))
+      throw std::runtime_error("non-finite comparison metric");
     // A fixed absolute tolerance would accept zero instead of tiny high-order
     // contributions. Require relative parity with the unchanged CUDA baseline.
     // The underflow floor is far below every supported benchmark signal.
