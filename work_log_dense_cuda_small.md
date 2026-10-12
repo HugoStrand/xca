@@ -391,3 +391,36 @@ The watcher next observed no_goal at1791749930.2408204 and exited, as designed w
 there is no active goal. Its tmux session is gone; no resumption was queued. Config/
 boot registration remain but cannot recreate a completed goal. Final results and
 separate checkpoint are committed; production baseline and user files preserved.
+
+## Dense-small implementation goal — 2026-10-12
+
+New persistent goal: deliver plan_dense_cuda_small_generic.md through operational
+native dense-small functionality and Solver integration. User requests Sol 6.1 medium;
+supervisor continuations explicitly select gpt-6.1-sol / medium / standard speed.
+The active setup turn cannot change its own running model; the next supervisor turn
+performs the handoff. Use terse house-style [scope] commit messages. Commit plans and
+step-by-step logs separately from code. Preserve unrelated work, all experiments and
+the library CUDA baseline; do not push.
+
+Plans now require only power-of-two dense Hilbert dimensions from atom_diag. Arbitrary
+block sizes and rectangular products remain future block-sparse work, including
+parallelism across topologies and shared computation DAG investigation. Python APIs
+may change for bounded native work submission and MPI orchestration. GH200-class
+hardware is the performance target; A4000 results cannot establish target defaults.
+
+Supervisor: new isolated runtime cbuild-supervisor-small/implementation/, bound to
+this thread and exact new goal on dev_cuda. Existing exploration state retained.
+All 28 supervisor tests pass, including simulated quota recovery and active-turn
+protection. Live read-only check reports thread_active. Detached launcher started;
+existing marked @reboot registration now points to implementation/config.json.
+No real quota exhaustion/reset was forced; the next natural reset validates live
+recovery. Respect user pause, blockers, quota permissions and unknown start outcomes.
+
+Next: verify model handoff and watcher; execute M1 in a new experiment folder with
+power-of-two product kernels and strict finite/parity checks, recording measured
+specialization/crossover evidence. Then implement M2–M5, including native paired SE,
+dynamic interactions, SPGF/correlators, bounded resources, bindings and MPI Solver
+integration. Full functionality is the objective, not just a baseline-delegating
+facade. Check source manifests before changes; preserve the original baseline while
+adding cuda_small and necessary build/Python integration. Qualify only locally measured
+policies; document unavailable GH200 validation rather than inventing performance.

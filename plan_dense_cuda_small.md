@@ -1,5 +1,11 @@
 # Plan: small-matrix CUDA optimization experiments
 
+Target clarification (2026-10-12): optimize for high-end GPUs such as GH200.
+The local RTX A4000 is a development/test platform; historical measurements and
+cutoffs are local evidence, not target-hardware performance claims or defaults.
+Python is MPI orchestration and its submission API may change to serve native
+batching, bounded memory and scheduling needs.
+
 Status: exploration complete,2026-10-11. E1–E4 have checked prototypes and measured
 results; E3+E4 combinations are measured, and the trace-justified custom-solve follow-up
 is numerically rejected. [Comparison/recommendations](experiments/dense_cuda_small/COMPARISON.md)

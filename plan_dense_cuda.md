@@ -1,5 +1,11 @@
 # Plan: port the dense C++ DiagramEvaluator to CUDA
 
+Target clarification (2026-10-12): optimize for high-end GPUs such as GH200.
+The local RTX A4000 is a development/test platform; historical measurements and
+cutoffs are local evidence, not target-hardware performance claims or defaults.
+Python is MPI orchestration and its submission API may change to serve native
+batching, bounded memory and scheduling needs.
+
 Status: implemented and verified on 2026-10-10 on `dev_cuda`. The design below records the reviewed plan based on the 2026-10-09 source inspection. The requirement-by-requirement acceptance audit, measured results and limitations are in [benchmarks/dense_cuda/results.md](benchmarks/dense_cuda/results.md); the durable checkpoint is [work_log_dense_cuda.md](work_log_dense_cuda.md).
 
 ## Objective and scope
