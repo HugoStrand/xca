@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from h5 import HDFArchive
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import numpy as np
 from triqs.operators import n, c, c_dag
 import triqs.utility.mpi as mpi
@@ -42,23 +42,27 @@ class BackendTests(unittest.TestCase):
 
     def test_preference_copy_and_old_archive_defaults(self):
         S=make_solver('cuda_small')
+        S.gpu_device=0
         if CUDA_SMALL_ENABLED: S.init_diagram_evaluator()
         self.assertNotIn('d',S.__reduce_to_dict__())
         clone=copy.deepcopy(S)
         self.assertEqual(clone.dense_backend,'cuda_small')
         self.assertEqual(clone.dense_batch_capacity,128)
+        self.assertEqual(clone.gpu_device,0)
         with tempfile.TemporaryDirectory() as folder:
             path=str(Path(folder)/'solver.h5')
             with HDFArchive(path,'w') as archive: archive['solver']=S
             with HDFArchive(path,'r') as archive: restored=archive['solver']
             self.assertEqual(restored.dense_backend,'cuda_small')
             self.assertEqual(restored.dense_workspace_budget,S.dense_workspace_budget)
+            self.assertEqual(restored.gpu_device,0)
             self.assertFalse(hasattr(restored,'d'))
         data=S.__reduce_to_dict__()
-        for key in ['dense_backend','dense_batch_capacity','dense_workspace_budget']:
+        for key in ['dense_backend','dense_batch_capacity','dense_workspace_budget','gpu_device']:
             data.pop(key)
         restored=Solver.__factory_from_dict__('Solver',data)
         self.assertEqual(restored.dense_backend,'cpu')
+        self.assertIsNone(restored.gpu_device)
         self.assertFalse(hasattr(restored,'d'))
 
     def test_invalid_configuration_and_unavailable_backend(self):
@@ -69,6 +73,39 @@ class BackendTests(unittest.TestCase):
         if not CUDA_SMALL_ENABLED:
             with self.assertRaisesRegex(RuntimeError,'unavailable'):
                 make_solver('cuda_small').init_diagram_evaluator()
+
+    def test_gpu_device_configuration(self):
+        from triqs_xca.solver import _configure_gpu_device
+        for ordinal in [-1, True]:
+            with self.assertRaises(ValueError):
+                Solver(n('0',0),2.,5.,1e-12,[['0',1]],verbose=False,gpu_device=ordinal)
+        runtime=Mock()
+        runtime.cuda_device_count.return_value=2
+        runtime.cuda_current_device.return_value=1
+        with patch.dict(_configure_gpu_device.__globals__, {'_gpu_process_device': None}), patch('importlib.import_module',return_value=runtime):
+            self.assertEqual(_configure_gpu_device('cuda_small',None),1)
+            runtime.cuda_select_device.assert_called_once_with(1)
+            with self.assertRaisesRegex(RuntimeError,'one unchanged CUDA device'):
+                _configure_gpu_device('cuda',0)
+            runtime.cuda_current_device.return_value=0
+            with self.assertRaisesRegex(RuntimeError,'one unchanged CUDA device'):
+                _configure_gpu_device('cuda_small',1)
+            with self.assertRaisesRegex(ValueError,'unavailable'):
+                _configure_gpu_device('cuda_small',2)
+
+    @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
+    def test_visible_gpu_device_selection(self):
+        from triqs_xca import _dense_cuda as runtime
+        current=runtime.cuda_current_device()
+        for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
+            S=make_solver(backend)
+            S.gpu_device=current
+            S.init_diagram_evaluator()
+            self.assertEqual(runtime.cuda_current_device(),current)
+            S=make_solver(backend)
+            S.gpu_device=runtime.cuda_device_count()
+            with self.assertRaisesRegex(ValueError,'unavailable'):
+                S.init_diagram_evaluator()
 
     @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
     def test_gpu_methods_match_cpu(self):

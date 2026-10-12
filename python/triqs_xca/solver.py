@@ -47,6 +47,24 @@ def _dense_evaluator_class(backend):
         raise RuntimeError(f"Requested dense backend {backend!r} is unavailable: {error}") from error
 
 
+_gpu_process_device = None
+
+
+def _configure_gpu_device(backend, requested):
+    global _gpu_process_device
+    from importlib import import_module
+    runtime = import_module('._dense_cuda_small' if backend == 'cuda_small' else '._dense_cuda', __package__)
+    current = runtime.cuda_current_device()
+    selected = current if requested is None else requested
+    if selected < 0 or selected >= runtime.cuda_device_count():
+        raise ValueError(f"CUDA device ordinal {selected} is unavailable")
+    if _gpu_process_device is not None and (selected != _gpu_process_device or current != _gpu_process_device):
+        raise RuntimeError("XCA GPU evaluators require one unchanged CUDA device per process")
+    runtime.cuda_select_device(selected)
+    _gpu_process_device = selected
+    return selected
+
+
 def scatter_range_over_ranks(n):
     """ This rank's chunk of range(n), split as np.array_split does, as int64 flat indices; the whole range is never built. """
     chunk, extra = divmod(n, mpi.size)
@@ -96,6 +114,11 @@ class Solver(object):
     dense_workspace_budget : int, optional
         Reported native workspace budget in bytes for cuda_small (default 512 MiB).
 
+    gpu_device : int or None, optional
+        Visible CUDA ordinal assigned to this MPI process. None respects the
+        current device/CUDA_VISIBLE_DEVICES. Keep one device per process and choose
+        it before using NDA CUDA objects; availability is checked at initialization.
+
     Notes
     -----
 
@@ -113,7 +136,7 @@ class Solver(object):
                  conserved_operators='automatic', dlr_symmetrize=False,
                  timer=None, atom_diag=None, verbose=True,
                  dense_backend='cpu', dense_batch_capacity=128,
-                 dense_workspace_budget=512 * 1024 * 1024):
+                 dense_workspace_budget=512 * 1024 * 1024, gpu_device=None):
 
         if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
             raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
@@ -125,6 +148,11 @@ class Solver(object):
         dense_batch_capacity, dense_workspace_budget = index(dense_batch_capacity), index(dense_workspace_budget)
         if dense_batch_capacity < 1 or dense_workspace_budget < 1:
             raise ValueError("Dense capacity and workspace budget must be positive integers")
+        if gpu_device is not None:
+            if isinstance(gpu_device, bool): raise ValueError("gpu_device must be a nonnegative ordinal or None")
+            gpu_device = index(gpu_device)
+            if gpu_device < 0: raise ValueError("gpu_device must be a nonnegative ordinal or None")
+        self.gpu_device = gpu_device
         self.dense_backend = dense_backend
         self.dense_batch_capacity = dense_batch_capacity
         self.dense_workspace_budget = dense_workspace_budget
@@ -376,6 +404,8 @@ class Solver(object):
             raise ValueError("A CUDA dense backend requires conserved_operators=[]")
         if self.use_dense_solver:
             evaluator_class = _dense_evaluator_class(self.dense_backend)
+            if self.dense_backend != 'cpu':
+                _configure_gpu_device(self.dense_backend, self.gpu_device)
             if self.has_dynamic_interactions:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
             else:
@@ -1422,7 +1452,7 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],

@@ -282,9 +282,24 @@ template <> const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC()DOC" + c2py::tp
 
 // ==================== module functions ====================
 
+// cuda_current_device
+static auto const _c2py_fun_20 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_current_device(); })};
+
+// cuda_device_count
+static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_device_count(); })};
+
+// cuda_select_device
+static auto const _c2py_fun_22 = c2py::dispatcher_f_kw_t{c2py::cfun([](int device) { return xca_python::cuda_select_device(device); }, "device")};
+
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC()DOC");
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(R"DOC()DOC");
+static const auto _c2py_doc_22 = _c2py_fun_22.doc(R"DOC()DOC");
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
+   {"cuda_current_device", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"cuda_device_count", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"cuda_select_device", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

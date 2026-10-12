@@ -1,4 +1,5 @@
 #include <c2py/c2py.hpp>
+#include "cuda_runtime.hpp"
 #include <triqs/atom_diag.hpp>
 #include <triqs/operators.hpp>
 #include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
