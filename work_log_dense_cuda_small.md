@@ -604,3 +604,32 @@ explicit GPU placement/lifetimes, allocation/metadata lifetime audits, compiler-
 AUTO and library-only extension checks, install/consumer verification, sanitizers and
 profiling. Run full CPU/CUDA/Python and MPI suites after the remaining changes. Target
 GH200 defaults remain provisional. Goal active; no completion claim or push.
+
+## Full suites, installation and memory validation — 2026-10-12
+
+Full CUDA build and75/75 CTest entries pass120.18s. Full CPU build and67/67 entries
+pass48.78s; CPU GPU-disabled tests remain disabled and do not imply GPU coverage.
+An isolated CMake fixture verifies AUTO disables custom kernels when the CUDA compiler
+is explicitly unavailable; actual library-only runtime support was verified earlier.
+
+Staged install at /tmp/xca-small-stage builds/runs a fresh external C++ consumer,
+including exported target dependencies, native constructor and range evaluation.
+Installed Python initially failed because installation stripped runtime paths and
+libcutensor.so.2 was not in the loader cache. Fixed CMAKE_INSTALL_RPATH_USE_LINK_PATH
+so external dependency directories survive install; staged Python import and7 backend
+tests now pass. This fixes a packaging fault rather than requiring an extra environment
+workaround. Normal CUDA install prefix restored to ~/apps/xca-cuda after staging.
+
+Compute Sanitizer memcheck/leak-check on paired batching/cache transitions, one-time
+ranges and correlator budget recovery:3 GoogleTests pass;0 errors,0 bytes/allocations
+leaked. Scope is explicit in the retained log, not a blanket sanitizer claim for every
+path. Validation logs/consumer/no-compiler fixtures and source/binary hashes retained
+under benchmarks/dense_cuda_small/results/system_validation; whitespace normalized.
+Original23 protected source hashes remain unchanged. All live handles from this turn
+finished; no GPU/build job left running.
+
+Next: explicit GPU placement/device lifetime contract; broaden rank/dimension/method/
+seed qualification and repeatable real-workload timings; profiling/residency audit,
+resource accounting/lifetime review and library-only optional-extension tests. Target
+GH200 hardware remains unavailable and target defaults provisional. Goal active;
+full-suite success does not prove every plan requirement or end the implementation.
