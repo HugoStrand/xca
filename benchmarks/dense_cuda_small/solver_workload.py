@@ -74,7 +74,12 @@ def main():
               source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               target='RTX A4000 local control; GH200-class optimization target unqualified',
               numerical='real Solver comparison rtol1e-9 atol1e-12; C++ optimization gate unchanged',
-              samples=a.samples,backends=backends)
+              samples=a.samples,backends=backends,
+              sources_sha256={str(path):hashlib.sha256(path.read_bytes()).hexdigest()
+                              for path in [Path('python/triqs_xca/solver.py'),
+                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.cpp'),
+                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.hpp'),
+                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.cu')]})
     (a.output/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
     for dynamic in [False,True]:
         for backend in backends:
