@@ -1,0 +1,8 @@
+{
+  "revision": "b0020e2",
+  "configuration": "XCA_CUDA_SMALL=OFF; staged prefix /tmp/xca-library-cuda-stage; refreshed Python sources after default archive repair",
+  "logs_sha256": {
+    "xca-small-library-refresh-tests.log": "aeb8608f4c0f3290e1f2137e4366795d5a07ceec27f8a1589d2b12e203d7d865",
+    "xca-small-library-refresh-installed-tests.log": "7d5fefe60e7d63ad701c3b90c11f7d91c64f9b76f2c77306e3a9898ac79e28a5"
+  }
+}

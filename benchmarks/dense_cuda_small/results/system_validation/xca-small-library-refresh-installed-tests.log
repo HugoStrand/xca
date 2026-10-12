@@ -1,0 +1,7 @@
+Starting serial run at: 2026-10-12 21:24:18.940414
+.s.....ss.
+----------------------------------------------------------------------
+Ran 10 tests in 0.476s
+
+OK (skipped=3)
+Warning: could not identify MPI environment!

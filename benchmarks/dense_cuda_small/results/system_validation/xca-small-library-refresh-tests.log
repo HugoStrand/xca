@@ -1,0 +1,14 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-library-cuda
+Test project /home/hugstr/dev/xca/cbuild-library-cuda
+    Start 26: test_nda_cuda_smoke
+1/4 Test #26: test_nda_cuda_smoke ..............   Passed    0.54 sec
+    Start 38: Py_cuda_backends
+2/4 Test #38: Py_cuda_backends .................   Passed    0.91 sec
+    Start 47: Py_h5_io
+3/4 Test #47: Py_h5_io .........................   Passed    0.48 sec
+    Start 48: Py_dynint
+4/4 Test #48: Py_dynint ........................   Passed    5.66 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   7.59 sec
