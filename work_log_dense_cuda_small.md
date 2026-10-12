@@ -937,3 +937,48 @@ policy audit; current full CPU/CUDA/library-only/MPI/install verification; super
 checks and completion audit. GH200/multi-device hardware unavailable locally, and only
 GH200-class data can justify target defaults. Goal active; baseline and all experiments
 preserved, unrelated files untouched.
+
+## Integration matrix, concurrency and final audit — 2026-10-12
+
+Actual concurrent independent objects compute ordinary/paired129-index results on
+owned streams/handles and match strict references; memcheck passes0 errors/leaks.
+Production pinned-host delayed default-stream upload test passes, independently
+verifying the event handoff. Thin target recompiled in isolation with exact CMake
+flags:1.405s, object148992B; ptxas/resource/archive/library metadata retained.
+Supervisor process219671 verified live;28 isolated tests pass. Resumption config
+remains Sol6.1 medium standard, with observed wait/active transitions retained.
+
+Real serial Solver control fits ordinary/two-channel density/spin kernels, performs
+two self-consistency iterations throughorder2 includingSPGF, then density correlator.
+Three samples per case all pass CPU parity/finite/nonvacuous checks. Median totalms:
+CPU46.88/140.25, retainedCUDA284.11/1015.96, Small83.61/183.19 ordinary/dynamic.
+CPU remains faster for these short full workloads. Results do not justify changing
+CPU default or target-GPU thresholds; high-throughput C++ cases are separate evidence.
+
+Current full configure/build/test checks: CPU67/67(48.47s), CUDA75/75(115.55s),
+library-only67/67(58.35s). Latest CUDA run including delayed upload passes75/75
+in124.67s. Two MPI ranks each pass12 backend tests. Normal installed Small package
+passes12 tests; library-only staged package passes12 with3 Small skips. Fresh external
+C++ consumer passes. Regenerated optional wrappers unchanged. Normal installed version
+metadata initially had old configure-time Git hash; reconfigured/rebuilt/reinstalled,
+now1718ca1, and installed backend tests pass again. Source/package provenance scoped
+explicitly; no stale metadata presented as current code identity.
+
+Four bounded current production order10/12 screens(ranks26/36, N4/N8, crossing/chain,
+ordinary/paired8-index batches) all pass16 groups each. Evidence and complete integration,
+workload/build/supervisor logs committed914d436 separately from this checkpoint.
+Completion audit/capability table in completion_dense_cuda_small.md marks proof scope,
+hardware omissions and remaining pending work rather than assuming success.
+
+Audit found one fair-control gap: native rank library-product control had disabled
+pointwise fusion too. OFF now selects mode1, preserving fusion and all scheduler/LU/
+stream/metadata policies; only products differ. Four strict library control processes
+run under exec session42922. Wait for that live sequence; no competing GPU job or
+build should disturb measurements. Retain any rejections without gate changes.
+Code/control change not committed until its processes finish and results reviewed.
+
+After controls: update capability/crossover decision/report, check final status and
+all audit items, then decide goal completion. Target GH200/multi-device hardware
+unavailable and excluded from local success claims. Application resident-budget scope
+and opaque allocations remain explicit. Baseline23 protected files and all experiments
+preserved; unrelated files untouched. Goal remains active pending the final controls.
