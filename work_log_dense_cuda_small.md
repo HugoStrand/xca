@@ -827,3 +827,31 @@ suite validation following final changes; completion audit against every plan it
 Target remains GH200-class GPUs; local A4000 defaults provisional. Hardware-specific
 GH200/multi-GPU qualification unavailable locally. Goal active; baseline/experiments
 and unrelated user work preserved.
+
+## Available-memory admission and smaller widths — 2026-10-12
+
+Batch-cache creation now checks current cudaMemGetInfo free bytes as well as the
+owned workspace budget. An adjustable advisory reserve(default64 MiB) leaves room
+for opaque library storage/other users. Insufficient space tries qualified widths
+128/32/8 in descending order before resident serial fallback. Only preparation can
+fallback; submitted execution failures still propagate. Existing caches reuse their
+resident storage; this is not a physical memory reservation or a concurrency guarantee.
+
+Native setter evicts caches when changing reserve. Solver exposes/persists the numeric
+preference through copies/HDF5; old archives default to64 MiB. Negative/bool values
+rejected. A synthetic advisory limit, without allocating GPU ballast, verifies serial
+fallback, four32-lane chunks for128 indices, and restoration of128-lane batching;
+all results pass the unchanged strict reference gate. Qualified shape/rank policy
+remains unchanged.
+
+Focused native/Python entries pass2/2 in53.95s; CPU archive/dynamic/backend/copy entries
+pass4/4 in6.49s. Two real MPI ranks each pass12 backend tests, including initialization
+failure/recovery and preference persistence. Evidence retained in system_validation.
+Code/evidence commits separate from this log. All live command handles completed.
+
+Next: environment-keyed qualification policy; updated native rank36 N8/repeat probes;
+larger power-of-two fixtures and crossover; dynamic/observable workload performance;
+remaining temporary/resource policy audit and final MPI/install/full-suite verification.
+No GH200 or multi-device hardware qualification is claimed. Target remains GH200-class
+cards; A4000 results/defaults provisional. Persistent goal active and original baseline,
+experiments and unrelated user files preserved.

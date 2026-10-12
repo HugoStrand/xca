@@ -68,7 +68,13 @@ bookkeeping, retained shared mesh data and caller inputs/results are excluded.
 Constructor setup and per-call host staging are not a total process-memory cap;
 correlator resize preflight separately bounds its endpoint/output replacement peaks.
 Nsight captures quantify opaque library allocations and unified migrations.
-Free-device-memory admission/capacity selection remains under audit.
+Before creating a cache, admission checks its conservative storage estimate against
+both the owned budget and current free-device memory minus an advisory reserve.
+Qualified widths128/32/8 are tried in descending order, then resident serial work.
+Solver `dense_device_memory_reserve` defaults to64 MiB and survives copies/HDF5.
+Changing the native reserve evicts caches. This is headroom for opaque library
+storage and other users, not a memory reservation; concurrent allocations can still
+fail. The default is conservative and provisional for GH200-class qualification.
 
 `Solver.solve()` coordinates GPU initialization failures before entering MPI
 iterations. Direct `init_diagram_evaluator()` remains local. Two-rank tests inject an
