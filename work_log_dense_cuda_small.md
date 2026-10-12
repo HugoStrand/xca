@@ -490,3 +490,46 @@ remove experimental resource limits, implement actual-width tails/bounded cachin
 and maintain full native method functionality. Extend build/install/sanitizer tests,
 then bindings/Solver bounded MPI APIs and persistence. Expand rank/order/seed/repeat
 qualification alongside that work. M1/M2 qualification is still incomplete; goalactive.
+
+## Native batching and bounded ranges — 2026-10-12
+
+Code commitsd341d73/68be63d. Ordinary SE now uses native batches for rank16 N4/N8
+with qualified width families8/32/128, then smaller families/serial tails. All chunks
+accumulate contributions in caller order into one device output; no host partial
+sum changes. Dynamic metadata replaces384/64 prototype limits, three width caches
+are bounded, workspace preflight/preparation budgets fall back to native serial
+before adding contributions. Full enumeration streams through128 host descriptors;
+no order12/4096 limit remains. Strict tests exercise actual batch counters, duplicates,
+changed inputs/cache keys, invalid-prefix recovery, empty calls and resident-only
+budget fallback. Integration tests caught/fixed physical-pole rescaling and mutable
+backbone prevalidation. Qualified custom vertices now serve native serial methods.
+
+All9 native CTest entries pass51.17s including enumeration8192>4096. New half-open
+ranges preserve ordinary/paired SE, SPGF and one-time correlator accumulation inside
+C++; paired ranges filterfb(0)==0 using global stride, not local range length. Range
+checks compare indexed baseline results, empty/uneven ranges, invalid bounds, and
+fermionic/bosonic endpoints; batch_api passes39.69s. Public GF aliases support the
+upcoming binding generation. Python bindings/MPI orchestration are still unimplemented.
+
+Production screens: N4/N8 each36 backend/case groups pass at orders3/6/8 with
+8/128/129 indices. N4 B128 order6/8 ~6.93/9.23ms; N8 ~20.20/27.73ms. Updated custom
+serial-vertex N4 screen16 groups passes:128 ~6.88/9.20ms,129 ~9.36/12.63ms, versus
+retained padded prototype129 ~17.7/23.9ms. These are single-process local screens,
+not final multi-process/GH200 dispatch qualification. Source/binary manifests and
+validation logs committed in8245422; log trailing whitespace normalized separately.
+
+Build variants: CPU AUTO static library/new benchmark build and CPU smoke pass;
+CPU ON correctly fails requiring CUDA NDA. CUDA OFF library build passes, with all4
+actual NDA GPU smoke tests (not disabled cases). CUDA ON restored and batch_api
+rebuilt. No install/consumer or missing-compiler AUTO claim yet. All23 original
+baseline hashes remain unchanged. No build/GPU handles remain running at checkpoint.
+
+Next priorities: batch paired SE so the Solver's default paired route receives the
+throughput gain, extend rank/method qualification, then optional CPU-safe GPU bindings
+and Solver backend selection/persistence. Use native ranges for MPI without whole
+rank-local index arrays, with collectives/error coordination outside local work.
+Complete resource budget/lifetime checks, finite metric-overflow rejection in the
+benchmark, compiler-unavailable AUTO/install/consumer tests, sanitizers/profiling and
+full CPU/CUDA/Python suites. Target defaults remain provisional without GH200 evidence.
+Goal stays active; implementation/qualification is incomplete. Preserve unrelated
+files, original experiments, baseline and terse [scope] commits; no push.

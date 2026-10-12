@@ -1,13 +1,17 @@
 # Native CUDA-small evaluator
 
-Initial production layer at commit7d00486. Full C++ API is native: ordinary/paired
+Native production foundation at7d00486, batching atd341d73 and native ranges at68be63d. Full C++ API is native: ordinary/paired
 self-energy, dynamic interactions, SPGF and correlators. Calls are serialized per
 instance, with owned nonblocking stream, BLAS/solver handles and upload event handoff.
 Other instances do not rely on the shared NDA solver synchronization setting.
 
-This first layer traverses indices sequentially. Cross-index batching and bounded
-native work submission are still to be integrated; Python does not yet select this
-backend. Passing C++ functionality tests does not complete the implementation plan.
+Ordinary SE batches rank16 dimensions4/8 using widths8/32/128. Smaller tails use
+native serial traversal; each contribution accumulates into the same device output
+in caller order. Metadata grows within a workspace budget rather than fixed prototype
+limits; three width caches are bounded. Other shapes/methods remain native sequential.
+Half-open work-range methods cover ordinary/paired SE, SPGF and one-time correlators,
+including paired fb(0)==0 filtering, without materializing a full index list.
+Python does not yet select this backend. Passing C++ tests does not complete the plan.
 
 Rank16 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
 other dimensions/ranks use library products. Vertex products currently use library
@@ -24,9 +28,11 @@ availability definition. Set `CMAKE_CUDA_ARCHITECTURES` for the deployment hardw
 Installed target exports include the custom kernel library and CUDA runtime dependency.
 Installed consumers and compiler-unavailable library builds still need validation.
 
-Eight `dense/cuda_small/*` CTest entries reuse existing C++ test sources with the
+Nine `dense/cuda_small/*` CTest entries reuse existing C++ test sources with the
 native class substituted. These cover physics, paired evaluations, dynamic operator
 rotations/parity, statistics, layouts and flat-index APIs; no baseline-delegating
 adapter is involved. CPU-only static library and CUDA-small static library builds
-pass. Full CPU/CUDA suites, sanitizers, resource policies, Python/MPI integration,
+pass. Library-only CUDA with OFF also builds and runs all four NDA GPU smoke cases.
+CPU-only ON rejects the configuration clearly. Full CPU/CUDA suites, sanitizers,
+complete resource policies, Python/MPI integration,
 installed builds and full-API performance acceptance remain outstanding.
