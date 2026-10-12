@@ -1,0 +1,14 @@
+{
+  "revision": "b0020e2",
+  "failure": "gpu_device=None unsupported by TRIQS HDF5; repaired by omitting the constructor-default archive field",
+  "CPU_CTest": "67/67 pass, 48.05s",
+  "CUDA_CTest": "75/75 pass, 112.36s",
+  "logs_sha256": {
+    "xca-small-residency-full-tests.log": "c9033510afe7872444120b16847e06a4baa4ef56da53d09bc26113bcd96692a9",
+    "xca-small-residency-full-cpu-tests.log": "99b960046effc84ff60ac54931a93c58c79c4f46c13a5e369a48670905fe8398",
+    "xca-small-none-cpu-tests.log": "b28950d27c714b7fa0617f72c7c2eba956ec3545ad5169699c8c3f1a5ba61a16",
+    "xca-small-none-cuda-tests.log": "4307a55cc495a2211b81feb3e7afe073d444c8275fb1e0fb9ea4a461a5f93a28",
+    "xca-small-residency-full-tests-fixed.log": "26cb79d5ee1a4c61472a01ea4ee1911509b0a153bdbf30f478d40b9eaa8f0471",
+    "xca-small-residency-full-cpu-tests-fixed.log": "3eb52dbe7acaa936954c6c25c81d86092bfcac9239660dd47fd38e3b98387fa6"
+  }
+}

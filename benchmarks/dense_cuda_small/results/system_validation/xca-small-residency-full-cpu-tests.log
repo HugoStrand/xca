@@ -1,0 +1,557 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild
+Test project /home/hugstr/dev/xca/cbuild
+      Start 58: Py_api_two_fermions
+      Start 40: Py_triqs_soehyb/spinless_dimer
+ 1/67 Test #40: Py_triqs_soehyb/spinless_dimer ..........   Passed    8.45 sec
+      Start 41: Py_triqs_soehyb/spinless_dimer_solver
+ 2/67 Test #58: Py_api_two_fermions .....................   Passed   11.98 sec
+      Start 48: Py_dynint
+ 3/67 Test #48: Py_dynint ...............................***Failed    0.56 sec
+Starting serial run at: 2026-10-12 21:14:25.279957
+Warning: could not identify MPI environment!
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+6.84E-02
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 1.61E-02, Z-1 = -1.33E-15, eta = 1.69E-02
+iter = 2, diff_G = 1.72E-04, Z-1 = +4.44E-16, eta = 1.70E-02
+iter = 3, diff_G = 7.55E-07, Z-1 = +0.00E+00, eta = 1.70E-02
+iter = 4, diff_G = 1.78E-09, Z-1 = +0.00E+00, eta = 1.70E-02
+Converged after 4 iterations with diff_G = 1.78E-09 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   2.2% ||
+AtomDiag Init:                0.000     0.000   2.6% ||
+DiagramEvaluator Init:        0.000     0.000   1.8% ||
+Dyson:                        0.001     0.000   6.3% |--|
+ Setup:                       0.001     0.001  14.7% |-----|
+ Solve:                       0.000     0.000  10.0% |---|
+Sigma:                        0.001     0.000   2.8% ||
+ Order 1:                     0.000     0.000  11.6% |----|
+Single-particle Gf:           0.000     0.000   0.3% |
+ Order 1:                     0.000     0.000   2.6% ||
+Other:                        0.002     0.002  45.2% |-----------------|
+----------------------------------------------------
+Total:                                  0.004 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+0.00E+00
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 4.92E-02, Z-1 = -3.11E-15, eta = 4.94E-02
+iter = 2, diff_G = 1.55E-03, Z-1 = +6.66E-16, eta = 5.10E-02
+iter = 3, diff_G = 2.14E-05, Z-1 = +0.00E+00, eta = 5.10E-02
+iter = 4, diff_G = 1.59E-07, Z-1 = +0.00E+00, eta = 5.10E-02
+iter = 5, diff_G = 7.35E-10, Z-1 = +0.00E+00, eta = 5.10E-02
+Converged after 5 iterations with diff_G = 7.35E-10 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   2.0% ||
+AtomDiag Init:                0.000     0.000   0.7% |
+DiagramEvaluator Init:        0.000     0.000   1.0% |
+Dyson:                        0.001     0.000   7.9% |--|
+ Setup:                       0.000     0.000  12.0% |----|
+ Solve:                       0.001     0.001  13.7% |----|
+Sigma:                        0.001     0.000   3.7% ||
+ Order 1:                     0.001     0.001  14.9% |-----|
+Single-particle Gf:           0.000     0.000   0.3% |
+ Order 1:                     0.000     0.000   2.7% ||
+Other:                        0.002     0.002  41.2% |---------------|
+----------------------------------------------------
+Total:                                  0.004 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+2.16E-01
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 1.38E-01, Z-1 = -8.88E-15, eta = 1.22E-01
+iter = 2, diff_G = 1.18E-02, Z-1 = +1.27E-13, eta = 1.34E-01
+iter = 3, diff_G = 5.00E-04, Z-1 = +1.62E-14, eta = 1.35E-01
+iter = 4, diff_G = 1.16E-05, Z-1 = +1.13E-14, eta = 1.35E-01
+iter = 5, diff_G = 1.68E-07, Z-1 = +1.20E-14, eta = 1.35E-01
+iter = 6, diff_G = 1.66E-09, Z-1 = +6.66E-15, eta = 1.35E-01
+Converged after 6 iterations with diff_G = 1.66E-09 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   1.7% ||
+AtomDiag Init:                0.000     0.000   0.6% |
+DiagramEvaluator Init:        0.000     0.000   0.9% |
+Dyson:                        0.001     0.000   8.7% |--|
+ Setup:                       0.000     0.000  11.1% |---|
+ Solve:                       0.001     0.001  14.8% |-----|
+Sigma:                        0.001     0.000   4.0% |-|
+ Order 1:                     0.001     0.001  16.3% |------|
+Single-particle Gf:           0.000     0.000   0.3% |
+ Order 1:                     0.000     0.000   2.3% ||
+Other:                        0.002     0.002  39.3% |---------------|
+----------------------------------------------------
+Total:                                  0.004 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+6.84E-02
+Adapol: compressing 13 poles, tol 1.00E-09 on the imaginary time L2 error
+        beta = 2.1, 13 Matsubara points, linear residue fit
+Adapol: [1/2 bracket] growing the AAA step count until the tolerance is met
+           2 steps ->  3 poles, error 6.98E-16 <= tol  ok     AAA residual 1.73E-16
+Adapol: [2/2 bisect] smallest step count still meeting the tolerance, candidates 1..2
+           1 steps ->  1 poles, error 2.24E-03  > tol  fail   AAA residual 2.36E-03   candidates 2..2
+Adapol: done -- 3 poles (2 AAA steps), error 6.98E-16 <= tol 1.00E-09, 2 pipeline passes, 2 AAA runs
+Adapol: dropped 1 of 3 poles outside the DLR window (max|beta*omega| = 4.81E+02 > Lambda = 4.20E+00) and refit: 2 poles, error 7.87E-16, pointwise change 1.07E-14
+Adapol: Fit error = 7.87E-16 < tol = 1.00E-09, N_poles = 2
+iter = 1, diff_G = 1.63E-02, Z-1 = -1.55E-15, eta = 1.70E-02
+iter = 2, diff_G = 1.75E-04, Z-1 = -2.22E-16, eta = 1.72E-02
+iter = 3, diff_G = 7.67E-07, Z-1 = -2.22E-16, eta = 1.72E-02
+iter = 4, diff_G = 1.80E-09, Z-1 = -1.11E-16, eta = 1.72E-02
+Converged after 4 iterations with diff_G = 1.80E-09 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.006     0.006  43.3% |----------------|
+AtomDiag Init:                0.000     0.000   0.2% |
+DiagramEvaluator Init:        0.000     0.000   0.2% |
+Dyson:                        0.001     0.000   1.7% ||
+ Setup:                       0.000     0.000   3.0% ||
+ Solve:                       0.000     0.000   2.8% ||
+Sigma:                        0.006     0.000   0.8% |
+ Order 1:                     0.000     0.000   3.0% ||
+ Order 2:                     0.005     0.005  34.4% |-------------|
+Single-particle Gf:           0.000     0.000   0.1% |
+ Order 1:                     0.000     0.000   0.6% |
+Other:                        0.001     0.001   9.9% |---|
+----------------------------------------------------
+Total:                                  0.014 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+0.00E+00
+Adapol: compressing 13 poles, tol 1.00E-09 on the imaginary time L2 error
+        beta = 2.1, 13 Matsubara points, linear residue fit
+Adapol: [1/2 bracket] growing the AAA step count until the tolerance is met
+           2 steps ->  3 poles, error 1.91E-15 <= tol  ok     AAA residual 5.35E-16
+Adapol: [2/2 bisect] smallest step count still meeting the tolerance, candidates 1..2
+           1 steps ->  1 poles, error 7.09E-03  > tol  fail   AAA residual 7.45E-03   candidates 2..2
+Adapol: done -- 3 poles (2 AAA steps), error 1.91E-15 <= tol 1.00E-09, 2 pipeline passes, 2 AAA runs
+Adapol: dropped 1 of 3 poles outside the DLR window (max|beta*omega| = 1.40E+02 > Lambda = 4.20E+00) and refit: 2 poles, error 2.48E-15, pointwise change 2.24E-14
+Adapol: Fit error = 2.48E-15 < tol = 1.00E-09, N_poles = 2
+iter = 1, diff_G = 5.06E-02, Z-1 = +2.44E-15, eta = 5.08E-02
+iter = 2, diff_G = 1.63E-03, Z-1 = +1.11E-15, eta = 5.25E-02
+iter = 3, diff_G = 2.25E-05, Z-1 = +4.44E-16, eta = 5.25E-02
+iter = 4, diff_G = 1.66E-07, Z-1 = -4.44E-16, eta = 5.25E-02
+iter = 5, diff_G = 7.63E-10, Z-1 = +4.44E-16, eta = 5.25E-02
+Converged after 5 iterations with diff_G = 7.63E-10 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.005     0.005  32.7% |------------|
+AtomDiag Init:                0.000     0.000   0.2% |
+DiagramEvaluator Init:        0.000     0.000   0.2% |
+Dyson:                        0.001     0.000   2.1% ||
+ Setup:                       0.000     0.000   3.0% ||
+ Solve:                       0.001     0.001   3.4% ||
+Sigma:                        0.007     0.000   1.0% |
+ Order 1:                     0.001     0.001   3.6% ||
+ Order 2:                     0.006     0.006  42.9% |----------------|
+Single-particle Gf:           0.000     0.000   0.1% |
+ Order 1:                     0.000     0.000   0.6% |
+Other:                        0.001     0.001  10.3% |---|
+----------------------------------------------------
+Total:                                  0.015 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+2.16E-01
+Adapol: compressing 13 poles, tol 1.00E-09 on the imaginary time L2 error
+        beta = 2.1, 13 Matsubara points, linear residue fit
+Adapol: [1/2 bracket] growing the AAA step count until the tolerance is met
+           2 steps ->  3 poles, error 1.46E-03  > tol  fail   AAA residual 1.82E-15
+           3 steps ->  1 poles, error 2.24E-02  > tol  fail   AAA residual 7.07E-02
+           4 steps ->  1 poles, error 2.24E-02  > tol  fail   AAA residual 8.34E-02
+           5 steps ->  1 poles, error 2.24E-02  > tol  fail   AAA residual 8.34E-02
+Adapol: WARNING! approx_gf_dlr_tol failed with error: Adapol: Compression failed to achieve the desired accuracy 1.00E-09 after 4 steps, with final error 2.24E-02. Consider increasing max_upwind_steps or relaxing tol.. Using direct DLR coefficients instead.
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 1.48E-01, Z-1 = +5.95E-13, eta = 1.32E-01
+iter = 2, diff_G = 1.32E-02, Z-1 = +4.77E-13, eta = 1.46E-01
+iter = 3, diff_G = 5.58E-04, Z-1 = +3.51E-14, eta = 1.46E-01
+iter = 4, diff_G = 1.28E-05, Z-1 = +8.88E-15, eta = 1.46E-01
+iter = 5, diff_G = 1.83E-07, Z-1 = +1.67E-14, eta = 1.46E-01
+iter = 6, diff_G = 1.74E-09, Z-1 = +2.86E-14, eta = 1.46E-01
+Converged after 6 iterations with diff_G = 1.74E-09 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.009     0.009  17.2% |------|
+AtomDiag Init:                0.000     0.000   0.0% |
+DiagramEvaluator Init:        0.000     0.000   0.1% |
+Dyson:                        0.001     0.000   0.7% |
+ Setup:                       0.000     0.000   0.8% |
+ Solve:                       0.001     0.001   1.1% |
+Sigma:                        0.042     0.000   0.3% |
+ Order 1:                     0.001     0.001   1.2% |
+ Order 2:                     0.042     0.042  75.7% |-----------------------------|
+Single-particle Gf:           0.000     0.000   0.0% |
+ Order 1:                     0.000     0.000   0.2% |
+Other:                        0.002     0.002   2.8% ||
+----------------------------------------------------
+Total:                                  0.055 100.0%
+
+Order 1 convergence rates: G=1.9454686454033547, Chi=0.9581363550907137
+Order 2 convergence rates: G=2.917297638189064, Chi=1.9372383680443148
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+6.00E-02
+chi_nn error vs ED: 9.42E-03
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 2 subspaces dims [1] freq [2] E min/max +0.00E+00/+6.00E-02
+chi_nn error vs ED: 9.42E-03
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+9.00E-02
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 5.18E-03, Z-1 = -3.33E-16, eta = 5.48E-03
+iter = 2, diff_G = 1.79E-05, Z-1 = +0.00E+00, eta = 5.50E-03
+iter = 3, diff_G = 2.48E-08, Z-1 = +0.00E+00, eta = 5.50E-03
+iter = 4, diff_G = 1.85E-11, Z-1 = +0.00E+00, eta = 5.50E-03
+Converged after 4 iterations with diff_G = 1.85E-11 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   0.2% |
+AtomDiag Init:                0.000     0.000   0.1% |
+DiagramEvaluator Init:        0.000     0.000   0.1% |
+Dyson:                        0.001     0.000   0.8% |
+ Setup:                       0.000     0.000   1.4% ||
+ Solve:                       0.000     0.000   1.3% ||
+Sigma:                        0.029     0.000   0.4% |
+ Order 1:                     0.000     0.000   1.3% ||
+ Order 2:                     0.028     0.028  89.7% |-----------------------------------|
+Single-particle Gf:           0.000     0.000   0.0% |
+ Order 1:                     0.000     0.000   0.3% |
+Other:                        0.001     0.001   4.4% |-|
+----------------------------------------------------
+Total:                                  0.032 100.0%
+
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 2 subspaces dims [1] freq [2] E min/max +0.00E+00/+9.00E-02
+Hybridization: using DLR expansion with N_poles = 13
+iter = 1, diff_G = 5.18E-03, Z-1 = -6.66E-16, eta = 5.48E-03
+iter = 2, diff_G = 1.79E-05, Z-1 = +2.22E-16, eta = 5.50E-03
+iter = 3, diff_G = 2.48E-08, Z-1 = -2.22E-16, eta = 5.50E-03
+iter = 4, diff_G = 1.85E-11, Z-1 = -2.22E-16, eta = 5.50E-03
+Converged after 4 iterations with diff_G = 1.85E-11 < tol = 1.00E-08
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   0.4% |
+AtomDiag Init:                0.000     0.000   0.2% |
+DiagramEvaluator Init:        0.000     0.000   0.3% |
+Dyson:                        0.001     0.000   1.9% ||
+ Setup:                       0.000     0.000   3.2% ||
+ Solve:                       0.001     0.001   3.4% ||
+Sigma:                        0.013     0.000   1.1% |
+ Order 1:                     0.001     0.001   3.5% ||
+ Order 2:                     0.012     0.012  76.1% |-----------------------------|
+Single-particle Gf:           0.000     0.000   0.1% |
+ Order 1:                     0.000     0.000   0.6% |
+Other:                        0.001     0.001   9.4% |---|
+----------------------------------------------------
+Total:                                  0.016 100.0%
+
+dense: g_error = 8.63E-08  chi_error = 4.31E-05
+bs   : g_error = 8.63E-08  chi_error = 4.31E-05
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+use_dense_solver = True
+conserved_operators = []
+beta = 2.1, w_max = 2.0, eps = 1e-12, N_DLR = 13
+AtomDiagReal: dim 2 with 1 subspaces dims [2] freq [1] E min/max +0.00E+00/+9.00E-02
+RuntimeError: h5::h5_write_bare: Python object can not be written to HDF5
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//dynint.py", line 539, in <module>
+    test_dynint_h5_roundtrip(verbose=True)
+  File "/home/hugstr/dev/xca/test/python//dynint.py", line 313, in test_dynint_h5_roundtrip
+    with HDFArchive(filename, 'w') as A: A['S'] = S
+                                         ~^^^^^
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive.py", line 407, in __setitem__
+    for k, v in list(d.items()) : SubGroup[k] = v
+                                  ~~~~~~~~^^^
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive.py", line 426, in __setitem__
+    self._write( key, val)
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive_basic_layer.py", line 140, in _write
+    h5.h5_write_bare(self._group, key, val)
+SystemError: <built-in function h5_write_bare> returned a result with an exception set
+
+      Start 34: triqs_soehyb/test_tca
+ 4/67 Test #41: Py_triqs_soehyb/spinless_dimer_solver ...   Passed    6.91 sec
+      Start 23: manual_routines
+ 5/67 Test #34: triqs_soehyb/test_tca ...................   Passed    5.18 sec
+      Start 10: block_sparse/sparsity_invariance
+ 6/67 Test #23: manual_routines .........................   Passed    5.24 sec
+      Start 59: Py_bethe_self_cons
+ 7/67 Test #10: block_sparse/sparsity_invariance ........   Passed    5.12 sec
+      Start 61: Py_normalization
+ 8/67 Test #59: Py_bethe_self_cons ......................   Passed    4.39 sec
+      Start 56: Py_api
+ 9/67 Test #61: Py_normalization ........................   Passed    4.36 sec
+      Start 43: Py_diag
+10/67 Test #56: Py_api ..................................   Passed    4.09 sec
+      Start 45: Py_unitary_invariance
+11/67 Test #43: Py_diag .................................   Passed    3.63 sec
+      Start  6: block_sparse/dynint_evaluator
+12/67 Test #45: Py_unitary_invariance ...................   Passed    2.79 sec
+      Start 57: Py_api_one_fermion
+13/67 Test  #6: block_sparse/dynint_evaluator ...........   Passed    2.36 sec
+      Start 67: Py_order_conv
+14/67 Test #57: Py_api_one_fermion ......................   Passed    1.76 sec
+      Start 20: dynint_spin_rotation
+15/67 Test #67: Py_order_conv ...........................   Passed    1.94 sec
+      Start 44: Py_triqs_soehyb/unitary_invariance
+16/67 Test #20: dynint_spin_rotation ....................   Passed    1.88 sec
+      Start 64: Py_volterra_integral
+17/67 Test #44: Py_triqs_soehyb/unitary_invariance ......   Passed    1.34 sec
+      Start 54: Py_triqs_soehyb/analytic_diagrams
+18/67 Test #64: Py_volterra_integral ....................   Passed    1.63 sec
+      Start 31: triqs_soehyb/test_fastdiagram
+19/67 Test #54: Py_triqs_soehyb/analytic_diagrams .......   Passed    1.17 sec
+      Start 53: Py_triqs_soehyb/one_spinful_fermion
+20/67 Test #31: triqs_soehyb/test_fastdiagram ...........   Passed    1.47 sec
+      Start 24: one_fermion_se_spgf_all_evals
+21/67 Test #53: Py_triqs_soehyb/one_spinful_fermion .....   Passed    1.08 sec
+      Start 52: Py_triqs_soehyb/triqs_solver
+22/67 Test #52: Py_triqs_soehyb/triqs_solver ............   Passed    0.96 sec
+      Start 46: Py_triqs_soehyb/h5_io
+23/67 Test #24: one_fermion_se_spgf_all_evals ...........   Passed    1.10 sec
+      Start  9: block_sparse/evaluator_api
+24/67 Test #46: Py_triqs_soehyb/h5_io ...................   Passed    0.69 sec
+      Start 50: Py_dynint_transverse
+25/67 Test  #9: block_sparse/evaluator_api ..............   Passed    0.84 sec
+      Start 60: Py_dense_manual_NCA_OCA
+26/67 Test #50: Py_dynint_transverse ....................   Passed    0.77 sec
+      Start 39: Py_triqs_soehyb/load_module
+27/67 Test #60: Py_dense_manual_NCA_OCA .................   Passed    0.76 sec
+      Start 49: Py_dynint_spin_flip
+28/67 Test #39: Py_triqs_soehyb/load_module .............   Passed    0.64 sec
+      Start 42: Py_triqs_soehyb/offdiagonal_nca
+29/67 Test #49: Py_dynint_spin_flip .....................   Passed    0.75 sec
+      Start 21: flat_index_range
+30/67 Test #42: Py_triqs_soehyb/offdiagonal_nca .........   Passed    0.69 sec
+      Start  8: block_sparse/dynint_spin_flip
+31/67 Test #21: flat_index_range ........................   Passed    0.70 sec
+      Start 36: unitary_invariance_all_evals
+32/67 Test  #8: block_sparse/dynint_spin_flip ...........   Passed    0.57 sec
+      Start 30: triqs_soehyb/test_dlr
+33/67 Test #36: unitary_invariance_all_evals ............   Passed    0.51 sec
+      Start 11: block_sparse/sym_set_mask
+34/67 Test #30: triqs_soehyb/test_dlr ...................   Passed    0.47 sec
+      Start 35: two_fermions_se_spgf_all_evals
+35/67 Test #11: block_sparse/sym_set_mask ...............   Passed    0.42 sec
+      Start 62: Py_spgf_ordering
+36/67 Test #35: two_fermions_se_spgf_all_evals ..........   Passed    0.37 sec
+      Start  5: block_sparse/atom_prop
+37/67 Test #62: Py_spgf_ordering ........................   Passed    0.31 sec
+      Start 51: Py_topology
+38/67 Test  #5: block_sparse/atom_prop ..................   Passed    0.30 sec
+      Start 65: Py_one_time_correlator
+39/67 Test #51: Py_topology .............................   Passed    0.24 sec
+      Start 66: Py_expectation_value
+40/67 Test #65: Py_one_time_correlator ..................   Passed    0.24 sec
+      Start 47: Py_h5_io
+41/67 Test #66: Py_expectation_value ....................   Passed    0.24 sec
+      Start 14: dense/correlator_statistics
+42/67 Test #47: Py_h5_io ................................***Failed    0.31 sec
+Starting serial run at: 2026-10-12 21:14:57.725124
+Warning: could not identify MPI environment!
+____  ____________     _____
+\   \/  /\_   ___ \   /  _  \
+ \     / /    \  \/  /  /_\  \
+ /     \ \     \____/    |    \
+/___/\  \ \______  /\____|__  /
+      \_/        \/         \/  [github.com/TRIQS/xca]
+
+beta = 1.0, w_max = 100.0, eps = 1e-12, N_DLR = 34
+AtomDiagReal: dim 2 with 2 subspaces dims [1] freq [2] E min/max +0.00E+00/+1.00E+00
+Hybridization: using DLR expansion with N_poles = 34
+iter = 1, diff_G = 4.61E-02, Z-1 = +0.00E+00, eta = 2.16E-01
+
+Timing:                       incl.     excl.
+----------------------------------------------------
+Adapol hybridization fit:     0.000     0.000   0.5% |
+AtomDiag Init:                0.000     0.000   0.4% |
+DiagramEvaluator Init:        0.000     0.000   0.7% |
+Dyson:                        0.008     0.000   0.7% |
+ Setup:                       0.007     0.007  42.1% |----------------|
+ Solve:                       0.001     0.001   3.6% ||
+Sigma:                        0.000     0.000   0.3% |
+ Order 1:                     0.000     0.000   1.1% |
+Single-particle Gf:           0.000     0.000   0.1% |
+ Order 1:                     0.000     0.000   0.9% |
+Other:                        0.009     0.009  49.7% |-------------------|
+----------------------------------------------------
+Total:                                  0.018 100.0%
+
+RuntimeError: h5::h5_write_bare: Python object can not be written to HDF5
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//h5_io.py", line 57, in <module>
+    test_h5()
+  File "/home/hugstr/dev/xca/test/python//h5_io.py", line 49, in test_h5
+    with HDFArchive(filename, 'w') as A: A['S'] = S
+                                         ~^^^^^
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive.py", line 407, in __setitem__
+    for k, v in list(d.items()) : SubGroup[k] = v
+                                  ~~~~~~~~^^^
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive.py", line 426, in __setitem__
+    self._write( key, val)
+  File "/home/hugstr/apps/triqs/lib/python3.12/site-packages/h5/archive_basic_layer.py", line 140, in _write
+    h5.h5_write_bare(self._group, key, val)
+SystemError: <built-in function h5_write_bare> returned a result with an exception set
+
+      Start 63: Py_bug_bs_one_fermion
+43/67 Test #14: dense/correlator_statistics .............   Passed    0.36 sec
+      Start 29: triqs_soehyb/test_dimer
+44/67 Test #63: Py_bug_bs_one_fermion ...................   Passed    0.24 sec
+      Start 55: Py_solver_copy
+45/67 Test #29: triqs_soehyb/test_dimer .................   Passed    0.19 sec
+      Start 37: Py_cppdlr_imtime_ops
+46/67 Test #37: Py_cppdlr_imtime_ops ....................   Passed    0.14 sec
+      Start 18: dense/dynint_parity
+47/67 Test #55: Py_solver_copy ..........................   Passed    0.23 sec
+      Start 38: Py_cuda_backends
+48/67 Test #18: dense/dynint_parity .....................   Passed    0.11 sec
+      Start 33: triqs_soehyb/test_oca_equi
+49/67 Test #33: triqs_soehyb/test_oca_equi ..............   Passed    0.07 sec
+      Start  4: block_diag_op_fun
+50/67 Test  #4: block_diag_op_fun .......................   Passed    0.05 sec
+      Start 25: propagator_layout
+51/67 Test #25: propagator_layout .......................   Passed    0.04 sec
+      Start  2: backbone_indexing
+52/67 Test  #2: backbone_indexing .......................   Passed    0.03 sec
+      Start 32: triqs_soehyb/test_oca
+53/67 Test #32: triqs_soehyb/test_oca ...................   Passed    0.02 sec
+      Start  7: block_sparse/dynint_sets
+54/67 Test #38: Py_cuda_backends ........................   Passed    0.32 sec
+      Start 22: hyb
+55/67 Test  #7: block_sparse/dynint_sets ................   Passed    0.02 sec
+      Start  1: atom_diag_utils
+56/67 Test #22: hyb .....................................   Passed    0.02 sec
+      Start 12: block_sparse/sym_sets
+57/67 Test  #1: atom_diag_utils .........................   Passed    0.02 sec
+      Start 27: topology
+58/67 Test #12: block_sparse/sym_sets ...................   Passed    0.01 sec
+      Start 28: triqs_soehyb/test_convolve
+59/67 Test #27: topology ................................   Passed    0.01 sec
+      Start 26: test_nda_cuda_smoke
+60/67 Test #28: triqs_soehyb/test_convolve ..............   Passed    0.01 sec
+      Start 16: dense/cuda/dlr_ops
+61/67 Test #26: test_nda_cuda_smoke .....................   Passed    0.01 sec
+      Start 15: dense/cuda/device_ops
+62/67 Test #16: dense/cuda/dlr_ops ......................   Passed    0.01 sec
+      Start  3: backbone_parity
+63/67 Test #15: dense/cuda/device_ops ...................   Passed    0.01 sec
+      Start 13: dense/benchmark_validation
+64/67 Test  #3: backbone_parity .........................   Passed    0.01 sec
+      Start 19: dense_cuda_benchmark_contract
+65/67 Test #13: dense/benchmark_validation ..............   Passed    0.01 sec
+      Start 17: dense/cuda_small/batch_api
+66/67 Test #19: dense_cuda_benchmark_contract ...........   Passed    0.01 sec
+67/67 Test #17: dense/cuda_small/batch_api ..............   Passed    0.01 sec
+
+97% tests passed, 2 tests failed out of 67
+
+Total Test time (real) =  45.60 sec
+
+The following tests FAILED:
+	 47 - Py_h5_io (Failed)
+	 48 - Py_dynint (Failed)
+Errors while running CTest
