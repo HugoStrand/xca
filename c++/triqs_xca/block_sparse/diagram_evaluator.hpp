@@ -6,6 +6,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
+#include "triqs_xca/block_sparse/evaluation_path.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -26,6 +27,8 @@ class DiagramEvaluator {
   imtime_ops itops;           // DLR imaginary time object
   nda::vector<double> dlr_it; // DLR imaginary time nodes in relative ordering
   BlockOpSymQuartet Fq;       // BlockOpSymQuartet (field operators with and without bars)
+  std::vector<SelfEnergyPath> *path_trace_ = nullptr;
+  std::size_t path_trace_limit_ = 0;
   BlockDiagOpFun Sigma;       // array for storing self-energy contribution (final result)
   nda::vector<long> subspace_dims; // dimension of each invariant subspace, i.e. of each block of G_ppsc; -1 where no operator acts
 
@@ -107,6 +110,12 @@ class DiagramEvaluator {
 
     // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
     C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
+
+  // Bounded metadata-only observation of the actual CPU traversal, for independent
+  // qualification of a native scheduler. Calls are serialized like evaluation.
+  C2PY_IGNORE std::vector<SelfEnergyPath> inspect_self_energy_paths(
+    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,nda::array_const_view<int,2> topology,
+    long first,long last,std::size_t limit=4096);
 
   void print_self_energy_backbone(nda::array_const_view<int, 2> topology,
                                   long f_ix); // print the backbone corresponding to a given flat index for debugging

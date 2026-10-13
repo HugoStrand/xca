@@ -398,11 +398,44 @@ void DiagramEvaluator::find_path_self_energy(BlockDiagOpFun &Gt, Backbone &backb
 
         // evaluate the diagram with these directions, poles, and orbital indices
         // b_ix is the block index for the first edge
+        if (path_trace_) {
+          if (path_trace_->size() == path_trace_limit_) throw std::length_error("CPU path trace exceeds descriptor limit");
+          if (path_trace_->size() == path_trace_->capacity()) {
+            auto next = path_trace_->capacity() == 0 ? 1 : path_trace_->capacity();
+            // Bound capacity as well as size, without overflowing on doubling.
+            next += std::min(next,path_trace_limit_-next);
+            path_trace_->reserve(next);
+          }
+          SelfEnergyPath path{f_ix,b_ix,ip,p_kap,vct0,{},{}};
+          path.propagator_blocks.assign(ind_path.begin(),ind_path.end());
+          path.dimensions.assign(block_dims.begin(),block_dims.end());
+          path_trace_->push_back(std::move(path));
+        } else {
         eval_self_energy_fixed_indices(Gt, backbone, b_ix, p_kap, p_mu, ind_path, block_dims);
+        }
       }
     }
   }
   backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
+}
+
+std::vector<SelfEnergyPath> DiagramEvaluator::inspect_self_energy_paths(
+  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,nda::array_const_view<int,2> topology,
+  long first,long last,std::size_t limit) {
+  check_index_range(first,last,get_num_self_energy_backbones(topology));
+  if(path_trace_) throw std::logic_error("CPU path observation is already active");
+  auto Gt=native_propagator(G);
+  Backbone backbone(topology,n,n_int);
+  nda::vector<int> blocks(2*backbone.m-1),dimensions(2*backbone.m+1);
+  std::vector<SelfEnergyPath> paths;
+  path_trace_=&paths;path_trace_limit_=limit;
+  try {
+    for(long i=first;i<last;++i) find_path_self_energy(Gt,backbone,i,blocks,dimensions);
+  } catch (...) {
+    path_trace_=nullptr;throw;
+  }
+  path_trace_=nullptr;
+  return paths;
 }
 
 void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix) {
