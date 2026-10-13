@@ -38,6 +38,8 @@ namespace triqs_xca::block_sparse::cuda {
     void weight_rows(TensorConstView in, nda::cuvector_const_view<nda::dcomplex> weights, TensorView out) const;
     void pack_rhs(TensorConstView in, nda::cumatrix_view<nda::dcomplex, nda::F_layout> out) const;
     void unpack_rhs(nda::cumatrix_const_view<nda::dcomplex, nda::F_layout> in, TensorView out) const;
+    // Bounded host scan for the reference's exact per-path magnitude policy.
+    bool any_abs_greater(TensorConstView in, double threshold) const;
     // Per-node (M,K)*(K,N), with arbitrary rectangular spatial extents.
     void product(TensorConstView left, TensorConstView right, TensorView out) const;
     // Apply a contiguous (r,r) rank matrix to a rectangular (r,M,N) function.

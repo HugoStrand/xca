@@ -6,6 +6,7 @@
 #include <cublas_v2.h>
 #include <cusparse.h>
 #include <cstdint>
+#include <cmath>
 #include <limits>
 #include <string>
 
@@ -208,6 +209,21 @@ namespace triqs_xca::block_sparse::cuda {
                            reinterpret_cast<cuDoubleComplex const *>(in.data()), r, reinterpret_cast<cuDoubleComplex const *>(&zero),
                            reinterpret_cast<cuDoubleComplex const *>(in.data()), r, reinterpret_cast<cuDoubleComplex *>(out.data()), width));
     finish();
+  }
+  bool DeviceOps::any_abs_greater(TensorConstView in, double threshold) const {
+    require_current();
+    auto count = bytes(in) / sizeof(Complex);
+    require(std::isfinite(threshold) && threshold >= 0, "invalid magnitude threshold");
+    std::array<Complex, 4096> host;
+    wait_for_default_uploads();
+    for (std::size_t offset = 0; offset < count; offset += host.size()) {
+      auto n = std::min(host.size(), count - offset);
+      check_cuda(cudaMemcpyAsync(host.data(), in.data() + offset, n * sizeof(Complex), cudaMemcpyDeviceToHost, stream()));
+      finish();
+      for (std::size_t i = 0; i < n; ++i)
+        if (std::abs(host[i]) > threshold) return true;
+    }
+    return false;
   }
   void DeviceOps::product(TensorConstView left, TensorConstView right, TensorView out) const {
     require_current();
