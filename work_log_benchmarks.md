@@ -20,3 +20,30 @@ The performance target remains GH200-class hardware, rather than the local RTX A
 
 Initial verification: Python syntax checks and CPU/comparison CLI help passed.
 Build, runtime and data-preservation checks follow below before completion.
+
+## 2026-10-13: verification and completion
+
+Implementation commit: `8e950f5` (`[bench] reorganize dense benchmarks`).
+
+- CPU and CUDA configurations/builds passed for the relocated targets. CPU
+  configuration omits the unavailable native-small executable as intended.
+- A separate configuration with `Build_Tests=OFF`, `PythonSupport=OFF`, and
+  `Build_Benchmarks=ON` exposes all three CPU-compatible benchmark targets and
+  no example targets; cached GoogleTest sources were reused without cloning.
+- Dedicated CPU runner: 18 backend/case groups passed, all rows CPU-only.
+  cuBLAS and native-small runners: 36 backend/case groups each passed for
+  ordinary/paired SE and SPGF at orders 1/3. Matching comparison: 18 cases.
+- Larger-matrix cuBLAS entry point ran successfully at dimension 4.
+- Relocated Solver workload passed ordinary/dynamic controls against CPU for
+  all three backends; subsequent machine-metadata recording also passed.
+- Relevant CTests passed: CPU 2/2; CUDA 3/3, including native batch API tests.
+- Every one of the 256 historical CSV/JSON/log records is preserved byte-for-byte.
+  All benchmark Markdown links resolve; Python syntax and CLI checks passed.
+- Future recorder manifests identify host/CPU/GPU and hash the relocated entry
+  sources; the CPU wrapper is included in source provenance. Historical manifests
+  remain unmodified. New smoke-run results/logs are under `/tmp/xca-bench-*`.
+
+The initial checkout was on `dev_cuda_original`; this was caught at the first
+checkpoint. Its prior tip `bf2ad3d` was restored, and all new commits are on
+`dev_cuda`. History squashing is still postponed. Experiments, production evaluator
+code, and unrelated user changes were left untouched.
