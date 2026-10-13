@@ -1,14 +1,12 @@
 # N4 optimization baseline — 2026-10-11
 
-Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
 
-Final contract dense-small-v2, benchmark code c1a87d7, production source064b64e
-(23 protected files unchanged). RTX A4000, Threadripper PRO3945WX, clang19 Release,
-CUDA13.4, one OpenMP/OpenBLAS thread. Seven serial runs are preserved under baseline/:
-three quick repeats, throughput, method/order coverage, rank26 control and CPU-prefix
-control. Each has raw samples, summary and manifest. All224 backend/case groups pass;
-GPU results exactly match the unchanged CUDA reference in these runs. Methods include
-se/pairs/spgf through order12 with three sampled indices; no exhaustive enumeration.
+Fixture `dense-small-v2`, RTX A4000, Threadripper PRO 3945WX, clang-19 Release,
+CUDA 13.4, one OpenMP/OpenBLAS thread. Seven serial runs in the
+[reference dataset](../../dense_cpu/thinkstationP620_RTXA4000/baseline/) cover three
+quick repeats, throughput, method/order coverage, rank26 and CPU-prefix controls.
+All 224 backend/case groups passed their numerical checks. Methods include
+ordinary/paired self-energy and SPGF through order12 with selected indices.
 
 ## Latency and throughput
 
@@ -33,7 +31,7 @@ improve materially. Requested index count is a workload size, not a parallel bat
 capacity in the baseline. Different counts use different deterministic index samples.
 
 CPU-only-prefix order8/B1 measured1.016ms versus about1.033ms for host evaluation in
-the CUDA-enabled executable. The previous N32 prefix discrepancy is not evident here.
+the CUDA-enabled executable. This N4 control shows no substantial prefix-dependent timing difference.
 Use matched manifests when comparing experiments; these finite samples are not
 confidence intervals. Quick runs took about4s each; throughput about61s; coverage
 about8s on this machine, including untimed checks. Setup is charged per fresh timed
@@ -45,7 +43,7 @@ N4/r16, order6, crossing, one index, three measured CUDA calls (first, warmup, s
 
 - 257 GPU kernels per traversal; about335 cudaDeviceSynchronize calls per complete API
 call, including benchmark completion boundaries. Other runtime calls are in
-`baseline/trace_n4_runtime.csv`.
+[runtime counts](../../dense_cpu/thinkstationP620_RTXA4000/baseline/trace_n4_runtime.csv).
 - Traversal wall time under Nsight averages5.53ms; summed active kernels2.814ms,
 including1.348ms GEMMs and1.251ms solve-family kernels. These are diagnostic profiled
 times, not the unprofiled baseline used for speed ratios.
@@ -59,28 +57,13 @@ Identify their ownership before choosing reusable upload/result staging.
 The observed trace peak38,466,613 allocated bytes includes both reference/candidate
 objects and library allocations, not physical residency or hidden context caches.
 
-Reproduce after sourcing the CUDA environment:
-
-```bash
-nsys profile --trace=cuda,nvtx,cublas,cusolver --sample=none --cpuctxsw=none \
-  --cuda-memory-usage=true --cuda-um-cpu-page-faults=true --cuda-um-gpu-page-faults=true \
-  --output=cbuild-small-profile/n4-r16-order6 \
-  env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 cbuild-cuda/examples/dense_cuda_small_benchmark \
-  --orders 6 --topologies crossing --indices 1 --samples 1
-nsys export --type=sqlite --output=cbuild-small-profile/n4-r16-order6.sqlite \
-  cbuild-small-profile/n4-r16-order6.nsys-rep
-python3 tools/analyze_dense_cuda_trace.py cbuild-small-profile/n4-r16-order6.sqlite \
-  --within bench.cuda.sample
-# Add --phases for the phase CSV; constructor/validation ranges are excluded.
-```
-
 The runtime CSV counts CUPTI runtime events whose start lies in each NVTX range
 named bench.cuda.sample, joining nameId to StringIds. The three ranges include
 boundary completion checks, unlike the inner traversal kernel/allocation audit.
 Graphs may remove submission overhead, but cannot alone increase the useful work
 in a tiny kernel. Index batching also widens DLR rank transforms and shared-LU RHS
 solves, which are substantial costs here; fused operations can reduce launch count
-and scratch traffic. These measurements motivate the ordered experiments in the plan.
+and scratch traffic. The measured launch/solve costs motivate testing index batching and fused operations.
 
 ## Numerical scope and validation
 
@@ -95,10 +78,3 @@ relative columns may refer to different lanes. Rank26's worst sampled per-index 
 relative discrepancy was3.37e-9 in these selected cases. Results therefore depend
 strongly on conditioning/cancellation and rank. Preserve the baseline but investigate
 numerical accuracy before relying on such tiny higher-order terms scientifically.
-
-Both CPU/CUDA benchmark builds pass the three focused contract tests (zeroed tiny
-result rejection, nonfinite rejection, long-index selection and malformed input checks).
-CLI invalid-input and comparison-mismatch tests passed. Empty/duplicate subsets and
-changed propagator data are checked on actual GPU for each case. The supervisor's
-24 tests pass. Production code remains untouched; the previous port's analytic suites
-remain the additional acceptance gate for later experimental implementations.

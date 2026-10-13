@@ -1,22 +1,20 @@
 # Performance benchmarks
 
-Dense evaluator benchmarks live in `dense_cpu`, `dense_cuda` (cuBLAS), and
-`dense_cuda_small`. Shared comparisons and complete Solver workload controls live
-in `dense_comparison`. Existing physics benchmarks in other directories are unchanged.
+Dense workloads share fixtures and recording/comparison utilities in `dense_common`.
+Backend entry points live in `dense_cpu`, `dense_cuda` (cuBLAS), and `dense_cuda_small`.
+Other directories contain physics benchmarks.
 
 Configure with `-DBuild_Benchmarks=ON` to build the C++ benchmarks independently
-of `Build_Tests` and `examples/`. By default this option follows `Build_Tests` on
-first configuration. Binaries are placed in `<build>/benchmarks/<benchmark>/`.
-These workloads are explicit performance runs, not automatic CTest timing tests.
+of `Build_Tests` and `examples/`. The default follows `Build_Tests` on first
+configuration. Binaries are placed in `<build>/benchmarks/<backend>/`. Benchmarks
+are explicit performance runs rather than automatic CTest timing tests.
 
-Each benchmark directory contains portable sources and instructions. Recorded
-measurements and hardware-specific interpretation belong in a hardware subfolder,
-currently `thinkstationP620_RTXA4000`. For another machine, create a similarly
-informative folder and preserve each run's manifest, raw samples and summary.
-Do not infer a crossover on another GPU from workstation measurements. The
-optimization target is high-end hardware such as GH200; RTX A4000 results are
-local evidence.
+Portable sources and instructions stay at each directory's root. Raw measurements,
+profiling summaries and hardware-specific conclusions belong in hardware subfolders,
+currently `thinkstationP620_RTXA4000`. For another machine, create an informative
+folder and preserve each run's manifest, raw samples and summary. Recorded commands
+and source hashes identify the code and environment used for each measurement.
 
-Historical manifests retain their original commands, paths and source hashes.
-They describe the measurement at its recorded revision, before this reorganization.
-The experimental implementations and their results remain under `experiments/`.
+The optimization target is high-end hardware such as GH200. Workstation measurements
+provide local evidence and do not establish crossovers or dispatch choices on another
+GPU. See [shared methodology](dense_common/README.md) before comparing results.

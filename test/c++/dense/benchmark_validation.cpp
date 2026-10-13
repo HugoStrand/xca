@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../../benchmarks/dense_cuda_small/harness.hpp"
+#include "../../../benchmarks/dense_common/harness.hpp"
 #include <limits>
 #include <triqs_xca/dense/cuda_small/qualification.hpp>
 TEST(DenseBenchmark, RejectsNonfiniteValuesAndMetrics) {

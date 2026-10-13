@@ -4,8 +4,7 @@ import argparse
 import csv
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]/"dense_cuda_small"))
-from run import KEY
+from runner import KEY
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('reference',type=Path);p.add_argument('candidate',type=Path)

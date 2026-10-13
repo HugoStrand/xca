@@ -4,7 +4,7 @@
 #include <chrono>
 #ifdef XCA_HAVE_CUDA_SMALL
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
-#include "../../../../benchmarks/dense_cuda_small/harness.hpp"
+#include "../../../../benchmarks/dense_cuda/adapter.hpp"
 
 namespace triqs_xca::dense::cuda_small {
   struct BatchFailureProbe {

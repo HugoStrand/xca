@@ -1,13 +1,10 @@
-# Dense CUDA port: results and acceptance audit
+# Dense cuBLAS measurements
 
-Verified on ts, 2026-10-10. The C++ CUDA evaluator implements ordinary and paired
-self-energy, single-particle Green's functions, one-time correlators and dynamic
-interactions. It preserves the host compute/count interfaces and uses complex
-double, persistent device tensors, cuBLAS and LU-based cuSOLVER DLR conversion.
-Select `triqs_xca::dense::cuda::DiagramEvaluator` explicitly from
-`triqs_xca/dense/cuda/diagram_evaluator.hpp` in a CUDA-enabled build. Calls, including
-other NDA solver use in the same process, must be serialized. Model inputs are frozen
-at construction; propagators and external operators are read anew on every call.
+Lenovo ThinkStation P620 (ts), AMD Threadripper PRO 3945WX (12 cores),
+NVIDIA RTX A4000 (16 GB, compute capability 8.6), CUDA 13.4 and driver
+580.178.04. Measurements use clang-19 Release, TRIQS 4.0, and one
+OpenMP/OpenBLAS thread unless the run manifest states otherwise.
+GH200-class GPUs are the optimization target; these results are local qualification.
 
 ## Synchronized API measurements
 
@@ -39,7 +36,7 @@ launch/synchronization overhead. No automatic backend choice was added.
 
 All ten runs passed finite CPU comparisons; worst maximum absolute difference was
 5.52e-15. This is a bounded synthetic evaluator workload with three warm samples,
-without confidence intervals or solver-wide performance claims. Measurements preceded
+without confidence intervals or solver-wide performance claims. Measurements use the source version recorded with the data;
 the final diagnostic phase ranges; the numerical algorithm is unchanged.
 
 ### CPU baseline and algorithm effects
@@ -92,37 +89,7 @@ synchronous adapters; Nsight kernel times sum active kernels. In the original N3
 trace, combined rank/batched GEMMs account for about 65% of active kernel time and
 solves about 29%. This supports matrix products as a major cost, but does not prove
 batched GEMMs alone dominate wall time. Profiling times are not speedup measurements.
-See [README](../../../dense_cuda/thinkstationP620_RTXA4000/ORIGINAL_README.md) for reproduction and trace limitations.
-
-## Acceptance audit
-
-| Requirement | Evidence |
-|---|---|
-| Separate guarded evaluator, inherited CUDA support, CPU compatibility | `dense/cuda/{diagram_evaluator,device_ops,dlr_ops}`; both Release builds and all 33 C++ CTests pass |
-| Complex layouts, disjoint batched outputs, repeated operators, weighting, pack/trace without conjugation | Five actual-GPU DeviceOps tests, including complex trace/layout comparisons |
-| LU solve orientation/pivots, reconstruction, reflection, noncommuting convolution and beta | Four actual-GPU DlrOps tests; representative ranks, symmetrized/unsymmetrized meshes and cancellation cases |
-| Constructors, all/single/vector/count SE and pairs, signs, both directions, multiplicity | Existing analytic one/two-fermion seams through order three, unitary rotation, `dense/dynint_parity` |
-| Dynamic interactions, real/complex basis, bosonic/fermionic kernels | Spin-rotation ladder/Cartesian tests including imaginary Sy; parity and constructor checks |
-| Right traversal, reflection, SPGF flavours, one-time operators/statistics | Analytic/rotation SPGF tests; correlator statistics, explicit helper flags and mixed-statistics rejection |
-| Long indices/counts and validation before narrowing | `flat_index_range`: counts beyond INT_MAX, order-six selected calls; bad index/prefix checks |
-| Current input upload, noncontiguous packing, output shape, reuse after errors, empty endpoints/subsets | `propagator_layout` and dynamic reuse seams; actual strided host view and changed data/operator sets |
-| RAII, synchronization/status safety, error context and checked memory arithmetic | Owned native handle/pointer tables, persistent scratch, checked size/byte/BLAS dimensions; NDA allocation errors name cudaMalloc and CUDA error |
-| Device residency, inner allocation freedom and observable peak memory | Four traversal trace summaries above; auditor also rejected the pre-warm allocation trace |
-| Measured primitives, special vertex, traces, full API and rank/size regimes | Benchmark CSVs, CPU-prefix control and phase trace; transform-hoisting comparison |
-| GPU execution and memory checking | CUDA C++ suite executes GPU cases; focused DeviceOps/DlrOps/evaluator Compute Sanitizer checks report zero errors |
-| Persistent recovery and separable commits | Supervisor 23 tests, simulated quota reset/races, detached ts service/boot registration; separate plan/log commits on dev_cuda, no push |
-
-Most existing numerical bounds remain unchanged. The order-six selected long-index
-CUDA comparison uses 3e-12 relative: 20 DLR solves amplify small rounding differences;
-12 nearby indices measured roughly 1.4e-13–1.3e-12 relative and below 4.4e-20 absolute.
-CPU/reference assertions retain 1e-13. This exception is limited to that stress case;
-it does not justify changing tolerances elsewhere.
-
-No real quota exhaustion or reboot was deliberately induced; recovery was tested
-with the actual local transport and simulated backend state, plus live read-only
-checks. Allocation-failure context was verified from NDA source rather than exhausting
-the GPU. Python bindings/solver integration, block-sparse CUDA, asynchronous scheduling,
-custom fusion, cross-backbone batching and multi-GPU support remain outside scope.
+See [profiling instructions](../../../dense_cuda/README.md) for reproduction and trace limitations.
 
 ### Diagnostic phase totals
 

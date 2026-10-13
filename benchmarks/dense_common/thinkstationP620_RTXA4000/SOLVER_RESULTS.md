@@ -1,6 +1,5 @@
 # Real Solver workload control
 
-Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
 
 Serial RTX A4000 control, three fresh Solver objects per backend/case. Ordinary or fitted two-channel density/spin interaction; two self-consistency iterations through order2, SPGF through order2, followed by order2 density correlator. Full fit/setup/solve/observable paths are included, not independent C++ evaluator calls. All resulting G, Sigma, G_tau and density correlators match CPU with the same integration-test tolerance(rtol1e-9, atol1e-12), and are finite/nonvacuous. The strict C++ optimization gate is unchanged.
 
@@ -13,6 +12,6 @@ Serial RTX A4000 control, three fresh Solver objects per backend/case. Ordinary 
 |cuda|dynamic|3.120|880.265|131.965|1015.960|
 |cuda_small|dynamic|5.603|109.012|68.714|183.185|
 
-CPU is faster for these short complete workloads; native Small improves retained CUDA substantially, but no overall GPU speedup is claimed here. Larger indexed batches and high orders are represented by the separate C++ benchmarks. Solver defaults therefore stay CPU. Each median includes three samples in one process, not three-process uncertainty; setup/context warm state and fitting costs matter. MPI correctness is tested separately.
+CPU is faster for these short complete workloads; native Small improves retained CUDA substantially, but no overall GPU speedup is claimed here. Larger indexed batches and high orders are represented by the separate C++ benchmarks. CPU is a suitable backend for these measured short workloads. Each median includes three samples in one process, not three-process uncertainty; setup/context warm state and fitting costs matter. MPI correctness is tested separately.
 
 The target is GH200-class accelerators. These local timings do not justify target crossover thresholds or an automatic backend policy. Re-run the standalone script in the target environment; retain its manifest/raw samples and any failed comparisons.

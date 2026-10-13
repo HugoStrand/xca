@@ -1,6 +1,6 @@
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
-#include "../../benchmarks/dense_cuda_small/harness.hpp"
+#include "../../benchmarks/dense_common/harness.hpp"
 #include <gtest/gtest.h>
 #include <limits>
 

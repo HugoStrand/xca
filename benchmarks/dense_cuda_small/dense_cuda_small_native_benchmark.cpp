@@ -1,4 +1,4 @@
-#include "harness.hpp"
+#include "../dense_cuda/adapter.hpp"
 #include <triqs_xca/dense/cuda_small/diagram_evaluator.hpp>
 #include <cstdlib>
 #include <climits>

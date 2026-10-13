@@ -1,1 +1,2 @@
 xca_add_benchmark(dense_cuda_benchmark)
+xca_add_benchmark(dense_cuda_fixture_benchmark)

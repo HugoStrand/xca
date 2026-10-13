@@ -1,6 +1,5 @@
 # Larger power-of-two controls
 
-Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
 
 RTX A4000, rank16, two poles, seed31415, crossing topology. GH200-class cards are the target and still need separate measurements. Eighteen fresh single-process screens compare the native sequential library route and retained CUDA evaluator at dimensions16/32/64. Orders1/3/6/8, ordinary/paired SE and SPGF, counts1/8 at order1 and3 at higher orders, samples3. All screens pass the unchanged individual/aggregate CUDA gate and low-order CPU checks; high-order CPU comparisons remain diagnostic. Fixed-size kernels at these dimensions are not admitted by these library-route measurements.
 
@@ -27,4 +26,6 @@ RTX A4000, rank16, two poles, seed31415, crossing topology. GH200-class cards ar
 
 This is a screen, not three-process uncertainty or a throughput crossover for large batches. Native ownership/stream/resource policies can improve time even when every matrix product uses libraries. There is no need to replace retained CUDA: both implementations remain available, and their applicability can differ by workload/hardware.
 
-The earlier N16 low-order CPU-disagreement fixture in power_two/results remains a distinct recorded rejection. Passing seed31415 here does not erase it or establish universal numerical equivalence. Larger fixed-size product admission requires separate primitive/full-API qualification and useful gains. No tolerance or precision changed.
+Different fixtures can expose stronger low-order CPU disagreement. Passing this
+seed does not establish universal numerical equivalence. Fixed-size kernels at
+larger dimensions require separate primitive/full-API qualification and useful gains.
