@@ -107,11 +107,12 @@ input/output aliasing: CPU expression temporaries cannot be replaced by unsafe d
 views. Use live-region storage and ping-pong buffers with explicit lifetimes.
 
 Current block-sparse public functionality comprises ordinary SE, SPGF and one-time
-correlators, with full/single/vector-index variants where currently exposed. It has
+correlators, with full/single/range variants where currently exposed. Explicit
+noncontiguous index selections remain available in C++ for experiments. It has
 **no paired-SE API**. Both line directions already occur in ordinary indexing.
-Paired SE would be a separate extension, not a missing port requirement. CPU range
-migration remains outstanding; native range/count and bounded explicit-index entry
-points should preserve existing semantics without materializing enormous vectors.
+Paired SE would be a separate extension, not a missing port requirement. CPU Python
+evaluation and MPI orchestration now use half-open range bounds; a native block-sparse
+port should retain this interface without materializing enormous vectors.
 
 ## 3. Evidence collected and scale estimates
 
