@@ -143,3 +143,27 @@ Added the user's observation that the current symmetry-set analysis can be overl
 restrictive, including multiorbital density operators with scalar Hilbert-space
 blocks. The plan now calls for revisiting grouping restrictions without documenting
 the constant-offset workaround. Documentation only; `git diff --check` passed.
+
+## 2026-10-13 — Persistent implementation goal activated
+
+The user authorized a new persistent goal to implement `plan_block_sparse_cuda.md`.
+The earlier planning goal is complete; this implementation goal is now active.
+
+Deliver an operational block-sparse CUDA evaluator covering the existing ordinary
+SE, SPGF, one-time correlator and dynamic-interaction functionality. Follow the
+experiment gates and update the design from measured evidence rather than choosing
+kernels or graph policies in advance. Include the current symmetry-set limitations
+in the investigation. GH200-class accelerators remain the performance target;
+local RTX A4000 results are development evidence with explicit qualification limits.
+
+Start with E0 bounded workload/memory inventory and E1 direct sparse operator export
+from atom_diag Fock metadata, including a CPU numerical control. Then establish E2's
+allocation-bounded device reference before optimizing or expanding system size.
+Use the existing consolidated CUDA module, range APIs and Python MPI orchestration.
+Preserve dense baselines, all experiments and unrelated user work. Commit verified
+code continuously on `dev_cuda` with terse messages; commit plan/log checkpoints
+separately. Do not push. Do not mark the implementation goal complete until its
+supported functionality and required verification are achieved.
+
+This checkpoint records goal activation; it does not claim that new implementation
+experiments or quota-supervisor reconfiguration have already been performed.
