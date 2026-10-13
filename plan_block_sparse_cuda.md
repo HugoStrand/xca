@@ -1,127 +1,492 @@
-# Block-sparse CUDA: future-work stub
+# Block-sparse CUDA: investigation and experiment plan
 
-Date: 2026-10-12. Planning only; implementation follows the operational dense
-`c++/triqs_xca/dense/cuda_small` work. Preserve every current experiment and its
-negative results. See `plan_dense_cuda_small_generic.md` and
-`experiments/dense_cuda_small/COMPARISON.md`.
+Date: 2026-10-13. Status: investigated design; CUDA experiments below are proposed,
+not completed. This replaces the earlier stub. Preserve the dense implementations,
+benchmarks and all existing experiments, including negative results.
 
-## Target hardware and orchestration
+The performance target is **GH200-class accelerators, not the local RTX A4000**.
+Local measurements establish correctness and screen ideas; target measurements must
+establish dispatch thresholds, memory policy and production defaults. Here N means
+fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
-Performance target: high-end accelerators such as GH200, not the local RTX A4000.
-Use A4000 data as a development proxy; measure shape distributions, crossover and
-packing/fusion policies on target hardware before choosing production defaults.
-Python's API can change: it orchestrates MPI partitioning, rank-to-GPU placement and
-collectives. Native code should own bounded work descriptors, local scheduling and
-ordered accumulation; do not materialize all rank-local indices in Python or put
-collectives inside unequal local chunk loops. Coordinate errors before reductions.
+## 1. Questions to resolve
 
-## Problem and intended direction
+The likely useful decomposition is sparse operator application, dense propagator
+convolution, and bounded scheduling of independent block paths. Test that hypothesis
+before choosing a backend. A single maximum-block-size switch cannot represent all
+three costs. The investigation must decide:
 
-The atom_diag-based dense solver operates on the full fermionic Hilbert space:
-N fermionic modes give dimension d=2^N, so dense-small needs only2/4/8/16/... matrix
-sizes. Block-sparse evaluation uses atomic symmetries to decompose that same space
-into smaller subspaces. Their individual dimensions need not be powers of two and
-vary between blocks, even though the total Hilbert-space dimension remains2^N.
-Consequently, the dense power-of-two specialization set is insufficient here:
-consider arbitrary small block dimensions and rectangular inter-block products,
-alongside library dispatch. Defer that broader kernel coverage to this investigation
-rather than making it a prerequisite for the dense-small implementation.
+- When signed maps, general sparse products, small rectangular kernels or cuBLAS
+  should execute each operation, including mixtures within one backbone.
+- Which parallelism survives path pruning: DLR nodes, output sectors, indexed
+  evaluations, topologies, or combinations of these.
+- Which intermediates merit reuse and which must be streamed to fit large sectors.
+- Whether topology sharing and CUDA graphs improve complete calls after discovery,
+  packing, graph construction, invalidation and retained-memory costs.
 
-`block_sparse::DiagramEvaluator` follows operator-dependent block paths using
-`ind_path` and `block_dims`. Propagator blocks are square, but field operators and
-intermediate products can be rectangular. Dimensions and active/zero blocks vary
-along a backbone and between indexed evaluations. Choosing one backend using the
-maximum block size is unlikely to be sufficient.
+Python may change freely to orchestrate MPI. C++ should own local bounded work
+queues and accumulation. This plan does not freeze the Python API, introduce
+reduced precision, or require an immediate complete 14-mode solver benchmark.
 
-Explore operation-level dispatch between small custom kernels and library CUDA
-products, coupled to batching across compatible indexed evaluations and DLR nodes.
-A dispatch key needs `(M,N,K)`, rank, available lane count, layout/strides, transpose
-conventions, accumulation mode and kernel capability. Dense crossover measurements
-are a starting point, not a block-sparse dispatch rule. Rectangular shapes, ragged
-batches and packing costs require new evidence.
+## 2. What the current implementation actually does
 
-## Topology-level parallelism and shared computations
+Source anchors: [atomic operators](c++/triqs_xca/atom_diag.cpp),
+[block operator construction](c++/triqs_xca/block_sparse/atom_diag.cpp),
+[block storage](c++/triqs_xca/block_sparse/block_op.cpp),
+[evaluator](c++/triqs_xca/block_sparse/diagram_evaluator.cpp),
+[public API](c++/triqs_xca/block_sparse/diagram_evaluator.hpp),
+[dynamic operators](c++/triqs_xca/dynint.cpp),
+[indexing](c++/triqs_xca/backbone.cpp),
+[topologies](python/triqs_xca/diag.py), and [Solver](python/triqs_xca/solver.py).
 
-Also consider the sum over topologies as a parallelization axis, alongside block
-paths, indexed evaluations and DLR nodes. `python/triqs_xca/diag.py` generates
-pairings recursively and filters connected topologies; the number grows
-combinatorially with expansion order. The current Python Solver traverses these
-topologies sequentially for SE, paired SE, SPGF and one-time correlators.
+### Basis and structure
 
-Investigate bounded work batches spanning multiple topologies, with scheduling
-across MPI ranks and within each GPU. Compare topology, index and combined work
-partitioning using measured costs: topology workloads can differ substantially
-after block-path pruning. Avoid materializing the complete topology/index product.
-Preserve signs, multiplicity and deterministic topology/index accumulation order;
-changing the placement or grouping of MPI reductions needs numerical validation.
+The evaluator already uses the **Fock basis within each atom_diag subspace**.
+`get_operator_block_impl` converts atom_diag eigenbasis matrices using
+`U_target * F_eigen * U_source^dagger`. Thus fundamental c/cdag blocks are signed
+partial permutations in the evaluator basis, even when those blocks are large.
+The dense storage and round trip conceal this exact structure. Propagators can
+still be dense within a subspace; sparse vertices do not make the convolution sparse.
 
-Look for identical partial computations shared across topologies, such as compatible
-backbone prefixes or operator/convolution subpatterns. CUDA graphs may provide a
-useful execution representation: compute a common subpattern once and let dependent
-branches consume its result, or reuse graph structure across repeated Solver calls.
-Graph replay alone does not memoize numerical results; sharing must be represented
-explicitly by a dependency DAG and safe buffer ownership. Equivalence must include
-operator/pole choices, weights, block paths, layout and propagator version, not merely
-similar topology diagrams. Changed inputs must recompute affected shared results.
+Atom_diag supplies Fock-state lists and fundamental-operator ordering. Construct
+operator structure directly from those lists instead of thresholding the rotated
+matrices. For mode j and bit state s, annihilation is zero if j is empty; otherwise
+it maps to `s xor (1 << j)` with sign `(-1)^popcount(s & ((1 << j)-1))`.
+Creation uses the same sign and requires an empty mode. Use atom_diag's actual mode
+ordering and state type, with checked shifts, rather than assuming orbital labels
+are consecutive bit indices. Build inverse state-to-(subspace,local-index) maps and
+verify the resulting edges against atom_diag's c/cdag connections.
 
-Measure how much reusable work actually exists, together with discovery, graph
-construction/update, retained intermediate memory and repeated-call amortization.
-Compare independent topology batching with explicit shared-subpattern execution
-before choosing either. This is an investigation point, not a committed architecture.
+For retarded operators, apply the many-body monomials directly to Fock states,
+rightmost operator first, using TRIQS's canonical conventions. Investigate reusing
+`triqs::hilbert_space::imperative_operator` rather than duplicating fermion algebra.
+Coalesce duplicate entries in a specified order; do not prune small coefficients as
+an optimization. Density operators are diagonal, individual hopping/spin-flip terms
+are partial maps, and sums may need general CSR/CSC storage. `get_op_mat` alone is
+not a direct Fock export: its matrices are in the atomic eigenbasis.
 
-## Staged investigation
+The current dynamic-operator resolver requires one target subspace per source and
+an injective connection map for the adjoint; it rejects unsupported multi-target
+sums and all-zero operators. Preserve this supported domain. Arbitrary matrices
+provided through lower-level APIs also need a general dense/sparse fallback with
+explicit structural provenance; never assume all supplied matrices are signed maps.
 
-1. Inventory real block paths from existing block-sparse tests and representative
-   solver models. Record shape histograms, zero-path pruning, reuse, index counts,
-   output fan-in and sequence dependencies. Include dynamic-interaction paths,
-   special vertices, paired evaluation and correlators with right traversal.
-2. Establish an allocation-bounded, library-backed device reference preserving
-   existing CPU path/index semantics. Keep model/operator blocks resident and upload
-   changed propagators explicitly. Reuse CPU/native-layout tests as independent
-   checks; an all-dense comparison alone cannot detect identical path errors.
-3. Build operation descriptors containing shapes, strides, operator/block IDs,
-   lane/index provenance, data dependencies and output ownership, with bounded descriptor/cache/host/device memory accounting. Bucket independent
-   ready operations by compatible shape/capability; use pointer-table/grouped or
-   strided library batches where supported, measured small kernels elsewhere.
-   Do not depend on a new cuBLAS API without checking the installed toolkit.
-4. Test batching across indexed paths without evaluating zero blocks or padding
-   every lane to the largest block. Charge bucketing, gather/scatter, metadata
-   upload and dispatch to full API time. Compare a simple per-edge scheduler with
-   reusable shape/path schedules before attempting broad fusion.
-5. Fuse only compatible ready subpatterns (vertex/weight stages or bounded backbone
-   segments). A size change, fan-in, library operation or synchronization requirement
-   may form a fusion boundary. Preserve each lane's dependency order and caller's
-   contribution order; grouping must not introduce atomic or tree-reduction rounding.
-6. Measure heterogeneous mixtures, skewed shapes, changing paths, tails and different
-   index counts. Include a case where small and library operations alternate inside
-   one backbone. Run strict numerical checks, memory sanitizers and kernel/copy traces
-   before deciding whether dispatch/fusion complexity earns its cost.
+Symmetry sets group orbitals with identical complete annihilation-connection rows.
+The quartet stores Fs/Fdags and pole-weighted barred variants, not just fundamental
+operators. Barred operators are linear combinations inside a symmetry set and can
+have multiple nonzeros per row/column. Test both sparse materialization per pole
+and implicit application of maps plus hybridization coefficients. Respect the
+existing cross-set hybridization compatibility check.
 
-## Interfaces worth preserving during dense-small development
+### Arithmetic, paths and output
 
-Separate matrix primitives from the square dense evaluator's traversal. Internally
-carry explicit dimensions/strides and stable buffer ownership, with capability-tested
-kernel selection. Keep rank transforms and cached LU distinct from operator products.
-Allow immutable descriptors/pointer tables on one owned stream with explicit upload
-handoff. Share validated primitives later, not the dense experiment's square storage
-assumptions or whole-evaluator fallback logic. Do not compile every possible
-rectangular `(M,N,K)` triple in advance; investigate a compact tile/family policy.
+| Stage | Current operation | CUDA implication |
+| --- | --- | --- |
+| Left vertex | F(M,K) times T(r,K,A) | Sparse left apply; anchor A changes at the special vertex |
+| Right vertex | U(r,A,K) times F(K,L) | Sparse right apply needs its own layout and transpose treatment |
+| Edge | Dense block propagation plus DLR transforms/convolution | Rectangular GEMMs and shared rank-r transforms remain |
+| Values to coefficients | Rank-r solve with variable spatial RHS count | Reuse pivoted LU; concatenate or chunk independent RHS |
+| Special vertex | T times F_kappa, coefficient mixing, then F_mu times intermediate | Stream or fuse sparse applications; avoid storing every kappa buffer |
+| Correlator | Left/right fragments and endpoint contractions | Preserve existing fragment reuse and right reflection |
 
-## Correctness and open questions
+Flat indices select orbital/pole/direction data; they do not enumerate all subspace
+paths. Self-energy additionally loops over output blocks and symmetry sets. Absent
+operator connections and zero propagator blocks prune paths, and the special-vertex
+symmetry-set constraints prune further. Shape histograms alone therefore cannot
+predict ready work or total time.
 
-Retain zero-block semantics, subspace ordering, path multiplicity, parity/signs,
-endpoint statistics and long indices. Preserve full complex-double arithmetic and
-pivoted LU; the rejected custom solve demonstrates that tiny reconstruction residuals
-are insufficient for high-order diagram agreement. Native owned-handle paths may support independent instances only after validation;
-delegation to current dense/cuda retains its process-shared NDA serialization restriction.
-A local adapter lock does not protect unrelated NDA users. Respect lane lifetimes during
-asynchronous scheduling and avoid writes to metadata still in use.
+`set_zero_block_indices` currently uses a whole-block maximum below `1e-16`.
+This is a numerical input-dependent mask, not just immutable connectivity. Preserve
+its policy initially and invalidate schedules when the mask changes. Cross-set
+coefficient tolerance is a separate policy. Test both near their boundaries.
 
-Open questions: grouping opportunities after symmetry pruning; whether path discovery
-is a significant CPU cost; packing/layout choices for variable widths; deterministic
-fan-in accumulation; a bounded cache for changing shape sequences; graph usefulness
-with heterogeneous schedules; and whether rectangular kernels justify extra compiled
-variants. Resolve these through measured prototypes after dense-small integration.
+Different output blocks can execute independently. Contributions to the same output
+need explicit ownership and a reproducible accumulation order. Preserve caller index
+order and topology order initially. Avoid overlapping cuBLAS batch outputs and
+input/output aliasing: CPU expression temporaries cannot be replaced by unsafe device
+views. Use live-region storage and ping-pong buffers with explicit lifetimes.
 
-Revisit and revise this block-sparse plan once the dense-small solver is operational,
-using its validated primitives and new topology/path profiling evidence.
+Current block-sparse public functionality comprises ordinary SE, SPGF and one-time
+correlators, with full/single/vector-index variants where currently exposed. It has
+**no paired-SE API**. Both line directions already occur in ordinary indexing.
+Paired SE would be a separate extension, not a missing port requirement. CPU range
+migration remains outstanding; native range/count and bounded explicit-index entry
+points should preserve existing semantics without materializing enormous vectors.
+
+## 3. Evidence collected and scale estimates
+
+### Bounded atom_diag probes already run
+
+CPU probes used a density-density Hamiltonian with unequal onsite energies and
+interactions, first with automatic partitioning, then with generic complex hopping
+and only total-number Q conserved. These are setup/metadata timings from one run,
+not evaluator performance measurements.
+
+| N | Automatic occupation blocks | Q-only block dimensions | Q-only setup + metadata |
+| --- | --- | --- | --- |
+| 4 | 16 blocks of size 1 | 1,4,6,4,1 | 0.0005 s |
+| 6 | 64 blocks of size 1 | 1,6,15,20,15,6,1 | 0.0043 s |
+| 8 | 256 blocks of size 1 | 1,8,28,56,70,56,28,8,1 | 0.0939 s |
+| 10 | 1024 blocks of size 1 | 1,10,45,120,210,252,210,120,45,10,1 | 2.2578 s |
+
+The occupation fixtures produced N singleton orbital symmetry sets; the Q-only
+fixtures produced one set of size N. This changes the special-vertex workload as
+well as matrix dimensions. The two Hamiltonians above probe regimes; comparing
+their timings is not a same-physics symmetry speedup measurement.
+
+A separate six-mode complex-hopping probe compared direct Fock annihilation maps
+against atom_diag eigenbasis matrices rotated back to Fock space. Across all modes
+and connected subspaces there were 192 exact nonzeros versus 4752 stored dense
+entries. Maximum reconstruction error was `2.11e-15`; structurally zero entries
+contained roundoff up to `1.06e-15`. Direct construction removes that roundoff.
+High-order numerical equivalence still needs testing; no CUDA result follows from
+this probe. Reproduction details are in [the work log](work_log_block_sparse_cuda.md).
+
+### Q-only 10- and 14-mode memory
+
+For Q-only sectors, `d_q = binomial(N,q)`,
+`sum d_q^2 = binomial(2N,N)`, and
+`sum d_q*d_(q-1) = binomial(2N,N-1)`.
+For N=14 the dimensions are
+`1,14,91,364,1001,2002,3003,3432,3003,2002,1001,364,91,14,1`.
+These arbitrary rectangular dimensions differ from the dense solver's powers of two.
+
+The following are analytical complex-double payload sizes in GiB (2^30 bytes).
+G means one all-sector rank-r function. The CPU evaluator has four maximum-sized
+rank buffers plus `smax` kappa buffers; here `smax=N`. Its correlator also initially
+allocates two maximum-sized arrays per sector before replacing them by actual shapes.
+
+| N | r | One G | One maximum rank buffer | (4+N) rank buffers | Initial correlator side arrays |
+| --- | --- | --- | --- | --- | --- |
+| 10 | 16 | 0.044 | 0.015 | 0.212 | 0.333 |
+| 10 | 26 | 0.072 | 0.025 | 0.344 | 0.541 |
+| 10 | 36 | 0.099 | 0.034 | 0.477 | 0.749 |
+| 14 | 16 | 9.565 | 2.808 | 50.548 | 84.247 |
+| 14 | 26 | 15.542 | 4.563 | 82.141 | 136.902 |
+| 14 | 36 | 21.520 | 6.319 | 113.734 | 189.556 |
+
+G, output, transformed copies, library workspace, operator storage and construction
+peaks are additional; the correlator column is additional to persistent evaluator
+scratch. Do not copy this allocation strategy to CUDA or batch B copies of it.
+In contrast, N=14 occupation blocks need only 6.5 MiB for one G at r=26. Coarsening
+symmetry to improve GPU occupancy can catastrophically increase memory and work.
+
+Dense storage of both bare operator orientations costs
+`32*N*binomial(2N,N-1)` bytes: 0.050 GiB at N=10 and 15.622 GiB at N=14.
+Including both barred families at p=2 poles raises raw quartet payload to 0.150 and
+46.866 GiB respectively, excluding copies and atom_diag's own storage.
+All N=14 annihilation maps together have only `N*2^(N-1)=114688` nonzeros.
+One half-filled c_j block is 3003-by-3432 with 1716 nonzeros.
+For a fully mixed barred family, an upper bound per orientation and pole is
+`N^2*2^(N-1)` nonzeros; both orientations at p=2 require about 98 MiB of values,
+plus indices. Implicit maps plus coefficients may be smaller still.
+
+These numbers make sparse export and lifetime-aware workspace prerequisites for
+large-sector feasibility, even before deciding which operator kernel is fastest.
+They do not eliminate atom_diag's host-side diagonalization or eigenbasis caches;
+measure host peak RSS separately and avoid constructing N=14 atom_diag by default.
+
+## 4. Representative workloads and bounded sampling
+
+Maintain three families with fixed seeds, explicit Hamiltonian/operator definitions,
+partition metadata and independently checked topology/index lists:
+
+1. **Many tiny blocks:** diagonal hybridization, density-density interactions and
+   automatic occupation partitioning, N=4/6/8/10/14. Nonidentical energies and time
+   dependence prevent a constant-scalar shortcut. Include diagonal retarded density
+   interactions. Scalar vertices still require nontrivial DLR work.
+2. **Mixed blocks:** physically valid automatic or explicitly conserved partitions
+   from spin/orbital models, with small arbitrary dimensions and adjacent rectangular
+   shapes. Include noncommuting complex propagators, supported spin-flip/retarded
+   operators and alternation between small and large operations in one path.
+   Record actual partitions; do not assume a model name fixes block sizes.
+3. **Q-only:** generic number-conserving complex hopping and interactions, first
+   N=4/6/8, then bounded N=10; use the exact N=14 sector shapes in isolated replays.
+   Include dense compatible hybridization, since diagonal coefficients alone would
+   understate the single large symmetry set's mixing cost.
+
+On small systems, also compare finer and coarser valid partitions of the **same**
+Hamiltonian and hybridization against a dense reference. Do not discard incompatible
+hybridization elements to make a desired partition legal. Separate synthetic dense
+matrix replays from complete physical evaluator measurements.
+
+For order m, current ordinary flat-index count is `2^m*(n*p)^(m-1)`;
+correlators use `2^(m-1)*(n*p)^(m-1)`. Here n includes applicable dynamic channels.
+Subspace paths add work beyond these counts. With n=14,p=2,m=12 the ordinary count
+is 33970214778764787712, beyond signed 64-bit indexing. This must produce a checked
+rejection unless a separately designed hierarchical index API is introduced.
+
+Topology generation is another limit: `diag.py` visits pairings before filtering;
+raw pairing counts are `(2m-1)!!` (654729075 at m=10). Use a small explicit validated
+catalogue at high orders, including different crossing/nesting patterns and sharing
+opportunities. Do not generate all topologies and then select a few. Select fixed
+valid index ranges or explicit indices without scanning the whole domain. Report
+both proposed indices and accepted subspace paths so survivor-only sampling cannot
+masquerade as Solver throughput.
+
+| Tier | Work allowed | What it establishes |
+| --- | --- | --- |
+| T0 | Analytic N=14 inventory; actual atom_diag metadata through N=10 | Shapes, connectivity and memory bounds, no large diagonalization |
+| T1 | Exact large rectangular primitive shapes; 1/2/4 DLR-node GEMM batches; narrow spatial RHS slabs with all r nodes | Large-shape throughput and memory, not a complete evaluator |
+| T2 | Complete N=4/6/8 calls; bounded low-order exhaustive controls and selected high-order topologies/indices | Path/sign correctness and scheduling behavior |
+| T3 | N=10 few-topology/few-index full calls; N=14 selected-sector/path diagnostics only after a memory check | Larger-path behavior with explicit coverage limits |
+| T4 | Complete target-hardware calls only after measured time/memory admission | Production qualification for the tested scope |
+
+Screen each candidate with one pilot and up to three samples, normally at most ten
+seconds per case and a 15-minute campaign budget. Reduce case counts rather than
+silently changing shapes when a pilot is expensive. Finalists get at least three
+fresh-process repetitions and enough samples to resolve variance. Record timeout or
+memory rejection as a result, not a missing row. Full N=14 diagonalization/evaluation
+requires a separate measured resource estimate; primitive success does not qualify it.
+
+## 5. Experiments, controls and decisions
+
+### E0 — Work and memory inventory
+
+Instrument CPU path discovery with bounded descriptor traces. Record `(M,L,K)`, r,
+operator type/nnz, symmetry-set size, block/anchor IDs, direction, topology/index,
+accepted/rejected paths, output fan-in and dependency edges. Weight histograms by
+executed work and bytes as well as counts. Separate atom_diag/export, path discovery,
+operator application, DLR solves/transforms, dense convolution and reduction time.
+A null arithmetic scheduler measures descriptor generation, pruning and bucketing.
+
+Deliver an admission estimator including host/device live peaks, input/output,
+transforms, sparse indices, handles/workspaces and caches. Reject over-budget runs
+before allocations. Validate predictions against measured peaks at small sizes.
+Decision: choose only a few representative sequences and identify whether scalar
+scheduling, operator bandwidth, convolution or capacity dominates each family.
+
+### E1 — Direct sparse export and a numerical reference
+
+Build direct fundamental maps and supported many-body sparse operators from
+atom_diag Fock metadata. Compare compact signed maps, CSR/CSC and dense fallback.
+Validate subspace ordering, fermionic signs, adjoints, anticommutation, complex
+coefficients, repeated-term cancellation and current unsupported-operator errors.
+Build barred operators from maps and coefficients, not from rotated dense arrays.
+
+Use three comparisons: existing CPU with rotated operators; CPU with direct-Fock
+operators; CUDA with exactly the same direct-Fock inputs. This separates basis-roundtrip
+roundoff from device errors. Check full diagram outputs at existing strict tolerances,
+including cancellation-sensitive high-order samples. If old/new CPU disagree beyond
+those tolerances, investigate with small independent/manual references before changing
+acceptance criteria. Keep the production path unchanged until this is resolved.
+
+Measure export cost, host RSS, bytes uploaded and changed-coefficient update cost.
+Decision: which structural representation is reliable and compact; kernel speed is
+not the only reason to retain exact sparse construction.
+
+### E2 — Minimal allocation-bounded CUDA reference
+
+Establish straightforward device execution of already discovered paths using actual
+rectangular live buffers, general library primitives and explicit sparse/dense operator
+representations. Reuse validated dense-native stream, handle, upload-event and LU
+ownership principles, without importing square or maximum-dimension allocations.
+Keep a small dense-operator reference on small cases for cross-checking sparse applies.
+Own cuBLAS/cuSOLVER/cuSPARSE resources; preserve a clear synchronous API boundary.
+Do not silently replay submitted work through another evaluator after device errors.
+
+This reference must cover both traversals, special vertices and each current observable
+before broad fusion. Its purpose is an auditable correctness/performance control;
+large N=14 execution is not required to establish it.
+
+### E3 — Operator applications: maps, sparse libraries, dense products
+
+For left and right products compare:
+
+- Direct signed gather/scatter without atomics where a partial permutation permits it.
+- Implicit sums of maps weighted by pole/hybridization coefficients.
+- Materialized barred CSR/CSC and general retarded-operator sparse products.
+- Dense complex-double GEMM, including small rectangular kernels as controls.
+
+Sweep row degree, sparsity, reuse count, RHS width and layout on traced shapes;
+include the exact 3003-by-3432 case. Account for format conversion, transpose storage,
+preprocessing, packing and coefficient updates. Dense-right-sparse application may
+need a transposed formulation; distinguish plain transpose from conjugate transpose.
+For reductions over multiple entries, define and test accumulation order explicitly.
+
+cuSPARSE SpMM supports complex double, but deterministic algorithm, layout and batching
+capabilities differ. In particular CSR_ALG3 is non-transposed CSR, disallows conjugate
+transpose of B and does not support batched SpMM. Compare unbatched deterministic CSR,
+pretransposed storage, supported COO alternatives and custom ordered kernels rather
+than assuming one API supplies all requirements. Verify the installed version and
+workspace costs; preprocessing state belongs to its descriptor and workspace.
+[cuSPARSE documentation](https://docs.nvidia.com/cuda/cusparse/index.html#cusparsespm)
+
+Decision: a small capability table keyed by structure/shape/reuse, with reproducible
+numerical behavior. Do not infer complex-double acceleration from real or reduced-
+precision tensor-core peak rates.
+
+### E4 — Where to batch and where to fuse
+
+Compare one path at a time with bounded batches across output sectors, flat indices
+and topology cohorts. Within a cohort, compare ready-operation shape buckets against
+fused compatible path segments. Include homogeneous, heterogeneous, sparse-survivor
+and tail workloads. Charge the null scheduler, descriptor upload, gather/scatter and
+ordered fan-in to the complete segment time. A modest batch-size sweep is sufficient;
+avoid a Cartesian product of every tuning parameter.
+
+The checked local cuBLAS headers expose no C/Z grouped-GEMM entry point, and the
+current GroupedBatchedEx type table does not include complex double. Use uniform-shape
+ZgemmBatched/StridedBatched buckets, individual GEMMs or custom complex kernels as
+actual controls; recheck capability on the target installation. Do not design around
+hypothetical heterogeneous complex grouped GEMM.
+[cuBLAS documentation](https://docs.nvidia.com/cuda/cublas/index.html#cublasgemmgroupedbatchedex)
+
+Use bounded windows and ordered output ownership so preserving contribution order
+does not require retaining every lane's result. For huge blocks reduce active lanes
+before exhausting memory. Decide per operation/segment, not by global maximum size.
+For tiny arbitrary dimensions test a small tile family or runtime dimensions before
+compiling an unbounded collection of rectangular specializations.
+
+### E5 — DLR transforms, solves and convolution
+
+Reuse pivoted rank-r LU and test packing independent spatial RHS across blocks/lanes.
+Keep all r nodes for each transformed element; spatial slabs are independent but
+arbitrary time-node slicing is not. Compare packing/solve/unpacking with separate
+solves, including final short slabs. Preserve complex double and reject the previously
+unsuccessful custom-solve approach unless new independent numerical evidence warrants it.
+
+The installed cppdlr rank-3 convolution recomputes whole Hilbert transforms inside
+the time-node loop. Establish an algorithm-matched CPU control with those transforms
+hoisted, as well as the unchanged CPU baseline. Otherwise a GPU gain could largely be
+an algorithmic CPU improvement. Cache transformed/weighted G only with complete keys:
+block, rank/mesh, weights/poles, direction and propagator version.
+
+For scalar blocks, compare fusion across DLR work and independent paths; sparse
+vertices alone may be negligible. For large blocks, profile dense convolution after
+sparse vertices have removed their share of work. Decision: which transformations
+and resident coefficient copies earn their bandwidth and memory cost.
+
+### E6 — Special-vertex mixing
+
+Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused
+sparse applications. Test singleton sets, one N-wide set, diagonal and dense compatible
+hybridization, both line directions and bosonic/fermionic endpoints. The backward
+case transposes coefficient indices and uses reflected hybridization; preserve this.
+Only skip coefficients that are structurally known to be zero under the current policy.
+
+Reassociation or precontraction of the double sum changes rounding and may change
+memory demand. Validate it separately from launch fusion. Decision: a bounded algorithm
+whose measured traffic/time improves the complete special-vertex segment, without
+N simultaneous maximum-sized intermediates.
+
+### E7 — Large-sector memory and placement
+
+Test liveness-based reuse, output spatial slabs, streamed special-vertex buffers and
+bounded caches before increasing batch size. Include actual N=14 shapes in primitive
+replays without creating all atom_diag matrices. If a convolution requires K tiling,
+account for changed reduction order and traffic; this is not equivalent to independent
+RHS chunking. Report cold/warm input/output and coefficient-copy peaks separately.
+
+On the target, measure available HBM, host/Grace memory bandwidth, copy/managed-memory
+behavior and NUMA placement rather than treating all memory as equivalent. Compare
+explicit staged slabs against fully resident execution where both fit. Graph-retained
+buffers count against the same budget. Leave configurable headroom for Solver/MPI.
+
+Distributing indices over several GPUs still replicates model data. If replication
+cannot fit, sector/tile ownership needs a distinct communication experiment with
+input exchange and load balancing; equal numbers of sectors do not balance half-filled
+work. Do not present multi-GPU index partitioning as a solution to per-GPU capacity.
+Decision: a demonstrated memory envelope and a rejected/accepted full-call admission
+policy; retain streaming even when it sacrifices peak GEMM throughput to make a case fit.
+
+### E8 — Topologies, shared subcomputations and graphs
+
+Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
+operator/block paths, including low-overlap controls. Existing correlator fragment
+reuse is part of the baseline. A candidate shared node must agree in all numerical
+inputs, weights, block paths, parity placement, layout and versions, not merely have
+a similar topology drawing. Cache structural schedules separately from numerical values.
+
+Compare four cases on the same bounded workload: independent execution; independent
+execution captured in graphs; an explicit shared-computation DAG; that DAG in graphs.
+Graph replay does not memoize values. Changed G or coefficients must recompute numerical
+nodes, and changed numerical zero masks can invalidate the structure. Include topology
+cohort changes, final tails, graph construction/update, cache misses and retained bytes.
+[CUDA graphs documentation](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cuda-graphs.html)
+
+Capture only supported operations with stable lifetimes; keep path discovery and
+forbidden synchronization outside capture. Evaluate break-even replay count from
+setup cost divided by per-call saving after updates; no positive saving means no
+amortization. Decision: retain graphs or sharing only if measured complete-call gains
+survive realistic input changes and memory pressure. Neither is a prerequisite for
+an initial operational evaluator.
+
+### E9 — Full functionality and MPI integration
+
+Port existing C++ observable tests to an evaluator seam without replacing the CPU
+reference or copying its implementation into a fake CUDA facade. Cover ordinary SE,
+SPGF, one-time correlators, dynamic interactions, right reflection, parity, empty and
+zero paths, unequal rectangular blocks, changed G/coefficients/masks, unsupported
+operators and overflow. Test full calls, individual indices and bounded ranges against
+explicit-vector sums, including empty ranges, tails and noncontiguous caller order.
+Keep numerical tolerances from the existing observable tests; add repeatability and
+cancellation-heavy cases. Compare small cases to manual/dense references as applicable.
+
+Exercise stream/instance lifetime, asynchronous upload, buffer reuse, allocation
+failure before submission, device failure after submission and sanitizer checks.
+Capability rejection must occur before work submission; submitted partial results
+must not be duplicated by fallback. CPU-only builds must remain supported.
+
+Python owns MPI assignment, device placement and collectives. Native code owns local
+chunks; ranks may have unequal queues or no work. Coordinate errors before reductions
+and keep collectives outside variable local loops. Measure topology/index hybrid load
+balance and reduction/transfer costs. Changing global summation grouping needs explicit
+numerical validation. Test Solver integration and serialization without fixing Python's
+current per-topology call pattern as an optimization constraint.
+
+## 6. Benchmark organization and acceptance
+
+Proposed new shared fixtures belong in `benchmarks/block_sparse_common`, with CPU
+and CUDA entry points in `block_sparse_cpu` and `block_sparse_cuda`. Generic methodology
+and definitions stay at folder roots; machine metadata/results go in informative
+hardware subdirectories. Keep experiments isolated under `experiments/block_sparse_cuda`
+and retain all existing dense experiments. Reuse recorder concepts from
+[the dense common benchmark](benchmarks/dense_common/README.md), not square-only fixtures.
+Enable targets through the existing benchmark CMake option independently of examples.
+
+Record commit/toolchain/library versions, CPU/GPU/memory, partition and operator
+fingerprints, r/p/order, explicit topology/index selections, survivor counts, numerical
+errors, source hashes, warm-up and repetition policy. Separate:
+
+- Model construction and operator export; first allocation/upload/compilation/capture.
+- Warm fixed-input replay; changed-G calls; changed coefficients or topology cohorts.
+- Device segment time, synchronized C++ API time and Python/MPI complete-call time.
+- Host/device peak bytes, allocations, launches, copies and cache hit rates.
+
+Compare unchanged CPU, algorithm-matched CPU, minimal device reference and each
+candidate on identical inputs and semantic coverage. Fix CPU thread counts and also
+report a sensible threaded CPU control for large matrices. Kernel-only rates inform
+mechanisms; dispatch decisions use packing and scheduling inclusive segment/call time.
+Profile separately so profiler overhead does not contaminate timing rows.
+
+Predeclare promotion criteria after measuring noise: provisionally require a repeatable
+15% complete-segment improvement on its intended regime, no unexplained correctness
+change and no more than 5% regression on protected cases unless dispatch excludes them.
+Report absolute latency too. These are engineering screening thresholds, not evidence
+that a whole Solver improved; final decisions require full-call and target-hardware
+measurements. Prefer a few explainable routes over an unstable large tuning table.
+
+## 7. Execution order and deliverables
+
+1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,
+   numerical qualification and checked resource estimates. Stop if operator-domain
+   semantics or old/new CPU agreement remain unresolved.
+2. E2: a complete small-system device reference for current block-sparse observables.
+3. E3/E5/E6: investigate the two dominant regimes separately: many tiny blocks and
+   large Q-only sectors. Prioritize sparse representation and large-case memory
+   feasibility; establish the hoisted CPU convolution control.
+4. E4/E7: add bounded batching and memory policy using observed ready-work sequences.
+5. E8 only when traces justify topology sharing or launch amortization. It must not
+   delay a useful simple backend. E9 correctness runs throughout, MPI tests as the
+   native interface becomes operational.
+6. Repeat finalists on GH200-class hardware, publish measured capability/crossover
+   tables and revise the implementation plan before committing to production dispatch.
+
+The present deliverable is this reviewed experiment plan, not an assertion that a
+block-sparse CUDA backend or a 14-mode production workload has been qualified.
+
+## 8. Adversarial review
+
+A separate review pass and its resulting revisions are recorded here after the
+initial draft, with evidence and outstanding decisions in the work log.
