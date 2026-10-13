@@ -1,0 +1,2 @@
+analytic,partition,modes,dynamic_channels,topology,rank,blocks,max_dim,symmetry_sets,max_set_size,bare_nnz,sparse_payload_bytes,model_host_bytes,model_bound_bytes,G_bytes,max_rank_bytes,legacy_scratch_bytes,legacy_correlator_sides_bytes,order,first,last,proposed,accepted,pruned,setup_ms,trace_ms
+0,mixed,6,0,crossing,23,16,9,2,3,192,85248,148240,148240,147200,29808,208656,953856,3,1120,1152,1024,354,670,9.01158,0.0242853

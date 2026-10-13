@@ -1,0 +1,7 @@
+kind,M,N,K,calls,rank
+convolution,1,1,1,23712,23
+solve_rhs,23,1,23,15808,23
+special_left,1,1,1,1976,23
+special_mix,1,1,1,1976,23
+special_right,1,1,1,1976,23
+vertex,1,1,1,7904,23
