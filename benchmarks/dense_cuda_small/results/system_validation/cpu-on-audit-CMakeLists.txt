@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.22)
+project(cpu_on_audit LANGUAGES CXX)
+set(nda_WITH_CUDA_SUPPORT OFF)
+set(XCA_CUDA_SMALL ON CACHE STRING "audit mode")
+add_library(triqs_xca_c INTERFACE)
+add_subdirectory(/home/hugstr/dev/xca/c++/triqs_xca/dense/cuda_small small)
