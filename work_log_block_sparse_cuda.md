@@ -224,3 +224,63 @@ E1 model packing/barred-operator and broader numerical qualification; then E2's
 allocation-bounded device reference. No N=14 diagonalization, GH200 qualification,
 new device benchmark, Python CUDA backend registration or supervisor reconfiguration
 has been performed. Preserve the full implementation goal and its remaining gates.
+
+## 2026-10-14 — E1 model packing and E0 bounded path inventories
+
+Code commit: `e08f730` (`[bs] pack sparse models and trace paths`). Benchmark
+commits: `de527f1` (`[bench] inventory block-sparse workloads`) and `922d9c1`
+(`[bench] record block-sparse inventories`). The implementation goal remains active.
+
+OperatorModel now owns exact fields/adjoints and both pole-weighted barred variants,
+coefficient snapshots and current symmetry grouping. It validates coefficient shapes,
+finite values and cross-set compatibility before materialization. Checked storage
+bounds precede barred allocation; host-owned capacity and CSR payload are separately
+reported. These exclude atom_diag, allocator overhead and construction temporaries.
+The bound is not a complete host/device admission policy.
+
+The streamed self-energy path collector preserves CPU index/output/set order,
+operator connections and input-dependent propagator masks. It checks proposal-count
+arithmetic before calling a visitor. Visitors borrow a reusable descriptor/current
+Backbone; retention requires a copy. A bounded metadata-only observation hook in the
+CPU evaluator supplies an independent traversal control without executing arithmetic.
+New tests compare complete path descriptors for ordinary/retarded models, both masks,
+orders 1–3, range boundaries and recovery after trace-limit failures. Operator-model
+tests compare complex barred matrices with the existing quartet and check independent
+analytic memory/overflow controls. Existing numerical arithmetic remains unchanged.
+
+Full verification after core changes: CPU 71/71 CTest entries passed in 50.19 s;
+CUDA 79/79 passed in 104.94 s. Logs:
+`/tmp/xca-bs-model-path-{cpu,cuda}-{configure,build,test}.log`, where applicable.
+The new host-only tests do not qualify new GPU arithmetic. Rebuilding all bindings
+was necessary because the CPU observation hook added private evaluator fields.
+
+E0's first reproducible inventory lives in `benchmarks/block_sparse_common` and
+`benchmarks/block_sparse_cpu`. It uses deterministic occupation, total-number and
+mixed partitions, ordinary plus retarded channels, crossing/chain topologies and
+three bounded 32-index windows. The recorder stores commands, hashes, machine
+metadata, return codes, raw summaries and shape histograms. All 144 actual N=4/6/8/10
+cases and six analytic N=10/14 cases succeeded in 56.65 s summed subprocess time.
+Results are under `benchmarks/block_sparse_cpu/thinkstationP620_RTXA4000`; the hardware
+README explains scope and timing units. Shape inventories distinguish per-rank matrix
+products, separate rank-solve RHS widths and the non-GEMM special mixing reduction.
+
+For N=10, the first ordinary crossing window yields 29,696 accepted scalar paths out
+of 327,680 proposals (4.660 ms null traversal), versus 256/352 total-number paths
+(0.015 ms) and 1,246/2,304 mixed paths (0.065 ms). Largest blocks are respectively
+1, 252 and 100. This identifies distinct scheduling regimes, not kernel winners.
+Analytic N=14 total-number/rank-26 capacities reproduce the independent test oracle:
+one function 16,688,505,600 bytes; largest rank buffer 4,899,907,584; legacy scratch
+88,198,336,512; initial correlator sides 146,997,227,520. These are incomplete peak
+estimates. No N=14 diagonalization or device allocation occurred.
+
+Found a second CPU numerical cutoff: each completed self-energy path is accumulated
+only if max(abs(T_out)) > 1e-16. The plan now requires preserving/testing it separately
+from whole-propagator-block pruning. Structural accepted paths include numerical
+zeros and cutoff-discarded contributions; batched code must not apply the cutoff to
+an aggregate. Any policy change needs separate numerical qualification.
+
+Remaining: numerical phase timing, weighted work/bytes and measured live-memory
+admission (E0); broader cancellation/update-cost controls (E1); allocation-bounded
+owned-stream device arithmetic for rectangular sparse products and DLR transforms,
+then all observables (E2). GH200 validation, backend integration and later optimization
+gates remain pending. No supervisor reconfiguration, install or push was performed.

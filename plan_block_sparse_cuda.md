@@ -1,7 +1,8 @@
 # Block-sparse CUDA: investigation and experiment plan
 
-Date: 2026-10-13. Status: implementation in progress. Initial exact sparse-export
-CPU controls are implemented; CUDA arithmetic experiments below remain pending.
+Date: 2026-10-14. Status: implementation in progress. Exact sparse model packing,
+CPU path controls and a bounded workload inventory are implemented; CUDA arithmetic
+experiments below remain pending.
 This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 
@@ -106,6 +107,13 @@ predict ready work or total time.
 This is a numerical input-dependent mask, not just immutable connectivity. Preserve
 its policy initially and invalidate schedules when the mask changes. Cross-set
 coefficient tolerance is a separate policy. Test both near their boundaries.
+
+Self-energy accumulation also discards each completed path unless its maximum
+absolute entry is greater than `1e-16`. Preserve this additional numerical policy
+in the first device reference and test its boundary separately from the propagator
+mask. Structural accepted-path counts therefore include candidates that contribute
+nothing numerically. Removing or changing this cutoff requires a separately qualified
+experiment; batching must not apply it to an aggregate instead of individual paths.
 
 Different output blocks can execute independently. Contributions to the same output
 need explicit ownership and a reproducible accumulation order. Preserve caller index
