@@ -109,3 +109,30 @@ high-order numerical qualification.
 The first draft is followed by a separate adversarial self-review, not an independent
 model review. Plan/log changes are committed separately from code. No production
 code changes are needed for this task. Unrelated worktree changes are preserved.
+
+## 2026-10-13 — Adversarial review, revision and completion
+
+Initial draft commit: `58dde4b` (`[docs] plan block-sparse CUDA experiments`).
+A separate adversarial self-review challenged the draft against the source and
+probe evidence. Section 8 records the challenges and dispositions. Revisions add
+physical rank/pole sensitivity, full-output memory accounting, the extra correlator
+buffer, permuted mode/state-order tests, low/zero-survival sampling, and a distinction
+between shared intermediates and reassociating the topology sum. Corrected a source
+link found by validation. Unresolved performance choices remain explicit experiments.
+
+Validation completed:
+
+- All local Markdown links resolve; both embedded probe recipes parse.
+- Exact binomial identities, all six memory-table rows, high-order index overflow
+  example and topology pairing count were recomputed successfully.
+- Both documented probes reran successfully with `python3`, CPU environment and
+  one numerical-library thread. All inventory structural fields matched, and the
+  six-mode operator errors/counts reproduced exactly. Temporary repeat results are
+  `/tmp/xca-block-review-inventory.json`; durable recipes/results are above.
+- `git diff --check` passed. Only the plan and this log are included in task commits;
+  existing `.gitignore`, AGENTS files and untracked tests are preserved.
+
+No build or full CTest run was warranted by documentation-only changes. No CUDA
+performance claims or complete N=14 qualifications are made. The planning goal is
+complete after the reviewed documents are committed; implementation experiments
+remain future work. No new quota supervisor configuration was performed by this task.

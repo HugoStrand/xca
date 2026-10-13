@@ -35,7 +35,7 @@ Source anchors: [atomic operators](c++/triqs_xca/atom_diag.cpp),
 [block storage](c++/triqs_xca/block_sparse/block_op.cpp),
 [evaluator](c++/triqs_xca/block_sparse/diagram_evaluator.cpp),
 [public API](c++/triqs_xca/block_sparse/diagram_evaluator.hpp),
-[dynamic operators](c++/triqs_xca/dynint.cpp),
+[dynamic operators](c++/triqs_xca/block_sparse/dynint.cpp),
 [indexing](c++/triqs_xca/backbone.cpp),
 [topologies](python/triqs_xca/diag.py), and [Solver](python/triqs_xca/solver.py).
 
@@ -167,7 +167,8 @@ allocates two maximum-sized arrays per sector before replacing them by actual sh
 
 G, output, transformed copies, library workspace, operator storage and construction
 peaks are additional; the correlator column is additional to persistent evaluator
-scratch. Do not copy this allocation strategy to CUDA or batch B copies of it.
+scratch and excludes its extra Tmuop rank buffer and construction temporaries. Do not
+copy this allocation strategy to CUDA or batch B copies of it.
 In contrast, N=14 occupation blocks need only 6.5 MiB for one G at r=26. Coarsening
 symmetry to improve GPU occupancy can catastrophically increase memory and work.
 
@@ -185,6 +186,10 @@ These numbers make sparse export and lifetime-aware workspace prerequisites for
 large-sector feasibility, even before deciding which operator kernel is fastest.
 They do not eliminate atom_diag's host-side diagonalization or eigenbasis caches;
 measure host peak RSS separately and avoid constructing N=14 atom_diag by default.
+The tabulated r=16/26/36 and p=2 are capacity examples, not promises of adequate
+resolution for the target physics. Determine actual rank and pole count from beta,
+energy window and accuracy on smaller physical models, then repeat admission estimates
+with the intended values. Include rank/pole sensitivity before claiming N=14 feasibility.
 
 ## 4. Representative workloads and bounded sampling
 
@@ -262,6 +267,8 @@ Build direct fundamental maps and supported many-body sparse operators from
 atom_diag Fock metadata. Compare compact signed maps, CSR/CSC and dense fallback.
 Validate subspace ordering, fermionic signs, adjoints, anticommutation, complex
 coefficients, repeated-term cancellation and current unsupported-operator errors.
+Permute fundamental-operator labels/order and subspace state order in dedicated checks;
+a test using only consecutive labels would not detect a mode-to-bit convention error.
 Build barred operators from maps and coefficients, not from rotated dense arrays.
 
 Use three comparisons: existing CPU with rotated operators; CPU with direct-Fock
@@ -310,7 +317,7 @@ transpose of B and does not support batched SpMM. Compare unbatched deterministi
 pretransposed storage, supported COO alternatives and custom ordered kernels rather
 than assuming one API supplies all requirements. Verify the installed version and
 workspace costs; preprocessing state belongs to its descriptor and workspace.
-[cuSPARSE documentation](https://docs.nvidia.com/cuda/cusparse/index.html#cusparsespm)
+[cuSPARSE documentation](https://docs.nvidia.com/cuda/cusparse/index.html)
 
 Decision: a small capability table keyed by structure/shape/reuse, with reproducible
 numerical behavior. Do not infer complex-double acceleration from real or reduced-
@@ -382,6 +389,10 @@ On the target, measure available HBM, host/Grace memory bandwidth, copy/managed-
 behavior and NUMA placement rather than treating all memory as equivalent. Compare
 explicit staged slabs against fully resident execution where both fit. Graph-retained
 buffers count against the same budget. Leave configurable headroom for Solver/MPI.
+Account for the complete call's promised output: SE returns all output sectors, whereas
+SPGF/correlators have different endpoint outputs and scratch. A selected-sector diagnostic
+is not a drop-in replacement for a full API call. Include output transfer/host storage in
+the streaming estimate and specify what happens if even the required output cannot fit.
 
 Distributing indices over several GPUs still replicates model data. If replication
 cannot fit, sector/tile ownership needs a distinct communication experiment with
@@ -397,6 +408,10 @@ operator/block paths, including low-overlap controls. Existing correlator fragme
 reuse is part of the baseline. A candidate shared node must agree in all numerical
 inputs, weights, block paths, parity placement, layout and versions, not merely have
 a similar topology drawing. Cache structural schedules separately from numerical values.
+Only share identical intermediate computations initially. Factoring a common term out
+of the topology sum changes arithmetic grouping and is a separate numerical experiment,
+even if the resulting algebra is formally equivalent. Bound DAG discovery itself;
+never enumerate the full topology/index space merely to search for reuse.
 
 Compare four cases on the same bounded workload: independent execution; independent
 execution captured in graphs; an explicit shared-computation DAG; that DAG in graphs.
@@ -455,7 +470,10 @@ errors, source hashes, warm-up and repetition policy. Separate:
 - Host/device peak bytes, allocations, launches, copies and cache hit rates.
 
 Compare unchanged CPU, algorithm-matched CPU, minimal device reference and each
-candidate on identical inputs and semantic coverage. Fix CPU thread counts and also
+candidate on identical inputs and semantic coverage. Include low-survival and
+zero-survival index windows alongside
+selected active paths; disclose selection rules and avoid deriving full-sum speedups
+from an active-only sample. Fix CPU thread counts and also
 report a sensible threaded CPU control for large matrices. Kernel-only rates inform
 mechanisms; dispatch decisions use packing and scheduling inclusive segment/call time.
 Profile separately so profiler overhead does not contaminate timing rows.
@@ -488,5 +506,23 @@ block-sparse CUDA backend or a 14-mode production workload has been qualified.
 
 ## 8. Adversarial review
 
-A separate review pass and its resulting revisions are recorded here after the
-initial draft, with evidence and outstanding decisions in the work log.
+This was a separate adversarial **self-review** of the first committed draft, checked
+against source and the probe recipes. It was not an independent model review.
+
+| Challenge to the first draft | Resolution or required gate |
+| --- | --- |
+| Small r and p examples could make the large system appear feasible without adequate physical resolution. | Label them capacity examples; derive intended beta/window/accuracy ranks and poles, then repeat admission and sensitivity checks. |
+| The correlator memory table could be read as a complete peak estimate. | State that Tmuop, construction temporaries, G, outputs and library workspaces are additional; E0 must measure the full live peak. |
+| Streaming a selected output sector could quietly weaken the public API. | Separate sector diagnostics from full SE/SPGF/correlator coverage and include full output/transfer storage in admission. |
+| A direct-Fock test with consecutive orbital labels could agree despite a general mode-order bug. | Add permuted fundamental labels/order, state ordering, adjoint and algebra tests before sparse export becomes authoritative. |
+| Active-path-only high-order sampling could greatly overstate Solver throughput. | Require low/zero-survival windows and disclose sampling; no full-sum extrapolation from active-only timing. |
+| Prefix reuse might really factor the topology sum and change cancellation behavior. | Share identical intermediates first; classify algebraic reassociation as a separate numerical experiment and bound reuse discovery. |
+| Sparse-library speed could rely on nondeterministic batching unavailable in the deterministic mode. | E3 capability-tests algorithms/layouts and charges alternative packing/transpose costs; repeatability is an acceptance gate. |
+| Avoiding dense operator copies might still leave atom_diag host initialization prohibitively large. | Measure host construction/RSS independently; N=14 metadata/shape replays do not require or qualify a complete atom_diag instance. |
+| Large speedups might come from correcting CPU convolution structure rather than GPU execution. | Keep unchanged and transform-hoisted CPU controls on identical workloads. |
+| Dense-small success on A4000 could bias dispatch for different hardware and rectangular shapes. | Require target-hardware qualification and per-operation measured policies; preserve the simple device reference. |
+
+Outstanding experimental decisions: sparse-map versus CSR/CSC crossover, viable
+large-sector liveness policy at actual r/p, surviving path parallelism, numerical
+acceptance of direct-Fock export, and whether topology sharing/graphs amortize.
+The plan intentionally leaves these to measurements rather than selecting winners.
