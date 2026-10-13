@@ -29,8 +29,8 @@ as successful qualification.
 |Preserve baseline/experiments/commit policy|23-file baseline verifier; all experiment folders retained; terse scoped code/data commits separate from plans/logs ondev_cuda|Locally verified; no push|
 |Persistent supervisor|Live process with implementation config, Sol6.1 medium standard tier;28 isolated quota/process/transport tests; observed wait/active transitions|Locally verified; no forced account quota changes|
 |Bounded current high orders10/12|Four current admitted-rank/dimension screens, crossing/chain ordinary/paired8-index batches, all exit0|Locally verified|
-|Fair same-policy library-product control|Updated experiment keeps pointwise fusion identical; four control processes running|Pending|
-|Final source/package provenance and audit closure|Installed metadata refreshed; integration/build/workload artifacts committed; final control/audit closure in progress|Pending|
+|Fair same-policy library-product control|Updated experiment keeps pointwise fusion identical; four controls each pass24 groups; matched product-family report retained|Locally verified|
+|Final source/package provenance and audit closure|Installed metadata refreshed; current integration/build/workload/control artifacts and final checkpoint committed separately|Locally verified|
 
 ## Capability and dispatch table
 
@@ -59,3 +59,20 @@ GH200 and actual multi-device experiments cannot be run on this single A4000.
 Before target optimization admission, repeat numerical/physical/solver qualification,
 matched crossover and resource measurements there. The block-sparse follow-up remains
 separate; variable/rectangular dimensions are not dense acceptance requirements.
+
+
+## Audit conclusion — 2026-10-13
+
+The achievable local implementation and verification objective is complete. All
+required methods are native, explicit backend/MPI/persistence integration operates,
+three build variants and installed consumers pass, numerical/physical/resource
+contracts are tested, and measured dispatch decisions/rejections are retained. No
+local implementation item above remains pending. Same-policy library-product controls
+close the final comparison gap. Baseline23 files and all experiments are preserved;
+user files remain untouched. Code/evidence and plan/checkpoint commits are separate.
+
+GH200 and true multi-device qualification remain explicitly unavailable rather than
+passed. Optimized admission does not extend to those environments. This follows the
+objective's instruction to complete achievable local work and document unavailable
+target qualification; it does not establish a high-end performance cutoff. CPU
+remains Solver default, and no automatic backend choice is enabled.

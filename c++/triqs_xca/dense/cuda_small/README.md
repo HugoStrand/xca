@@ -14,15 +14,15 @@ including paired fb(0)==0 filtering, without materializing a full index list.
 Python Solver now supports explicit dense_backend='cuda_small' and submits native
 ranges for MPI work. CPU and library CUDA are separate choices; GPU imports are lazy.
 Backend and visible-device preferences survive copies/HDF5. Dynamic interaction
-channels are included in ordinary/paired batching. Broader performance qualification
-and profiling remain in progress.
+channels are included in ordinary/paired batching. Local staged performance and profiling evidence is recorded in the benchmark
+reports; target-hardware qualification remains unavailable.
 
 Ranks16/26/36 dimensions4/8 provisionally use grouped real-FMA products with tiles of four;
-other dimensions/ranks use library products. Vertex products currently use library
-operations. Cached pivoted library LU is retained. The small kernel target compiles
+other dimensions/ranks use library products. Eligible serial and lane vertex products use the same tile4 family; other
+vertex products use libraries. Cached pivoted library LU is retained. The small kernel target compiles
 power-of-two product families; compiled availability is not numerical qualification.
 Production thresholds require GH200-class qualification. Current A4000 evidence is
-local only, and extended method/order/rank/seed coverage remains necessary.
+local only; further hardware/input coverage is required before expanding admission.
 
 CMake `XCA_CUDA_SMALL=AUTO|ON|OFF` controls this backend. AUTO enables it when NDA has
 CUDA and a CUDA compiler is found; otherwise it preserves CPU/library-only builds.
@@ -31,8 +31,7 @@ availability definition. Set `CMAKE_CUDA_ARCHITECTURES` for the deployment hardw
 (e.g.86 on the local A4000); the source does not hardcode that GPU architecture.
 Installed target exports include the custom kernel library and CUDA runtime dependency.
 A staged external C++ consumer and installed Python backend tests pass. AUTO
-without a CUDA compiler has an isolated configure check; optional library-only
-Python-extension validation remains in progress.
+without a CUDA compiler has an isolated configure check; library-only optional Python-extension build/install tests pass.
 
 Nine `dense/cuda_small/*` CTest entries reuse existing C++ test sources with the
 native class substituted. These cover physics, paired evaluations, dynamic operator
@@ -42,8 +41,8 @@ pass. Library-only CUDA with OFF also builds and runs all four NDA GPU smoke cas
 CPU-only ON rejects the configuration clearly. Full CPU/CUDA suites and staged
 Python/C++ consumers pass. Two-rank Python Solver tests pass with both ranks sharing
 the local GPU. Selected cache, correlator and lifetime paths pass memory/leak checks;
-this is not sanitizer coverage of every path. Broader performance and resource
-accounting qualification remains in progress.
+this is not sanitizer coverage of every path. The completion audit records the verified local scope and target-hardware
+omissions.
 
 Choose the visible GPU before constructing CUDA objects: Solver accepts
 `gpu_device=None` (current device, respecting `CUDA_VISIBLE_DEVICES`) or a visible

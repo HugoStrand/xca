@@ -28,3 +28,19 @@ Ranges combine seed/process variation, not confidence intervals. First-call/setu
 All eight direct reused analytic/dynamic/unitary/index/layout/SPGF/correlator suites against the actual probe pass (10.98s). An additional sixteen complex atom_diag model fixtures at ranks26/36, dimensions4/8, poles2/3 and channels0/2 pass strict ordinary/paired, SPGF and one-time tests, with low-order CPU reference checks. Production batching tests confirm actual rank26/36 execution. Shape2 remains serial library because safe per-lane LU batching lost performance in earlier experiments. Larger powers of two require physical/crossover coverage; compiled kernels are not sufficient qualification.
 
 Production environment admission is now restricted to the measured local hardware/library tuple; focused native/Python/policy tests pass3/3 and the CPU policy check passes. Unknown environments retain native sequential library work; the explicit experiment bypasses admission to collect new hardware evidence, with strict gates and batch-counter assertions. Only GH200-class measurements may justify target defaults.
+
+
+## Matched library-product control
+
+OFF now retains pointwise fusion(mode1). Scheduler, streams, LU width/layout,
+precision, metadata and selected indices match the tile4 control; only product/vertex
+family differs. Four local controls pass24 backend/case groups each with unchanged
+strict gates. These are single-process screens compared with repeat1 from the
+three-process fixed-size cohorts; no confidence interval or target cutoff is implied.
+
+|Rank|N|Order8 ordinary128 library(ms)|Tile4(ms)|Library/tile4|
+|---|---|---|---|---|
+|26|4|73.777|17.386|4.24×|
+|26|8|111.684|57.386|1.95×|
+|36|4|103.562|26.096|3.97×|
+|36|8|169.643|94.945|1.79×|

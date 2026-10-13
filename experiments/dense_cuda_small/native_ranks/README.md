@@ -5,7 +5,7 @@ current native evaluator into the build tree under a distinct host namespace. It
 changes only the N4/N8 rank eligibility for batching and product kernels. Original
 production code and every earlier experiment remain intact. No delegation is used
 for ordinary/paired SE or SPGF. `XCA_PROBE_PRODUCTS=OFF` provides library products
-with the same native batching; ON uses the identical compiled tile4 kernels.
+with identical pointwise fusion and native batching; ON uses the identical compiled tile4 products.
 
 Use the CUDA environment, configure with clang19 and Release, then build. Root
 `cbuild-cuda` must already provide the native static libraries. Snapshot contents

@@ -982,3 +982,39 @@ all audit items, then decide goal completion. Target GH200/multi-device hardware
 unavailable and excluded from local success claims. Application resident-budget scope
 and opaque allocations remain explicit. Baseline23 protected files and all experiments
 preserved; unrelated files untouched. Goal remains active pending the final controls.
+
+## Local goal completion — 2026-10-13
+
+Final fair controls completed: four rank26/36 N4/N8 library-product processes each
+pass24 backend/case groups, including strict individual/aggregate gates. OFF now
+keeps pointwise fusion identical(mode1); all scheduler/stream/LU/precision/metadata
+policies match the fixed product control. Order8 ordinary128 library/fixed ratios:
+4.24x(N4/r26),1.95x(N8/r26),3.97x(N4/r36),1.79x(N8/r36). These are matched single-
+process library controls against the fixed cohort's first process, not target confidence
+intervals. Code48b8fe7, dataa1b0b5f; full comparison appended to native_ranks/RESULTS.md.
+Isolated production-CMake CPU-only ON rejection also verified and retained.
+
+Corrected stale README wording: eligible serial and lane vertices do use the tile4
+family; generic vertices use libraries. Requirement audit/capability table now has
+no pending achievable local item. Complete native C++ API, Python/MPI/backend/archive
+integration, bounded application resource policies, full three-variant suites,
+installed consumers, concurrency/upload/error tests, sanitizer/profiling/build metadata,
+real Solver comparisons and preserved source/measurement controls are all evidenced.
+No current execution handle from this work remains running.
+
+Installed normal CUDA-small metadata records source1718ca1; later commits are
+experiment control/data/documentation and do not alter installed production code.
+Original23 protected baseline files remain unchanged; all experiment folders retained;
+plans/checkpoints remain separate from code/data commits ondev_cuda. Unrelated user
+.gitignore/AGENTS/smoke/exp_order_conv work preserved. No push performed.
+
+The local implementation objective is achieved under its explicit achievable-local
+scope. GH200 and actual multi-device qualification are unavailable and remain clearly
+unverified, not successful tests. Their optimized policies are not admitted. CPU stays
+Solver default; short full Solver workloads still favor CPU. The block-sparse task is
+separate. Next target-hardware work should repeat numerical/physical/solver/crossover/
+resource qualification before adding environment entries or automatic thresholds.
+
+Persistent goal will be marked complete after this checkpoint and final status check.
+Supervisor's terminal-goal guard prevents resuming a completed goal; config/tests and
+live wait/active behavior remain available for future authorized goals.
