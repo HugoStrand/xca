@@ -158,6 +158,57 @@ namespace triqs_xca::block_sparse::cuda {
                            reinterpret_cast<cuDoubleComplex *>(out.data()), 1));
     finish();
   }
+  void DeviceOps::scale(Complex alpha, TensorView out) const {
+    require_current();
+    auto n = blas_int(extent(bytes(out) / sizeof(Complex)));
+    wait_for_default_uploads();
+    check_blas(cublasZscal(impl_->blas, n, reinterpret_cast<cuDoubleComplex const *>(&alpha), reinterpret_cast<cuDoubleComplex *>(out.data()), 1));
+    finish();
+  }
+  void DeviceOps::weight_rows(TensorConstView in, nda::cuvector_const_view<Complex> weights, TensorView out) const {
+    require_current();
+    require(in.shape() == out.shape(), "weight shape mismatch");
+    auto n = bytes(in);
+    (void)bytes(out);
+    int r = blas_int(in.extent(0)), width = blas_int(extent(n / sizeof(Complex) / r));
+    require(weights.size() == r && weights.strides() == std::array<long, 1>{1}, "invalid rank weights");
+    if (in.data() != out.data()) disjoint(in, out);
+    auto x = reinterpret_cast<std::uintptr_t>(weights.data()), y = reinterpret_cast<std::uintptr_t>(out.data());
+    auto nw = checked_multiply(r, sizeof(Complex));
+    require(nw <= UINTPTR_MAX - x && n <= UINTPTR_MAX - y && (x + nw <= y || y + n <= x), "rank weights and output overlap");
+    wait_for_default_uploads();
+    check_blas(cublasZdgmm(impl_->blas, CUBLAS_SIDE_RIGHT, width, r, reinterpret_cast<cuDoubleComplex const *>(in.data()), width,
+                           reinterpret_cast<cuDoubleComplex const *>(weights.data()), 1, reinterpret_cast<cuDoubleComplex *>(out.data()), width));
+    finish();
+  }
+  void DeviceOps::pack_rhs(TensorConstView in, nda::cumatrix_view<Complex, nda::F_layout> out) const {
+    require_current();
+    auto n = bytes(in);
+    int r = blas_int(in.extent(0)), width = blas_int(extent(n / sizeof(Complex) / r));
+    require(out.shape() == std::array<long, 2>{r, width} && out.strides() == std::array<long, 2>{1, r}, "invalid RHS packing layout");
+    auto x = reinterpret_cast<std::uintptr_t>(in.data()), y = reinterpret_cast<std::uintptr_t>(out.data());
+    require(n <= UINTPTR_MAX - x && n <= UINTPTR_MAX - y && (x + n <= y || y + n <= x), "RHS packing overlaps");
+    Complex one{1}, zero{0};
+    wait_for_default_uploads();
+    check_blas(cublasZgeam(impl_->blas, CUBLAS_OP_T, CUBLAS_OP_T, r, width, reinterpret_cast<cuDoubleComplex const *>(&one),
+                           reinterpret_cast<cuDoubleComplex const *>(in.data()), width, reinterpret_cast<cuDoubleComplex const *>(&zero),
+                           reinterpret_cast<cuDoubleComplex const *>(in.data()), width, reinterpret_cast<cuDoubleComplex *>(out.data()), r));
+    finish();
+  }
+  void DeviceOps::unpack_rhs(nda::cumatrix_const_view<Complex, nda::F_layout> in, TensorView out) const {
+    require_current();
+    auto n = bytes(out);
+    int r = blas_int(out.extent(0)), width = blas_int(extent(n / sizeof(Complex) / r));
+    require(in.shape() == std::array<long, 2>{r, width} && in.strides() == std::array<long, 2>{1, r}, "invalid RHS unpacking layout");
+    auto x = reinterpret_cast<std::uintptr_t>(in.data()), y = reinterpret_cast<std::uintptr_t>(out.data());
+    require(n <= UINTPTR_MAX - x && n <= UINTPTR_MAX - y && (x + n <= y || y + n <= x), "RHS unpacking overlaps");
+    Complex one{1}, zero{0};
+    wait_for_default_uploads();
+    check_blas(cublasZgeam(impl_->blas, CUBLAS_OP_T, CUBLAS_OP_T, width, r, reinterpret_cast<cuDoubleComplex const *>(&one),
+                           reinterpret_cast<cuDoubleComplex const *>(in.data()), r, reinterpret_cast<cuDoubleComplex const *>(&zero),
+                           reinterpret_cast<cuDoubleComplex const *>(in.data()), r, reinterpret_cast<cuDoubleComplex *>(out.data()), width));
+    finish();
+  }
   void DeviceOps::product(TensorConstView left, TensorConstView right, TensorView out) const {
     require_current();
     disjoint(left, out);

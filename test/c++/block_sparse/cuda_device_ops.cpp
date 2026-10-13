@@ -105,6 +105,18 @@ TEST(BlockSparseCudaOps, RectangularDenseAndRankProducts) {
   compare(result, nda::array<dcomplex, 3>(dcomplex{1.4, -.3} * a));
   ops->zero(result);
   compare(result, nda::zeros<dcomplex>(5, 3, 7));
+  nda::vector<dcomplex> weights(5);
+  for (long t = 0; t < 5; ++t) weights(t) = {.2 + .03 * t, -.4 + .01 * t};
+  nda::cuvector<dcomplex> device_weights(weights);
+  auto weighted = a;
+  for (long t = 0; t < 5; ++t)
+    for (long i = 0; i < 3; ++i)
+      for (long j = 0; j < 7; ++j) weighted(t, i, j) *= weights(t);
+  ops->weight_rows(da, device_weights, result);
+  compare(result, weighted);
+  ops->weight_rows(da, device_weights, da);
+  compare(da, weighted);
+  da = a;
   EXPECT_THROW(ops->product(da, db, result), std::invalid_argument);
   // Error handling leaves the owned stream usable.
   ops->product(da, db, out);
