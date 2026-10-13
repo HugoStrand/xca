@@ -1,0 +1,1 @@
+xca_add_benchmark(block_sparse_inventory)
