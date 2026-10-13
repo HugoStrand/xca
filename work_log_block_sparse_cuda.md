@@ -167,3 +167,60 @@ supported functionality and required verification are achieved.
 
 This checkpoint records goal activation; it does not claim that new implementation
 experiments or quota-supervisor reconfiguration have already been performed.
+
+## 2026-10-13 — E1 initial exact sparse-operator foundation
+
+Implementation commit: `fc54948` (`[bs] export sparse Fock operators`).
+The persistent implementation goal remains active; this is an initial E1 milestone,
+not a completed CUDA evaluator or complete experiment campaign.
+
+Added portable host model code in `c++/triqs_xca/block_sparse/cuda/sparse_operator.*`:
+owned CSR blocks, exact many-body operator export using atom_diag Fock metadata,
+adjoint construction, structural validation and CPU left/right sparse applications.
+Export holds sparse entries rather than dense operator matrices. Explicit dense
+expansion is used only for small numerical controls. Existing evaluators and
+experiments are unchanged.
+
+Reuse TRIQS's imperative fermion-action machinery with a small exact-state adapter.
+The standard TRIQS sparse-state iterator prunes through `utility::is_zero`; the new
+adapter omits only exactly zero amplitudes. Unit monomials are compiled separately
+and original coefficients are applied afterward, retaining tiny input coefficients.
+Connections are determined before coefficient cancellation, matching the existing
+monomial-based policy. Interaction validation preserves zero-operator and injective-
+connection restrictions without allocating a throwaway adjoint.
+
+Source investigation corrected an important assumption: atom_diag's
+`get_matrix_element_of_monomial` applies the whole monomial in full Fock space and
+projects the final state. Intermediate c/cdag connections do not implement that
+policy for occupation-cutoff instances. The exporter and a regression test now cover
+this case; the plan records it. The exporter explicitly checks the underlying
+TRIQS full-Hilbert-space int-index limit before construction; 10/14 modes fit that
+index representation, without implying their complete atomic setup is inexpensive.
+
+Six GoogleTests cover complex mixed blocks, real scalar blocks, noncanonical mode
+labels/insertion order, exact signed maps, independent bit-sign and anticommutation
+identities, adjoints, arbitrary rectangular left/right products, tiny coefficients,
+exact cancellation with surviving connections, final-state projection, unsupported
+multi-target/non-injective operators, empty operators and invalid CSR metadata.
+A six-mode Q-only model has 192 exported annihilation nonzeros, as predicted.
+
+The complete CPU numerical control packs exact exported bare/interaction operators
+into a bounded legacy quartet and uses the unchanged CPU traversal. It compares SE,
+SPGF and one-time correlators with the existing rotated-operator CPU evaluator at
+orders 1/2/3, with dynamic density and non-Hermitian hopping channels, up to 64 flat
+indices per topology and a relative 1e-13 bound. Selected SE outputs must be nonzero.
+This small control does materialize dense blocks; the production exporter does not.
+Barred operators in this control are rebuilt from exact operands by the existing
+quartet implementation. Production sparse barred materialization remains pending.
+
+Verification: new sparse test executable and existing block-sparse dynamic-evaluator
+and evaluator-range regressions passed, 3/3 CTest entries in each CPU and CUDA build
+(3.09 s CPU; 4.34 s CUDA). New sparse tests are host tests in both environments;
+they do not exercise new CUDA arithmetic. `git diff --check` passed. Logs are under
+`/tmp/xca-bs-sparse-{cpu,cuda}-{configure,build,test}.log` and may disappear.
+
+Next: E0 reproducible workload/path traces and checked memory admission; complete
+E1 model packing/barred-operator and broader numerical qualification; then E2's
+allocation-bounded device reference. No N=14 diagonalization, GH200 qualification,
+new device benchmark, Python CUDA backend registration or supervisor reconfiguration
+has been performed. Preserve the full implementation goal and its remaining gates.

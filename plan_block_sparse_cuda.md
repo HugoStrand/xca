@@ -1,7 +1,8 @@
 # Block-sparse CUDA: investigation and experiment plan
 
-Date: 2026-10-13. Status: investigated design; CUDA experiments below are proposed,
-not completed. This replaces the earlier stub. Preserve the dense implementations,
+Date: 2026-10-13. Status: implementation in progress. Initial exact sparse-export
+CPU controls are implemented; CUDA arithmetic experiments below remain pending.
+This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 
 The performance target is **GH200-class accelerators, not the local RTX A4000**.
@@ -61,7 +62,9 @@ For retarded operators, apply the many-body monomials directly to Fock states,
 rightmost operator first, using TRIQS's canonical conventions. Investigate reusing
 `triqs::hilbert_space::imperative_operator` rather than duplicating fermion algebra.
 Coalesce duplicate entries in a specified order; do not prune small coefficients as
-an optimization. Density operators are diagonal, individual hopping/spin-flip terms
+an optimization. atom_diag applies a complete monomial in the full Fock space
+and then projects its final state; tracing individual projected c/cdag connections
+is insufficient for occupation-restricted atom_diag instances. Preserve this policy. Density operators are diagonal, individual hopping/spin-flip terms
 are partial maps, and sums may need general CSR/CSC storage. `get_op_mat` alone is
 not a direct Fock export: its matrices are in the atomic eigenbasis.
 
