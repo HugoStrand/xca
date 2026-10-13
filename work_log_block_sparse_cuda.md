@@ -390,3 +390,82 @@ transposition, fermionic parity and the per-path magnitude cutoff. Then both
 correlator traversals, complete memory admission, consolidated bindings/MPI integration
 and the remaining benchmark/optimization experiments. GH200 remains the target;
 all current device checks use the local RTX A4000 development proxy.
+
+## 2026-10-14 — E2 bounded CUDA self-energy reference
+
+Code commit: `51b69d1` (`[bs] add CUDA self-energy traversal`). The persistent
+implementation goal remains active. Self-energy is now implemented; SPGF and arbitrary
+one-time correlators, Python/MPI integration and optimization experiments remain.
+
+Added `block_sparse/cuda/diagram_evaluator.*`. It owns immutable OperatorModel,
+mesh/hybridization/kernel snapshots, shared device execution and DLR objects.
+Full/single/range self-energy APIs accept Fock-basis block_gf inputs and stream the
+qualified CPU-order path descriptors. All numerical vertex applications, rectangular
+DLR solves/convolutions, rank weights and output additions execute on the device.
+Both branch directions preserve barred operators, backward special-vertex coefficient
+transposition, fermionic parity, kernel multiplication order and separate prefactor/
+diagram-sign scaling. Per-call input-dependent masks are recomputed from finite inputs.
+
+One cached CSR/plain-transpose pair limits operator residency. The special vertex
+recomputes each kappa product inside the mu loop and accumulates in CPU order, instead
+of retaining q padded tensors. This is a correctness reference with additional upload/
+launch/recomputation costs, not a selected optimization. An exact bounded host scan
+of device T_out preserves the CPU's >1e-16 per-path cutoff; its 4096-complex chunk
+buffer replaces full-path download. No CPU matrix replay or post-submission fallback
+exists. Inputs/outputs are synchronous, the owning device is checked, and class
+cleanup selects the construction device before releasing owned device members.
+
+Admission precedes propagator/output upload: checked full input/output capacities,
+seven live user-work tiles, DLR tables/RHS/five convolution tiles, kernel weights and
+a configurable one-entry sparse-workspace reserve. Actual allocations use rectangular
+extents; maximum dimensions are used only for this conservative bound. Defaults are
+1 GiB total explicit storage and 32 MiB sparse storage, both constructor parameters;
+64 MiB sparse configuration is tested. This avoids fixing target-hardware capacity
+to the workstation's defaults. A global free-memory check adds 64 MiB headroom.
+Flat-domain/proposal arithmetic and the reference's INT_MAX BLAS-vector limit reject
+before work. Invalid counts, index ranges, shapes/meshes, nonfinite G/poles and fixed-
+table budgets reject. Complete opaque-library/host peak qualification is still pending.
+
+Memory probes sample global device free-memory drops at live phases. These include
+other processes and are not process RSS or a continuous peak trace. Isolated runs
+with XCA_BS_CHECK_MEMORY_PEAK=1 compare samples with the declared bound plus headroom;
+ordinary CTest runs omit that assertion because other GPU processes can interfere.
+
+Three GoogleTests now cover scalar occupation, total-number and mixed partitions,
+complex ordinary/retarded coefficients, non-Hermitian hopping, both branch directions,
+changed/restored/all-zero masks, empty tails, invalid calls and recovery. Selected
+windows cover two third-order topologies and crossing orders 4/5 with only two
+indices per window at those higher orders. Full NCA, ordinary full OCA and split-range
+additivity are checked. An independent manual NCA reference checks ordinary channels.
+A cutoff test places an entry beyond two whole scan chunks and checks the exact
+threshold and complex modulus rather than the cuBLAS 1-norm surrogate.
+
+CUDA-versus-exact-Fock CPU uses a relative 1e-13 block bound through sampled order 5.
+The old rotated-operator versus exact CPU control remains 1e-13 at orders 1–3.
+One newly added order-4 total-number tail sample exceeded it slightly: 5.8325e-25
+absolute difference on a 5.4853e-12 signal (relative 1.063e-13), between the TWO CPU
+controls, not CUDA. Exact signed-map/CAR controls independently qualify the direct
+fields; bare rotated matrices differ within the checked 4e-14 bound. Replaying the
+old rotated quartet in the same CPU constructor reproduces the old result bitwise,
+isolating operator-input round-trip noise from traversal/device error. Newly sampled
+old/new CPU orders 4/5 characterize amplification with a 1e-12 bound, while the
+CUDA/exact-input bound stays 1e-13. This does not qualify arbitrary high-order
+cancellation or change the production CPU path. The plan records this limitation.
+
+Verification: full CPU build and 74/74 CTest entries passed in 49.66 s; full CUDA build
+and 82/82 passed in 180.85 s. These runs overlapped other verification builds and are
+not throughput measurements. The final configurable-budget constructor addition was
+then checked in the focused library-only CUDA test (4.78 s, XCA_CUDA_SMALL=OFF) and
+isolated Compute Sanitizer run: all three evaluator GoogleTests passed, 0 errors and
+0 bytes leaked, with memory-bound assertions enabled. Default arithmetic is unchanged
+by that option. Earlier focused normal-CUDA control passed in 4.69 s. `git diff --check`
+passed. Logs: `/tmp/xca-bs-se-{cpu,cuda,library}-*.log`,
+`/tmp/xca-bs-se-cuda-full-{build,test}.log`, `/tmp/xca-bs-se-final-build.log`,
+`/tmp/xca-bs-se-memcheck.log`; diagnostics may disappear from /tmp.
+
+Next: streamed correlator path/fragment descriptors and both device traversals,
+endpoint sparse products/traces, SPGF and one-time correlator APIs. Complete E2 before
+broad fusion or production backend registration; then phase benchmarks, dispatch/
+batching/memory experiments, consolidated CUDA bindings and MPI qualification.
+Large-sector operator-workspace reserves need traced target measurements; no full
+N=14 evaluation, GH200 measurement, supervisor change, install or push was performed.

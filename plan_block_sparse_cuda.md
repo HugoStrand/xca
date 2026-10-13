@@ -3,7 +3,9 @@
 Date: 2026-10-14. Status: implementation in progress. Exact sparse model packing,
 CPU path controls and a bounded workload inventory are implemented. Owned-stream
 rectangular CUDA products and DLR operations are qualified at the primitive level.
-Complete CUDA observables and the remaining experiments below are still pending.
+A bounded self-energy device reference now passes small physical controls, including
+sampled orders 4/5 against exact-Fock CPU inputs. SPGF/correlator device traversals,
+integration and the remaining experiments below are still pending.
 This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 
@@ -295,6 +297,17 @@ including cancellation-sensitive high-order samples. If old/new CPU disagree bey
 those tolerances, investigate with small independent/manual references before changing
 acceptance criteria. Keep the production path unchanged until this is resolved.
 
+Implementation observation (2026-10-14): one added order-4 total-number sample
+differs between exact-Fock and rotated-operator CPU results by `5.83e-25` on a
+`5.49e-12` block signal (relative `1.063e-13`). Replaying the rotated quartet through
+the CPU evaluator reproduces the old result bitwise, isolating the changed operator
+inputs; the direct signed-map/CAR controls and manual NCA check qualify the exact
+fields. Existing order-1/2/3 CPU comparisons retain `1e-13`; newly sampled order-4/5
+old-versus-new CPU comparisons characterize this amplification with a `1e-12` bound.
+CUDA-versus-exact-input CPU keeps `1e-13` through the sampled fifth order. This is
+limited qualification, not a general high-order cancellation guarantee or a reason
+to change the current production CPU path.
+
 Measure export cost, host RSS, bytes uploaded and changed-coefficient update cost.
 Decision: which structural representation is reliable and compact; kernel speed is
 not the only reason to retain exact sparse construction.
@@ -312,6 +325,16 @@ Do not silently replay submitted work through another evaluator after device err
 This reference must cover both traversals, special vertices and each current observable
 before broad fusion. Its purpose is an auditable correctness/performance control;
 large N=14 execution is not required to establish it.
+
+The initial self-energy reference uses one cached CSR/plain-transpose pair and
+recomputes kappa products inside the mu loop to stream the special vertex in CPU
+summation order. Its exact per-path cutoff uses a bounded host scan of device output.
+These are auditable reference choices, not selected performance strategies. Explicit
+storage admission includes input/output, actual rectangular work buffers, rank
+tables/RHS, kernel weights and a configurable sparse-workspace reserve; a global
+free-memory check adds headroom. Sampled free-memory deltas include other processes,
+so compare them with predictions only in isolated runs. Complete host/opaque-library
+peak qualification and larger shapes remain E0/E2 work.
 
 ### E3 — Operator applications: maps, sparse libraries, dense products
 
