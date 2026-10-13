@@ -284,3 +284,52 @@ admission (E0); broader cancellation/update-cost controls (E1); allocation-bound
 owned-stream device arithmetic for rectangular sparse products and DLR transforms,
 then all observables (E2). GH200 validation, backend integration and later optimization
 gates remain pending. No supervisor reconfiguration, install or push was performed.
+
+## 2026-10-14 — E2 initial owned-stream rectangular device primitives
+
+Code commit: `9be8aa4` (`[bs] add CUDA rectangular products`). The persistent
+implementation goal remains active. This is a device primitive milestone, not a
+completed block-sparse evaluator or E2 qualification.
+
+Added `block_sparse/cuda/device_ops.*`, guarded by NDA_HAVE_CUDA independently of
+native CUDA-small support. DeviceOps owns its nonblocking stream and cuBLAS/cuSPARSE
+handles, checks the construction device and uses explicit default-stream upload
+events. Public calls complete synchronously. Inputs uploaded on other independent
+streams must be made ready by their owner. It supports rectangular per-node products,
+rank-axis GEMMs, zero/copy/axpy and rejects incompatible layouts/shapes/overlaps.
+
+DeviceSparseBlock snapshots immutable CSR plus a plain-transposed CSR for right
+products. It uses complex-double deterministic CSR_ALG3 one DLR node at a time,
+without dense expansion or confusing transpose with adjoint. Sparse zero operators
+use the explicit zero path. Descriptors survive until their node completes. Queried
+SpMM workspace is checked before allocation, retained for reuse and released before
+replacement so growth does not temporarily retain two workspaces. The per-block
+storage budget counts both CSR payloads and retained workspace only; library handles,
+opaque storage, host metadata, input/output and evaluator-wide buffers remain outside
+it. Complete device admission is still pending.
+
+Context lifetime follows ownership: snapshots retain the execution owner, while
+cleanup selects the construction device before freeing descriptors, vectors and
+handles, then restores the caller's selection. Operations on another device reject;
+there is no automatic CPU replay after submitted device work or errors.
+
+Four GPU tests cover complex non-square left/right products across rank/anchor
+sizes, plain transpose semantics, snapshot independence, repeatability, reused
+workspace, scalar and zero operators, budget/null-owner/shape/alias rejection,
+recovery, rectangular dense/rank products and lifetime after releasing the caller's
+owner pointer. Primitive absolute error is bounded by 3e-14 against independent CPU
+products. The wrong-device cleanup branch is conditional on multiple devices and
+was not exercised on this one-GPU workstation.
+
+Verification: focused CTest passed in the regular CUDA build (0.58 s) and CUDA
+library-only build with XCA_CUDA_SMALL=OFF (0.57 s). CPU-only build passed its guarded
+entry, which runs a disabled test and does not qualify GPU behavior. Compute
+Sanitizer memcheck/leak-check ran all four GPU tests: 0 errors and 0 bytes leaked.
+`git diff --check` passed. Logs: `/tmp/xca-bs-device-{cpu,cuda,library}-*.log` and
+`/tmp/xca-bs-device-memcheck.log`. No full-suite requalification is claimed for this
+primitive-only addition; the preceding core checkpoint retains the 71/79 results.
+
+Next: reusable owned cuSOLVER rank-r factors and rectangular RHS packing, time-ordered
+DLR convolution/reflection and kernel weights, then the streamed SE and correlator
+traversals with their numerical cutoff policies. No full-observable CUDA timing,
+Python block-sparse CUDA registration, N=14 execution or GH200 qualification yet.
