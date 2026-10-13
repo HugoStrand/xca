@@ -1,9 +1,9 @@
 # Block-sparse CUDA: investigation and experiment plan
 
 Date: 2026-10-14. Status: implementation in progress. Exact sparse model packing,
-CPU path controls, a bounded workload inventory and initial owned-stream rectangular
-CUDA products are implemented. DLR device operations and complete CUDA observables
-remain pending; the experiments below are not all completed.
+CPU path controls and a bounded workload inventory are implemented. Owned-stream
+rectangular CUDA products and DLR operations are qualified at the primitive level.
+Complete CUDA observables and the remaining experiments below are still pending.
 This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 

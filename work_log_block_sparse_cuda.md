@@ -333,3 +333,60 @@ Next: reusable owned cuSOLVER rank-r factors and rectangular RHS packing, time-o
 DLR convolution/reflection and kernel weights, then the streamed SE and correlator
 traversals with their numerical cutoff policies. No full-observable CUDA timing,
 Python block-sparse CUDA registration, N=14 execution or GH200 qualification yet.
+
+## 2026-10-14 — E2 rectangular DLR operations
+
+Code commit: `be1535e` (`[bs] add CUDA DLR operations`). The implementation goal
+remains active; complete CUDA observables, integration and optimization gates are
+still pending.
+
+Added `block_sparse/cuda/dlr_ops.*`: immutable cppdlr table/LU/pivot snapshots and
+an owned cuSOLVER handle on the shared DeviceOps stream. The cached C-layout factors
+are solved with plain transpose, matching NDA's factor convention, without forming
+an inverse or refactorizing per edge. Status is explicitly copied from device storage
+and checked after stream completion; NDA's global solver handles and synchronization
+policy are not used. DeviceOps now supplies rectangular physical RHS pack/unpack,
+scaling and complex rank weights (including exact in-place weighting).
+
+Values-to-coefficients supports changing spatial RHS widths and in-place calls;
+coefficient-to-values and reflection use the cached rank matrices. Time-ordered
+convolution supports arbitrary compatible (M,K)*(K,N), including output aliasing
+when shapes allow it. Separate products/additions retain cppdlr's reduction and beta
+scaling order. Scratch consists of actual (r,M,K), (r,K,N) and three (r,M,N) buffers,
+not padded squares. Exact-shape scratch/RHS storage is reused until shape changes.
+Old buffers are released before replacements. Checked explicit storage admission
+occurs before resizing, and growth rejection preserves existing workspace and caller
+output. The reference rejects vector-count overflow before work; its current single
+BLAS axpy/scal limit is INT_MAX elements. Chunked vectors may relax that limit later.
+
+The budget covers five rank-square tables, pivots/status, RHS and convolution scratch;
+it excludes caller inputs/output, host metadata and opaque library storage. Therefore
+it remains a component budget, not complete evaluator/device admission. Scratch is
+synchronous and intended for one owner at a time. Wrong-device cleanup follows the
+previous ownership policy; multi-device execution remains unqualified locally.
+
+Three DLR GoogleTests compare CPU cppdlr and CUDA within 1e-12 absolute error:
+a small cached LU across scalar/rectangular/changing RHS widths, in-place solves,
+reflection, real symmetric/nonsymmetric meshes at Lambda 10/40/120, several beta
+values, rectangular convolutions and complete solve/convolve edge pipelines.
+Cancellation-sensitive inputs, aliased output, repeated reuse, exact explicit-memory
+counts, table/workspace-budget failures, unchanged output on rejected growth,
+recovery and operation with NDA global solver synchronization disabled are covered.
+The primitive test suite also checks separate/in-place complex rank weights.
+Full diagram tolerance qualification still requires the next traversal milestone.
+
+Verification: both new block-sparse device CTest entries passed in the normal CUDA
+build (1.08 s) and CUDA library-only build with XCA_CUDA_SMALL=OFF (1.12 s). CPU-only
+build passed both disabled/guarded entries; that is compile compatibility, not GPU
+validation. Compute Sanitizer memcheck/leak-check ran all three DLR and four primitive
+GoogleTests separately: 0 errors and 0 bytes leaked in both runs. `git diff --check`
+passed. Logs: `/tmp/xca-bs-dlr-{cpu,cuda,library}-*.log`,
+`/tmp/xca-bs-dlr-memcheck.log`, `/tmp/xca-bs-dlr-primitives-memcheck.log`.
+No broader full-suite qualification is claimed for this component addition.
+
+Next: immutable hybridization/kernel snapshots, bounded device operator caching and
+streamed self-energy traversal, with complex backward special-vertex coefficient
+transposition, fermionic parity and the per-path magnitude cutoff. Then both
+correlator traversals, complete memory admission, consolidated bindings/MPI integration
+and the remaining benchmark/optimization experiments. GH200 remains the target;
+all current device checks use the local RTX A4000 development proxy.
