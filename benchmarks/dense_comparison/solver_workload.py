@@ -9,6 +9,8 @@ import contextlib
 import csv
 import hashlib
 import json
+import platform
+import shutil
 from pathlib import Path
 import statistics
 import subprocess
@@ -20,6 +22,8 @@ import triqs.utility.mpi as mpi
 from triqs_xca import Solver
 from triqs_xca._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
 
+
+ROOT = Path(__file__).resolve().parents[2]
 
 def make_solver(backend, dynamic):
     H=-.2*(n('0',0)+n('0',1))+.4*n('0',0)*n('0',1)
@@ -69,17 +73,23 @@ def main():
                                      channels=len(S.dynint_ops) if dynamic else 0))
     with (a.output/'samples.csv').open('w') as f:
         w=csv.DictWriter(f,rows[0].keys(),lineterminator='\n');w.writeheader();w.writerows(rows)
-    meta=dict(revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
-              status=subprocess.check_output(['git','status','--short'],text=True),
+    meta=dict(revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+              status=subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True),
               source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-              target='RTX A4000 local control; GH200-class optimization target unqualified',
+              target='GH200-class optimization target; hardware qualification is separate',
+              platform=platform.platform(),hostname=platform.node(),
+              cpu=platform.processor() or (subprocess.check_output(['lscpu'],text=True)
+                                         if shutil.which('lscpu') else platform.machine()),
+              gpu=subprocess.run(['nvidia-smi','--query-gpu=name,driver_version,memory.total',
+                                  '--format=csv,noheader'],text=True,capture_output=True).stdout.strip()
+                  if shutil.which('nvidia-smi') else 'unavailable',
               numerical='real Solver comparison rtol1e-9 atol1e-12; C++ optimization gate unchanged',
               samples=a.samples,backends=backends,
               sources_sha256={str(path):hashlib.sha256(path.read_bytes()).hexdigest()
-                              for path in [Path('python/triqs_xca/solver.py'),
-                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.cpp'),
-                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.hpp'),
-                                           *Path('c++/triqs_xca/dense/cuda_small').glob('*.cu')]})
+                              for path in [ROOT/'python/triqs_xca/solver.py',
+                                           *(ROOT/'c++/triqs_xca/dense/cuda_small').glob('*.cpp'),
+                                           *(ROOT/'c++/triqs_xca/dense/cuda_small').glob('*.hpp'),
+                                           *(ROOT/'c++/triqs_xca/dense/cuda_small').glob('*.cu')]})
     (a.output/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
     for dynamic in [False,True]:
         for backend in backends:

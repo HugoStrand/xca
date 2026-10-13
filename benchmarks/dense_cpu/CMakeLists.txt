@@ -1,0 +1,1 @@
+xca_add_benchmark(dense_cpu_benchmark)

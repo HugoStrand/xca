@@ -65,9 +65,9 @@ def summarize(raw, destination):
         writer=csv.DictWriter(stream,headers,lineterminator='\n');writer.writeheader();writer.writerows(results)
     return results
 
-def main():
+def main(default_binary=None, default_extra=()):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--binary',type=Path,default=ROOT/'cbuild-cuda/examples/dense_cuda_small_benchmark')
+    parser.add_argument('--binary',type=Path,default=default_binary or ROOT/'cbuild-cuda/benchmarks/dense_cuda_small/dense_cuda_small_benchmark')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--profile',choices=PROFILES,default='quick')
     parser.add_argument('--candidate-sources',type=Path,help='Experiment source directory to hash alongside the baseline')
@@ -77,14 +77,17 @@ def main():
     subprocess.run([sys.executable,str(ROOT/'experiments/dense_cuda_small/baseline/verify.py')],check=True)
     out.mkdir(parents=True,exist_ok=False)
     extra=args.extra[1:] if args.extra[:1]==['--'] else args.extra
-    cmd=[str(binary)]+PROFILES[args.profile]+extra
+    cmd=[str(binary)]+PROFILES[args.profile]+list(default_extra)+extra
     env=dict(os.environ,OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1')
     sources=[ROOT/'c++/triqs_xca/dense/diagram_evaluator.cpp',ROOT/'c++/triqs_xca/dense/diagram_evaluator.hpp']
     sources+=sorted((ROOT/'c++/triqs_xca/dense/cuda').glob('*.[ch]pp'))
-    sources += [Path(__file__),ROOT/'benchmarks/dense_cuda_small/harness.hpp',ROOT/'examples/dense_cuda_small_benchmark.cpp']
-    entry_source=ROOT/'examples'/f'{binary.name}.cpp'
+    sources += [Path(__file__),ROOT/'benchmarks/dense_cuda_small/harness.hpp',ROOT/'benchmarks/dense_cuda_small/dense_cuda_small_benchmark.cpp']
+    entry_source=next(iter((ROOT/'benchmarks').glob(f'*/{binary.name}.cpp')), ROOT/'benchmarks'/f'{binary.name}.cpp')
     if entry_source.is_file() and entry_source not in sources:
         sources.append(entry_source)
+        entry_runner=entry_source.parent/'run.py'
+        if entry_runner.is_file() and entry_runner not in sources:
+            sources.append(entry_runner)
     if args.candidate_sources:
         directory=args.candidate_sources.resolve()
         if not directory.is_dir() or not directory.is_relative_to(ROOT):
@@ -94,7 +97,7 @@ def main():
     manifest=dict(started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),command=cmd,
                   revision=capture(['git','rev-parse','HEAD']),status=capture(['git','status','--short']),
                   binary_sha256=digest(binary),sources_sha256={str(p.relative_to(ROOT)):digest(p) for p in sources},
-                  cpu=platform.processor(),platform=platform.platform(),
+                  cpu=platform.processor() or capture(['lscpu']),hostname=platform.node(),platform=platform.platform(),
                   gpu=capture(['nvidia-smi','--query-gpu=name,driver_version,memory.total','--format=csv,noheader']),
                   libraries=capture(['ldd',str(binary)]),
                   environment={k:env.get(k) for k in ['OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','TRIQS_ROOT','LD_LIBRARY_PATH',

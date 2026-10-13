@@ -51,7 +51,7 @@ about 2.9–4.0×; CUDA then improves on that hoisted implementation by about 3.
 Whole-evaluator speedups include both changes and cannot be attributed solely to
 GPU offload. The production CPU evaluator was preserved.
 
-An important control is [cpu_prefix_check.csv](cpu_prefix_check.csv): the CPU-only
+An important control is [cpu_prefix_check.csv](../../../dense_cpu/thinkstationP620_RTXA4000/cpu_prefix_check.csv): the CPU-only
 prefix at N32 measured 566.21 ms for order-three self-energy, versus 284.59 ms for
 the host evaluator in the CUDA-enabled run. Its convolution timings agree closely
 (7.01 / 1.75 ms current / hoisted). The initial CPU baseline also measured about
@@ -71,9 +71,9 @@ traversal. Work tensors remain device allocations; device-to-device copies persi
 
 | Trace | Traversal ranges | Nsight-visible peak allocated bytes | Largest UVM migration |
 |---|---:|---:|---:|
-| [N32/r26](trace_n32_r26.csv) | 18 | 39,021,389 | 4,096 |
-| [Dynamic/reuse](trace_dynint.csv) | 12 | 29,816,293 | 4,096 |
-| [N128/r26](trace_n128_r26.csv) | 18 | 194,503,565 | 61,440 |
+| [N32/r26](../../../dense_cuda/thinkstationP620_RTXA4000/trace_n32_r26.csv) | 18 | 39,021,389 | 4,096 |
+| [Dynamic/reuse](../../../dense_cuda/thinkstationP620_RTXA4000/trace_dynint.csv) | 12 | 29,816,293 | 4,096 |
+| [N128/r26](../../../dense_cuda/thinkstationP620_RTXA4000/trace_n128_r26.csv) | 18 | 194,503,565 | 61,440 |
 
 UVM migration is reported explicitly. Pointer tables and solver/library status use
 managed memory; large work tensors do not. N128's one rank-time tensor is 6,815,744
@@ -85,14 +85,14 @@ its local tensors/operator, excluding the primary evaluator still alive in that
 process; they are not process peaks. API memory counts describe the primary evaluator.
 
 NVTX separates vertex, special vertex, LU solves, convolution, reflection, external
-products and non-conjugating traces. [Phase detail](trace_phases_detail.csv) records
-each occurrence contained in traversal; [its traversal audit](trace_phases_traversal.csv)
+products and non-conjugating traces. [Phase detail](../../../dense_cuda/thinkstationP620_RTXA4000/trace_phases_detail.csv) records
+each occurrence contained in traversal; [its traversal audit](../../../dense_cuda/thinkstationP620_RTXA4000/trace_phases_traversal.csv)
 retains the allocation/copy gate. CUDA-event primitive times include gaps caused by
 synchronous adapters; Nsight kernel times sum active kernels. In the original N32
 trace, combined rank/batched GEMMs account for about 65% of active kernel time and
 solves about 29%. This supports matrix products as a major cost, but does not prove
 batched GEMMs alone dominate wall time. Profiling times are not speedup measurements.
-See [README](README.md) for reproduction and trace limitations.
+See [README](../../../dense_cuda/thinkstationP620_RTXA4000/ORIGINAL_README.md) for reproduction and trace limitations.
 
 ## Acceptance audit
 

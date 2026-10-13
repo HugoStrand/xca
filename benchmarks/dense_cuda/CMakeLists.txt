@@ -1,0 +1,1 @@
+xca_add_benchmark(dense_cuda_benchmark)

@@ -1,5 +1,7 @@
 # Real Solver workload control
 
+Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
+
 Serial RTX A4000 control, three fresh Solver objects per backend/case. Ordinary or fitted two-channel density/spin interaction; two self-consistency iterations through order2, SPGF through order2, followed by order2 density correlator. Full fit/setup/solve/observable paths are included, not independent C++ evaluator calls. All resulting G, Sigma, G_tau and density correlators match CPU with the same integration-test tolerance(rtol1e-9, atol1e-12), and are finite/nonvacuous. The strict C++ optimization gate is unchanged.
 
 |Backend|Interaction|Median setup(ms)|Median solve(ms)|Median observable(ms)|Median total(ms)|

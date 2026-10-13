@@ -1,5 +1,7 @@
 # N4 optimization baseline — 2026-10-11
 
+Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
+
 Final contract dense-small-v2, benchmark code c1a87d7, production source064b64e
 (23 protected files unchanged). RTX A4000, Threadripper PRO3945WX, clang19 Release,
 CUDA13.4, one OpenMP/OpenBLAS thread. Seven serial runs are preserved under baseline/:

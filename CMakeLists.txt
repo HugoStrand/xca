@@ -143,6 +143,11 @@ add_subdirectory(deps)
 # Build and install the C++ libraries (cppdlr overlay, triqs_soehyb, triqs_xca)
 add_subdirectory(c++)
 
+option(Build_Benchmarks "Build performance benchmarks" ${Build_Tests})
+if(Build_Benchmarks)
+  add_subdirectory(benchmarks)
+endif()
+
 # Tests
 if(Build_Tests)
   add_subdirectory(test)

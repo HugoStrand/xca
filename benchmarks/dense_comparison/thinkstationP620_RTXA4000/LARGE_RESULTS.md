@@ -1,5 +1,7 @@
 # Larger power-of-two controls
 
+Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
+
 RTX A4000, rank16, two poles, seed31415, crossing topology. GH200-class cards are the target and still need separate measurements. Eighteen fresh single-process screens compare the native sequential library route and retained CUDA evaluator at dimensions16/32/64. Orders1/3/6/8, ordinary/paired SE and SPGF, counts1/8 at order1 and3 at higher orders, samples3. All screens pass the unchanged individual/aggregate CUDA gate and low-order CPU checks; high-order CPU comparisons remain diagnostic. Fixed-size kernels at these dimensions are not admitted by these library-route measurements.
 
 |N|Order|Method|Indices|Native library(ms)|Retained CUDA(ms)|CPU(ms)|

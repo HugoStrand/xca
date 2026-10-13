@@ -1,5 +1,7 @@
 # Native workload repeats
 
+Evidence after reorganization: [CPU/shared baseline](../../dense_cpu/thinkstationP620_RTXA4000/baseline/), [native and larger-dimension runs](../../dense_cuda_small/thinkstationP620_RTXA4000/results/), [Solver workload](solver-workload-current/). Paths in historical commands below refer to the recorded revision.
+
 RTX A4000, CUDA 13.4; local control for the GH200-class target. These records precede the upload/download storage-reuse change. Each dimension has three fresh processes, seeds 31415/1729/31415, three timed samples per case, and a separately reported first call. The unchanged strict CUDA gate checks individual indices and aggregates; high-order CPU differences are diagnostics. Crossing topology, rank16, capacity128, two poles, ordinary and paired self-energy, orders6/8, index counts128/129.
 
 | N | Method | Order | 128-index median range (ms) | CPU speedup range | 129-index median range (ms) |
