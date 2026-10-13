@@ -78,6 +78,10 @@ have multiple nonzeros per row/column. Test both sparse materialization per pole
 and implicit application of maps plus hybridization coefficients. Respect the
 existing cross-set hybridization compatibility check.
 
+The current symmetry-set analysis is not fully optimal: it can separate operators
+that could be grouped, including multiorbital density operators with 1-by-1 Hilbert
+space blocks. Revisit these grouping restrictions during the investigation.
+
 ### Arithmetic, paths and output
 
 | Stage | Current operation | CUDA implication |

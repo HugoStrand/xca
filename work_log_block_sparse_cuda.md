@@ -136,3 +136,10 @@ No build or full CTest run was warranted by documentation-only changes. No CUDA
 performance claims or complete N=14 qualifications are made. The planning goal is
 complete after the reviewed documents are committed; implementation experiments
 remain future work. No new quota supervisor configuration was performed by this task.
+
+## 2026-10-13 — Symmetry-set limitation
+
+Added the user's observation that the current symmetry-set analysis can be overly
+restrictive, including multiorbital density operators with scalar Hilbert-space
+blocks. The plan now calls for revisiting grouping restrictions without documenting
+the constant-offset workaround. Documentation only; `git diff --check` passed.
