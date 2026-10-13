@@ -31,7 +31,7 @@ foreach(input IN LISTS inputs)
     if(XCA_PROBE_PRODUCTS)
       set(probe_mode "mode_ = (N_ == 4 || N_ == 8) ? 2 : 0;")
     else()
-      set(probe_mode "mode_ = 0;")
+      set(probe_mode "mode_ = 1;")
     endif()
     string(REPLACE "mode_ = qualified_shape(rank, N_) ? 2 : 0;"
       "${probe_mode}" contents "${contents}")
