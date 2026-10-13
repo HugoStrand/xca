@@ -26,10 +26,7 @@ function(xca_add_python_package pkg)
   foreach(module_src ${module_sources})
     get_filename_component(module_name ${module_src} NAME_WE)
     get_filename_component(module_dir ${module_src} DIRECTORY)
-    if(module_name STREQUAL "_dense_cuda" AND NOT nda_WITH_CUDA_SUPPORT)
-      continue()
-    endif()
-    if(module_name STREQUAL "_dense_cuda_small" AND NOT XCA_WITH_CUDA_SMALL)
+    if(module_name STREQUAL "_triqs_xca_cuda" AND NOT nda_WITH_CUDA_SUPPORT)
       continue()
     endif()
 
@@ -50,9 +47,18 @@ function(xca_add_python_package pkg)
       set(wrap_cxx "${CMAKE_CURRENT_SOURCE_DIR}/${module_name}.wrap.cxx")
       set(depfile "${CMAKE_CURRENT_BINARY_DIR}/${module_name}.cpp.d")
 
+      set(wrapper_postprocess)
+      set(wrapper_dependencies)
+      if(module_name STREQUAL "_triqs_xca_cuda")
+        set(wrapper_guard "${PROJECT_SOURCE_DIR}/tools/guard_cuda_wrappers.py")
+        set(wrapper_postprocess COMMAND ${TRIQS_PYTHON_EXECUTABLE} ${wrapper_guard} ${wrap_cxx})
+        set(wrapper_dependencies ${wrapper_guard})
+      endif()
       add_custom_command(
         OUTPUT ${wrap_cxx} ${depfile}
         COMMAND ${clair-c2py} -p ${PROJECT_BINARY_DIR} --generate-depfile ${depfile} ${module_src}
+        ${wrapper_postprocess}
+        DEPENDS ${wrapper_dependencies}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DEPFILE ${depfile}
       )

@@ -97,6 +97,11 @@ namespace triqs_xca::dense {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                       long f_ix); // compute self-energy for given topology and flat index
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
+    compute_self_energy_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                        long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
     compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                         nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
@@ -104,6 +109,11 @@ namespace triqs_xca::dense {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                                long f_ix); // compute self-energy for a single pair
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
+    compute_self_energy_by_pairs_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                 long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
     compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                  nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for a vector of pairs
     // get number of backbones for given topology
@@ -122,13 +132,23 @@ namespace triqs_xca::dense {
     // compute single particle Green's function for given topology and flat index
     nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
     // compute single particle Green's function for given topology and flat index vector
-    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
+    nda::array<dcomplex, 3> compute_single_ptcle_gf_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
     // get number of backbones for given topology
     long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology);
 
     // compute one time correlator for given operators
     template <bool isComplex>
-    nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+    nda::array<dcomplex, 3> compute_one_time_correlator_range(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                        std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                        triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
+                                                        long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    template <bool isComplex>
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                         std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                         triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                         nda::array_const_view<long, 1> f_ix_vec);

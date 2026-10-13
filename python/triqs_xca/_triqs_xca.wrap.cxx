@@ -86,24 +86,26 @@ dynint_coeffs : {par_5}
     {c2py::python_typename<const std::vector<triqs::operators::many_body_operator_complex> &>()},
     {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                  nda::borrowed<nda::mem::AddressSpace::Host>>>()}});
-// compute_one_time_correlator
+// compute_one_time_correlator_range
 static auto const _c2py_fun_0 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<1> &ad,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.template compute_one_time_correlator<true>(G_ppsc, ops_tau, ops_0, ad, topology, f_ix_vec); },
-      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "f_ix_vec"),
+         long first, long last) -> decltype(auto) {
+        return self.template compute_one_time_correlator_range<true>(G_ppsc, ops_tau, ops_0, ad, topology, first, last);
+      },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "first", "last"),
    c2py::cmethod(
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<0> &ad,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.template compute_one_time_correlator<false>(G_ppsc, ops_tau, ops_0, ad, topology, f_ix_vec); },
-      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "f_ix_vec")};
+         long first, long last) -> decltype(auto) {
+        return self.template compute_one_time_correlator_range<false>(G_ppsc, ops_tau, ops_0, ad, topology, first, last);
+      },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "first", "last")};
 
 // compute_self_energy
 static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
@@ -116,13 +118,7 @@ static auto const _c2py_fun_1 = c2py::dispatcher_f_kw_t{
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
          long f_ix) -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology, f_ix); },
-      "self", "G_ppsc", "topology", "f_ix"),
-   c2py::cmethod(
-      [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
-         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology, f_ix_vec); },
-      "self", "G_ppsc", "topology", "f_ix_vec")};
+      "self", "G_ppsc", "topology", "f_ix")};
 
 // compute_self_energy_by_pairs
 static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
@@ -135,16 +131,24 @@ static auto const _c2py_fun_2 = c2py::dispatcher_f_kw_t{
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
          long f_ix) -> decltype(auto) { return self.compute_self_energy_by_pairs(G_ppsc, topology, f_ix); },
-      "self", "G_ppsc", "topology", "f_ix"),
-   c2py::cmethod(
-      [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
-         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.compute_self_energy_by_pairs(G_ppsc, topology, f_ix_vec); },
-      "self", "G_ppsc", "topology", "f_ix_vec")};
+      "self", "G_ppsc", "topology", "f_ix")};
+
+// compute_self_energy_by_pairs_range
+static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
+      long first, long last) -> decltype(auto) { return self.compute_self_energy_by_pairs_range(G_ppsc, topology, first, last); },
+   "self", "G_ppsc", "topology", "first", "last")};
+
+// compute_self_energy_range
+static auto const _c2py_fun_4 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
+      long first, long last) -> decltype(auto) { return self.compute_self_energy_range(G_ppsc, topology, first, last); },
+   "self", "G_ppsc", "topology", "first", "last")};
 
 // compute_single_ptcle_gf
-static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_5 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
@@ -154,30 +158,31 @@ static auto const _c2py_fun_3 = c2py::dispatcher_f_kw_t{
       [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
          long f_ix) -> decltype(auto) { return self.compute_single_ptcle_gf(G_ppsc, topology, f_ix); },
-      "self", "G_ppsc", "topology", "f_ix"),
-   c2py::cmethod(
-      [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
-         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.compute_single_ptcle_gf(G_ppsc, topology, f_ix_vec); },
-      "self", "G_ppsc", "topology", "f_ix_vec")};
+      "self", "G_ppsc", "topology", "f_ix")};
+
+// compute_single_ptcle_gf_range
+static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_0 &self, triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
+      long first, long last) -> decltype(auto) { return self.compute_single_ptcle_gf_range(G_ppsc, topology, first, last); },
+   "self", "G_ppsc", "topology", "first", "last")};
 
 // get_num_self_energy_backbones
-static auto const _c2py_fun_4 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_7 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_0 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_self_energy_backbones(topology); },
    "self", "topology")};
 
 // get_num_single_ptcle_gf_backbones
-static auto const _c2py_fun_5 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_0 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_single_ptcle_gf_backbones(topology); },
    "self", "topology")};
 
 // reset
-static auto const _c2py_fun_6 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.reset(); }, "self")};
+static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_0 &self) -> decltype(auto) { return self.reset(); }, "self")};
 
 static const auto _c2py_doc_0 = _c2py_fun_0.doc(R"DOC()DOC");
 static const auto _c2py_doc_1 = _c2py_fun_1.doc(R"DOC()DOC");
@@ -186,17 +191,23 @@ static const auto _c2py_doc_3 = _c2py_fun_3.doc(R"DOC()DOC");
 static const auto _c2py_doc_4 = _c2py_fun_4.doc(R"DOC()DOC");
 static const auto _c2py_doc_5 = _c2py_fun_5.doc(R"DOC()DOC");
 static const auto _c2py_doc_6 = _c2py_fun_6.doc(R"DOC()DOC");
+static const auto _c2py_doc_7 = _c2py_fun_7.doc(R"DOC()DOC");
+static const auto _c2py_doc_8 = _c2py_fun_8.doc(R"DOC()DOC");
+static const auto _c2py_doc_9 = _c2py_fun_9.doc(R"DOC()DOC");
 
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
-   {"compute_one_time_correlator", (PyCFunction)c2py::pyfkw<_c2py_fun_0>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_0.c_str()},
+   {"compute_one_time_correlator_range", (PyCFunction)c2py::pyfkw<_c2py_fun_0>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_0.c_str()},
    {"compute_self_energy", (PyCFunction)c2py::pyfkw<_c2py_fun_1>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_1.c_str()},
    {"compute_self_energy_by_pairs", (PyCFunction)c2py::pyfkw<_c2py_fun_2>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_2.c_str()},
-   {"compute_single_ptcle_gf", (PyCFunction)c2py::pyfkw<_c2py_fun_3>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_3.c_str()},
-   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_4>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_4.c_str()},
-   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_5>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_5.c_str()},
-   {"reset", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
+   {"compute_self_energy_by_pairs_range", (PyCFunction)c2py::pyfkw<_c2py_fun_3>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_3.c_str()},
+   {"compute_self_energy_range", (PyCFunction)c2py::pyfkw<_c2py_fun_4>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_4.c_str()},
+   {"compute_single_ptcle_gf", (PyCFunction)c2py::pyfkw<_c2py_fun_5>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_5.c_str()},
+   {"compute_single_ptcle_gf_range", (PyCFunction)c2py::pyfkw<_c2py_fun_6>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_6.c_str()},
+   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
+   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
+   {"reset", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
@@ -331,27 +342,29 @@ dynint_coeffs : {par_9}
     {c2py::python_typename<const std::vector<triqs::operators::many_body_operator_complex> &>()},
     {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                  nda::borrowed<nda::mem::AddressSpace::Host>>>()}});
-// compute_one_time_correlator
-static auto const _c2py_fun_7 = c2py::dispatcher_f_kw_t{
+// compute_one_time_correlator_range
+static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<1> &ad,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.template compute_one_time_correlator<true>(G_ppsc, ops_tau, ops_0, ad, topology, f_ix_vec); },
-      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "f_ix_vec"),
+         long first, long last) -> decltype(auto) {
+        return self.template compute_one_time_correlator_range<true>(G_ppsc, ops_tau, ops_0, ad, topology, first, last);
+      },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "first", "last"),
    c2py::cmethod(
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
          const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<0> &ad,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.template compute_one_time_correlator<false>(G_ppsc, ops_tau, ops_0, ad, topology, f_ix_vec); },
-      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "f_ix_vec")};
+         long first, long last) -> decltype(auto) {
+        return self.template compute_one_time_correlator_range<false>(G_ppsc, ops_tau, ops_0, ad, topology, first, last);
+      },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology", "first", "last")};
 
 // compute_self_energy
-static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
@@ -361,16 +374,17 @@ static auto const _c2py_fun_8 = c2py::dispatcher_f_kw_t{
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
          long f_ix) -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology, f_ix); },
-      "self", "G_ppsc", "topology", "f_ix"),
-   c2py::cmethod(
-      [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology, f_ix_vec); },
-      "self", "G_ppsc", "topology", "f_ix_vec")};
+      "self", "G_ppsc", "topology", "f_ix")};
+
+// compute_self_energy_range
+static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
+      long first, long last) -> decltype(auto) { return self.compute_self_energy_range(G_ppsc, topology, first, last); },
+   "self", "G_ppsc", "topology", "first", "last")};
 
 // compute_single_ptcle_gf
-static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{
    c2py::cmethod(
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
@@ -380,65 +394,70 @@ static auto const _c2py_fun_9 = c2py::dispatcher_f_kw_t{
       [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
          nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
          long f_ix) -> decltype(auto) { return self.compute_single_ptcle_gf(G_ppsc, topology, f_ix); },
-      "self", "G_ppsc", "topology", "f_ix"),
-   c2py::cmethod(
-      [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
-         nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> f_ix_vec)
-         -> decltype(auto) { return self.compute_single_ptcle_gf(G_ppsc, topology, f_ix_vec); },
-      "self", "G_ppsc", "topology", "f_ix_vec")};
+      "self", "G_ppsc", "topology", "f_ix")};
+
+// compute_single_ptcle_gf_range
+static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
+      long first, long last) -> decltype(auto) { return self.compute_single_ptcle_gf_range(G_ppsc, topology, first, last); },
+   "self", "G_ppsc", "topology", "first", "last")};
 
 // get_num_self_energy_backbones
-static auto const _c2py_fun_10 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_15 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_self_energy_backbones(topology); },
    "self", "topology")};
 
 // get_num_single_ptcle_gf_backbones
-static auto const _c2py_fun_11 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
       -> decltype(auto) { return self.get_num_single_ptcle_gf_backbones(topology); },
    "self", "topology")};
 
 // print_self_energy_backbone
-static auto const _c2py_fun_12 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_17 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
       long f_ix) -> decltype(auto) { return self.print_self_energy_backbone(topology, f_ix); },
    "self", "topology", "f_ix")};
 
 // print_single_ptcle_gf_backbone
-static auto const _c2py_fun_13 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_1 &self,
       nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,
       long f_ix) -> decltype(auto) { return self.print_single_ptcle_gf_backbone(topology, f_ix); },
    "self", "topology", "f_ix")};
 
 // reset
-static auto const _c2py_fun_14 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 &self) -> decltype(auto) { return self.reset(); }, "self")};
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 &self) -> decltype(auto) { return self.reset(); }, "self")};
 
-static const auto _c2py_doc_7  = _c2py_fun_7.doc(R"DOC()DOC");
-static const auto _c2py_doc_8  = _c2py_fun_8.doc(R"DOC()DOC");
-static const auto _c2py_doc_9  = _c2py_fun_9.doc(R"DOC()DOC");
 static const auto _c2py_doc_10 = _c2py_fun_10.doc(R"DOC()DOC");
 static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC()DOC");
 static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC()DOC");
 static const auto _c2py_doc_13 = _c2py_fun_13.doc(R"DOC()DOC");
 static const auto _c2py_doc_14 = _c2py_fun_14.doc(R"DOC()DOC");
+static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC()DOC");
+static const auto _c2py_doc_16 = _c2py_fun_16.doc(R"DOC()DOC");
+static const auto _c2py_doc_17 = _c2py_fun_17.doc(R"DOC()DOC");
+static const auto _c2py_doc_18 = _c2py_fun_18.doc(R"DOC()DOC");
+static const auto _c2py_doc_19 = _c2py_fun_19.doc(R"DOC()DOC");
 
 // ----- Method table ----
 template <>
 PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
-   {"compute_one_time_correlator", (PyCFunction)c2py::pyfkw<_c2py_fun_7>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_7.c_str()},
-   {"compute_self_energy", (PyCFunction)c2py::pyfkw<_c2py_fun_8>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_8.c_str()},
-   {"compute_single_ptcle_gf", (PyCFunction)c2py::pyfkw<_c2py_fun_9>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_9.c_str()},
-   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
-   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
-   {"print_self_energy_backbone", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
-   {"print_single_ptcle_gf_backbone", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
-   {"reset", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"compute_one_time_correlator_range", (PyCFunction)c2py::pyfkw<_c2py_fun_10>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_10.c_str()},
+   {"compute_self_energy", (PyCFunction)c2py::pyfkw<_c2py_fun_11>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_11.c_str()},
+   {"compute_self_energy_range", (PyCFunction)c2py::pyfkw<_c2py_fun_12>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_12.c_str()},
+   {"compute_single_ptcle_gf", (PyCFunction)c2py::pyfkw<_c2py_fun_13>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_13.c_str()},
+   {"compute_single_ptcle_gf_range", (PyCFunction)c2py::pyfkw<_c2py_fun_14>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_14.c_str()},
+   {"get_num_self_energy_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
+   {"get_num_single_ptcle_gf_backbones", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
+   {"print_self_energy_backbone", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
+   {"print_single_ptcle_gf_backbone", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
+   {"reset", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
@@ -483,13 +502,13 @@ data structures required for computation.)DOC"
 // ==================== module functions ====================
 
 // convolve_ppsc
-static auto const _c2py_fun_15 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_20 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G1,
                  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G2) { return triqs_xca::block_sparse::convolve_ppsc(G1, G2); },
               "G1", "G2")};
 
 // expectation_value
-static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_21 = c2py::dispatcher_f_kw_t{
    c2py::cfun(
       [](const triqs::operators::many_body_operator_complex &op, const triqs::atom_diag::atom_diag<0> &ad,
          triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc) { return triqs_xca::block_sparse::expectation_value<false>(op, ad, G_ppsc); },
@@ -500,7 +519,7 @@ static auto const _c2py_fun_16 = c2py::dispatcher_f_kw_t{
       "op", "ad", "G_ppsc")};
 
 // sigma_nca
-static auto const _c2py_fun_17 =
+static auto const _c2py_fun_22 =
    c2py::dispatcher_f_kw_t{c2py::cfun([](nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                nda::borrowed<nda::mem::AddressSpace::Host>>
                                             hyb,
@@ -519,7 +538,7 @@ static auto const _c2py_fun_17 =
                                       "hyb", "hyb_refl", "Gt", "Fs", "F_dags")};
 
 // sigma_oca
-static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{
+static auto const _c2py_fun_23 = c2py::dispatcher_f_kw_t{
    c2py::cfun([](nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                        nda::borrowed<nda::mem::AddressSpace::Host>>
                     hyb,
@@ -564,10 +583,10 @@ static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{
       "hyb", "hyb_coeffs", "hyb_refl", "hyb_refl_coeffs", "hyb_poles", "itops", "beta", "Gt", "Fs", "F_dags")};
 
 // trace
-static auto const _c2py_fun_19 =
+static auto const _c2py_fun_24 =
    c2py::dispatcher_f_kw_t{c2py::cfun([](triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G) { return triqs_xca::block_sparse::trace(G); }, "G")};
 
-static const auto _c2py_doc_15 = _c2py_fun_15.doc(R"DOC(
+static const auto _c2py_doc_20 = _c2py_fun_20.doc(R"DOC(
 Compute the Volterra "convolution" of two pseudo-particle Green's functions
 
 Parameters
@@ -585,7 +604,7 @@ Returns
                                                   {{c2py::python_typename<triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>>()},
                                                    {c2py::python_typename<triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>>()}},
                                                   {c2py::python_typename<triqs::gfs::block_gf<triqs::mesh::dlr_imtime>>()});
-static const auto _c2py_doc_16 = _c2py_fun_16.doc(
+static const auto _c2py_doc_21 = _c2py_fun_21.doc(
    R"DOC(
 Compute the expectation value of the 2nd quantized operator op, <O> = -Tr[O G()]
 using the AtomDiag instance ad to generate a block representation
@@ -609,8 +628,8 @@ Returns
     {c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>()},
     {c2py::python_typename<triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>>()}},
    {c2py::python_typename<nda::dcomplex>()});
-static const auto _c2py_doc_17 =
-   _c2py_fun_17.doc(R"DOC(
+static const auto _c2py_doc_22 =
+   _c2py_fun_22.doc(R"DOC(
 Evaluate NCA self-energy term using dense storage
 
 Parameters
@@ -636,7 +655,7 @@ F_dags : {par_4}
                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>>()},
                      {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                   nda::borrowed<nda::mem::AddressSpace::Host>>>()}});
-static const auto _c2py_doc_18 = _c2py_fun_18.doc(
+static const auto _c2py_doc_23 = _c2py_fun_23.doc(
    R"DOC(
 [1] Evaluate OCA using dense storage
 
@@ -690,7 +709,7 @@ Returns
        nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>>()}},
    {c2py::python_typename<
       nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<nda::mem::AddressSpace::Host>>>>()});
-static const auto _c2py_doc_19 = _c2py_fun_19.doc(R"DOC(
+static const auto _c2py_doc_24 = _c2py_fun_24.doc(R"DOC(
 Take the trace of a pseudo-particle Green's function
 
 Parameters
@@ -702,11 +721,11 @@ G : {par_0}
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"convolve_ppsc", (PyCFunction)c2py::pyfkw<_c2py_fun_15>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_15.c_str()},
-   {"expectation_value", (PyCFunction)c2py::pyfkw<_c2py_fun_16>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_16.c_str()},
-   {"sigma_nca", (PyCFunction)c2py::pyfkw<_c2py_fun_17>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_17.c_str()},
-   {"sigma_oca", (PyCFunction)c2py::pyfkw<_c2py_fun_18>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_18.c_str()},
-   {"trace", (PyCFunction)c2py::pyfkw<_c2py_fun_19>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_19.c_str()},
+   {"convolve_ppsc", (PyCFunction)c2py::pyfkw<_c2py_fun_20>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_20.c_str()},
+   {"expectation_value", (PyCFunction)c2py::pyfkw<_c2py_fun_21>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_21.c_str()},
+   {"sigma_nca", (PyCFunction)c2py::pyfkw<_c2py_fun_22>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_22.c_str()},
+   {"sigma_oca", (PyCFunction)c2py::pyfkw<_c2py_fun_23>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_23.c_str()},
+   {"trace", (PyCFunction)c2py::pyfkw<_c2py_fun_24>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_24.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

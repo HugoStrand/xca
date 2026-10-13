@@ -10,10 +10,11 @@ from triqs.atom_diag import AtomDiag, AtomDiagReal, AtomDiagComplex
 from triqs.operators import Operator
 
 from .diag import all_pairings, all_connected_pairings
+from . import gpu
 
 from cppdlr import DysonItPPSC
 
-from ._triqs_xca import DenseDiagramEvaluator, BlockSparseDiagramEvaluator
+from ._triqs_xca import BlockSparseDiagramEvaluator
 from ._triqs_xca import trace
 from ._triqs_xca import convolve_ppsc as conv
 from ._triqs_xca import expectation_value
@@ -30,46 +31,6 @@ def scatter_range_bounds(n):
     chunk, extra = divmod(n, mpi.size)
     start = mpi.rank * chunk + min(mpi.rank, extra)
     return start, start + chunk + (mpi.rank < extra)
-
-
-def _dense_evaluator_class(backend):
-    if backend == 'cpu':
-        return DenseDiagramEvaluator
-    from ._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
-    if not (CUDA_SMALL_ENABLED if backend == 'cuda_small' else CUDA_ENABLED):
-        raise RuntimeError(f"Requested dense backend {backend!r} is unavailable in this build")
-    from importlib import import_module
-    module_name = '_dense_cuda_small' if backend == 'cuda_small' else '_dense_cuda'
-    class_name = 'DenseCudaSmallDiagramEvaluator' if backend == 'cuda_small' else 'DenseCudaDiagramEvaluator'
-    try:
-        return getattr(import_module('.' + module_name, __package__), class_name)
-    except ImportError as error:
-        raise RuntimeError(f"Requested dense backend {backend!r} is unavailable: {error}") from error
-
-
-_gpu_process_device = None
-
-
-def _configure_gpu_device(backend, requested):
-    global _gpu_process_device
-    from importlib import import_module
-    runtime = import_module('._dense_cuda_small' if backend == 'cuda_small' else '._dense_cuda', __package__)
-    current = runtime.cuda_current_device()
-    selected = current if requested is None else requested
-    if selected < 0 or selected >= runtime.cuda_device_count():
-        raise ValueError(f"CUDA device ordinal {selected} is unavailable")
-    if _gpu_process_device is not None and (selected != _gpu_process_device or current != _gpu_process_device):
-        raise RuntimeError("XCA GPU evaluators require one unchanged CUDA device per process")
-    runtime.cuda_select_device(selected)
-    _gpu_process_device = selected
-    return selected
-
-
-def scatter_range_over_ranks(n):
-    """ This rank's chunk of range(n), split as np.array_split does, as int64 flat indices; the whole range is never built. """
-    chunk, extra = divmod(n, mpi.size)
-    start = mpi.rank * chunk + min(mpi.rank, extra)
-    return np.arange(start, start + chunk + (mpi.rank < extra), dtype=np.int64)
 
 
 class Solver(object):
@@ -417,9 +378,9 @@ class Solver(object):
         if self.dense_backend != 'cpu' and not self.use_dense_solver:
             raise ValueError("A CUDA dense backend requires conserved_operators=[]")
         if self.use_dense_solver:
-            evaluator_class = _dense_evaluator_class(self.dense_backend)
+            evaluator_class = gpu.dense_evaluator_class(self.dense_backend)
             if self.dense_backend != 'cpu':
-                _configure_gpu_device(self.dense_backend, self.gpu_device)
+                gpu.configure_device(self.gpu_device)
             if self.has_dynamic_interactions:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
             else:
@@ -435,19 +396,6 @@ class Solver(object):
             self.d.set_device_memory_reserve(self.dense_device_memory_reserve)
         #if is_root(): print(f'done.')
 
-
-    def _native_range_call(self, operation, phase="Native dense evaluation"):
-        result, error = None, None
-        try:
-            result = operation()
-        except Exception as caught:
-            error = caught
-        failed = mpi.all_reduce(int(error is not None))
-        if failed:
-            if error is not None:
-                raise RuntimeError(f"{phase} failed: {error}") from error
-            raise RuntimeError(f"{phase} failed on another MPI rank")
-        return result
 
     def solve(self, max_order, tol=1e-4, maxiter=10, mix=1., hyb_tol=None, hyb_comp=True, normalization='classic', spgf_max_order=None, verbose=True):
         """ Solve the impurity problem using pseudo particle self-consistent perturbation theory.
@@ -508,7 +456,7 @@ class Solver(object):
         # solve() is collective; coordinate GPU setup errors before any rank enters
         # the iterations. Standalone init_diagram_evaluator() remains local.
         if self.dense_backend != 'cpu':
-            self._native_range_call(self.init_diagram_evaluator, phase="Dense GPU initialization")
+            gpu.collective_call(self.init_diagram_evaluator, phase="Dense GPU initialization")
         else:
             self.init_diagram_evaluator() # FIXME! Evaluator takes hyb poles and coeffs in constructor
 
@@ -863,17 +811,9 @@ class Solver(object):
 
         order = len(topology)
         n_max = self.d.get_num_self_energy_backbones(topology)
-        # compute_self_energy_by_pairs(f_ix) evaluates both directions of the hybridization line
-        # connected to vertex 0, so pass only the f_ix whose own fb(0) == 0. That bit sits above the
-        # orbital and pole indices in the flat index, with stride n_max // 2**order.
-        n_p = n_max // (2**order)
-        if self.dense_backend == 'cuda_small':
-            first, last = scatter_range_bounds(n_max)
-            Sigma = self._native_range_call(lambda: self.d.compute_self_energy_by_pairs_range(G, topology, first, last))
-        else:
-            n_vec = scatter_range_over_ranks(n_max)
-            n_vec = n_vec[(n_vec // n_p) % 2 == 0]
-            Sigma = self.d.compute_self_energy_by_pairs(G, topology, n_vec)
+        first, last = scatter_range_bounds(n_max)
+        operation = lambda: self.d.compute_self_energy_by_pairs_range(G, topology, first, last)
+        Sigma = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -889,12 +829,9 @@ class Solver(object):
 
         order = len(topology)
         n_max = self.d.get_num_self_energy_backbones(topology)
-        if self.dense_backend == 'cuda_small':
-            first, last = scatter_range_bounds(n_max)
-            Sigma = self._native_range_call(lambda: self.d.compute_self_energy_range(G, topology, first, last))
-        else:
-            n_vec = scatter_range_over_ranks(n_max)
-            Sigma = self.d.compute_self_energy(G, topology, n_vec)
+        first, last = scatter_range_bounds(n_max)
+        operation = lambda: self.d.compute_self_energy_range(G, topology, first, last)
+        Sigma = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -951,12 +888,10 @@ class Solver(object):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
         spgf = self.get_zero_single_particle_greens_function()
-        if self.dense_backend == 'cuda_small':
-            first, last = scatter_range_bounds(n_max)
-            spgf.data[:] = self._native_range_call(lambda: self.d.compute_single_ptcle_gf_range(G, topology, first, last))
-        else:
-            n_vec = scatter_range_over_ranks(n_max)
-            spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, n_vec)
+        first, last = scatter_range_bounds(n_max)
+        operation = lambda: self.d.compute_single_ptcle_gf_range(G, topology, first, last)
+        spgf.data[:] = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+
         spgf.data[:] = mpi.all_reduce(spgf.data)
 
         return spgf
@@ -998,13 +933,11 @@ class Solver(object):
     def __inplace_eval_one_time_correlator_topology_loop(self, corr, G, topology, ops_tau, ops_0, prefactor):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        if self.dense_backend == 'cuda_small':
-            first, last = scatter_range_bounds(n_max)
-            value = self._native_range_call(lambda: self.d.compute_one_time_correlator_range(
-                G, ops_tau, ops_0, self.atom_diag, topology, first, last))
-        else:
-            n_vec = scatter_range_over_ranks(n_max)
-            value = self.d.compute_one_time_correlator(G, ops_tau, ops_0, self.atom_diag, topology, n_vec)
+        first, last = scatter_range_bounds(n_max)
+        operation = lambda: self.d.compute_one_time_correlator_range(
+            G, ops_tau, ops_0, self.atom_diag, topology, first, last)
+        value = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+
         corr_arr = prefactor * value
         corr.data[:] += mpi.all_reduce(corr_arr)
 

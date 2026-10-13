@@ -1,5 +1,5 @@
 package_name = "triqs_xca"
-documentation = "Native small-matrix CUDA evaluator with bounded work ranges."
+documentation = "CUDA diagram evaluators and shared device runtime."
 namespaces = ""
 # Register only the explicit c2py_module alias.
 match_names = "^::xca_python::cuda_(device_count|current_device|select_device)$"

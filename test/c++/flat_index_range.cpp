@@ -204,6 +204,9 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
     if (nda::max_element(nda::abs(sigma_dense(n_op * (fb + 1) - n_o))) > 0.0) f_sigma = n_op * (fb + 1) - n_o;
   ASSERT_GT(f_sigma, long{std::numeric_limits<int>::max()});
   auto S = sigma_dense(f_sigma);
+  EXPECT_EQ(nda::max_element(nda::abs(D_dense.compute_self_energy_range(G_flat,topology,f_sigma,f_sigma+1)[0].data()-S)),0.);
+  EXPECT_LE(nda::max_element(nda::abs(test_utils::get_tensor_in_full_hilbert_space(
+    D_bs.compute_self_energy_range(G_bs,topology,f_sigma,f_sigma+1),ad)-S)),1e-13*nda::max_element(nda::abs(S)));
   EXPECT_LE(nda::max_element(nda::abs(sigma_bs(f_sigma) - S)), 1.0e-13 * nda::max_element(nda::abs(S)));
 
   // the flat-index vector overloads, and the dense by-pairs overload, which adds the backbone whose line at vertex 0 has the other
@@ -246,6 +249,8 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
     if (nda::max_element(nda::abs(D_dense.compute_single_ptcle_gf(G_flat, topology, n_op * (fb + 1) - n_o))) > 0.0) f_spgf = n_op * (fb + 1) - n_o;
   ASSERT_GT(f_spgf, long{std::numeric_limits<int>::max()});
   auto g = D_dense.compute_single_ptcle_gf(G_flat, topology, f_spgf);
+  EXPECT_EQ(nda::max_element(nda::abs(D_dense.compute_single_ptcle_gf_range(G_flat,topology,f_spgf,f_spgf+1)-g)),0.);
+  EXPECT_LE(nda::max_element(nda::abs(D_bs.compute_single_ptcle_gf_range(G_bs,topology,f_spgf,f_spgf+1)-g)),1e-13*nda::max_element(nda::abs(g)));
   EXPECT_LE(nda::max_element(nda::abs(D_bs.compute_single_ptcle_gf(G_bs, topology, f_spgf) - g)), 1.0e-13 * nda::max_element(nda::abs(g)));
 
   // the vector overloads, and the one-time correlator of the annihilators and creators, which is the single-particle Green's function

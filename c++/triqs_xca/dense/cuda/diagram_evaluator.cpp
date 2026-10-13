@@ -1,6 +1,7 @@
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
 #include "diagram_evaluator.hpp"
+#include <triqs_xca/index_range.hpp>
 #include "profile_range.hpp"
 #ifdef NDA_HAVE_CUDA
 #include <triqs_xca/dense/atom_diag.hpp>
@@ -257,17 +258,22 @@ namespace triqs_xca::dense::cuda {
     return get_num_self_energy_backbones(b);
   }
   DiagramEvaluator::gf_t DiagramEvaluator::compute(gf_vt g, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices, bool all,
-                                                   bool pairs) {
+                                                   bool pairs, long first, long last) {
+    Backbone b(topology, n_, n_int_);
+    long count = get_num_self_energy_backbones(b);
+    if (all) {
+      if (last == -1) last = count;
+      check_index_range(first, last, count);
+    }
     {
       ProfileRange range("xca.self_energy.upload");
       upload(g);
     }
-    Backbone b(topology, n_, n_int_);
     {
       ProfileRange range(pairs ? "xca.self_energy.pairs.traversal" : "xca.self_energy.traversal");
       if (all) {
-        long count = get_num_self_energy_backbones(b), group = count / b.fb_ix_max;
-        for (long i = 0; i < count; ++i)
+        long group = count / b.fb_ix_max;
+        for (long i = first; i < last; ++i)
           if (!pairs || (i / group) % 2 == 0) evaluate(b, i, pairs);
       } else
         for (long i : indices) evaluate(b, i, pairs);
@@ -290,10 +296,25 @@ namespace triqs_xca::dense::cuda {
   METHODS(compute_self_energy, false)
   METHODS(compute_self_energy_by_pairs, true)
 #undef METHODS
+  DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy_range(gf_vt g, nda::array_const_view<int, 2> t, long first, long last) {
+    check_index_range(first, last, get_num_self_energy_backbones(t));
+    nda::vector<long> empty(0);
+    return compute(g, t, empty, true, false, first, last);
+  }
+  DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy_by_pairs_range(gf_vt g, nda::array_const_view<int, 2> t, long first, long last) {
+    check_index_range(first, last, get_num_self_energy_backbones(t));
+    nda::vector<long> empty(0);
+    return compute(g, t, empty, true, true, first, last);
+  }
 
   nda::array<complex, 3> DiagramEvaluator::correlate(CorrelatorBackbone &b, nda::array_const_view<complex, 3> mu,
                                                      nda::array_const_view<complex, 3> kap, nda::array_const_view<long, 1> indices, bool all,
-                                                     bool fermionic) {
+                                                     bool fermionic, long first, long last) {
+    if (all) {
+      long count = b.num_flat_indices(hyb_.poles.size());
+      if (last == -1) last = count;
+      check_index_range(first, last, count);
+    }
     if (mu.extent(1) != N_ || mu.extent(2) != N_ || kap.extent(1) != N_ || kap.extent(2) != N_)
       throw std::invalid_argument("CUDA correlator endpoint shape mismatch");
     long m = mu.extent(0), k = kap.extent(0);
@@ -370,8 +391,7 @@ namespace triqs_xca::dense::cuda {
     {
       ProfileRange traversal("xca.correlator.traversal");
       if (all) {
-        long count = b.num_flat_indices(hyb_.poles.size());
-        for (long i = 0; i < count; ++i) evaluate_index(i);
+        for (long i = first; i < last; ++i) evaluate_index(i);
       } else
         for (long i : indices) evaluate_index(i);
     }
@@ -401,6 +421,13 @@ namespace triqs_xca::dense::cuda {
     CorrelatorBackbone b(topology, n_, n_int_);
     return correlate(b, fset_.Fs(nda::range(n_ - n_int_), a, a), fset_.F_dags(nda::range(n_ - n_int_), a, a), indices, false, true);
   }
+  nda::array<complex, 3> DiagramEvaluator::compute_single_ptcle_gf_range(gf_vt g, nda::array_const_view<int, 2> topology, long first, long last) {
+    check_index_range(first, last, get_num_single_ptcle_gf_backbones(topology));
+    upload(g);
+    CorrelatorBackbone b(topology, n_, n_int_);
+    nda::vector<long> empty(0);
+    return correlate(b, fset_.Fs(nda::range(n_ - n_int_), a, a), fset_.F_dags(nda::range(n_ - n_int_), a, a), empty, true, true, first, last);
+  }
   nda::array<complex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<complex, 3> g, CorrelatorBackbone &b,
                                                            nda::array_const_view<complex, 3> mu, nda::array_const_view<complex, 3> kap,
                                                            bool fermionic) {
@@ -417,10 +444,11 @@ namespace triqs_xca::dense::cuda {
   }
   template <bool C>
   nda::array<complex, 3>
-  DiagramEvaluator::compute_one_time_correlator(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+  DiagramEvaluator::one_time_impl(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
                                                 triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology,
-                                                nda::array_const_view<long, 1> indices) {
+                                                nda::array_const_view<long, 1> indices, bool all, long first, long last) {
+    if (all) check_index_range(first, last, get_num_single_ptcle_gf_backbones(topology));
     if (ad.n_subspaces() != 1) throw std::invalid_argument("compute_one_time_correlator: requires an atom_diag with a single subspace");
     if (ad.get_full_hilbert_space_dim() != N_) throw std::invalid_argument("compute_one_time_correlator: atom_diag dimension mismatch");
     upload(g);
@@ -440,12 +468,31 @@ namespace triqs_xca::dense::cuda {
       mu(i, a, a) = rotation * triqs_xca::atom_diag::get_op_mat(ad, ops_tau[i]).block_mat[0] * nda::dagger(rotation);
     for (std::size_t i = 0; i < ops_zero.size(); ++i)
       kap(i, a, a) = rotation * triqs_xca::atom_diag::get_op_mat(ad, ops_zero[i]).block_mat[0] * nda::dagger(rotation);
-    return correlate(b, mu, kap, indices, false, fermionic);
+    return correlate(b, mu, kap, indices, all, fermionic, first, last);
+  }
+  template <bool C>
+  nda::array<complex, 3> DiagramEvaluator::compute_one_time_correlator(gf_vt g,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+    triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> indices) {
+    return one_time_impl(g, ops_tau, ops_zero, ad, topology, indices, false, 0, -1);
+  }
+  template <bool C>
+  nda::array<complex, 3> DiagramEvaluator::compute_one_time_correlator_range(gf_vt g,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+    triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> topology, long first, long last) {
+    check_index_range(first, last, get_num_single_ptcle_gf_backbones(topology));
+    nda::vector<long> empty(0);
+    return one_time_impl(g, ops_tau, ops_zero, ad, topology, empty, true, first, last);
   }
 #define CORR_INSTANTIATE(C)                                                                                                                          \
   template nda::array<complex, 3> DiagramEvaluator::compute_one_time_correlator(                                                                     \
      gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &, std::vector<triqs::operators::many_body_operator_complex> const &,    \
-     triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, nda::array_const_view<long, 1>);
+     triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, nda::array_const_view<long, 1>); \
+  template nda::array<complex, 3> DiagramEvaluator::compute_one_time_correlator_range( \
+     gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &, std::vector<triqs::operators::many_body_operator_complex> const &, \
+     triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, long, long);
   CORR_INSTANTIATE(true)
   CORR_INSTANTIATE(false)
 #undef CORR_INSTANTIATE

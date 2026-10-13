@@ -7,14 +7,14 @@ from unittest.mock import patch, Mock
 import numpy as np
 from triqs.operators import n, c, c_dag
 import triqs.utility.mpi as mpi
-from triqs_xca import Solver
+from triqs_xca import Solver, gpu
 from triqs_xca.solver import scatter_range_bounds
 from triqs_xca._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
 
 
-def make_solver(backend='cpu'):
+def make_solver(backend='cpu', dense=True):
     H = -.2*(n('0',0)+n('0',1)) + .4*n('0',0)*n('0',1)
-    S = Solver(H,2.,5.,1e-12,[['0',2]],conserved_operators=[],verbose=False,dense_backend=backend)
+    S = Solver(H,2.,5.,1e-12,[['0',2]],conserved_operators=[] if dense else 'automatic',verbose=False,dense_backend=backend)
     coefficients=np.zeros((2,2,2),complex)
     coefficients[0]=np.eye(2)*.3
     coefficients[1]=np.eye(2)*.2
@@ -38,7 +38,42 @@ class BackendTests(unittest.TestCase):
             if mpi.rank==0: raise ValueError('injected rank failure')
             return 0
         with self.assertRaisesRegex(RuntimeError,'Native dense evaluation failed'):
-            S._native_range_call(operation)
+            gpu.collective_call(operation)
+
+    def test_cpu_solver_range_partition(self):
+        t=np.array([[0,2],[1,3]],dtype=np.int32)
+        for dense in [True,False]:
+            S=make_solver(dense=dense); S.init_diagram_evaluator()
+            with patch('triqs_xca.solver.scatter_range_bounds',wraps=scatter_range_bounds) as bounds:
+                sigma=S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0,t)
+                spgf=S._Solver__eval_single_particle_greens_function_topology_loop(S.G0,t)
+                corr=S.get_zero_single_particle_greens_function()
+                S._Solver__inplace_eval_one_time_correlator_topology_loop(
+                    corr,S.G0,t,[c('0',0),c('0',1)],[c_dag('0',0),c_dag('0',1)],1)
+                if dense:
+                    paired=S._Solver__eval_pseudo_particle_self_energy_topology_loop_by_pairs(S.G0,t)
+            self.assertGreaterEqual(bounds.call_count,3)
+            full=S.d.compute_self_energy(S.G0,t)
+            for i in range(len(full)):
+                np.testing.assert_allclose(sigma[i].data,full[i].data,rtol=1e-12,atol=1e-13)
+                if dense:
+                    np.testing.assert_allclose(paired[i].data,full[i].data,rtol=1e-12,atol=1e-13)
+            expected=S.d.compute_single_ptcle_gf(S.G0,t)
+            np.testing.assert_allclose(spgf.data,expected,rtol=1e-12,atol=1e-13)
+            np.testing.assert_allclose(corr.data,expected,rtol=1e-12,atol=1e-13)
+            # CPU Python selectors accept scalar indices or range bounds, not vectors.
+            with self.assertRaises(TypeError):
+                S.d.compute_self_energy(S.G0,t,np.array([0],dtype=np.int64))
+
+    @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
+    def test_consolidated_cuda_module(self):
+        import triqs_xca
+        from triqs_xca import _triqs_xca_cuda as module
+        self.assertIs(triqs_xca.DenseCudaDiagramEvaluator,module.DenseCudaDiagramEvaluator)
+        self.assertEqual(module.DenseCudaDiagramEvaluator.__module__,'triqs_xca._triqs_xca_cuda')
+        self.assertEqual(hasattr(module,'DenseCudaSmallDiagramEvaluator'),CUDA_SMALL_ENABLED)
+        if CUDA_SMALL_ENABLED:
+            self.assertIs(triqs_xca.DenseCudaSmallDiagramEvaluator,module.DenseCudaSmallDiagramEvaluator)
 
     def test_preference_copy_and_old_archive_defaults(self):
         S=make_solver('cuda_small')
@@ -91,23 +126,23 @@ class BackendTests(unittest.TestCase):
                 make_solver('cuda_small').init_diagram_evaluator()
 
     def test_gpu_device_configuration(self):
-        from triqs_xca.solver import _configure_gpu_device
+        from triqs_xca.gpu import configure_device
         for ordinal in [-1, True]:
             with self.assertRaises(ValueError):
                 Solver(n('0',0),2.,5.,1e-12,[['0',1]],verbose=False,gpu_device=ordinal)
         runtime=Mock()
         runtime.cuda_device_count.return_value=2
         runtime.cuda_current_device.return_value=1
-        with patch.dict(_configure_gpu_device.__globals__, {'_gpu_process_device': None}), patch('importlib.import_module',return_value=runtime):
-            self.assertEqual(_configure_gpu_device('cuda_small',None),1)
+        with patch.dict(configure_device.__globals__, {'_gpu_process_device': None}), patch('triqs_xca.gpu.import_module',return_value=runtime):
+            self.assertEqual(configure_device(None),1)
             runtime.cuda_select_device.assert_called_once_with(1)
             with self.assertRaisesRegex(RuntimeError,'one unchanged CUDA device'):
-                _configure_gpu_device('cuda',0)
+                configure_device(0)
             runtime.cuda_current_device.return_value=0
             with self.assertRaisesRegex(RuntimeError,'one unchanged CUDA device'):
-                _configure_gpu_device('cuda_small',1)
+                configure_device(1)
             with self.assertRaisesRegex(ValueError,'unavailable'):
-                _configure_gpu_device('cuda_small',2)
+                configure_device(2)
 
     def test_invalid_device_reserve(self):
         for reserve in [-1,True]:
@@ -116,7 +151,7 @@ class BackendTests(unittest.TestCase):
 
     @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
     def test_gpu_initialization_failure_is_collective(self):
-        from triqs_xca import _dense_cuda as runtime
+        from triqs_xca import _triqs_xca_cuda as runtime
         for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
             S=make_solver(backend)
             if mpi.rank==0: S.gpu_device=runtime.cuda_device_count()
@@ -129,7 +164,7 @@ class BackendTests(unittest.TestCase):
 
     @unittest.skipUnless(CUDA_ENABLED,'requires CUDA TRIQS')
     def test_visible_gpu_device_selection(self):
-        from triqs_xca import _dense_cuda as runtime
+        from triqs_xca import _triqs_xca_cuda as runtime
         current=runtime.cuda_current_device()
         for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
             S=make_solver(backend)
@@ -149,15 +184,15 @@ class BackendTests(unittest.TestCase):
         for backend in ['cuda']+(['cuda_small'] if CUDA_SMALL_ENABLED else []):
             S=make_solver(backend)
             S.init_diagram_evaluator()
-            ix=np.arange(min(17,S.d.get_num_self_energy_backbones(t)),dtype=np.int64)
+            last=min(17,S.d.get_num_self_energy_backbones(t))
             for name in ['compute_self_energy','compute_self_energy_by_pairs']:
-                a=getattr(S.d,name)(S.G0,t,ix)
-                b=getattr(reference.d,name)(reference.G0,t,ix)
+                a=getattr(S.d,name+"_range")(S.G0,t,0,last)
+                b=getattr(reference.d,name+"_range")(reference.G0,t,0,last)
                 np.testing.assert_allclose(a[0].data,b[0].data,rtol=1e-10,atol=1e-13)
-            ix=np.arange(min(9,S.d.get_num_single_ptcle_gf_backbones(t)),dtype=np.int64)
-            np.testing.assert_allclose(S.d.compute_single_ptcle_gf(S.G0,t,ix),reference.d.compute_single_ptcle_gf(reference.G0,t,ix),rtol=1e-10,atol=1e-13)
+            last=min(9,S.d.get_num_single_ptcle_gf_backbones(t))
+            np.testing.assert_allclose(S.d.compute_single_ptcle_gf_range(S.G0,t,0,last),reference.d.compute_single_ptcle_gf_range(reference.G0,t,0,last),rtol=1e-10,atol=1e-13)
             tau=[c('0',0),c('0',1)]; zero=[c_dag('0',0),c_dag('0',1)]
-            np.testing.assert_allclose(S.d.compute_one_time_correlator(S.G0,tau,zero,S.atom_diag,t,ix),reference.d.compute_one_time_correlator(reference.G0,tau,zero,reference.atom_diag,t,ix),rtol=1e-10,atol=1e-13)
+            np.testing.assert_allclose(S.d.compute_one_time_correlator_range(S.G0,tau,zero,S.atom_diag,t,0,last),reference.d.compute_one_time_correlator_range(reference.G0,tau,zero,reference.atom_diag,t,0,last),rtol=1e-10,atol=1e-13)
 
     @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
     def test_fitted_dynamic_channels_match_library_and_cpu(self):
@@ -173,13 +208,13 @@ class BackendTests(unittest.TestCase):
             solvers.append(S)
         reference,library,actual=solvers
         t=np.array([[0,3],[1,4],[2,5]],dtype=np.int32)
-        indices=np.arange(129,dtype=np.int64)
+        last=129
         before=actual.d.batch_chunks()
         for name in ['compute_self_energy','compute_self_energy_by_pairs']:
-            expected=getattr(library.d,name)(library.G0,t,indices)[0].data
-            value=getattr(actual.d,name)(actual.G0,t,indices)[0].data
+            expected=getattr(library.d,name+"_range")(library.G0,t,0,last)[0].data
+            value=getattr(actual.d,name+"_range")(actual.G0,t,0,last)[0].data
             np.testing.assert_allclose(value,expected,rtol=1e-10,atol=1e-280)
-            np.testing.assert_allclose(value,getattr(reference.d,name)(reference.G0,t,indices)[0].data,rtol=1e-9,atol=1e-13)
+            np.testing.assert_allclose(value,getattr(reference.d,name+"_range")(reference.G0,t,0,last)[0].data,rtol=1e-9,atol=1e-13)
         self.assertGreater(actual.d.batch_chunks(),before)
 
     @unittest.skipUnless(CUDA_SMALL_ENABLED,'requires CUDA-small')
@@ -199,10 +234,11 @@ class BackendTests(unittest.TestCase):
         self.assertGreater(S.d.unified_workspace_bytes(),0)
         self.assertGreater(S.d.host_workspace_bound_bytes(),0)
         reference=make_solver(); reference.init_diagram_evaluator()
-        with patch('triqs_xca.solver.scatter_range_over_ranks',side_effect=AssertionError('materialized index array')):
+        with patch('triqs_xca.solver.scatter_range_bounds',wraps=scatter_range_bounds) as bounds:
             actual=S.eval_pseudo_particle_self_energy_order_by_pairs(S.G0,2)
             spgf=S.eval_single_particle_greens_function(S.G0,2)
             corr=S.eval_one_time_correlator(S.G0,2,[n('0',0)],[n('0',1)])
+        self.assertGreaterEqual(bounds.call_count,3)
         expected=reference.eval_pseudo_particle_self_energy_order_by_pairs(reference.G0,2)
         np.testing.assert_allclose(actual[0].data,expected[0].data,rtol=1e-10,atol=1e-13)
         np.testing.assert_allclose(spgf.data,reference.eval_single_particle_greens_function(reference.G0,2).data,rtol=1e-10,atol=1e-13)

@@ -1,3 +1,4 @@
+#include "triqs_xca/index_range.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -158,6 +159,20 @@ namespace triqs_xca::dense {
     return std::vector{sigma_gf};
   }
 
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                                      long first, long last) {
+    check_index_range(first, last, get_num_self_energy_backbones(topology));
+
+    auto Gt = native_propagator(G_ppsc);
+    reset();
+    Backbone backbone(topology, n, n_int);
+    for (long f_ix = first; f_ix < last; ++f_ix)
+      eval_self_energy_fixed_indices(Gt, backbone, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    reset();
+    return std::vector{sigma_gf};
+  }
+
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy_by_pairs(gf_vt G_ppsc,
                                                                                                     nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
@@ -186,6 +201,21 @@ namespace triqs_xca::dense {
     reset();
     Backbone backbone(topology, n, n_int);
     for (long f_ix : f_ix_vec) eval_self_energy_fixed_index_pair(Gt, backbone, f_ix);
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    reset();
+    return std::vector{sigma_gf};
+  }
+
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy_by_pairs_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                                               long first, long last) {
+    check_index_range(first, last, get_num_self_energy_backbones(topology));
+
+    auto Gt = native_propagator(G_ppsc);
+    reset();
+    Backbone backbone(topology, n, n_int);
+    long group = get_num_self_energy_backbones(backbone) / backbone.fb_ix_max;
+    for (long f_ix = first; f_ix < last; ++f_ix)
+      if ((f_ix / group) % 2 == 0) eval_self_energy_fixed_index_pair(Gt, backbone, f_ix);
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -497,6 +527,28 @@ namespace triqs_xca::dense {
     return correlator;
   }
 
+nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf_range(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                    long first, long last) {
+    check_index_range(first, last, get_num_single_ptcle_gf_backbones(topology));
+
+    auto Gt = native_propagator(G_ppsc);
+    CorrelatorBackbone backbone(topology, n, n_int);
+    auto mu_ops  = Fset.Fs(nda::range(n_hyb), _, _);
+    auto kap_ops = Fset.F_dags(nda::range(n_hyb), _, _);
+
+    /*
+      auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
+        tau_mesh, eval_correlator(backbone, mu_ops, kap_ops, f_ix));
+      return correlator;
+      */
+
+    nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
+
+    for (long f_ix = first; f_ix < last; ++f_ix) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix); }
+
+    return correlator;
+  }
+
   template <bool isComplex>
   nda::array<dcomplex, 3>
   DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
@@ -543,16 +595,76 @@ namespace triqs_xca::dense {
     return correlator;
   }
 
+template <bool isComplex>
+  nda::array<dcomplex, 3>
+  DiagramEvaluator::compute_one_time_correlator_range(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
+                                                long first, long last) {
+    check_index_range(first, last, get_num_single_ptcle_gf_backbones(topology));
+
+
+    CorrelatorBackbone backbone(topology, n, n_int);
+
+    // The operator matrices are read from subspace 0 only
+    if (ad.n_subspaces() != 1)
+      throw std::invalid_argument("compute_one_time_correlator: requires an atom_diag with a single subspace, got " + std::to_string(ad.n_subspaces())
+                                  + ". Build it with an empty list of conserved operators.");
+    if (ad.get_full_hilbert_space_dim() != N)
+      throw std::invalid_argument("compute_one_time_correlator: the atom_diag has " + std::to_string(ad.get_full_hilbert_space_dim())
+                                  + " states, the evaluator was built for " + std::to_string(N));
+
+    auto Gt = native_propagator(G_ppsc);
+
+    auto U = ad.get_unitary_matrix(0);
+
+    nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
+    nda::array<dcomplex, 3> kap_ops = nda::zeros<dcomplex>(ops_0.size(), N, N);
+
+    for (auto [i, op] : itertools::enumerate(ops_tau)) {
+      mu_ops(i, _, _) = U * triqs_xca::atom_diag::get_op_mat(ad, op).block_mat[0] * nda::conj(nda::transpose(U));
+    }
+
+    for (auto [i, op] : itertools::enumerate(ops_0)) {
+      kap_ops(i, _, _) = U * triqs_xca::atom_diag::get_op_mat(ad, op).block_mat[0] * nda::conj(nda::transpose(U));
+    }
+
+    nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
+
+    // Figure out whether ops_tau and ops_0 are fermionic or bosonic.
+    // Require that all operators have the same statistics
+
+    // The statistics is the fermion parity of the operators, not whether they commute: a commutator test calls (S+, S-) fermionic
+    // since [S+, S-] = 2 Sz != 0, see operator_statistics.hpp
+    bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
+
+    for (long f_ix = first; f_ix < last; ++f_ix) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic); }
+
+    return correlator;
+  }
+
   template nda::array<dcomplex, 3>
   DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                 triqs::atom_diag::atom_diag<false> const &ad, nda::array_const_view<int, 2> topology,
                                                 nda::array_const_view<long, 1> f_ix_vec);
 
+template nda::array<dcomplex, 3>
+  DiagramEvaluator::compute_one_time_correlator_range(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                triqs::atom_diag::atom_diag<false> const &ad, nda::array_const_view<int, 2> topology,
+                                                long first, long last);
+
   template nda::array<dcomplex, 3>
   DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                 triqs::atom_diag::atom_diag<true> const &ad, nda::array_const_view<int, 2> topology,
                                                 nda::array_const_view<long, 1> f_ix_vec);
+
+template nda::array<dcomplex, 3>
+  DiagramEvaluator::compute_one_time_correlator_range(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                triqs::atom_diag::atom_diag<true> const &ad, nda::array_const_view<int, 2> topology,
+                                                long first, long last);
 
 } // namespace triqs_xca::dense

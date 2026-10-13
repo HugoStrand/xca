@@ -103,7 +103,10 @@ class DiagramEvaluator {
 
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
+  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
 
   void print_self_energy_backbone(nda::array_const_view<int, 2> topology,
                                   long f_ix); // print the backbone corresponding to a given flat index for debugging
@@ -125,7 +128,11 @@ class DiagramEvaluator {
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);
   nda::array<dcomplex, 3> compute_single_ptcle_gf(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
-  nda::array<dcomplex, 3> compute_single_ptcle_gf(
+  nda::array<dcomplex, 3> compute_single_ptcle_gf_range(
+    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
 
   void print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology,
@@ -133,7 +140,16 @@ class DiagramEvaluator {
  
   // compute one time correlator for given operators
   template<bool isComplex>
-  nda::array<dcomplex, 3> compute_one_time_correlator(
+  nda::array<dcomplex, 3> compute_one_time_correlator_range(
+    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+    std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+    triqs::atom_diag::atom_diag<isComplex> const &ad,
+    nda::array_const_view<int, 2> topology, long first, long last);
+
+    // Explicit noncontiguous selections for C++ benchmarks and retained experiments.
+    template<bool isComplex>
+  C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, 
     std::vector<triqs::operators::many_body_operator_complex> const &ops_tau, 
     std::vector<triqs::operators::many_body_operator_complex> const &ops_0, 
