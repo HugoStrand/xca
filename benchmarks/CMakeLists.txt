@@ -17,3 +17,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/dlr_hoisted
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/dlr_hoisted)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/operator_apply
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/operator_apply)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_edges
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_edges)
