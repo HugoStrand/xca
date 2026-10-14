@@ -1677,6 +1677,60 @@ Report absolute latency too. These are engineering screening thresholds, not evi
 that a whole Solver improved; final decisions require full-call and target-hardware
 measurements. Prefer a few explainable routes over an unstable large tuning table.
 
+### Updated target and convolution capacity gates (2026-10-14)
+
+The real-NCA target gate now passes: Arrhenius job 3843405 qualified three CTests /
+20 active controls and four cases/four routes/three samples (48 rows), pinned source
+b5a131c, recipe 0a03ade. Production N4/N8 occupation NCA medians are .238457/1.399253
+ms versus ordered CUDA 10.028712/292.954774 ms and CPU constants .186234/3.624880 ms.
+OCA and number-sector fallback controls also pass. These are synchronized C++ calls,
+not Python/MPI or whole Solver timings; three samples do not set universal defaults.
+See [target evidence](benchmarks/block_sparse_common/Arrhenius_GH200/real-nca-01/README.md).
+
+The first attempt, job 3843116, was cancelled after source timestamp updates stalled
+in filesystem I/O; it eventually reached compilation and the partial build was reused.
+Normalize staged source timestamps before transfer and check a marker inside the job,
+so this preparation does not consume allocated GPU time. Both jobs are terminal.
+Their total parent elapsed is 574 GPU-seconds (.15944 nominal GPU-hours), including
+392 s cancelled + 182 s completed. Tracked cumulative target allocation is 1566 s
+(.435 nominal GPU-hours), excluding the user's other work. Preserve the 100-hour/month
+ceiling and check the remaining shared allocation before a further target campaign.
+
+The observed GH200 reports 97871 MiB of FB memory (95.58 GiB), despite the product
+name GH200 120GB. Admit against actual free/total bytes with library headroom, not
+product labels. Current N14/rank64 NCA and convolution device bounds (116.921 and
+184.318 GiB) exceed this node's total memory. No full fourteen-mode execution is
+qualified. Lower-rank capacity examples still require physical accuracy qualification.
+
+A separate [row-convolution experiment](experiments/block_sparse_cuda/convolution_rows/README.md)
+chunks independent output rows, preserving the full GEMM inner dimension. It releases
+completed solve scratch, retains full transformed right input, and charges rank tables
+plus r*(K*N + 2*B*K + 3*B*N) complex entries for B=min(rows,M). Caller inputs/output
+and opaque allocations are additional. Native and native-disabled controls and memcheck
+pass; CPU correctly omits the experiment. All eight local shape/cap pairs are slower
+than full convolution. For 210x210x252/cap16, explicit workspace falls 64.95 to 22.99 MB
+while median time rises 32.29 to 47.56 ms. This is a potential capacity mechanism only.
+
+Twelve threshold-neighborhood probes agree on keep/drop, but small row caps change
+matrix elements by up to 3.701e-32 at a 1e-16-scale threshold. Matching the GEMM inner
+dimension does not guarantee unchanged arithmetic, as library algorithm choice can
+also depend on output shape. Keep this route private. Before any production use:
+
+1. Compose actual evaluator live buffers with row temporaries, complete outputs and
+   host placement. Measure allocation peaks and retained memory across changed G and
+   repeated calls; include the full transformed-right/input floor and alias lifetime.
+2. Exercise row tails, cutoff cancellation, rejected paths, dynamic interactions and
+   all affected observables at complete-call level. Require unchanged threshold
+   decisions or an explicitly justified numerical policy; never widen a cutoff band
+   based only on this primitive's agreement.
+3. Compare complete-call capacity and packing/allocation-inclusive latency with the
+   existing baseline on representative number-sector shapes. Retain unchanged code
+   and all experiments. Only take a qualified finalist to another capped GH200 job.
+
+The higher-order scalar cutoff policy remains unresolved: the earlier fixed-band
+candidate was disproved. NCA target success and this row primitive do not close that
+separate gate. Full target Python/MPI and full physical N14 capacity remain open.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,
@@ -1694,8 +1748,8 @@ measurements. Prefer a few explainable routes over an unstable large tuning tabl
    tables and revise the implementation plan before committing to production dispatch.
 
 The operational small-system reference and its local qualification are checkpoints
-toward the implementation goal. Optimized dispatch, target-hardware qualification
-and a 14-mode production workload remain unqualified.
+toward the implementation goal. Guarded real-NCA dispatch now has target-hardware qualification; broader optimized
+dispatch, target Python/MPI and a 14-mode production workload remain unqualified.
 
 ## 8. Adversarial review
 

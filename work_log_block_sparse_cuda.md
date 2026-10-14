@@ -1,5 +1,66 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — GH200 NCA qualification and row-convolution screen
+
+The user restored SSH authentication; the bounded noninteractive probe then succeeded.
+Used the Arrhenius and Arrhenius-software workflow with pinned source b5a131c/GTest
+988ea2c, source-only transfer, reused Arm CUDA TRIQS, one GPU, fifteen-minute cap and
+six compile workers. No shared checkout/install changed. Scheduler dry runs and source/
+recipe hash checks preceded submission. Project usage reported 3.06 GPU-hours over
+30 days with an unreliable-estimate warning; this is not a reserved experiment budget.
+
+Job 3843116 stalled in filesystem timestamp normalization during allocation. An overlap
+process check found Python in D state; cancelled this specific job to conserve GPU time.
+The operation eventually completed and compilation progressed while cancellation was
+processed. Parent terminal CANCELLED after 392 s; no numerical/compiler failure. Moved
+normalization to local staging before transfer, checked the epoch marker in the job,
+and retained the partial Arm build. Fix 0a03ade. Only after all prior steps were terminal,
+submitted job 3843405: COMPLETED 0:0 after 182 s on n407.
+
+The successful job passes prototype 11 controls, dispatcher five and production primitive
+four: three CTests / 20 GoogleTests in 106.64 s, then four cases/four routes/three samples
+= 48 rows. All process return codes zero, finite/numerical/exact-repeatability screens
+pass; offline GPU signal/error/path counts agree. Production N4/N8 occupation NCA medians
+.238457/1.399253 ms; general ordered 10.028712/292.954774, prototype 2.240698/3.167613,
+CPU constants .186234/3.624880. OCA and number fallback pass. No universal crossover,
+unchanged-CPU comparison or whole Solver inference; target Python/MPI/full suite/N14
+not newly qualified. Product name GH200 120GB, observed memory 97871 MiB/95.58 GiB;
+current N14/r64 device bounds exceed it. Both jobs terminal, no pending target workload.
+Accounting includes the cancelled allocation: 574 s/.15944 nominal GPU-hours this turn,
+tracked cumulative 1566 s/.435 GPU-hours, excluding other user workloads.
+
+Independently implemented the private row-convolution experiment (59d7cda). Chunk output
+rows only, leave inner GEMM dimension intact, retain full transformed right operand,
+release completed RHS/old convolution scratch, checked workspace bound and disjoint
+output requirement before writes. Three controls cover rectangular tails, exact-budget
+admission/recovery/aliases/overflow and twelve cutoff-neighborhood probes. Native and
+native-disabled CTests pass .64 s each; memcheck all three passes, zero errors/leaks.
+CPU configure omits CUDA experiment. Missing original DlrOps include corrected after
+initial build failure. Native flags remain OFF in library tree. No new full-suite claim.
+
+Local row cohort: eight shape/cap pairs, two routes, three samples = 48 rows. Both routes
+repeat their own output exactly and pass CPU/full-reference screens. All row cases slower;
+210x210x252/cap16 reduces workspace 64.95 to 22.99 MB at 32.29 to 47.56 ms, transposed
+output shape to 19.52 MB at 31.77 to 54.02 ms. Caller IO/opaque allocations additional.
+Twelve cutoff probes agree on decisions, yet caps1/3 alter matrix entries up to 3.701e-32
+near threshold. No universal cutoff guarantee or production promotion. Next compose
+complete evaluator liveness/admission and adversarial decision tests; retain full right
+input memory floor. Target GH200, A4000 only local mechanism screen.
+
+Evidence 1b3fbd0 (GH200) and 1b43054 (row convolution) preserve raw commands, hashes,
+logs, medians and accounting. Archive-only LF/trailing-whitespace normalization records
+original hashes. Initial archive invocation used unavailable python; reran python3.
+Whitespace check then caught extra blank EOF lines, normalized before commit. README
+links and GPU summary consistency checked. Plan/log separate from code/evidence.
+
+Goal active: higher-order scalar numerical policy and large convolution/full physical
+fourteen-mode capacity remain open. All handles terminal, no push/install/supervisor
+change, unrelated user files preserved. Records: benchmarks/block_sparse_common/
+Arrhenius_GH200/real-nca-01, experiments/block_sparse_cuda/gh200_qualification/
+Arrhenius_GH200/real-nca-01 and experiments/block_sparse_cuda/convolution_rows/
+thinkstationP620_RTXA4000/rows-01. Next work remains local until a qualified finalist
+justifies more of the shared 100 GPU-hour/month allocation.
+
 ## 2026-10-14 — Broad suite refresh and capped target recipe
 
 Previous turn made progress by wiring and qualifying the real NCA Python/MPI policy.
