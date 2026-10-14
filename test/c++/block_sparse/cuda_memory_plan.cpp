@@ -16,14 +16,18 @@ TEST(BlockSparseMemoryPlan, NumberSectorsAndPlacementWithoutDevice) {
     for (long rank : {26, 64}) {
       auto resident = gpu::reference_memory_plan(rank, dimensions, 2, 32ULL << 20, modes, false, 3, 2);
       auto streamed = gpu::reference_memory_plan(rank, dimensions, 2, 32ULL << 20, modes, true, 3, 2);
-      EXPECT_EQ(resident.device_convolution - resident.device_nca, 5 * resident.maximum_rank_buffer);
+      EXPECT_EQ(resident.device_convolution - resident.device_nca, 6 * resident.maximum_rank_buffer);
       EXPECT_EQ(resident.device_convolution - streamed.device_convolution, resident.function - resident.maximum_rank_buffer);
       EXPECT_EQ(resident.device_nca - streamed.device_nca, resident.function - resident.maximum_rank_buffer);
       EXPECT_EQ(resident.device_correlator, streamed.device_correlator);
       EXPECT_EQ(resident.host_output, resident.function);
       // Sum_q C(N,q)^2 = C(2N,N), independently fixing the full output payload.
       EXPECT_EQ(resident.function, 16ULL * rank * (modes == 10 ? 184756ULL : 40116600ULL));
-      if (modes == 14 && rank == 64) EXPECT_GT(streamed.device_convolution, 120ULL << 30);
+      if (modes == 14 && rank == 64) {
+        EXPECT_GT(streamed.device_convolution, 120ULL << 30);
+        EXPECT_LT(streamed.device_nca, 120ULL << 30);
+        EXPECT_GT(resident.device_nca, 120ULL << 30);
+      }
     }
   }
 }

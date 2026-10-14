@@ -25,7 +25,7 @@ TEST(BlockSparseCudaAdmission, LowerBudgetRejectionAndHigherOrderTransition) {
     if (special == gpu::SpecialBackend::Mapped && !gpu::mapped_special_available()) continue;
     gpu::DiagramEvaluator candidate(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, gpu::SparseBackend::Library, special);
     auto bound = candidate.self_energy_storage_bound(nca);
-    EXPECT_EQ(candidate.self_energy_storage_bound() - bound, 5 * gpu::tensor_bytes(mesh.dlr_it().rank(), 6, 6));
+    EXPECT_EQ(candidate.self_energy_storage_bound() - bound, 6 * gpu::tensor_bytes(mesh.dlr_it().rank(), 6, 6));
     EXPECT_EQ(candidate.self_energy_storage_bound(oca), candidate.self_energy_storage_bound());
     gpu::DiagramEvaluator limited(model, poles, mesh, bound - 1, 32ULL * 1024 * 1024, gpu::SparseBackend::Library, special);
     EXPECT_THROW(limited.compute_self_energy_range(G, nca, 0, 1), std::length_error);

@@ -92,7 +92,7 @@ namespace triqs_xca::block_sparse::cuda {
       throw std::length_error("Correlator exceeds BLAS vector range");
     auto correlator = checked_add(generic, checked_add(inventory.function,
       checked_add(checked_multiply(2, result), checked_multiply(maximum, sizeof(nda::dcomplex)))));
-    return {self_energy - (dlr - tables), self_energy, correlator, inventory.function,
+    return {self_energy - (dlr - tables) - inventory.maximum_rank_buffer, self_energy, correlator, inventory.function,
             inventory.function, inventory.maximum_rank_buffer, checked_add(tables, kernels), mapped};
   }
 } // namespace triqs_xca::block_sparse::cuda

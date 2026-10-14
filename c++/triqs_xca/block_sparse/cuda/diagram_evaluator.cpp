@@ -118,7 +118,10 @@ namespace triqs_xca::block_sparse::cuda {
       if (!nca) return generic;
       auto tables = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(checked_add(r, 1), sizeof(int)));
       if (dlr_bound < tables) throw std::logic_error("Invalid DLR scratch reserve");
-      return generic - (dlr_bound - tables);
+      // NCA has no ordinary vertex/edge convolutions. Its largest special
+      // fallback owns T, out, kap, weighted, mu and term: six rank tensors.
+      // Mapped execution uses fewer; scalar/cache experiments charge extras.
+      return generic - (dlr_bound - tables) - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
     }
     void prepare_self_energy(nda::array_const_view<int, 2> topology, std::size_t extra = 0) const {
       bool nca    = topology.extent(0) == 1;
