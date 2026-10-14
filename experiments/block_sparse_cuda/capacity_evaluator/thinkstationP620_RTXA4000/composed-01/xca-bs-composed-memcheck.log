@@ -1,0 +1,7 @@
+========= COMPUTE-SANITIZER
+modes=4 fields=4 rank=18 function_bytes=20160 device_bound=33653868 host_bound=536931968 dry_run=0
+modes,fields,rank,sample,function_bytes,device_bound,host_bound,setup_seconds,evaluate_seconds,verify_seconds,max_error,norm,paths,peak_device_delta
+4,4,18,0,20160,33653868,536931968,0.23329531000000001,0.60491950100000003,4.9753999999999998e-05,0,0.45696589425122192,8,0
+4,4,18,1,20160,33653868,536931968,0.23329531000000001,0.53397936999999995,2.0798999999999999e-05,0,0.45696589425122192,8,0
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

@@ -1,0 +1,191 @@
+{
+  "source_commit": "268f255",
+  "archive_normalization": "LF, trailing whitespace removed",
+  "files": [
+    {
+      "file": "xca-bs-composed-LastTest.log",
+      "original_sha256": "ebef8196a08137f08fa2972dbdc8fdd738fb711073b62539729ed05d89a54bf9",
+      "archive_sha256": "ebef8196a08137f08fa2972dbdc8fdd738fb711073b62539729ed05d89a54bf9"
+    },
+    {
+      "file": "xca-bs-composed-absent-block-failure.log",
+      "original_sha256": "48df1457863ae4930ac7f6820aef151310fff2110c3f1a3c63e1d129766e7302",
+      "archive_sha256": "48df1457863ae4930ac7f6820aef151310fff2110c3f1a3c63e1d129766e7302"
+    },
+    {
+      "file": "xca-bs-composed-build.log",
+      "original_sha256": "d7f386cd51c918e9073c466a451cc7b5794d8acc28ad54b7d9c3319aed98ad40",
+      "archive_sha256": "d7f386cd51c918e9073c466a451cc7b5794d8acc28ad54b7d9c3319aed98ad40"
+    },
+    {
+      "file": "xca-bs-composed-cases.json",
+      "original_sha256": "bae4a987058bd8b3b884725b2c9acef12919a8e5abd2f55ac6466561e7324c85",
+      "archive_sha256": "bae4a987058bd8b3b884725b2c9acef12919a8e5abd2f55ac6466561e7324c85"
+    },
+    {
+      "file": "xca-bs-composed-configure.log",
+      "original_sha256": "09bc3e2033d7a70e4c00be1a887d213e93ba8f87f2e62fb865cc64e5743aa786",
+      "archive_sha256": "702f21b5ba8308353acdb2de017e0617038d1179e20fc42c28bf41db5cccf3d6"
+    },
+    {
+      "file": "xca-bs-composed-cpu-configure.log",
+      "original_sha256": "4ed5dc08a41ffeceaadc904305431122cfa8d2da73c04f3b0087c5c661c056c3",
+      "archive_sha256": "ac10f8f03145dc4c8b3b668373042b9503d93148bb108eced9cded998c37de42"
+    },
+    {
+      "file": "xca-bs-composed-device-reject.csv",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "xca-bs-composed-device-reject.log",
+      "original_sha256": "74085af40825c3c37b53694c11f709df835f2c51690cf2b512f7933edd93a186",
+      "archive_sha256": "74085af40825c3c37b53694c11f709df835f2c51690cf2b512f7933edd93a186"
+    },
+    {
+      "file": "xca-bs-composed-final-build.log",
+      "original_sha256": "41aa98c06f067737f497de4ef9cc7ae35eebea4709bf8855fbf3406a00362cca",
+      "archive_sha256": "41aa98c06f067737f497de4ef9cc7ae35eebea4709bf8855fbf3406a00362cca"
+    },
+    {
+      "file": "xca-bs-composed-formatted-build.log",
+      "original_sha256": "41aa98c06f067737f497de4ef9cc7ae35eebea4709bf8855fbf3406a00362cca",
+      "archive_sha256": "41aa98c06f067737f497de4ef9cc7ae35eebea4709bf8855fbf3406a00362cca"
+    },
+    {
+      "file": "xca-bs-composed-formatted-test.log",
+      "original_sha256": "e35660227fff3b69db86a4c5931bd97843f2079cbc12b3180fbe0cdc4ef979c8",
+      "archive_sha256": "e35660227fff3b69db86a4c5931bd97843f2079cbc12b3180fbe0cdc4ef979c8"
+    },
+    {
+      "file": "xca-bs-composed-host-reject.csv",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "xca-bs-composed-host-reject.log",
+      "original_sha256": "74085af40825c3c37b53694c11f709df835f2c51690cf2b512f7933edd93a186",
+      "archive_sha256": "74085af40825c3c37b53694c11f709df835f2c51690cf2b512f7933edd93a186"
+    },
+    {
+      "file": "xca-bs-composed-large-reject.csv",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "xca-bs-composed-large-reject.log",
+      "original_sha256": "1e379d9985f078d9830884cf702f6a4c2dae0135eb4532bce2e69f6b4ad703f2",
+      "archive_sha256": "1e379d9985f078d9830884cf702f6a4c2dae0135eb4532bce2e69f6b4ad703f2"
+    },
+    {
+      "file": "xca-bs-composed-library-LastTest.log",
+      "original_sha256": "db60f60cadaac9301a06e5fbd4975cceef530be6c906b1631b793670411b845a",
+      "archive_sha256": "db60f60cadaac9301a06e5fbd4975cceef530be6c906b1631b793670411b845a"
+    },
+    {
+      "file": "xca-bs-composed-library-build.log",
+      "original_sha256": "c8f0490b131600d43e920eea678b586a31c3fae8fffc5ab278941c2648e6e4ff",
+      "archive_sha256": "c8f0490b131600d43e920eea678b586a31c3fae8fffc5ab278941c2648e6e4ff"
+    },
+    {
+      "file": "xca-bs-composed-library-configure.log",
+      "original_sha256": "0af0b21efc1f7eabc4a13589292fb78b940ec208c2bf982baf3abebbdf34008a",
+      "archive_sha256": "0d3b2b5ceee0a8746a7e27baa481699a7441786a17278a3c6bb29f3fbc68968a"
+    },
+    {
+      "file": "xca-bs-composed-library-test.log",
+      "original_sha256": "6e15947e8a0fdb92b525dff744ec92995d9a40b7d412333f9507ccebfd83944f",
+      "archive_sha256": "6e15947e8a0fdb92b525dff744ec92995d9a40b7d412333f9507ccebfd83944f"
+    },
+    {
+      "file": "xca-bs-composed-memcheck.log",
+      "original_sha256": "5440a9dcdc0d3da222d7e052a270d16a6702392f1e92c471274f5b76ce68a4f7",
+      "archive_sha256": "5440a9dcdc0d3da222d7e052a270d16a6702392f1e92c471274f5b76ce68a4f7"
+    },
+    {
+      "file": "xca-bs-composed-n1.csv",
+      "original_sha256": "ca818ac2e4cc98da3da1f5831f80cdd05aeee39091f7e20b78247306336b00f3",
+      "archive_sha256": "ca818ac2e4cc98da3da1f5831f80cdd05aeee39091f7e20b78247306336b00f3"
+    },
+    {
+      "file": "xca-bs-composed-n1.log",
+      "original_sha256": "7959c6eb4ec0fa0a609628046462ab857045cbfd15c0def19d19f4140c4731f2",
+      "archive_sha256": "7959c6eb4ec0fa0a609628046462ab857045cbfd15c0def19d19f4140c4731f2"
+    },
+    {
+      "file": "xca-bs-composed-n10-all.csv",
+      "original_sha256": "5d8136b834fe56b326121a0515845cdf013a28dcaf8c814f8145f8f2402dbb1d",
+      "archive_sha256": "5d8136b834fe56b326121a0515845cdf013a28dcaf8c814f8145f8f2402dbb1d"
+    },
+    {
+      "file": "xca-bs-composed-n10-all.log",
+      "original_sha256": "8b71a6f0eea2c2c5f9768cbc687dfab65d17423f60af0b6f756bb1250d0ca34f",
+      "archive_sha256": "8b71a6f0eea2c2c5f9768cbc687dfab65d17423f60af0b6f756bb1250d0ca34f"
+    },
+    {
+      "file": "xca-bs-composed-n10-single.csv",
+      "original_sha256": "c8c198f6bdebb4e7315b69c9d0e3bccbbb02a0a5025d55cf40605a096e384196",
+      "archive_sha256": "c8c198f6bdebb4e7315b69c9d0e3bccbbb02a0a5025d55cf40605a096e384196"
+    },
+    {
+      "file": "xca-bs-composed-n10-single.log",
+      "original_sha256": "82ee9b68f62e498d49298bb8cd0f9636e2d470f8d96158b51e80680942cfa730",
+      "archive_sha256": "82ee9b68f62e498d49298bb8cd0f9636e2d470f8d96158b51e80680942cfa730"
+    },
+    {
+      "file": "xca-bs-composed-n14-inventory.csv",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "xca-bs-composed-n14-inventory.log",
+      "original_sha256": "ceaffda4d4942ec4705019f9de37eadb18c1c5188529181e556d816081826e73",
+      "archive_sha256": "ceaffda4d4942ec4705019f9de37eadb18c1c5188529181e556d816081826e73"
+    },
+    {
+      "file": "xca-bs-composed-n4-all.csv",
+      "original_sha256": "1b3b4886915c885312c44011991c8e40b54200731faf3bb479f04a36970a2cb8",
+      "archive_sha256": "1b3b4886915c885312c44011991c8e40b54200731faf3bb479f04a36970a2cb8"
+    },
+    {
+      "file": "xca-bs-composed-n4-all.log",
+      "original_sha256": "17a89e9cecf121f0e7ee5f6a7380a8b0297e660bcb72541d8faad6e9750767e2",
+      "archive_sha256": "17a89e9cecf121f0e7ee5f6a7380a8b0297e660bcb72541d8faad6e9750767e2"
+    },
+    {
+      "file": "xca-bs-composed-n4-single.csv",
+      "original_sha256": "196a8f948793bbefb2ed3decc5de4cfb60e463847f72e6507b7516b672ef7fa5",
+      "archive_sha256": "196a8f948793bbefb2ed3decc5de4cfb60e463847f72e6507b7516b672ef7fa5"
+    },
+    {
+      "file": "xca-bs-composed-n4-single.log",
+      "original_sha256": "e19f2a3f9dfcf02c03894b7dcc6c2977b9321bd472543efb04ebc619aeb08902",
+      "archive_sha256": "e19f2a3f9dfcf02c03894b7dcc6c2977b9321bd472543efb04ebc619aeb08902"
+    },
+    {
+      "file": "xca-bs-composed-rebuild.log",
+      "original_sha256": "a5eb4844f932748b3582f75de298eca5d7870614d44ca47b428ad30e1278f1d3",
+      "archive_sha256": "a5eb4844f932748b3582f75de298eca5d7870614d44ca47b428ad30e1278f1d3"
+    },
+    {
+      "file": "xca-bs-composed-run.py",
+      "original_sha256": "af4d9999b1b498a7342fa8cd6cd0b745c1cc1187dbe61b76d15d2f1ec7f915eb",
+      "archive_sha256": "af4d9999b1b498a7342fa8cd6cd0b745c1cc1187dbe61b76d15d2f1ec7f915eb"
+    },
+    {
+      "file": "xca-bs-composed-suffix-reject.csv",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "xca-bs-composed-suffix-reject.log",
+      "original_sha256": "87b86faa7c4eee7f3be4c041d4f6017d7b4b2510a18cb33db5171c3a3a334136",
+      "archive_sha256": "87b86faa7c4eee7f3be4c041d4f6017d7b4b2510a18cb33db5171c3a3a334136"
+    },
+    {
+      "file": "xca-bs-composed-test.log",
+      "original_sha256": "dbadf1f7bec0317a7fba903bcd669b9d35c5ab8658d9b471c39e4db354fec81d",
+      "archive_sha256": "dbadf1f7bec0317a7fba903bcd669b9d35c5ab8658d9b471c39e4db354fec81d"
+    }
+  ]
+}

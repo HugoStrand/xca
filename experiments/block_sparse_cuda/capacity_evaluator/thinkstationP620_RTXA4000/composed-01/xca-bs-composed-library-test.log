@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda-library-api
+Test project /home/hugstr/dev/xca/cbuild-cuda-library-api
+    Start 16: experiments/block_sparse_cuda/capacity_evaluator
+1/1 Test #16: experiments/block_sparse_cuda/capacity_evaluator ...   Passed    0.56 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.57 sec

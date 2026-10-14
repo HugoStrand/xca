@@ -1,0 +1,15 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 29: experiments/block_sparse_cuda/capacity_evaluator
+1/1 Test #29: experiments/block_sparse_cuda/capacity_evaluator ...***Failed    0.13 sec
+modes=4 fields=4 rank=23 function_bytes=25760 device_bound=33690688 host_bound=536948928 dry_run=0
+Sparse operator block dimensions disagree with metadata
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.14 sec
+
+The following tests FAILED:
+	 29 - experiments/block_sparse_cuda/capacity_evaluator (Failed)
+Errors while running CTest

@@ -1,0 +1,130 @@
+[
+  {
+    "case": "n1",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "1",
+      "--samples",
+      "2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "n4-single",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "4",
+      "--samples",
+      "2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "n4-all",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "4",
+      "--fields",
+      "4",
+      "--samples",
+      "2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "n10-single",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "10",
+      "--lambda",
+      "4000",
+      "--samples",
+      "2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "n10-all",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "10",
+      "--fields",
+      "10",
+      "--lambda",
+      "4000",
+      "--samples",
+      "2"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "n14-inventory",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "14",
+      "--lambda",
+      "4000",
+      "--dry-run"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "case": "host-reject",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--host-budget-mib",
+      "1"
+    ],
+    "returncode": 2,
+    "expected": 2
+  },
+  {
+    "case": "device-reject",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--device-budget-mib",
+      "1"
+    ],
+    "returncode": 2,
+    "expected": 2
+  },
+  {
+    "case": "large-reject",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "14",
+      "--lambda",
+      "4000",
+      "--device-budget-mib",
+      "98304",
+      "--host-budget-mib",
+      "106496",
+      "--allow-large"
+    ],
+    "returncode": 1,
+    "expected": 1
+  },
+  {
+    "case": "suffix-reject",
+    "argv": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator",
+      "--modes",
+      "4junk"
+    ],
+    "returncode": 1,
+    "expected": 1
+  }
+]

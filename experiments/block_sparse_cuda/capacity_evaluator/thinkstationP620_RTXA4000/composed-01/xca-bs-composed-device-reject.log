@@ -1,0 +1,2 @@
+modes=4 fields=1 rank=18 function_bytes=20160 device_bound=33653868 host_bound=536931968 dry_run=0
+Declared host/device budget rejected before payload allocation

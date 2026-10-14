@@ -1,0 +1,2 @@
+modes=14 fields=1 rank=64 function_bytes=41079398400 device_bound=84463062276 host_bound=106818289664 dry_run=0
+N>10 execution requires --allow-large inside GH200 Slurm job
