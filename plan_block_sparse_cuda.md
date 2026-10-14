@@ -213,6 +213,28 @@ these candidates for one bounded GH200 finalist comparison only when it resolves
 production decision. Target usage remains .27556GPU-hours; no new allocation this step.
 Evidence: local density-streams-01 and staging/streams profile-01. All baselines kept.
 
+### 2026-10-14 — Production payload preflight and rank sensitivity
+
+Host-only reference_memory_plan now shares generic storage arithmetic with production.
+CPU-only binomial N10/N14/r26/r64 tests and live CUDA policy/observable bounds agree
+exactly. Retained generator seams adapted with old storage contracts preserved;
+71 focused CUDA controls and two CPU metadata controls pass. Metadata CLI evidence
+is in common/CPU local reference-capacity-01, not a full14-mode or GH200 allocation.
+
+Host-sector Reference N14 requires the current admission envelope52.081/74.898GiB
+for NCA/convolution at rank26, versus128.154/184.318GiB at rank64. Rank64 exceeds a
+120GiB payload budget before extra context/host construction overhead; rank26 is a
+capacity assumption only. Never substitute assumed low rank for physical resolution.
+Planner flags compare conservative payload bounds, not actual free-memory admission.
+
+Next investigate a tighter NCA live-tensor bound: source shows six special-vertex
+rank tensors including T, versus seven generic reserved tiles. Qualify all special
+fallbacks, workspace lifetime, reject/accept boundaries and measured peak before
+using that reduction. This may help NCA; convolution paths need their own capacity
+strategy. Keep full output/API and caller input storage accounted. Remaining large
+allocation, optimized promotion and Python/MPI/full-suite gates stay open. Target
+budget unchanged .27556GPU-hours; no new cluster allocation for metadata work.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device

@@ -1,5 +1,48 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Host-only production memory preflight
+
+Previous goal turn was progress: upload events qualified/committed. Reviewed E7 and
+production admission. Added reference_memory_plan in memory.hpp, usable CPU-only
+without model/atom_diag/propagator/device construction. Reports full-function/output,
+maximum tile, fixed tables/mapped metadata and device NCA/convolution/correlator
+bounds. Checked dimensions/overflow/BLAS limits. Production bound() uses the shared
+reference_storage_bound arithmetic. Existing output/NCA/free-memory checks unchanged.
+Mapped width is caller-declared; extra retarded fields can change it. Estimates are
+conservative explicit payload, not physical rank or available-device qualification.
+
+Initial CUDA configure exposed retained generator seams matching old inline math.
+Adapted special_vertex cache-slot count and mapped_special extra operator reserve to
+shared-helper arguments, preserving their old numerical/storage contracts. CPU-only
+metadata tests pass two controls (.02s). Five CUDA entries/40controls pass25.02s:
+planner3 compares exact live production bounds across Reference/Mapped and both output
+placements; admission3, referenceobservable8, kappa2experiment11 and mappedexperiment15.
+Kappa16/scalar_streams add31controls pass53.89s after rebuild. All sessions terminal.
+No new numerical arithmetic or device ownership change; no redundant memcheck or
+broad full-suite claim. New test loaded in both configurations through normal discovery.
+
+Added bounded host-only block_sparse_memory_plan CLI under CPU benchmarks. Fourcases/
+16rows cover N10/N14 at rank26/64 with two poles,32MiB sparse reserve,120GiB declared
+device budget/64GiB full output budget,1×1 correlator endpoints and both policies.
+Independent sum_q C(N,q)^2=C(2N,N) fixes full output bytes. Host-sector Reference
+NCA/convolution GiB: N10r26 .300/.423, N10r64 .692/.995, N14r26 52.081/74.898,
+N14r64 128.154/184.318. Rank64 exceeds the current120GiB admission envelope even
+for NCA; rank26 cannot establish physical14-mode feasibility. Host output/inputs,
+atom_diag/model, temporaries/library allocator/context/headroom remain explicit
+additional concerns. This is no full14-mode numerical evaluation or GH200 memory run.
+
+Sourcecodef012641, bench/metadata1529ee6 separate from this plan/log. Evidence common/
+CPU local reference-capacity-01 has source/binary hashes, raw rows and test logs.
+Temporary logs /tmp/xca-memory-plan-* may disappear. No target hours (cumulative
+.27556GPU-hours), install/push or unrelated-work changes. Persistent goal active.
+Next qualify topology-specific NCA scratch liveness: direct source inspection shows
+T+out+kap+weighted+mu+term in reference special, six maximum tensors versus current
+seven-tile generic reserve. Confirm fallback paths and sparse workspace, then test
+any tighter bound against budget boundaries and actual peak/lifetime evidence before
+promotion. Such a bound might admit some rank64 cases without changing arithmetic;
+this is a candidate, not established actual14-mode capacity. Convolution capacity,
+optimized numerical/promotion decisions and broader Python/MPI/full-suite gates remain.
+
 ## 2026-10-14 — Upload-event scalar experiment
 
 Previous goal turn was progress: restored SSH, completed GH200 resident qualification
