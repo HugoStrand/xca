@@ -3,6 +3,7 @@
 #include "diagram_evaluator.hpp"
 #ifdef NDA_HAVE_CUDA
 #include "memory.hpp"
+#include "real_nca.hpp"
 #include "operator_column_maps.hpp"
 #ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
 #include "kernels/kernels.hpp"
@@ -46,6 +47,8 @@ namespace triqs_xca::block_sparse::cuda {
     std::size_t budget, kernel_bytes, dlr_bound, operator_budget;
     SparseBackend operator_backend;
     SpecialBackend special_backend;
+    NcaBackend nca_backend;
+    std::size_t nca_batch_paths = 0;
     OutputPlacement output_placement;
     std::size_t host_output_budget;
     PathCounts counts{};
@@ -57,7 +60,7 @@ namespace triqs_xca::block_sparse::cuda {
       if (free < baseline_free) peak_delta = std::max(peak_delta, baseline_free - free);
     }
     Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit,
-         SparseBackend selected, SpecialBackend special_selected, OutputPlacement placement, std::size_t host_limit)
+         SparseBackend selected, SpecialBackend special_selected, OutputPlacement placement, std::size_t host_limit, NcaBackend nca_selected)
        : model(std::move(input)),
          mesh(std::move(tau)),
          r(mesh.dlr_it().rank()),
@@ -66,10 +69,15 @@ namespace triqs_xca::block_sparse::cuda {
          operator_budget(operator_limit),
          operator_backend(selected),
          special_backend(special_selected),
+         nca_backend(nca_selected),
          output_placement(placement),
          host_output_budget(host_limit) {
       if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)
         throw std::invalid_argument("Invalid output placement");
+      if (nca_selected != NcaBackend::Reference && nca_selected != NcaBackend::RealBatch)
+        throw std::invalid_argument("Invalid NCA backend");
+      if (nca_selected == NcaBackend::RealBatch && !real_nca_available())
+        throw std::runtime_error("Real NCA CUDA kernels were not built");
       if (special_selected != SpecialBackend::Reference && special_selected != SpecialBackend::Mapped)
         throw std::invalid_argument("Invalid special backend");
       if (special_selected == SpecialBackend::Mapped && !mapped_special_available())
@@ -113,6 +121,7 @@ namespace triqs_xca::block_sparse::cuda {
     }
     std::size_t self_energy_bound(bool nca) const {
       auto generic = bound();
+      generic = checked_add(generic, nca_extra_bound());
       if (output_placement == OutputPlacement::HostSectors)
         generic = checked_add(generic - function_bytes(r, model.dimensions()), inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer);
       if (!nca) return generic;
@@ -282,6 +291,7 @@ namespace triqs_xca::block_sparse::cuda {
         }
       counts        = {};
       contributions = 0;
+      nca_batch_paths = 0;
       peak_delta    = 0;
       // Endpoint snapshots can be temporary. Never retain an address-based cache
       // across their lifetime, including an exception or a reused host allocation.
@@ -393,6 +403,88 @@ namespace triqs_xca::block_sparse::cuda {
 #endif
     }
 
+    long nca_width() const {
+      long width = 0;
+      for (auto const &set : model.sets()) width = std::max(width, long(set.size()));
+      return width;
+    }
+    std::size_t nca_extra_bound() const {
+      if (nca_backend != NcaBackend::RealBatch || output_placement != OutputPlacement::Resident || nca_width() == 0
+          || !std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })) return 0;
+      return real_nca_storage_bound(r, model.num_fields(), nca_width());
+    }
+    bool nca_eligible(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, nda::array_const_view<int, 2> topology) const {
+      if (topology.extent(0) != 1 || nca_extra_bound() == 0) return false;
+      double field_max = 0, weight_max = 0, input_max = 0;
+      for (int field = 0; field < model.num_fields(); ++field)
+        for (bool dag : {false, true})
+          for (auto const &block : model.field(field, dag).blocks)
+            for (auto z : block.values) {
+              if (!std::isfinite(z.real()) || z.imag() != 0.) return false;
+              field_max = std::max(field_max, std::abs(z.real()));
+            }
+      for (auto const *table : {&hyb->values, &hyb->values_reflect})
+        for (auto z : *table) {
+          if (!std::isfinite(z.real()) || z.imag() != 0.) return false;
+          weight_max = std::max(weight_max, std::abs(z.real()));
+        }
+      for (long b = 0; b < G.size(); ++b)
+        for (auto z : G[b].data()) {
+          if (!std::isfinite(z.real()) || z.imag() != 0.) return false;
+          input_max = std::max(input_max, std::abs(z.real()));
+        }
+      Backbone backbone(topology, model.num_fields(), model.num_interactions());
+      long double paths = model.dimensions().size();
+      paths *= model.sets().size();
+      paths *= backbone.num_flat_indices(hyb->poles.size());
+      if (paths > std::ldexp(1.L, std::numeric_limits<double>::digits - 4)) return false;
+      long double bound = input_max;
+      auto grow = [&](long double factor) {
+        bound *= factor;
+        return std::isfinite(bound) && bound <= std::numeric_limits<double>::max() / 2.L;
+      };
+      return grow(field_max) && grow(weight_max) && grow(nca_width()) && grow(field_max) && grow(nca_width()) && grow(paths);
+    }
+    PathCounts evaluate_nca(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma,
+                           nda::array_const_view<int, 2> topology, std::vector<bool> const &live, long first, long last) {
+      ops->wait_for_default_uploads();
+      RealNcaBatch batch(ops, hyb->values, hyb->values_reflect, nca_width(), nca_extra_bound());
+      std::vector<RealNcaLane> lanes;
+      std::vector<int> fields, signs;
+      std::vector<double> left, right;
+      lanes.reserve(real_nca_capacity);
+      auto flush = [&] {
+        if (lanes.empty()) return;
+        contributions += batch.evaluate_add(G, Sigma, lanes, fields, left, right, signs);
+        nca_batch_paths += lanes.size();
+        sample_memory();
+        lanes.clear(); fields.clear(); signs.clear(); left.clear(); right.clear();
+      };
+      auto result = for_each_self_energy_path(model, hyb->poles, topology, live, first, last,
+        [&](Backbone &backbone, SelfEnergyPath const &path) {
+          if (path.special_vertex != 1 || path.final_block != path.output_block)
+            throw std::logic_error("Invalid pointwise NCA path");
+          bool forward = !backbone.has_vertex_dag(0);
+          int source = path.propagator_blocks[0];
+          auto const &set = model.sets()[path.zero_set];
+          int final_sign = (backbone.get_fb(0) == 0 ? -1 : 1) * backbone.prefactor_sign;
+          lanes.push_back({source, path.output_block, long(fields.size()), long(signs.size()), int(set.size()), int(forward), final_sign});
+          for (int i : set) {
+            auto const &a = model.field(i, forward).blocks[source];
+            auto const &b = model.field(i, !forward).blocks[path.output_block];
+            fields.push_back(i);
+            left.push_back(a.values.empty() ? 0. : a.values[0].real());
+            right.push_back(b.values.empty() ? 0. : b.values[0].real());
+          }
+          for (int i : set) for (int j : set) {
+            backbone.set_orb_inds_of_0_and_vct0(j, i);
+            signs.push_back(backbone.get_parity() * (forward ? 1 : -1));
+          }
+          if (lanes.size() == real_nca_capacity) flush();
+        });
+      flush();
+      return result;
+    }
     void special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
       if (special_backend == SpecialBackend::Mapped && apply_mapped_special(T, backbone, path)) return;
       int s = path.special_vertex, source = path.propagator_blocks[s - 1];
@@ -457,9 +549,9 @@ namespace triqs_xca::block_sparse::cuda {
   };
   DiagramEvaluator::DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh, std::size_t budget,
                                      std::size_t sparse_budget, SparseBackend operator_backend, SpecialBackend special_backend,
-                                     OutputPlacement output_placement, std::size_t host_output_budget)
+                                     OutputPlacement output_placement, std::size_t host_output_budget, NcaBackend nca_backend)
      : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend, special_backend,
-                                    output_placement, host_output_budget)) {}
+                                    output_placement, host_output_budget, nca_backend)) {}
   DiagramEvaluator::~DiagramEvaluator() = default;
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();
@@ -472,6 +564,7 @@ namespace triqs_xca::block_sparse::cuda {
   }
   PathCounts DiagramEvaluator::last_path_counts() const { return impl_->counts; }
   std::size_t DiagramEvaluator::last_contributing_paths() const { return impl_->contributions; }
+  std::size_t DiagramEvaluator::last_nca_batch_paths() const { return impl_->nca_batch_paths; }
   std::size_t DiagramEvaluator::last_device_peak_delta() const { return impl_->peak_delta; }
   long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();
@@ -538,6 +631,7 @@ namespace triqs_xca::block_sparse::cuda {
     }
     x.counts          = {};
     x.contributions   = 0;
+    x.nca_batch_paths = 0;
     x.peak_delta      = 0;
     bool host_sectors = x.output_placement == OutputPlacement::HostSectors;
     if (host_sectors && function_bytes(x.r, x.model.dimensions()) > x.host_output_budget)
@@ -571,7 +665,9 @@ namespace triqs_xca::block_sparse::cuda {
         }
       }
       x.sample_memory();
-      if (!host_sectors) {
+      if (!host_sectors && x.nca_eligible(G, topology)) {
+        x.counts = x.evaluate_nca(input, output, topology, live, first, last);
+      } else if (!host_sectors) {
         x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
                                              [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });
       } else {

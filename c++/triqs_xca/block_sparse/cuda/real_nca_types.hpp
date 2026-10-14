@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 namespace triqs_xca::block_sparse::cuda {
+enum class NcaBackend { Reference, RealBatch };
 struct RealNcaLane {
   long input_block, output_block, field_offset, sign_offset;
   int size, forward, final_sign;
