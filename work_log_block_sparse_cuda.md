@@ -1425,3 +1425,63 @@ git diff --check passed.
 Logs: /tmp/xca-bs-fanin-{configure,build,test,memcheck,campaign}.log and
 /tmp/xca-bs-fanin-large-smoke.csv. Persistent paired results under
 benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-fanin-01.
+
+
+### 2026-10-14 — Scoped profiling and scalar device arenas
+
+Previous turn made progress through output-owned ordered accumulation and matched
+CPU evidence. Goal active. This turn uses measured runtime categories to target the
+remaining overhead instead of assuming dense arithmetic dominates scalar cases.
+
+1e3d0c0 [bench] pack scalar device storage adds profile_fanin/profile_arena scoped
+frontends and an isolated arena variant. cudaProfilerStart/Stop encloses only the
+common runner's second (warmed) scalar self-energy range call; model setup, CPU
+control and first GPU call are excluded. Nsight CUDA-only tracing disables CPU
+sampling/context switches. The wrapper's recorded time includes profiler/export
+cost and is excluded from performance tables. ba6d0c8 [bench] profile scalar device
+storage records raw textual reports, version/options, exact case and binary/report
+hashes. Large binary .nsys-rep artifacts remain in /tmp and may disappear, not tracked.
+The baseline trace predates source adaptation; executable hashes identify each
+captured binary without pretending both came from one clean source revision.
+
+The first trace shows 3206 cudaMalloc,3208 cudaFree,1121 cudaMemcpy,2055 cudaMemcpy2D,
+1253 cudaStreamSynchronize and1029 cudaMemsetAsync calls; GPU arithmetic sums about
+3.7ms while allocation/copy API intervals dominate. Arena variant uses two owned
+(block,r,1) tensors and scalar block views through reshape, rather than one allocation
+per block. Masked input is packed as zero, output is zeroed once, and all result data
+is downloaded once before owned CPU Gf construction. Host packing and those transfers
+remain timed. Views live only within storage-owner scope, including exceptions;
+scalar worker is templated over array/view types. General shapes/correlators keep
+original execution, and payload/preflight conservatism is unchanged. Previous serial
+and ordered-per-block controls remain separately built and available.
+
+Arena/control thirteen-test suites pass 2/2 CTest entries (16.54s). Five focused
+semantic/order tests pass memcheck+full leak check in17.5s with0errors/0bytes leaked.
+These exercise tails, changed data/masks, adjacent NCA cutoff, budget/empty ranges,
+multi-field fallback and cancellation-order preservation. No tolerance changes.
+Separate three-sample ten-mode scalar smoke gives25.50ms median, error4.926e-15.
+Production code/bindings unchanged; prior full production suites remain qualified.
+
+A repeat scoped trace confirms mechanism: cudaMalloc137, cudaFree139, cudaMemcpy99,
+cudaMemcpy2D8, stream synchronize230, async memset6. These trace counts/categories
+are not unprofiled runtime rates; no claim of complete allocator/opaque peak proof.
+After profiler/build/test handles were terminal, scalar-arena-01 ran30isolated
+processes/82rows successfully. 00aa8e9 [bench] record contiguous scalar storage
+preserves exact replay/numerical gates, matching discovery counts, hashes/commands
+and raw rows. Scalar SE selected ten-mode latency25.33ms vs prior ordered-per-block
+56.14ms and matched CPU22.99ms. Campaign ten-mode has one repetition; separate
+three-sample smoke not silently merged. Other observer/geometry paths are general,
+not scalar CPU batch comparisons. Maximum screening relative error remains3.645e-13
+on the preexisting weak higher-order non-scalar control.
+
+The target remains GH200, not A4000. Near CPU parity is progress, not a robust target
+promotion threshold, full Solver speedup or N=14 qualification. Next use reduced
+trace to examine residual host weight/descriptor work and rank operation syncs;
+cache/fuse with complete invalidation/ownership and matched controls. All baselines/
+experiments retained. Goal not complete. No install/push/supervisor/user-work changes.
+Plan/work-log checkpoint separate from code/data; git diff --check passed.
+
+Logs /tmp/xca-bs-{profile,arena,arena-profile}-{configure,build,run,stats,test,memcheck,campaign}.log
+and /tmp/xca-bs-arena-large-smoke.csv. Persistent trace evidence under
+experiments/block_sparse_cuda/scalar_paths/thinkstationP620_RTXA4000/profile-01,
+paired results benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-arena-01.

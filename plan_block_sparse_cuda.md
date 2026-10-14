@@ -714,6 +714,30 @@ preparation, rank-solve/transform synchronization and cutoff transfer, then test
 bounded caching/fusion only with complete invalidation and matched controls.
 Retain every previous candidate/reference and do not hide the GPU-losing result.
 
+Profile-guided storage checkpoint (2026-10-14): scoped Nsight capture of one
+warmed scalar SE call diagnosed thousands of small allocation/copy/synchronization
+operations. [Trace evidence](experiments/block_sparse_cuda/scalar_paths/thinkstationP620_RTXA4000/profile-01/README.md)
+is separate from timing; profiler wrapper duration includes capture/export effects
+and is excluded. The isolated arena variant keeps scalar input/output in two owned
+contiguous device tensors, with borrowed block views valid only inside owner lifetime.
+Live masks, recipe, cutoff, ordered accumulation and general fallback remain unchanged.
+Packing/upload/download/result construction all enter complete calls.
+
+Repeated scoped capture confirms cudaMalloc calls drop 3206→137, cudaFree 3208→139,
+cudaMemcpy2D 2055→8 and stream synchronization 1253→230. Both control/arena pass thirteen
+semantic tests; five focused memory/leak cases pass with zero errors/leaked bytes.
+[Unprofiled paired calls](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-arena-01/README.md)
+pass 30 processes / 82 rows with matching counts and exact replay. Ten-mode scalar
+SE takes 25.3 ms arena versus prior fan-in 56.1 ms and matched CPU 23.0 ms. Separate
+three-sample smoke measures 25.5 ms. Near parity is not a robust matched-CPU/target
+promotion win, and ten-mode campaign rows still have one sample.
+
+Next investigate residual host weight/descriptor preparation and synchronized rank
+operations using the reduced trace, retaining all controls. Cache/fuse only with
+complete model/mesh/topology/propagator invalidation and bounded ownership/admission.
+No production/Python/MPI scalar selector, target default or full N=14 execution is
+claimed; GH200 remains the target.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused
