@@ -970,6 +970,29 @@ and numerical controls. GH200 remains the target; do not promote from retained-b
 savings alone. Higher-order boundaries, full output/host/opaque peaks and target
 validation remain gates.
 
+E7 NCA-admission checkpoint (2026-10-14):
+[nca_admission](experiments/block_sparse_cuda/nca_admission/README.md) qualifies a
+private topology-aware self-energy bound. The generic accessor stays unchanged;
+validated one-line topologies subtract six inactive DLR scratch tiles. Full input/
+output, seven caller tiles, fixed tables, sparse reserve, weights and mapped metadata
+remain. Higher orders/correlators retain generic admission. Explicit-budget rejection
+precedes state changes; eligible NCA calls release completed retained RHS/convolution
+scratch before querying available memory, preserving immutable tables and solver.
+
+Ten tests pass, including eight current observable/API controls, exact production
+comparisons at the lower NCA budget, one-byte-below rejection before path work, empty
+ranges, higher-order rejection/recovery and OCA/NCA/OCA transitions. Independent
+release/reconstruction is exact and release idempotent. Two focused memcheck cases
+report zero errors/leaks. No production/Python behavior or runtime claim changed.
+
+The analytic N14/r26 variable envelope falls from 90.409 to 63.029 GiB without
+atom_diag/evaluation, omitting only inactive scratch. Additional fixed/operator/
+metadata/host/opaque costs still apply; no full fourteen-mode fitting proof follows.
+Next promote topology-aware accessors/release into production, update budget controls
+against the actual schedule, preserve private scalar extra reserves and requalify
+consolidated wrappers/MPI. Keep the generic upper estimate available. GH200 remains
+the target and full-call/target/higher-order boundary gates remain.
+
 ### E8 — Topologies, shared subcomputations and graphs
 
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual

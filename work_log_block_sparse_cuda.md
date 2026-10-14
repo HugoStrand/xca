@@ -1866,3 +1866,50 @@ compact-01/README.md; benchmarks/block_sparse_common/thinkstationP620_RTXA4000/
 compact-full-01/README.md. Logs /tmp/xca-bs-compact-{configure,build,test,memcheck,
 campaign}.log; /tmp/xca-bs-compact-eval-{configure,build,test}.log;
 /tmp/xca-bs-compact-full-campaign.log.
+
+## 2026-10-14 — NCA-specific admission and scratch release
+
+Previous turn progressed through compact DLR liveness. e051a83 [bench] qualify NCA
+storage admission adds a private full evaluator/snapshot, preserving production
+APIs/defaults and all previous experiments. The topology-specific self-energy bound
+validates topology and removes six inactive DLR scratch tiles only for one-line NCA.
+Generic no-argument estimate, higher orders and correlators remain unchanged. Full
+functions, seven caller tiles, fixed tables, sparse reserve, kernel weights and mapped
+metadata are still counted. Budget rejection happens before state changes. After
+that check, eligible NCA releases completed DLR RHS/convolution scratch before the
+free-memory/headroom query and before input/output upload or path arithmetic.
+
+Private release requires construction device and stream completion, destroys scratch
+and resets shape cache while retaining immutable rank/LU tables, solver and shared
+handles. It is idempotent; subsequent solves/convolutions reconstruct scratch. This
+addresses OCA/NCA/OCA reuse, so old retained allocation cannot sit outside the lower
+reservation. No CPU numerical replay, arithmetic changes or fallback after failure.
+
+Ten tests pass in 8.01 s: eight unchanged observable/API tests plus lower-budget
+acceptance, bound-minus-one rejection with zero path/peak counters, empty ranges,
+higher-order rejection/recovery, exact production comparisons and inter-order
+transitions for reference/mapped special policies. Independent release/solve/
+convolution reconstruction is exact and storage returns to table-only bytes. Two
+focused cases pass memcheck/full leaks in 7.40 s: zero errors, zero leaked bytes.
+No new performance benchmark needed for pure reservation proof; these timings are
+correctness evidence. No full production/Python/MPI suites repeated for private
+fixture changes, and no wrapper regeneration or installation.
+
+Analytic binomial N10/r23 and N14/r26 envelopes are preserved in the experiment's
+hardware folder, without costly atom_diag construction. N14 variable reserve falls
+90.409 to 63.029 GiB, omitting six scratch tiles only. Complete input/output remains;
+fixed/operator/kernel/mapped/host/opaque storage is additional. This is not a full
+fourteen-mode admission/peak or GH200 claim. CPU-only configuration remains guarded;
+native kernels are needed only for mapped special policy, not reference admission.
+
+Next promote the bound overload and release into production with controls against
+topology-specific reservation; update private scalar scheduler seams to retain their
+extra workspaces and consolidated Python/MPI exposure/qualification. Keep generic
+upper accessor and defaults. Higher-order boundaries, wider streaming/host/opaque
+peaks and target verification remain. Goal active, not complete. No install/push,
+supervisor or unrelated user-work changes. Plan/log commit separate from code/data;
+git diff --check passes.
+
+Evidence: experiments/block_sparse_cuda/nca_admission/README.md and
+thinkstationP620_RTXA4000/{README.md,analytic_envelopes.csv}. Logs
+/tmp/xca-bs-nca-{configure,build,test,memcheck}.log.
