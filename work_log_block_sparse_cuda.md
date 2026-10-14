@@ -1,5 +1,55 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Complete N14 NCA capacity on GH200
+
+Previous turn progressed through broad CPU/native/library qualification. Added isolated
+capacity_evaluator (268f255): explicit signed Fock CSR, all total-number sectors, complete
+caller/returned functions, Library/Reference NCA with HostInputs/HostSectors. One/all active
+fields selectable, no large atom diagonalization. Independent two-state CPU evaluator
+provides time/parity/reflection convention; occupation projectors give every larger entry,
+including off-diagonal zeros. This is an algebraic capacity fixture, not physical Solver
+or independent time-kernel oracle. Lambda means beta*omega_max, rank untruncated. Checked
+host/device budgets before payloads; N>10 requires actual GH200 Slurm/explicit opt-in.
+
+Initial fixture omitted source columns on absent CSR block; corrected before commit.
+During development corrected Lambda conversion and a guard expectation that was actually
+budget-rejected. Final native/library small CTests pass. CPU config omits target. Five
+local execution cases (N1,N4 one/all,N10 one/all) pass two calls, full entries and exact
+repeated diagonals. N10 Lambda4000 rank64: one-field maxerror0, all10 fields2.222e-16 at
+norm1.21714; first/warm4.265/4.224 s for all fields. Budget guards return2, workstation
+large/suffix guards1. Small memcheck zero errors/leaks. Evidence35050fe under
+capacity_evaluator/thinkstationP620_RTXA4000/composed-01. Formatting-only final rebuild
+and small retest; no evaluator arithmetic changes, no new broad-suite/MPI claim.
+
+Read Arrhenius software workflow; SSH/account/empty queue/prefix checked. Project report
+3.26 GPUh/30days includes other work and is marked unreliable. Source268f255/GTest988ea2c
+staged in isolated xca-block-sparse-268f255, compiled-source mtimes normalized before
+transfer; archive/source/recipe hashes retained. bash syntax and scheduler test-only pass.
+First capped job3850983 exited2 after7s before configure because SLURM_MEM_PER_NODE absent.
+Recipe50ef2a6 reads actual AllocTRES host grant rather than requested task count; no new
+memory/CPU request. One bounded retry3851037 COMPLETED0:0 in117s on n444, one GH200120GB,
+fifteen-minute cap, large command timeout480s. Both failures/receipts accounted and retained.
+
+N4 all-field CTest passes1.54s, N10 rank64 one-field passes0.157s. N14 rank64 **complete
+production NCA call** passes all15 sectors/every entry, maxerror0,norm.12171436906137988,
+28 contributing paths. Each full host function38.26GiB. Explicit device78.66GiB versus
+sampled actual delta82.53GiB; opaque library costs excluded from declared-array bound.
+Host estimate99.48GiB, measured large-process RSS88.04GiB, allocated102.59GiB. Slurm batch
+sample691904K is a different scope and not the large probe peak. Setup2.363s, full call
+32.235s, full-entry verify8.239s; process wall43.07s. One target sample, one active flavour,
+diagonal inputs, one pole, NCA only. No full physical atom/DLR-accuracy/all-field target/
+higher-order composition/Python-MPI inference. Preserve result; no redundant target repeats.
+
+Target evidence under gh200_qualification/Arrhenius_GH200/composed-01 includes both job
+scripts, exit/accounting, binary/source hashes, module/GPU/host data, raw tests/timings;
+archive whitespace normalization preserves original hashes. New124 GPU-seconds, cumulative
+1828/.50778 nominal GPUh against shared100h/month ceiling. Code/recipe/evidence separate
+from this plan/log commit. All handles/jobs terminal, unrelated work/experiments retained,
+no install/push/supervisor changes. Goal active. Bounded composedN14 NCA capacity gate now
+has evidence; general physical accuracy/higher-order capacity and target Python/MPI remain
+open. Next inventory the Arm Python/dependency availability and prepare a minimal pinned
+facade/MPI integration qualification, avoiding redundant large GPU work.
+
 ## 2026-10-14 — Broad production suite refresh
 
 Built all configured targets in CPU, native CUDA and library-only CUDA trees, including

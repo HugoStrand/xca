@@ -15,6 +15,29 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Bounded composed N14 capacity checkpoint
+
+The complete production NCA evaluator now has bounded N14 evidence, beyond the earlier
+convolution-phase probe. Source268f255's capacity_evaluator constructs exact Fock CSR
+without large atom diagonalization, retains all number-sector inputs/outputs and checks
+every output entry using the established two-state CPU time kernel and exact occupation
+projectors. N10 one/all-field local rank64 controls and memcheck pass. GH200 job3851037
+passes one-field N14/rank64 with all15 output sectors, zero oracle error and28 contributing
+paths. Full call32.235s, host RSS88.04GiB, sampled device delta82.53GiB (explicit arrays
+78.66GiB). The actual granted102.59GiB host entitlement is checked before large allocation.
+Evidence: gh200_qualification/Arrhenius_GH200/composed-01. Fixture definition/guards are in
+experiments/block_sparse_cuda/capacity_evaluator. Do not repeat this target sample merely
+for additional timings.
+
+This closes a bounded **composed NCA capacity** gate. It does not establish general
+physicalN14/rank accuracy, all-field target costs, off-diagonal inputs, higher-order
+composed capacity or target Python/MPI. Those remain distinct. First job3850983 stopped
+before configure after7s on a missing Slurm environment variable; corrected recipe reads
+AllocTRES. Successful retry117s; both retained. Total added124 GPU-seconds, tracked
+cumulative1828/.50778 nominal GPU-hours. No shared install/source changes. Next inspect
+Arm Python/dependency availability and qualify the consolidated facade/MPI on target
+with a minimal capped job, preserving the100 GPU-hour/month shared limit.
+
 ### Broad regression checkpoint
 
 After storage integration, all configured CPU/native/library-only targets build.
@@ -2076,7 +2099,7 @@ answer. GH200 remains target; no additional Arrhenius time this turn.
 
 The operational small-system reference and its local qualification are checkpoints
 toward the implementation goal. Guarded real-NCA dispatch now has target-hardware qualification; broader optimized
-dispatch, target Python/MPI and a 14-mode production workload remain unqualified.
+dispatch, target Python/MPI and a general physical 14-mode production workload remain unqualified; bounded complete NCA capacity is qualified above.
 
 ## 8. Adversarial review
 
