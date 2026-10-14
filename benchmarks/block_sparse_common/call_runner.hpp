@@ -99,7 +99,7 @@ namespace block_sparse_bench {
        output);
     return result;
   }
-  template <typename Evaluator, typename Factory> int run(int argc, char **argv, char const *backend, Factory factory) {
+  template <typename Evaluator, typename Factory> int run(int argc, char **argv, char const *backend, Factory factory, bool exact_control = false) {
     try {
       auto o     = options(argc, argv);
       auto start = clock_type::now();
@@ -159,7 +159,7 @@ namespace block_sparse_bench {
       }
       // This is a throughput screening check against the rotated CPU inputs;
       // strict exact-input and arithmetic controls live in the test suite.
-      if (error > 1e-10 * std::max(signal, reference_signal) + 1e-14) throw std::runtime_error("Benchmark CPU/CUDA control mismatch");
+      if ((exact_control && error != 0.) || error > 1e-10 * std::max(signal, reference_signal) + 1e-14) throw std::runtime_error("Benchmark CPU/CUDA control mismatch");
       auto dimensions = ad.get_subspace_dims();
       long maximum    = *std::max_element(dimensions.begin(), dimensions.end());
       std::cout << std::setprecision(17);

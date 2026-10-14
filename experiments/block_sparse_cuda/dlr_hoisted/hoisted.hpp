@@ -28,8 +28,21 @@ namespace block_sparse_dlr_experiment {
       for (long i = 0; i < r; ++i) tmp(i, all, all) = cppdlr::matmul(fc(i, all, all), gc(i, all, all));
       auto h  = cppdlr::arraymult(Q, tmp);
       auto hf = cppdlr::arraymult(H, fc), hg = cppdlr::arraymult(H, gc);
-      for (long i = 0; i < r; ++i) tmp(i, all, all) = cppdlr::matmul(hf(i, all, all), gc(i, all, all)) + cppdlr::matmul(fc(i, all, all), hg(i, all, all));
+      for (long i = 0; i < r; ++i)
+        tmp(i, all, all) = cppdlr::matmul(hf(i, all, all), gc(i, all, all)) + cppdlr::matmul(fc(i, all, all), hg(i, all, all));
       return beta * (h + cppdlr::arraymult(C, tmp));
+    }
+  };
+  // Private generated-evaluator adapter: all inherited mesh/solve operations stay
+  // unchanged. Only the two time-ordered rank-three convolution calls differ.
+  class ImtimeControl : public cppdlr::imtime_ops {
+    Hoisted control;
+
+    public:
+    explicit ImtimeControl(cppdlr::imtime_ops const &host) : cppdlr::imtime_ops(host), control(host) {}
+    Array convolve(double beta, Array const &fc, Array const &gc, bool time_order) const {
+      if (!time_order) throw std::invalid_argument("The control supports time-ordered convolution only");
+      return control.convolve(beta, fc, gc);
     }
   };
 } // namespace block_sparse_dlr_experiment

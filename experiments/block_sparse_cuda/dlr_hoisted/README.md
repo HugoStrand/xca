@@ -54,3 +54,32 @@ are retained under the machine directory. CPU-only builds can run the executable
 for qualification but the paired recorder requires all six CPU/CUDA route-stage
 combinations. The large 210-by-252-by-210 case uses one repetition; it represents
 a bounded ten-mode sector geometry, not a complete ten-mode diagram.
+
+## Matched complete evaluator
+
+`block_sparse_cpu_hoisted_benchmark` uses a private generated copy of the current
+CPU evaluator. CMake renames the class and replaces its rank-operations member
+with a cached `ImtimeControl` adapter; the two convolution sites invoke the hoisted
+implementation. Every inherited solve/transform and all path/operator/accumulation
+code stay unchanged. Generation fails if either expected site/member pattern changes
+and automatically regenerates when production evaluator sources change. Generated
+files remain in the build tree. There is no installed-header override or production
+backend change.
+
+The frontend shares physical fixtures/range options/timers with complete-call
+benchmarks and requires **bitwise** agreement with the unchanged CPU evaluator for
+each warm result, plus exact repeated-output checks. The extra cached helper tables
+are charged to evaluator construction; coefficients and propagators are prepared
+identically. This target builds with either CPU or CUDA TRIQS and performs no GPU
+work.
+
+```bash
+cmake --build cbuild-cuda --target block_sparse_cpu_hoisted_benchmark --parallel 6
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+ cbuild-cuda/benchmarks/experiments/block_sparse_cuda/dlr_hoisted/block_sparse_cpu_hoisted_benchmark \
+ --modes 10 --partition number --observable se --order 2 --count 1 --samples 1
+```
+
+Use the original benchmark's full workload matrix, including the zero-survival
+window; pin source hashes and record raw samples before comparing ratios. Primitive
+improvements alone do not establish the complete-call ratio.
