@@ -677,6 +677,25 @@ batched-CPU complete calls, higher-order threshold sensitivity, multi-field/corr
 batching and production/Python/MPI promotion remain pending. No benchmark or target
 dispatch claim changes from these added tests.
 
+Matched complete-path checkpoint (2026-10-14): the scalar CPU control now
+shares recipe.inc with the GPU scheduler, using identical eligibility/cohorts,
+operation order, cutoff and fan-in but CPU packed cached-LU/rank transforms.
+It builds/runs in CPU-only and CUDA trees. Extraction leaves all twelve GPU
+qualification tests passing. The
+[paired full-call comparison](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-matched-01/README.md)
+passes all 30 processes / 82 rows, with CPU outputs bitwise equal to original CPU
+and exact GPU replay. Other geometries/observables forward to unchanged CPU/general
+GPU, so those are not matched batching comparisons.
+
+The selected ten-mode scalar SE window takes 23.3 ms matched CPU versus 89.4 ms
+GPU; four-mode scalar SE takes 2.72 versus 3.43 ms. The zero-survival six-mode
+window is retained (0.032 versus 1.98 ms). Thus earlier comparisons to hoisted CPU
+mostly captured algorithmic improvement. Do not promote this GPU scheduler based
+on old-baseline ratios. Next isolate/reduce serialized per-path cutoff/fan-in
+handoffs with output ownership that preserves per-output contribution order, then
+repeat the matched complete-call and semantic gates. GH200 remains target hardware;
+these timings do not impose a CPU fallback or target default.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused

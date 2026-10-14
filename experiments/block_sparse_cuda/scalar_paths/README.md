@@ -51,3 +51,20 @@ library, unchanged/matched CPU and edge experiments remain available. Full-candi
 CPU batching, irregular special sets/correlators, higher-order cutoff-adjacent paths, wider shapes,
 changed-address ownership and target dispatch remain pending. Selected-index speedups
 do not establish complete Solver/topology-sum throughput or N=14 qualification.
+
+## Matched full-call CPU control
+
+`block_sparse_cpu_scalar_path_benchmark` also builds in a CPU-only tree. Its host
+scheduler shares recipe.inc with the GPU candidate: scalar eligibility, copied
+metadata/cohorts, vertex/edge/special operations, prefactors, cutoff and ordered
+fan-in. CPU uses cached LU with packed RHS and hoisted rank transforms. No GPU
+arithmetic or native compiler is required for this control. Unsupported shapes and
+other observables use the unchanged CPU evaluator (not hoisted/batched controls).
+
+Use this executable as `--cpu-binary` in the paired recorder, campaign
+`scalar-matched-01`. CPU rows have no path-count observer/device counters. Shared
+recipe extraction leaves the GPU qualification suite unchanged; per-case CPU results
+are screened against original CPU and repeat exactly. Compare identical eligible
+scalar self-energy rows before attributing any old-baseline speedup to GPU hardware.
+Descriptor setup, allocations, host transfers and cutoff/fan-in remain relevant
+inclusive costs. Results under the common hardware folder document GPU-losing cases.

@@ -1318,3 +1318,57 @@ separate from code; git diff --check passed.
 
 Logs: /tmp/xca-bs-scalar-qualification-{configure,build,test,memcheck}.log.
 Persistent qualification source: experiments/block_sparse_cuda/scalar_paths/qualification.cpp.
+
+
+### 2026-10-14 — Full-call matched scalar CPU scheduler
+
+Previous turn made verified progress through independent scheduler semantic/memory
+gates. Goal active. This turn closes the missing matched full-call CPU control,
+preventing algorithmic batching gains from being labeled device acceleration.
+
+1427e2a [bench] match scalar path CPU scheduling adds cpu_scheduler.hpp and a CPU
+frontend. Scalar CPU uses the same packed RHS/cached LU and hoisted transforms as
+qualified CPU edge controls. CPU and GPU now share recipe.inc for exact stage order:
+vertices/edge kernels, special kappa/hybridization/mu, prefactor/parity and traversal.
+Both use the same streamed structural path discovery, bounded 512 copied descriptors,
+cohort splits, per-path magnitude cutoff and original fan-in order. Unsupported shapes
+or multi-field sets and all correlators forward to unchanged CPU/general GPU. The
+CPU control exports the same direct sparse model for scalar operations and retains
+the original CPU evaluator for control/fallback; no production CPU API changed.
+
+The CPU frontend builds/runs without CUDA in cbuild; a CPU-only scalar numerical/
+replay check passed. CUDA-linked multi-cohort six-mode/eight-index and ten-mode
+three-sample checks passed with zero numerical error against original CPU, including
+exact replay. Those validation timings overlapped CPU build activity and were not
+used as benchmark evidence. Shared recipe extraction left all twelve GPU tests
+passing (8.48 s). No kernels or numerical policies changed; previous focused memory
+qualification applies to the unchanged GPU stage operations. Full production suites
+were not repeated for these private experiment changes.
+
+After all verification/build handles were terminal, scalar-matched-01 completed
+30 isolated processes / 82 rows. 6f6b93c [bench] record matched scalar path timings
+stores hashes/commands/repetitions and hardware comparison. All CPU outputs are
+bitwise original CPU in the sampled matrix, and GPU screening/exact replay pass.
+CPU path columns are NA (no observer), not claimed matching counts. Other observable/
+geometry rows use unchanged CPU, so comparisons are explicitly scoped to eligible
+scalar self-energy. Old benchmarks and all implementations remain.
+
+Matched full-call data changes interpretation: four-mode scalar SE 2.723 ms CPU /
+3.429 ms GPU; ten-mode scalar SE 23.262 / 89.399 ms; zero-survival six-mode window
+0.032 / 1.981 ms. The previous GPU-versus-hoisted-CPU speedup mostly came from
+algorithmic batching. Ten-mode has one repetition; no target dispatch/promotion gate
+follows. No claim that scalar GPU beats matched CPU is made. GH200 remains the target,
+with no target run/N=14 full workload. The recorded GPU-losing result guides the next
+experiment rather than hiding it or installing a CPU replay path.
+
+Next: isolate serialized cutoff/per-path fan-in host-device handoffs and test bounded
+output-owned GPU accumulation preserving each output's original contribution order.
+Retain the serial candidate and matched CPU as controls. Repeat cutoff/tail/mask/
+budget/lifetime gates and matched full calls before production/Python/MPI promotion;
+continue wider memory/topology/hardware work. Goal not complete. No install/push/
+supervisor/user-work changes. Plan/work-log/README update separate from code/data.
+git diff --check passed.
+
+Logs /tmp/xca-bs-scalar-matched-{configure,build,test,cpu-configure,cpu-build,campaign}.log;
+/tmp/xca-bs-scalar-matched-cpu-{tail,large,only-test}.csv. Persistent paired data under
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-matched-01.
