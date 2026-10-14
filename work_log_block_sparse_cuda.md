@@ -606,3 +606,73 @@ calls and phase timings, refine host/device admission, then controlled dispatch/
 batching/layout/reuse experiments while preserving this reference. Target remains
 GH200-class hardware. No N=14 diagonalization/full evaluation, target GPU timing,
 quota-supervisor change, install or push was performed.
+
+## 2026-10-14 — Consolidated bindings and Python/MPI integration
+
+Code commit: `12981ad` (`[solv] block-sparse CUDA integration`). The implementation
+goal remains active. The reference is now usable from Solver, while complete-call
+benchmarks, capacity refinement and E3–E9 strategy experiments remain outstanding.
+
+Registered BlockSparseCudaDiagramEvaluator in the existing _triqs_xca_cuda module
+through a host-facing facade. It builds exact sparse models from real/complex
+atom_diag and supports ordinary/retarded constructors, full/single/range SE and
+SPGF, one-time correlator ranges and storage-bound queries. Constructor kwargs
+expose device_budget and sparse_budget. No extra CUDA Python module was introduced.
+Clair generated the combined schema; the existing optional-small-class guard script
+worked with changed class aliases, including XCA_CUDA_SMALL=OFF. Only consolidated
+CUDA wrappers were regenerated. CPU imports remain lazy and do not load CUDA.
+
+Solver gains block_sparse_backend ('cpu' default, 'cuda' opt-in),
+block_sparse_workspace_budget (1 GiB default) and block_sparse_operator_budget
+(32 MiB default). Dense GPU configuration remains separate and still requires
+conserved_operators=[]. Block-sparse CUDA works with automatic or explicit atomic
+symmetries; contradictory family selection and invalid budgets reject. gpu.py owns
+backend loading, process device selection and collective error handling. Configured
+budgets go to the native constructor. Solver archives/deepcopy retain preferences;
+old archives without these fields receive CPU/default budgets and no live evaluator.
+
+GPU-active selection now follows the actual evaluator family. Collective Solver
+initialization and range calls cover block-sparse as well as dense GPU evaluation.
+Index-count queries are also guarded BEFORE range scattering/evaluation: a rank-local
+failure there otherwise leaves a peer entering later collectives. Standalone native
+and Solver initialization/full-topology calls remain local. No CPU replay follows
+submitted device work; recoverable test failures create/retry the requested backend.
+
+The new Python test uses scalar occupation, number and mixed partitions, complex
+hybridization, ordinary/retarded models, all observables, self-consistency and real/
+complex atom_diag binding factories. It verifies module identity, scalar/range
+selectors (no Python index-vector API), archive/deepcopy/default compatibility,
+unavailable CPU-build errors and invalid preferences. Two-rank runs compare
+MPI-split sums with complete CPU calls. Deliberate rank-zero failures during setup,
+index counting and compute admission raise on every rank; barriers and successful
+retries prove that peers leave those phases rather than hanging before reductions.
+
+Verification: full CPU build plus 76/76 CTest entries passed in 49.17 s; full CUDA
+build plus 84/84 passed in 185.54 s. Focused CUDA Python tests passed 2/2 in 9.73 s;
+CPU import/archive tests passed 4/4 in 1.40 s. Library-only CUDA module built and its
+Python tests passed 2/2 in 32.45 s while overlapping MPI verification. Timing under
+concurrent GPU tests is not a performance benchmark. MPI ran all four new Python
+tests on each of two ranks successfully (43.6 s). The initially attempted executable
+name 'python' was absent; no tests ran in that attempt. Successful launch used:
+
+```bash
+source ~/env/xca-cuda.sh
+export PYTHONPATH="$PWD/cbuild-cuda/python:$PWD/cbuild-cuda/deps/adapol_src/src:$PWD/cbuild-cuda/deps/pyed_src:$PYTHONPATH"
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  mpiexec -n 2 /usr/bin/python3 test/python/block_sparse_cuda.py
+```
+
+Logs: `/tmp/xca-bs-python-{cpu,cuda}-full-{build,test}.log`,
+`/tmp/xca-bs-python-{cpu,cuda,library}-test.log`,
+`/tmp/xca-bs-python-library-build.log`, `/tmp/xca-bs-python-mpi-test.log`,
+`/tmp/xca-bs-binding-{generate,build}.log`. `git diff --check` passed. User-facing API
+notes now show opt-in selection, budgets, device ownership and target-hardware limits;
+documentation was not built. Unrelated user work is preserved.
+
+Next: reproducible full-call/phase benchmarks against CPU and this retained GPU
+reference, schedule-sensitive live admission for larger sectors, bounded N=10 work
+and analytic/primitive N=14 proxies. Then evaluate signed maps versus sparse/dense
+libraries, rank/RHS grouping, layouts, dispatch, batching and topology reuse/graphs
+in separate experimental folders. Keep all dense baselines/experiments. GH200-class
+hardware remains the target; no target run or N=14 diagonalization/full evaluation
+was performed. No supervisor reconfiguration, install, history squash or push.

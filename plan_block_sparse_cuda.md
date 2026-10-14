@@ -4,8 +4,9 @@ Date: 2026-10-14. Status: implementation in progress. Exact sparse model packing
 CPU path controls and a bounded workload inventory are implemented. Owned-stream
 rectangular CUDA products and DLR operations are qualified at the primitive level.
 A bounded device reference now covers self-energy, SPGF and one-time correlators
-on small physical controls. Production bindings/MPI integration, broader capacity
-qualification and the remaining experiments below are still pending.
+on small physical controls. Consolidated bindings and opt-in Python/MPI solver
+integration are implemented and locally qualified. Broader capacity qualification
+and the remaining experiments below are still pending.
 This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 
@@ -372,6 +373,16 @@ addition; no self-energy magnitude cutoff is imposed on correlators. The conserv
 correlator admission bound includes a third function capacity, two output tensors
 and trace storage. Its large-sector bound needs schedule-sensitive refinement before
 claiming practical N=14 execution on target hardware.
+
+Integration checkpoint (2026-10-14): `Solver(..., block_sparse_backend='cuda')`
+selects the reference with automatic or explicit atomic symmetries; CPU remains
+the default. The consolidated CUDA module exposes real/complex atom_diag factories,
+retarded models and range calls. Device and sparse-workspace budgets are solver
+preferences preserved in archives. GPU setup, index-count queries and range
+evaluation are collectively guarded before MPI reductions. Two-rank tests cover
+numerical results plus rank-local setup/count/compute failures and recovery.
+Library-only CUDA builds work with native CUDA-small disabled. This integration
+does not select optimized dispatch or establish target-hardware throughput.
 
 ### E3 — Operator applications: maps, sparse libraries, dense products
 
