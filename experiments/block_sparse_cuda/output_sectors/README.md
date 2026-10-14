@@ -49,7 +49,7 @@ promotion of the move does not silently turn the copying control into another mo
 
 The production C++ evaluator now has explicit `OutputPlacement::HostSectors` with
 the same ordering and complete-output contract. Resident remains its default;
-Python/MPI selection is pending. `resident_header.hpp.in` and `resident_source.cpp.in`
+Python/Solver configuration exposes placement and host output budget. `resident_header.hpp.in` and `resident_source.cpp.in`
 freeze the pre-placement evaluator used by this experiment, keeping its original
 copy/move/stream comparisons independent of future production placement edits.
 `block_sparse/cuda_host_output` runs all eight reusable observable controls against

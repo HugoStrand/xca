@@ -226,17 +226,19 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, unsigned long, unsigned long, std::string, std::string>(
-      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
-      "operator_backend"_a = "library", "special_backend"_a = "reference"),
+                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, unsigned long, unsigned long, std::string, std::string, std::string,
+                                          unsigned long>("poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+                                                         "operator_backend"_a = "library", "special_backend"_a = "reference", "output_placement"_a = "resident",
+                                                         "host_output_budget"_a = 512ULL * 1024 * 1024),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, unsigned long, unsigned long, std::string, std::string>(
-      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
-      "operator_backend"_a = "library", "special_backend"_a = "reference"),
+                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, unsigned long, unsigned long, std::string, std::string, std::string,
+                                          unsigned long>("poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+                                                         "operator_backend"_a = "library", "special_backend"_a = "reference", "output_placement"_a = "resident",
+                                                         "host_output_budget"_a = 512ULL * 1024 * 1024),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
@@ -245,9 +247,10 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, const std::vector<triqs::operators::many_body_operator_complex> &,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          unsigned long, unsigned long, std::string, std::string>("poles", "coefficients", "mesh", "ad", "operators", "interactions",
-                                                                                                  "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
-                                                                                                  "operator_backend"_a = "library", "special_backend"_a = "reference"),
+                                          unsigned long, unsigned long, std::string, std::string, std::string, unsigned long>(
+      "poles", "coefficients", "mesh", "ad", "operators", "interactions", "device_budget"_a = 1024ULL * 1024 * 1024,
+      "sparse_budget"_a = 32ULL * 1024 * 1024, "operator_backend"_a = "library", "special_backend"_a = "reference", "output_placement"_a = "resident",
+      "host_output_budget"_a = 512ULL * 1024 * 1024),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
@@ -256,9 +259,10 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, const std::vector<triqs::operators::many_body_operator_complex> &,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          unsigned long, unsigned long, std::string, std::string>("poles", "coefficients", "mesh", "ad", "operators", "interactions",
-                                                                                                  "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
-                                                                                                  "operator_backend"_a = "library", "special_backend"_a = "reference")};
+                                          unsigned long, unsigned long, std::string, std::string, std::string, unsigned long>(
+      "poles", "coefficients", "mesh", "ad", "operators", "interactions", "device_budget"_a = 1024ULL * 1024 * 1024,
+      "sparse_budget"_a = 32ULL * 1024 * 1024, "operator_backend"_a = "library", "special_backend"_a = "reference", "output_placement"_a = "resident",
+      "host_output_budget"_a = 512ULL * 1024 * 1024)};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1>    = c2py::pyfkw_constructor<_c2py_init_1>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_1> = _c2py_init_1.doc(R"DOC()DOC");
 // compute_one_time_correlator_range

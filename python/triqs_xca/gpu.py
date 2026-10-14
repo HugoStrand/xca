@@ -21,7 +21,9 @@ def block_sparse_mapped_available():
     return import_module('._triqs_xca_cuda', __package__).block_sparse_mapped_available()
 
 
-def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference'):
+def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference', output_placement='resident'):
+    if output_placement not in {'resident', 'host_sectors'}:
+        raise ValueError("Block-sparse output placement must be 'resident' or 'host_sectors'")
     if operator_backend not in {'library', 'ordered'}:
         raise ValueError("Block-sparse operator backend must be 'library' or 'ordered'")
     if special_backend not in {'reference', 'mapped'}:
@@ -88,3 +90,14 @@ def collective_call(operation, phase="Native dense evaluation"):
             raise RuntimeError(f"{phase} failed: {error}") from error
         raise RuntimeError(f"{phase} failed on another MPI rank")
     return result
+
+
+def block_sparse_host_output_budget(value):
+    """Validate the full self-energy host output payload limit without loading CUDA."""
+    from operator import index
+    if isinstance(value, bool):
+        raise ValueError("Block-sparse host output budget must be an integer, not bool")
+    value = index(value)
+    if value < 0:
+        raise ValueError("Block-sparse host output budget must be nonnegative")
+    return value

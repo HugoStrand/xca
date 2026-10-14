@@ -86,7 +86,13 @@ remain resident. The device bound replaces one full output function with one max
 tile; host payload rejection precedes upload, including empty ranges. The host limit
 excludes caller input, metadata, allocator overhead and a transient sector download.
 Resident output remains the default. SPGF/correlator bounds and behavior are unchanged.
-Python selection of this placement is pending integration.
+Set ``block_sparse_output_placement='host_sectors'`` and
+``block_sparse_host_output_budget=<bytes>`` in Solver to select this policy.
+The consolidated facade accepts ``output_placement`` and ``host_output_budget``.
+Preferences survive deepcopy/HDF archives; older archives default to resident output
+and a 512 MiB host payload limit. CPU configurations store these preferences without
+loading CUDA. Placement errors and host-budget failures use the existing MPI
+collective initialization/evaluation handling; no rank replays a CPU evaluator.
 
 This initial reference covers self-energy, SPGF and one-time correlators; its
 dispatch/batching optimizations are still under investigation. The performance

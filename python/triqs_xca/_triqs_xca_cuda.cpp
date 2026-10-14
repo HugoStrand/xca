@@ -90,6 +90,13 @@ namespace xca_python {
       return SpecialBackend::Mapped;
     }
 
+    static triqs_xca::block_sparse::cuda::OutputPlacement select_placement(std::string const &name) {
+      using namespace triqs_xca::block_sparse::cuda;
+      if (name == "resident") return OutputPlacement::Resident;
+      if (name == "host_sectors") return OutputPlacement::HostSectors;
+      throw std::invalid_argument("output_placement must be resident or host_sectors");
+    }
+
     public:
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
@@ -97,22 +104,26 @@ namespace xca_python {
     BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
                              triqs::atom_diag::atom_diag<C> const &ad, std::size_t device_budget = 1024ULL * 1024 * 1024,
                              std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library",
-                             std::string special_backend = "reference") {
-      auto selected = select_backend(operator_backend);
-      auto special  = select_special(special_backend);
+                             std::string special_backend = "reference", std::string output_placement = "resident",
+                             std::size_t host_output_budget = 512ULL * 1024 * 1024) {
+      auto selected  = select_backend(operator_backend);
+      auto special   = select_special(special_backend);
+      auto placement = select_placement(output_placement);
       evaluator_ = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients), poles, mesh, device_budget, sparse_budget,
-                                            selected, special);
+                                            selected, special, placement, host_output_budget);
     }
     template <bool C>
     BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
                              triqs::atom_diag::atom_diag<C> const &ad, std::vector<triqs::operators::many_body_operator_complex> const &operators,
                              nda::array_const_view<nda::dcomplex, 3> interactions, std::size_t device_budget = 1024ULL * 1024 * 1024,
                              std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library",
-                             std::string special_backend = "reference") {
-      auto selected = select_backend(operator_backend);
-      auto special  = select_special(special_backend);
-      evaluator_    = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
-                                               device_budget, sparse_budget, selected, special);
+                             std::string special_backend = "reference", std::string output_placement = "resident",
+                             std::size_t host_output_budget = 512ULL * 1024 * 1024) {
+      auto selected  = select_backend(operator_backend);
+      auto special   = select_special(special_backend);
+      auto placement = select_placement(output_placement);
+      evaluator_     = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
+                                                device_budget, sparse_budget, selected, special, placement, host_output_budget);
     }
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_self_energy_backbones(t); }
     long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_single_ptcle_gf_backbones(t); }
@@ -155,11 +166,11 @@ using block_evaluator = xca_python::BlockSparseCudaEvaluator;
 #define BLOCK_BIND(C, PREFIX)                                                                                                                        \
   PREFIX template block_evaluator::BlockSparseCudaEvaluator(nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>,                 \
                                                             triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &, std::size_t,            \
-                                                            std::size_t, std::string, std::string);                                                  \
+                                                            std::size_t, std::string, std::string, std::string, std::size_t);                        \
   PREFIX template block_evaluator::BlockSparseCudaEvaluator(                                                                                         \
      nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>, triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,       \
      std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<nda::dcomplex, 3>, std::size_t, std::size_t,           \
-     std::string, std::string);                                                                                                                      \
+     std::string, std::string, std::string, std::size_t);                                                                                            \
   PREFIX template nda::array<nda::dcomplex, 3> block_evaluator::compute_one_time_correlator_range(                                                   \
      triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>, std::vector<triqs::operators::many_body_operator_complex> const &,                          \
      std::vector<triqs::operators::many_body_operator_complex> const &, triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, long, \
