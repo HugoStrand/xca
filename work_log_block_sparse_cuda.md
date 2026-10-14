@@ -1969,3 +1969,38 @@ Evidence: doc/python_api.rst; test/c++/block_sparse/cuda_admission.cpp;
 test/python/block_sparse_cuda.py. Logs /tmp/xca-bs-nca-prod-{configure,wrap,build,
 cpu-test,cuda-test,library-test,memcheck,mpi}.log and associated build/configure logs;
 /tmp/xca-bs-nca-{kappa,library-kappa}-build.log; /tmp/xca-bs-nca-kappa-test.log.
+
+## 2026-10-14 — Bounded topology prefix discovery
+
+Added the CPU-only topology_reuse experiment and benchmark CMake target. It uses
+the actual diag.py generator, scans at most 4096 pairings, selects at most six
+connected topologies, then visits at most 4096 surviving paths for two flat indices.
+Keys conservatively encode ordered pre-special operations and fixed input identity.
+Special sums, suffixes, final parity/cutoff and topology reduction are excluded;
+no numerical sharing or production policy change is implemented.
+
+The prefix-01 workstation campaign completes 24 cases / 72 stage rows for four
+modes, number/mixed/occupation partitions, orders 2/3/4/6 and active/periodic-mask
+inputs. Selection scans 3/15/38/1088 pairings, retaining 1/4/6/6 topologies. Normal
+cases are not truncated; separate actual executable controls check path-limit
+truncation and malformed input rejection. Empty paths produce explicit zero rows.
+Python compilation, CPU build and recorder checks pass. CUDA build and an order-4
+number probe match the CPU CSV exactly. This is host discovery, not GPU testing
+or timing, so existing full-suite correctness results remain the prior checkpoint.
+
+Number symmetry produces 8/8/4 shared edge keys at orders 3/4/6, with 20/24/20
+distinct-topology reuses. Selected mixed order-6 paths and all masked cohorts have
+no cross-topology overlap. Root-copy reuse is counted separately. Discovery counts
+support a bounded numerical replay experiment, not a cache or graph promotion.
+Literal input generation markers apply only to this immutable fixture; a future
+cache must handle all input changes and owned lifetimes. Initial selection bias,
+full-call setup/memory costs, cutoff behavior and target hardware remain open.
+
+Next qualify shared prefix values independently, then compare bounded numerical
+DAG execution against independent calls before attempting graph capture. Existing
+public allocation/synchronization and host cutoff paths are not capture-ready.
+Goal remains active. Target GH200-class hardware, not the RTX A4000. All experiments
+and user work preserved; benchmark changes and plan/log updates committed separately.
+No installation, push or supervisor changes. Logs /tmp/xca-bs-reuse-{configure,build}.log
+and /tmp/xca-bs-reuse-cuda-{configure,build}.log; retained machine manifest and CSVs
+under experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/prefix-01.

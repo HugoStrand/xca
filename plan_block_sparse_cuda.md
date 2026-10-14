@@ -1020,6 +1020,19 @@ remain explicit limits; preserve baselines and generic estimates.
 
 ### E8 — Topologies, shared subcomputations and graphs
 
+Local discovery checkpoint: `experiments/block_sparse_cuda/topology_reuse` now
+inventories bounded pre-special prefixes using the actual `diag.py` pairing
+generator and production block-path visitor. The four-mode `prefix-01` cohort
+finds candidate operator/convolution overlap for number symmetry at orders 3/4/6,
+but no overlap for the selected order-6 mixed paths or periodic zero masks.
+This is structural evidence only: no numerical memoization or graph speedup is
+qualified. Next independently replay shared prefixes, invalidate on changed G,
+coefficients, mesh and masks, then time complete calls with bounded cache storage.
+The first-connected/first-index selection is biased; broaden selections before
+making a workload-wide decision. Current allocation/synchronization/cutoff paths
+require refactoring before whole-call capture. GH200-class hardware remains the
+target; the local RTX A4000 inventory does not qualify target performance.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
