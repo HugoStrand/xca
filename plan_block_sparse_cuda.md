@@ -15,6 +15,26 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Arrhenius experiment budget
+
+The user's Arrhenius allocation is **100 GPU-hours/month**, shared with their other
+work. Treat this as an allocation ceiling, not a budget to consume for this project.
+Screen implementations, correctness and workload selection locally first. Use one-GPU
+GH200 jobs with explicit short walltime limits, reuse compiled Arm build trees, and
+retain results so failed or completed cases are not repeated unnecessarily.
+
+Start with a focused build/smoke job capped at ten minutes (one sixth of a GPU-hour
+at one allocated GPU). Then select a few representative many-small, mixed-block and
+large-sector cases from local evidence, with a declared cap of one GPU-hour for the
+initial benchmark cohort. Expand only when those results identify a specific unresolved
+question. Avoid full size/order/topology Cartesian sweeps and full N=14 atom_diag
+construction as initial target experiments; use bounded sector/operator probes.
+
+Record each job ID, allocated GPU count, elapsed time and accounting charge where
+available, including build time and failed jobs. Check the allocation's remaining
+balance before further campaigns and leave room for the user's other workloads.
+Queued jobs and scheduler validation do not constitute hardware qualification.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator

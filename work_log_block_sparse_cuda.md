@@ -1,5 +1,21 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Arrhenius allocation constraint
+
+User specifies only 100 GPU-hours/month on Arrhenius. Updated the plan to treat this
+as a shared allocation ceiling, screen experiments locally, reuse Arm builds, and
+start with bounded single-GPU smoke and representative cohorts. Initial caps are
+ten minutes for build/smoke and one GPU-hour for the subsequent benchmark cohort,
+not authorization to consume the full monthly allocation. Record actual allocation,
+elapsed time and charges, including failed jobs, and inspect remaining balance.
+
+Arrhenius read-only checks confirmed SSH access, the GPU account and installed Arm
+CUDA TRIQS. The shared xca checkout is older; preserve it and use an isolated source
+snapshot for qualification. A smoke script and source-only staging were drafted;
+no job has been submitted and no GH200 numerical or performance qualification is
+claimed. Existing implementation goal remains active. This checkpoint changes only
+the plan and work log; qualification drafts remain separate and uncommitted.
+
 ## 2026-10-13 — Investigation and first draft
 
 Persistent goal: develop an evidence-based CUDA experiment plan covering many small
