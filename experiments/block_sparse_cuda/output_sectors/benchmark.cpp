@@ -1,7 +1,7 @@
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
 #include "output_evaluator.hpp"
-#include "move_evaluator.hpp"
+#include "copy_evaluator.hpp"
 #include "../../../benchmarks/block_sparse_common/call_runner.hpp"
 #include <triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>
 #include <sys/resource.h>
@@ -21,13 +21,13 @@ int main(int argc, char **argv) {
     auto sparse   = native ? gpu::SparseBackend::Ordered : gpu::SparseBackend::Library;
     auto special  = native ? gpu::SpecialBackend::Mapped : gpu::SpecialBackend::Reference;
     auto start    = block_sparse_bench::clock_type::now();
-    gpu::DiagramEvaluator resident(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
+    gpu::CopyOutputEvaluator resident(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
     auto resident_setup = block_sparse_bench::milliseconds(start);
     start               = block_sparse_bench::clock_type::now();
     gpu::OutputSectorEvaluator streamed(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
     auto streamed_setup = block_sparse_bench::milliseconds(start);
     start               = block_sparse_bench::clock_type::now();
-    gpu::MoveOutputEvaluator moved(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
+    gpu::DiagramEvaluator moved(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
     auto moved_setup = block_sparse_bench::milliseconds(start);
     auto total       = resident.get_num_self_energy_backbones(topology);
     if (options.first >= total || options.count > total - options.first) throw std::out_of_range("Range outside domain");

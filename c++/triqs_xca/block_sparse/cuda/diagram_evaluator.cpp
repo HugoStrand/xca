@@ -552,7 +552,7 @@ namespace triqs_xca::block_sparse::cuda {
       auto values = first == last ? nda::zeros<Complex>(x.r, d, d) : nda::to_host(output[b]);
       result.emplace_back(x.mesh, values);
     }
-    return {result};
+    return {std::move(result)};
   }
 } // namespace triqs_xca::block_sparse::cuda
 #endif

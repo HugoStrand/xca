@@ -6,6 +6,8 @@ root, destination = map(Path, sys.argv[1:])
 source_dir = root / 'c++/triqs_xca/block_sparse/cuda'
 header = (source_dir / 'diagram_evaluator.hpp').read_text()
 source = (source_dir / 'diagram_evaluator.cpp').read_text()
+# Normalize ownership for the streaming template; keep copying as a control.
+source = source.replace('    return {std::move(result)};', '    return {result};')
 
 
 def replace_once(old, new):
@@ -75,12 +77,15 @@ source = source.replace('"diagram_evaluator.hpp"', '"output_evaluator.hpp"')
 destination.mkdir(parents=True, exist_ok=True)
 (destination / 'output_evaluator.hpp').write_text(header)
 (destination / 'output_evaluator.cpp').write_text(source)
-# Separate ownership control: original resident algorithm, explicit return move.
-move_header = (source_dir / 'diagram_evaluator.hpp').read_text().replace('DiagramEvaluator', 'MoveOutputEvaluator')
-move_source = (source_dir / 'diagram_evaluator.cpp').read_text()
-if move_source.count('    return {result};') != 1:
+# Keep both ownership controls, independent of the production return choice.
+original = (source_dir / 'diagram_evaluator.cpp').read_text()
+if original.count('    return {result};') + original.count('    return {std::move(result)};') != 1:
     raise RuntimeError('Resident return-ownership seam changed')
-move_source = move_source.replace('    return {result};', '    return {std::move(result)};')
-move_source = move_source.replace('DiagramEvaluator', 'MoveOutputEvaluator').replace('"diagram_evaluator.hpp"', '"move_evaluator.hpp"')
-(destination / 'move_evaluator.hpp').write_text(move_header)
-(destination / 'move_evaluator.cpp').write_text(move_source)
+for name, stem, ownership in [('MoveOutputEvaluator', 'move', 'std::move(result)'),
+                               ('CopyOutputEvaluator', 'copy', 'result')]:
+    control_header = (source_dir / 'diagram_evaluator.hpp').read_text().replace('DiagramEvaluator', name)
+    control_source = original.replace('    return {std::move(result)};', '    return {result};')
+    control_source = control_source.replace('    return {result};', f'    return {{{ownership}}};')
+    control_source = control_source.replace('DiagramEvaluator', name).replace('"diagram_evaluator.hpp"', f'"{stem}_evaluator.hpp"')
+    (destination / f'{stem}_evaluator.hpp').write_text(control_header)
+    (destination / f'{stem}_evaluator.cpp').write_text(control_source)
