@@ -1104,6 +1104,17 @@ but accepted by streaming. Focused memcheck reports zero errors/leaks. This is n
 promotion or actual N14 qualification: transfer/setup cost, measured peak storage,
 input/slab streaming and target-hardware capacity remain open.
 
+E7 measured complete-call checkpoint `output_sectors/outputs-02` adds an explicit
+return-ownership control to the resident and streamed routes. Seven physical cases
+through ten modes yield 147 exact output/count rows with rotated route order. Ten-
+mode changed-G resident/explicit-move/streamed medians are 204.181/162.227/171.698 ms;
+streaming costs 5.8% against the ownership control, despite saving 44,620,736 bytes
+in its explicit bound. Sampled device deltas also fall, but they are global selected-
+point diagnostics, not continuous/private peaks. Prefer resident execution when it
+fits; investigate the return move as a separate production improvement, preserving
+the copy-return baseline. Streaming remains a capacity route pending independent
+peak/host measurements, transfer/placement policy and GH200-class qualification.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical

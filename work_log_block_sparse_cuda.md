@@ -2268,3 +2268,52 @@ development proxy. All baselines/experiments/user work retained; code/plan/log c
 separate; no install/push/supervisor changes. Logs /tmp/xca-bs-compact-prod-{cuda-test,
 memcheck,library-test}.log and /tmp/xca-bs-output-sector-{configure,build,test,memcheck,
 cpu-configure,library-configure,library-build,library-test}.log.
+
+## 2026-10-14 — Complete output-streaming measurements
+
+Previous turn was progress: full compact verification and nine-control output-sector
+experiment were committed. Added a complete-call benchmark with physical fixtures,
+topology-specific bounds, setup/call times, exact outputs/counts, signal, sampled
+device deltas and process RSS. Initial outputs-01 two-route comparison has 98 rows.
+Recognized that streamed return explicitly moves its vector while resident return
+does not; added a generated resident explicit-move control before drawing conclusions.
+Final outputs-02 has seven processes / 147 rows, three routes and first/warm/per-
+sample changed-G phases. Route order rotates over three samples. First rows share
+context/JIT state; setup is separate, transfers/allocations/comparison-independent
+calls are timed, no Solver/MPI gain claim. Static number/mixed/occupation fixtures
+cover orders 1–3, offsets and 4/6/8/10 actual modes, not N14 atom_diag.
+
+All outputs and accepted/contributing counts match exactly. Bounds differ by full
+output payload minus maximum tile, verified for every pair; ownership-only control
+has the resident bound. Device counter is a selected-point global free-memory drop
+from call entry, includes allocator/other-process effects and can be zero on small
+cases. RSS is the cumulative paired/three-route process peak, not per-route host
+storage. No continuous/private peak or PCIe bandwidth claim. Timings ran isolated
+without builds/tests/profilers. Native-disabled benchmark builds and all nine small
+control rows match using Library/Reference. Focused three-route optimized memcheck
+reports zero errors/leaks; its handle terminated before library runtime control.
+
+Ten-mode changed-G medians are 204.181/162.227/171.698 ms resident/move/streamed;
+streaming costs 5.8% relative to move. Eight-mode values 21.355/18.835/18.891 ms cost
+.3%; smaller changed-G cases cost .2–1.2%. Ten-mode sampled changed-G deltas are
+234,881,024 versus 186,646,528 bytes move/streamed; warm 232,783,872/186,646,528.
+Explicit bound saves 44,620,736 bytes (42.554 MiB). Eight-mode samples 12,582,912/
+8,388,608 save 2,932,960 explicit bytes. Granularity prevents treating these as
+precise owned-allocation peaks. The ownership control changes the interpretation:
+keep resident when it fits, consider streaming for capacity, and port explicit
+return ownership separately instead of attributing copy savings to streaming.
+
+Final uncommitted outputs-02 was regenerated after narrowing recorded source hashes
+to executable sources; hashes match current code. outputs-01 remains a superseded
+preliminary capture: its uncommitted two-route launcher evolved before commit, so
+use final three-route source/outputs-02 for reproduction and decisions. All raw
+work is retained and this limitation is explicit. No production policy changed.
+
+Next preserve the copy-return baseline and qualify explicit return move in production,
+then independently measure placement/host peaks before promoting a capacity selector.
+Goal active; input/slab streaming, broader batching/cutoff and GH200-class qualification
+remain. All verification handles are terminal. Code/data and plan/log commits separate,
+no push/install/supervisor changes, unrelated work retained. Evidence: output_sectors/
+thinkstationP620_RTXA4000/{outputs-01,outputs-02}; /tmp/xca-bs-output-bench-{configure,
+build,campaign,memcheck}.log, corresponding move configure/build/campaign logs and
+library configure/build logs with /tmp/xca-bs-output-bench-library-control.csv.
