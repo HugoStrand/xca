@@ -85,3 +85,11 @@ and GTest as before, copy the updated runner/job recipe separately, and record a
 archive/runner hashes. Local syntax/help checks and local cohort replay do not
 prove remote scheduler acceptance or execution. Live SSH/account/queue checks and
 `sbatch --test-only` remain required before exactly one authorized submission.
+
+Before running `real_nca.sbatch`, normalize regular files in the locally staged
+`src` to epoch 946684800 (2000-01-01 UTC), then write `source-mtime-epoch.txt` with
+that value and transfer with timestamps preserved. The job validates this marker
+instead of rewriting thousands of shared-filesystem timestamps in GPU time. A
+partial build from the same pinned source/toolchain may be reused after its job is
+terminal; retain the earlier record. This change addresses the observed filesystem
+wait in the first NCA target attempt, not a numerical or compiler failure.

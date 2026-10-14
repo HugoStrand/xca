@@ -51,15 +51,10 @@ nvidia-smi -q > "$record/gpu.txt"
 module -t list > "$record/modules.txt" 2>&1
 g++ --version > "$record/compiler.txt"
 nvcc --version > "$record/nvcc.txt"
-# Archive commit times can be ahead of the cluster clock. Normalize only source
-# metadata to a fixed past date, avoiding repeated Make rebuilds without edits.
-python3 - <<'PY'
-from pathlib import Path
-import os
-for path in Path('src').rglob('*'):
-    if path.is_file() and not path.is_symlink():
-        os.utime(path, (946684800, 946684800))
-PY
+# Normalize source timestamps during staging, before occupying a GPU. The marker
+# is supplied only after pinned source files have been normalized to this epoch.
+test "$(cat source-mtime-epoch.txt)" = 946684800
+cp source-mtime-epoch.txt "$record/"
 cmake -S src -B cbuild_cuda \
   -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release \
   -DTRIQS_DIR="$stack/shared/apps-cuda/triqs/lib64/cmake/triqs" \
