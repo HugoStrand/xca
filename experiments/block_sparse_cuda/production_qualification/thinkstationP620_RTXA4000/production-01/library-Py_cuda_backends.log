@@ -1,0 +1,21 @@
+52/82 Testing: Py_cuda_backends
+52/82 Test: Py_cuda_backends
+Command: "/usr/bin/python3" "/home/hugstr/dev/xca/test/python//cuda_backends.py"
+Directory: /home/hugstr/dev/xca/cbuild-cuda-library-api/test/python/
+"Py_cuda_backends" start time: Oct 14 15:35 CEST
+Output:
+----------------------------------------------------------
+Starting serial run at: 2026-10-14 15:35:11.474652
+...s.......ss.
+----------------------------------------------------------------------
+Ran 14 tests in 0.428s
+
+OK (skipped=3)
+Warning: could not identify MPI environment!
+<end of output>
+Test time =   0.92 sec
+----------------------------------------------------------
+Test Passed.
+"Py_cuda_backends" end time: Oct 14 15:35 CEST
+"Py_cuda_backends" time elapsed: 00:00:00
+----------------------------------------------------------

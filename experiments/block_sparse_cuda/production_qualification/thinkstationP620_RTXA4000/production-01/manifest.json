@@ -1,0 +1,62 @@
+{
+  "qualified_source_revision": "82ec8cc02e9f0491bdbc3b8fcbe41d086d019b20",
+  "notes": "All targets built; production CTest excludes ^experiments/. Disabled GPU cases on CPU do not prove device behavior. No install/push/HPC allocation.",
+  "configurations": {
+    "cpu": {
+      "ctest_entries": 81,
+      "capabilities": {
+        "cuda": false,
+        "small": false,
+        "ordered": false,
+        "mapped": false
+      },
+      "last_test_sha256": "7aecf2499e0a0f92db4c1301fb60df47010c61a8a1eed5a930a29a1714cfeb69",
+      "build_log_sha256": "07411c5531a6125b39aaa8f6c12846946817dfe602f049d57cac2f3c9f3cec63",
+      "configure_log_sha256": "27febd96ed38651d2bc0a0a3108ea00c31c5ba1001898264303b12a349a81b98",
+      "test_parallel": 2,
+      "returncode": 0
+    },
+    "cuda": {
+      "ctest_entries": 91,
+      "capabilities": {
+        "cuda": true,
+        "small": true,
+        "ordered": true,
+        "mapped": true
+      },
+      "last_test_sha256": "65ad54f834333a11068c1f6e5faebb91b26733d3f59b664b3fcbea1b0a6069cf",
+      "build_log_sha256": "ce8b9e26f30fe4b27ed05faa8612202fdf1e414c09d1c5f1a919ed652f5b694a",
+      "configure_log_sha256": "910992c39efeedab6dcc11d911cd082006dc813b0431009d46d727de042ad6a4",
+      "test_parallel": 1,
+      "returncode": 0
+    },
+    "library": {
+      "ctest_entries": 82,
+      "capabilities": {
+        "cuda": true,
+        "small": false,
+        "ordered": false,
+        "mapped": false
+      },
+      "last_test_sha256": "37eae56014b91b9b8d8653cb424a3b2a936770309d7388d0c53622dfb4ba5aa0",
+      "build_log_sha256": "1f466e465d2e3b4aff2d321ff07d0d008c08c9fb1ebca972bb206e5126993116",
+      "configure_log_sha256": "2730d220a7c288208f3ba692775415967ca5dd62b03e248ba6fad3f0a3f9573b",
+      "test_parallel": 1,
+      "returncode": 0
+    }
+  },
+  "mpi": {
+    "ranks": 2,
+    "tests_per_rank": 7,
+    "elapsed_seconds": 119.179,
+    "returncode": 0,
+    "command": "source ~/env/xca-cuda.sh; set build/dependency PYTHONPATH; OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 mpirun -n 2 python3 test/python/block_sparse_cuda.py"
+  },
+  "source_sha256": {
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "31d3f095364c4d4f3eaab11861b4b5ddd63798bf5a8df0269b41b2bc0f27ad98",
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "dc52143a4f57f1d16dd01e8472657d10b4cfc4b9f6bc91e078a5a07ad5bb3937",
+    "python/triqs_xca/gpu.py": "9140d89cfb11569a12edfb8d11d9eaddecba1ccb9c85bef2d479bad7e1ac7c54",
+    "python/triqs_xca/solver.py": "da1e46d24ed20ec9932a2ad5a390228f37e4739f05eec1f6603f6a6f81d05665",
+    "test/python/block_sparse_cuda.py": "23e282ca1509e2dc0eb7231e841724478c5955732eeff87ffed6c0a9a66caf6c"
+  }
+}
