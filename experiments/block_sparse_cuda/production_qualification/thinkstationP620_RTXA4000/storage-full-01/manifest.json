@@ -1,0 +1,50 @@
+{
+  "normalization": "LF, trailing whitespace removed",
+  "files": [
+    {
+      "file": "xca-bs-storage-final-cpu-LastTest.log",
+      "original_sha256": "bd9dd99de304e11c70966eb15762ec9ae6ca56ce8d7e928da38b8a16ce251a6b",
+      "archived_sha256": "f36dbb2574136041f12443a6fb5dcb968b9c46a17dafb84b817daca7c0de3c37"
+    },
+    {
+      "file": "xca-bs-storage-final-cpu-build.log",
+      "original_sha256": "039a50f622dc647e8585211a3651f25e7885706725f41bb8f42aa430215eb4ba",
+      "archived_sha256": "077f44f5720dab5547bd9807534bb9986e087a6e44fc1ce97b331690c4069495"
+    },
+    {
+      "file": "xca-bs-storage-final-cpu-test.log",
+      "original_sha256": "5c373b14b83a872d3b497134ff673ce9ee54204f3bc85958c0f269913117c7c8",
+      "archived_sha256": "5c373b14b83a872d3b497134ff673ce9ee54204f3bc85958c0f269913117c7c8"
+    },
+    {
+      "file": "xca-bs-storage-final-library-LastTest.log",
+      "original_sha256": "479f590a98b3d94f47c8f7776565e644dce08267d1f3e25c478093ba8070b4bd",
+      "archived_sha256": "479f590a98b3d94f47c8f7776565e644dce08267d1f3e25c478093ba8070b4bd"
+    },
+    {
+      "file": "xca-bs-storage-final-library-build.log",
+      "original_sha256": "4702e638baa431bd0e4a7c323684786206ce86d72e751265c13a57c0f4b963da",
+      "archived_sha256": "378aad4d8d640b388f7afb2481bcd8e630c77a667eaee476194d3d55e22caa2c"
+    },
+    {
+      "file": "xca-bs-storage-final-library-test.log",
+      "original_sha256": "203981c23f1f07c25036438c8ac542fd9b100686415d32167f0993dfe129d9f0",
+      "archived_sha256": "203981c23f1f07c25036438c8ac542fd9b100686415d32167f0993dfe129d9f0"
+    },
+    {
+      "file": "xca-bs-storage-final-native-LastTest.log",
+      "original_sha256": "71ab0a2bbaee747dd76b3ee272d22c4786b25d3a725d3aac0db181d6a5acb377",
+      "archived_sha256": "f1749f9e2c48de50cf3717a4de050d3bd1ad0e198a6d072f9afbef4ae07de8de"
+    },
+    {
+      "file": "xca-bs-storage-final-native-build.log",
+      "original_sha256": "e47c05dc4befe3740d85fc9253b2d4927040deebe666182440935fd9f99783a6",
+      "archived_sha256": "ac28210573476410f589c6e1c3de07b121457f34d3f0d5cc2107a12fbfef1aff"
+    },
+    {
+      "file": "xca-bs-storage-final-native-test.log",
+      "original_sha256": "a28afdccd7d0ecd13af36fbc6309f23bbaad7a863349fadbd1863652d02937c2",
+      "archived_sha256": "a28afdccd7d0ecd13af36fbc6309f23bbaad7a863349fadbd1863652d02937c2"
+    }
+  ]
+}
