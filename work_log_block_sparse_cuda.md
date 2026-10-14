@@ -1,5 +1,38 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Algorithm-matched multi-set CPU control
+
+Previous turn was progress: explicit multi-set timing measured gains over unchanged
+CPU/general CUDA but lacked matched host batching. Added CPU multi-set eligibility
+under an experimental flag, retaining original singleton restrictions otherwise.
+Shared special recipe now uses backend zero/add callbacks: same GPU operations,
+scalar host loops. New matched frontend builds without CUDA and shares ordered
+recipe/cohort512, packed LU/transforms, cutoff and fan-in; GPU cutoff-band replay
+remains separate, so this is ordinary-call algorithm matching, not arbitrary
+boundary-policy equivalence. Density recorder includes fourth route.
+
+Local isolated16 processes/48 samples passed finite/numerical/exact replay checks.
+Matched CPU outputs equal original exactly; maxGPU error1.570e-16. Median matched
+CPU/GPU ms: N4 NCA1.754/2.821, N4 OCA6.333/6.374, N6 OCA23.985/21.964, N8 OCA
+11.253/12.576. Ratios.62/.99/1.09/.89; most large gains versus original evaluators
+are algorithmic. Original N4 OCA CPU shifted from prior58.976 to37.382 ms, further
+limiting threshold inference from three samples. No production/default/GH200 speed
+claim. Matched/GPU rebuilt, originalCPU/generalGPU retained controls; manifest pins
+binary hashes and source state, qualification JSON explicitly records this reuse.
+
+After timing terminated, GPU shared multi-set and adjacent-cutoff regression controls
+passed2.131 s. CPU-only matched frontend built; three N6 samples screened exactly
+against originalCPU, old singleton fixture still screens exactly. Callback change
+introduces no allocation lifetime change; no redundant memcheck rerun. Logs /tmp/
+xca-bs-density-matched-{configure,build,campaign,gpu-test-build,gpu-test,cpu-configure,
+cpu-build}.log and cpu/default.csv. Raw samples/hashes/compatibility logs retained
+in CPU/CUDA/common local density-matched-01. Code d20d0f3, results3d36f34 and this
+plan/log checkpoint separate. All handles terminal; unrelated user work preserved.
+
+Goal active. Next bounded GH200 cohort with updated semantic tests, then conservative
+cutoff/promotion decision and integration; larger capacity and Python/MPI gates
+remain. No target allocation added (.08361 nominal hours cumulative), install/push.
+
 ## 2026-10-14 — Explicit density-set benchmark
 
 Previous turn was progress: multi-field scalar candidate passed18 controls and

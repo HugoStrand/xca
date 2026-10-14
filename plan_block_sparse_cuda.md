@@ -124,6 +124,18 @@ or whole topology sums. CPU-only/default-fixture compatibility checks pass. Evid
 Next add a matched batched multi-set CPU control before attributing hardware gains,
 then qualify a small GH200 cohort and settle the cutoff/promotion policy.
 
+Matched multi-set CPU checkpoint: host control now shares scalar eligibility,
+512-lane discovery/cohorts, ordered special recipe, packed LU/transforms and fan-in
+with the GPU candidate. Ordinary-case screening/replay pass in 48 local samples;
+matched CPU outputs equal original CPU exactly on this cohort. GPU versus matched
+CPU is about even at N=4 OCA, 1.09x faster at N=6 and 0.89x at N=8; small NCA
+favors CPU. Thus most earlier gains are algorithmic, not established GPU hardware
+advantage. CPU-only and focused GPU multi-set/adjacent-cutoff controls pass. Host
+control does not implement the GPU uncertainty-band replay, so arbitrary cutoff
+equivalence remains separate. Evidence: common local `density-matched-01` campaign.
+Next qualify this bounded four-route cohort and new semantic controls on GH200,
+within the existing resource cap, before deciding production promotion/defaults.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
