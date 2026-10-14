@@ -1,5 +1,57 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Requirements audit and new error/order controls
+
+Previous turn was progress through target Python/split MPI. Inspected objective,
+E0-E9/representative tiers/promotion rules, actual C++/Python entry points, tests,
+raw broad/focused/target records, benchmark process loop and retained candidates.
+Audit table in plan distinguishes implemented functionality, conditional research,
+and missing required measurements. Fifty existing local Markdown links resolve.
+No goal-completion inference from green summaries alone; goal remains active.
+
+Found actual verification gaps for post-submission device errors and explicit
+within-sector state ordering. Added cuda_async_failure re-exec child: successfully
+submit a PTX trap on DeviceOps owned stream, require sync exception plus expected
+sticky CUDA status, and require all three previously working policies to reject
+poisoned context with no result. Child exits without unwinding poisoned owners;
+OS releases its context; parent GPU zero/sync still succeeds. This is primitive
+post-submission plus evaluator poisoned-entry qualification, not injected mid-
+topology MPI recovery. Label cuda_fault_injection/TIMEOUT60 keeps deliberate fault
+outside sanitizer-clean cohorts; CPU case disabled. No new production hook/API.
+
+Added dynamic NCA/OCA state-reversal covariance for SE/SPGF/bosonic correlators:
+transform fields, coefficients' model representation, endpoint operators and G
+consistently. Library/ordered/HostInputs/StreamFragments variants retain1e-13.
+Extended labels with negative/nonconsecutive integers and three block names while
+retaining independent bit/CAR/dense controls. Initial audit comment understated
+old label coverage: checked TRIQS insert implementation, which preserves insertion
+order; the old shuffled insertion already tested bit reordering. Corrected evidence
+text explicitly; this extension strengthens coverage, not proof old test was false.
+
+Code2f3191c: native fault plus all six sparse controls pass1.54s (0.98/0.56).
+Basis controls four GoogleTests in three CTests3.47s (1.14/1.62/0.70), including
+ordered and both host policies. Library-only three focused CTests pass2.23s,
+native flags both OFF. CPU two entries .47s, CUDA fault has zero active GPU tests.
+Permutation memcheck6.005s zero errors/leaks; deliberate trap not run under it.
+All GPU checks sequential, all handles terminal. No new full-suite/MPI/target
+qualification, evaluator arithmetic unchanged85ecb2d. Evidence3b6b347 plus accurate
+coverage clarificatione3924fe under production_qualification/.../audit-01, source/
+raw-log hashes retained before archive whitespace normalization.
+
+Concrete remaining requirements: E0 work/byte-weighted inventory (existing CSV is
+shape/count/rank, not a published sparse/dense cost breakdown); E9 per-rank local/
+reduction/transfer and topology/index load-balance measurements; three fresh-process
+finalist trials on target (actual run_cohort loop has one subprocess and three
+in-process samples per backend/case). These are not satisfied by existing whole-
+CTest timings or summary medians. Next implement/locally screen these bounded
+recorders, then reuse isolated Arm cache only for required finalist samples.
+Conditional general format/rectangular-tile/graph tuning and full physicalN14
+accuracy remain explicitly unqualified; do not redefine them as completed.
+
+No Arrhenius allocation this turn; tracked3027/.84083 nominal GPUh against shared
+100h/month ceiling. No push/install/supervisor changes, unrelated work/experiments
+retained. Code/evidence commits separate from this plan/log checkpoint. Goal active.
+
 ## 2026-10-14 — GH200 Python and split MPI qualification
 
 Previous turn progressed through bounded composedN14 capacity. Inspected Arm stack:

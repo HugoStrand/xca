@@ -15,6 +15,55 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Requirement audit checkpoint — not yet complete
+
+Audit inspected current C++/Python entry points, tests, benchmark runners and raw
+qualification records, rather than treating earlier checkpoint prose as proof.
+The previous target-integration turn was progress. Current source2f3191c adds
+verification controls only; runtime85ecb2d is unchanged. Fifty pre-existing local
+Markdown links resolve. This table records supported scope and remaining requirements;
+it is **not** a completion declaration or a claim of globally optimal dispatch.
+
+| Objective / plan item | Authoritative implementation and evidence inspected | Audit outcome |
+| --- | --- | --- |
+| E0 workload/domain inventory | `benchmarks/block_sparse_cpu/block_sparse_inventory.cpp`, `run_inventory.py`, shared physical fixture, host memory planner and bounded path visitors | Actual occupation/mixed/Q-only fixtures through N10, analytic N14, checked ranks/extents/counts and null scheduling exist. Shape CSV stores dimensions/frequencies/rank; a published work/byte-weighted report and per-rank phase accounting remain incomplete. |
+| E1 exact Fock construction and operator domain | `sparse_operator.cpp`, `operator_model.cpp`, corresponding C++ tests; direct/rotated CPU and CUDA controls in `cuda_diagram_evaluator.cpp` | Signed maps, CSR/plain transpose, adjoints/CAR, cancellation-preserved connections, retarded fields, coefficient ownership and unsupported domains qualified. New controls extend labels to irregular multi-block indices and explicitly reverse state order within every sector. Old/new CPU amplification at added higher orders retains the documented limits. |
+| E2 complete device reference | `cuda/diagram_evaluator.{hpp,cpp}`, `device_ops.*`, `dlr_ops.*`; production broad-suite and focused observable records | SE, SPGF, bosonic/fermionic correlators, dynamics, both traversals, parity/reflection, complete outputs, masks and bounded ranges implemented. Actual rectangular cuBLAS/cuSPARSE/device-LU arithmetic; no submitted-work CPU replay. No universal arbitrary-input numerical-accuracy claim follows. |
+| E3 sparse/dense operator choice | `operator_apply` controls, native ordered CSR, library ALG3 and mapped column classification; complete production/cohort timings | Offered routes are qualified and explicit; library remains default. Dense complex-double controls and N14 narrow RHS shapes exist. No general shape/format crossover, COO/CSC winner or automatic dense-small rectangular dispatch is claimed. Additional format/tile tuning remains conditional, not a hidden production choice. |
+| E4 batching/fusion | `scalar_paths`, sets/signs/residency/staging/streams and `scalar_audit`; production `real_nca.*` | Guarded real scalar NCA batching is functional/target-qualified. Higher-order scalar candidates are retained but not promoted after cutoff counterexamples. General higher-order and complex/rectangular work stays on the device reference. This is a measured eligibility choice, not all-small-block speedup. |
+| E5 transforms/convolution and matched CPU | `dlr_hoisted`, cached GPU DLR, compact/row/lifetime controls and arithmetic audits | Hoisted CPU control separates algorithm changes from device benefit. Device transforms/solves/convolution and liveness are qualified. Row and reassociation candidates with counterexamples remain experiments. Physical large-window DLR approximation accuracy remains a stated limit. |
+| E6 special mixing | production mapped special option/classifier and strict controls; kappa/mapped complete-call/target records | Eligible one-nonzero-per-column mixing preserves ordered field accumulation. Other structures use configured reference GPU arithmetic. No blanket fusion or universal bitwise equivalence claimed. |
+| E7 capacity/admission | host-only checked planner, storage/output policies, `capacity_phase` and complete `capacity_evaluator`; GH200 capacity/composed records | Resident/HostInputs/StreamFragments and Resident/HostSectors retain complete results and reject declared-budget overflow. N14/rank64 complete one-flavour NCA and full-shape convolution phase have target evidence. Opaque allocations, caller/model memory and physical fullN14/higher-order scope retain explicit limits; no replication-as-capacity claim. |
+| E8 topologies/graphs | bounded `topology_reuse` inventories, CPU replay, private device cache/limit/changed-input/selection records | Sharing tested, including weak/no-overlap and invalidation costs. Cache remains private because broader policy/target gates are open. Whole-call capture is blocked by current allocation/sync/host-cutoff structure; graphs are conditional in the plan and not necessary for the supported reference. No graph speedup or memoization claim. |
+| E9 observables/API/MPI/error lifetime | production CPU/native/library suites; local full MPI and target split method transcripts; new asynchronous-fault control | Functional checks qualified in their documented scopes. Actual submitted device trap now propagates through owned stream and poisoned evaluator entry for all policies; parent context remains healthy. No recovery of a poisoned CUDA context or injected mid-topology MPI recovery claim. Topology/index load-balance and reduction/transfer phase measurements still missing. |
+| Consolidated mutable Python integration | `_triqs_xca_cuda.*`, `gpu.py`, `solver.py`, public API docs and Python/HDF/deepcopy tests | Lazy CUDA import, real/complex/static/dynamic factories, preferences/old defaults, collective setup/count/eval failures and recovery implemented. Target tests cover every block-sparse method across split runs; the single twelve-method target run timed out and is not claimed passed. |
+| Benchmarks/baseline/experiment preservation | common/CPU/CUDA folders; `reference_snapshot/origin.json`, retained historical DLR/candidates and source hashes | Examples-independent fixtures and hardware subdirectories exist. Original dense/runtime controls and negative experiments retained. Current helpers remain shared by frozen evaluator experiments; future helper changes need another baseline audit. |
+| Finalist promotion/repetitions (section4/6/7) | GH200 summary/manifest and actual `run_cohort.py` process loop | Capability and sample timing tables exist. Three samples are from one subprocess per backend/case, **not three fresh processes**. The plan's fresh-process repetition gate is unproven for performance finalists. This must be measured before the goal can be declared complete. |
+| Resource/commit invariants | retained Slurm accounting/receipts, `dev_cuda` history and worktree | Shared100 GPUh/month ceiling respected; tracked3027 nominal seconds/.84083h including failed/build time. No allocation this audit turn. Code/evidence and plan/log commits separate, no push/install, unrelated files preserved. |
+
+Two new verification gaps closed: a real asynchronous device fault and an explicit
+sector-state-order covariance control. Native/library-only checks pass; CPU host
+controls pass and CUDA-only case is disabled. Permutation memcheck has zero errors
+and leaks; the deliberate trap is correctly excluded from sanitizer-clean cohorts.
+See [audit controls](experiments/block_sparse_cuda/production_qualification/thinkstationP620_RTXA4000/audit-01/README.md).
+TRIQS insertion preserves mode order, so the pre-existing label shuffle was valid;
+nonconsecutive/negative/multi-block labels strengthen it rather than repair a false test.
+
+Next required work is bounded and concrete:
+
+1. Publish a work/byte-weighted inventory from the existing descriptors/shape data,
+   distinguishing dense-equivalent costs from actual sparse operator work and data.
+2. Measure MPI per-rank local work, output reduction/transfer costs and a bounded
+   topology/index ownership comparison. Keep scientific inputs and global summation
+   grouping controlled; do not infer load balance from equal index counts.
+3. Add fresh-process repetition recording to the finalist cohort runner and collect
+   at least three independent processes for selected production contenders on GH200.
+   Preserve all samples/counts/errors/setup costs and do not manufacture a general
+   dispatch threshold from these limited regimes. Reuse the isolated Arm cache,
+   screen locally first, and cap any new one-GPU allocation explicitly.
+4. Re-audit these requirements and supported limitations against actual results.
+   No goal completion until remaining measurement gates have evidence.
+
 ### Target Python and split MPI checkpoint
 
 Pinned source7b5d223/runtime85ecb2d now builds the three required Python extensions
@@ -2124,8 +2173,10 @@ answer. GH200 remains target; no additional Arrhenius time this turn.
    tables and revise the implementation plan before committing to production dispatch.
 
 The operational small-system reference and its local qualification are checkpoints
-toward the implementation goal. Guarded real-NCA dispatch now has target-hardware qualification; broader optimized
-dispatch, target Python/MPI and a general physical 14-mode production workload remain unqualified; bounded complete NCA capacity is qualified above.
+toward the implementation goal. Guarded real-NCA and bounded complete NCA capacity have target evidence;
+target Python/MPI has split-method coverage as recorded above. Fresh-process finalist
+measurements and MPI phase/load-balance evidence remain required. Broader optimized
+dispatch and a general physical14-mode production workload are not claimed qualified.
 
 ## 8. Adversarial review
 
@@ -2145,7 +2196,9 @@ against source and the probe recipes. It was not an independent model review.
 | Large speedups might come from correcting CPU convolution structure rather than GPU execution. | Keep unchanged and transform-hoisted CPU controls on identical workloads. |
 | Dense-small success on A4000 could bias dispatch for different hardware and rectangular shapes. | Require target-hardware qualification and per-operation measured policies; preserve the simple device reference. |
 
-Outstanding experimental decisions: sparse-map versus CSR/CSC crossover, viable
-large-sector liveness policy at actual r/p, surviving path parallelism, numerical
-acceptance of direct-Fock export, and whether topology sharing/graphs amortize.
-The plan intentionally leaves these to measurements rather than selecting winners.
+Current status is governed by the requirement audit above. Direct-Fock export and
+explicit production storage/kernel policies have bounded qualification; do not read
+earlier historical pending statements as undoing it. General format/shape crossovers,
+physicalN14 accuracy and production topology/graph policy remain unqualified research
+scopes. Required work/byte, MPI-phase and fresh-process measurement gaps remain open;
+retain all negative candidates rather than selecting unsupported winners.
