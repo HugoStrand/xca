@@ -1,5 +1,47 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Guarded real scalar NCA prototype
+
+Previous turn was progress: observable sensitivity/cancellation diagnostics. Added
+separate scalar_real_nca over retained streams scheduler. Fast domain: NCA, all1×1
+blocks, exactly real fields/timeweighttables/G, resident output. Immutable checks
+cached; G/range checked eachcall. No imaginary tolerance. Every partial product/sum
+and possible wholeoutput sum bounded below halfFP64max; total possiblepath count
+limited for rounding margin. Initial guard strengthened to check each earlier
+product even if later zero/small factor hides overflow, and output aggregation.
+No DLR solve/convolution on NCA; real scalar multiplication/sum/sign order follows
+reference. Disable fixedband replay only inside this guarded branch. Other inputs,
+orders, observables/output placement retain general CUDA. No fallback after failure.
+
+New private lane observer proves actual fast use/reset; replay observer stayszero.
+Eleven candidate controls pass59.07s: inherited8 fullAPI controls plus3 new groups.
+Four Library/Ordered × Reference/Mapped modes match general numeric arrays exactly
+with real multi-set dynamics,>512paths andtail, changedreal/complex input/recovery,
+higher-order fallback and host-sector fallback. Adjacent cutoff doubles need no
+replay. Live subnormal node tested. Unsafe-range/general and complexmodel fallback,
+then safe reuse. Signedzero bitpatterns not claimed. Two focused controls memcheck
+.651s, zeroerrors/leaks. Twenty retained stream controls pass46.95s after shared
+conditional dispatcher/header changes. All handles terminal before timing.
+
+Built constants-batchedCPU/generalOrdered/prototype benchmark frontends. Prototype
+asserts selectedroute. Fourcases/3routes/3samples=36rows pass finite, CPU screening,
+exact replay and equal GPU norm/error/count summaries. CPU/general/prototype medianms:
+N4NCA .436/9.351/1.147; N8NCA4.130/298.376/2.158; N4OCAfallback2.686/14.934/15.224;
+N4numberNCAfallback.273/8.560/8.690. Local8.15/138× GPU wins, N8CPUcontrol1.91×;
+N4CPUstill faster. CPUcontrol host prep not necessarily identical; threesamples do
+not prove robustcrossovers or GH200policy. Timing purehyb/r23/oneindex, semantic
+controls include dynamicreal multi-sets. No wholeSolver/topology-sum performanceclaim.
+
+Code6609502/evidence30dd496 separate from this checkpoint. Artifacts scalar_real_nca
+localnca-01; temporary /tmp/xca-real-nca-* may disappear. Prototype deliberately
+retains resident tables, arena and unused packedDLR buffers/conservative admission.
+No production selector or Python integration yet. No targethours (.27556 cumulative),
+install/push or unrelatededits. Goal active. Next extract minimal pointwise NCA kernel/
+workspace into production with qualified guard, explicit policy and consolidated
+binding/Python/MPI support, then bounded GH200 qualification. Preserve all experiments
+and baseline. Higher-order certified replay/large convolution capacity remain part
+of fullobjective; this NCA increment does not redefine completion.
+
 ## 2026-10-14 — Observable sensitivity and roundoff scale
 
 Previous turn was progress: DLR stage effects isolated. Added optional host-only

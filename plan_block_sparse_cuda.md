@@ -337,6 +337,25 @@ uncertainty and expanded intermediate arithmetic scale. Do not replace that work
 with a narrower success definition. Retain all experiments, base implementations
 and target limits. No target allocation this step; goal remains active.
 
+### 2026-10-14 — Guarded real NCA qualification
+
+Separate prototype batches resident-output1×1 NCA with exactly real immutable fields/
+timeweights and G. Partial/whole-sum range guards precede submission; fixed cutoff
+band unused. General execution preserves other inputs/topologies/observables/output
+placement. Eleven candidate controls,20retained stream controls and focused memcheck
+pass; real multi-set/tail/adjacentcutoff/live-subnormal and fallback/recovery covered.
+Local fourcase/36sample complete-call cohort shows N4/N8 fast-domain gains8.2/138×
+over generalOrdered; N8 wins overCPUcontrol1.9×, N4still loses. Fallbackoverhead small
+here. Not GH200/wholeSolver policy. Evidence: scalar_real_nca localnca-01.
+
+Next extract minimal NCA-only kernel/workspace and integrate an explicit guarded
+production policy through consolidated bindings/Python/MPI, preserving general
+fallback. Current prototype allocates unused packedDLR and overreserves some fallback
+storage; do not copy that memory design into production. Target qualification must
+cover FP64/subnormal/order/budget/lifetime behavior before choosing defaults. Keep
+higher-order replay/enclosure and large-convolution work in the wholegoal; NCA is
+incremental, not a narrower completion definition. No new target allocation.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
