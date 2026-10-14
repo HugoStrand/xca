@@ -73,6 +73,12 @@ retain their conservative working-set estimates. A topology-specific budget can
 therefore admit NCA while rejecting OCA; such rejection precedes input upload and
 path arithmetic and leaves later valid calls usable.
 
+Completed DLR solve storage is released before convolution. A disjoint convolution
+output also stores its diagonal term, reducing retained scratch to four rank tensors
+in the square case; the next solve raises that to five. The evaluator reserves five
+maximum-size DLR tiles plus fixed tables. Standalone convolutions with aliased output
+retain a separate diagonal buffer and validate the corresponding larger working set.
+
 This initial reference covers self-energy, SPGF and one-time correlators; its
 dispatch/batching optimizations are still under investigation. The performance
 target is GH200-class hardware; workstation measurements are development proxies.

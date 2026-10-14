@@ -79,7 +79,7 @@ namespace triqs_xca::block_sparse::cuda {
       auto tables  = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(checked_add(r, 1), sizeof(int)));
       kernel_bytes = checked_multiply(2, tensor_bytes(1, r, poles.size()));
       auto tile    = inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
-      dlr_bound    = checked_add(tables, checked_multiply(6, tile));
+      dlr_bound    = checked_add(tables, checked_multiply(5, tile));
       if (checked_add(tables, kernel_bytes) > budget) throw std::length_error("CUDA evaluator fixed tables exceed device budget");
       hyb = std::make_unique<triqs_xca::hyb::Hybridization>(mesh, poles, model.coefficients());
       ops = std::make_shared<DeviceOps>();

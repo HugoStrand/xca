@@ -1,5 +1,13 @@
 # Compact DLR scratch
 
+The qualified compact storage policy has now been promoted to production DlrOps.
+This experiment remains intact. `historical_dlr.*` preserves the preceding six-tile
+cached-scratch implementation, and primitive tests/benchmarks use that explicit
+baseline. The private compact evaluator accepts the new five-tile production reserve.
+Retained timing campaigns describe their hashed earlier implementations; no new
+performance gain is claimed by promotion. The NCA admission experiment retains its
+original cached DLR and six-tile higher-order reserve for compatibility.
+
 Performance target: GH200-class hardware. This private E7 control retains production
 CUDA arithmetic and solver conventions while investigating buffer liveness. The
 production DLR operations and all prior evaluators/experiments remain available.

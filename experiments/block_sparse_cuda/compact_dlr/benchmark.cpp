@@ -1,3 +1,4 @@
+#include "historical_dlr.hpp"
 // Copyright (c) 2026, The Simons Foundation
 // SPDX-License-Identifier: Apache-2.0
 #include "compact_dlr.hpp"
@@ -45,7 +46,7 @@ int main(int argc, char **argv) {
     cppdlr::imtime_ops host(lambda, cppdlr::build_dlr_rf(lambda, 1e-10, false), false);
     long r     = host.rank();
     auto owner = std::make_shared<gpu::DeviceOps>();
-    gpu::DlrOps cached(owner, host, 1024ULL * 1024 * 1024);
+    gpu::HistoricalDlrOps cached(owner, host, 1024ULL * 1024 * 1024);
     gpu::CompactDlrOps compact(owner, host, 1024ULL * 1024 * 1024);
     auto fc = coefficients(r, M, K, .3), gc = coefficients(r, K, N, .8);
     gpu::Tensor fv(host.coefs2vals(fc)), gv(host.coefs2vals(gc)), fd(fc.shape()), gd(gc.shape()), out(r, M, N);

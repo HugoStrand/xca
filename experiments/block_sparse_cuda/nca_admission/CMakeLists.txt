@@ -8,6 +8,8 @@ target_link_libraries(block_sparse_nca_dlr PUBLIC ${PROJECT_NAME}::${PROJECT_NAM
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cuda_dir}/diagram_evaluator.hpp" "${cuda_dir}/diagram_evaluator.cpp")
 file(READ "${cuda_dir}/diagram_evaluator.hpp" header)
 file(READ "${cuda_dir}/diagram_evaluator.cpp" source)
+# Retain the original cached-DLR control reserve.
+string(REPLACE "checked_multiply(5, tile)" "checked_multiply(6, tile)" source "${source}")
 string(REPLACE "DiagramEvaluator" "NcaAdmissionEvaluator" header "${header}")
 string(REPLACE "DiagramEvaluator" "NcaAdmissionEvaluator" source "${source}")
 string(REPLACE "\"dlr_ops.hpp\"" "\"nca_dlr.hpp\"" header "${header}")

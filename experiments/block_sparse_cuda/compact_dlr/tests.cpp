@@ -1,3 +1,4 @@
+#include "historical_dlr.hpp"
 #include <gtest/gtest.h>
 #include "compact_dlr.hpp"
 #include <triqs_xca/block_sparse/cuda/dlr_ops.hpp>
@@ -154,7 +155,7 @@ TEST(CompactCudaDlr, DISABLED_RequiresCuda) {}
 TEST(CompactCudaDlr, IndependentCachedControlStorageAndAliasSwitch) {
   auto host = small_system();
   auto ops  = std::make_shared<gpu::DeviceOps>();
-  gpu::DlrOps cached(ops, host);
+  gpu::HistoricalDlrOps cached(ops, host);
   gpu::CompactDlrOps compact(ops, host);
   auto tables = compact.storage_bytes();
   auto fc = coefficients(3, 7, 7, .3), gc = coefficients(3, 7, 7, .8);

@@ -111,7 +111,7 @@ TEST(BlockSparseCudaDlr, AliasesCancellationAndBudgetRecovery) {
   limited.coefs2vals(fd, out);
   compare(out, host.coefs2vals(fc));
   out           = gpu::Tensor(3, 3, 2);
-  auto capacity = tables + gpu::tensor_bytes(3, 3, 3) + 4 * gpu::tensor_bytes(3, 3, 2);
+  auto capacity = tables + gpu::tensor_bytes(3, 3, 3) + 3 * gpu::tensor_bytes(3, 3, 2);
   gpu::DlrOps bounded(ops, host, capacity);
   bounded.convolve(3., fd, gd, out);
   compare(out, expected);
@@ -146,6 +146,34 @@ TEST(BlockSparseCudaDlr, AliasesCancellationAndBudgetRecovery) {
   device.convolve(3., fd, gd, out);
   compare(out, expected);
 }
+#ifdef NDA_HAVE_CUDA
+TEST(BlockSparseCudaDlr, CompactStorageAndAliasTransitions) {
+  auto host = small_system();
+  auto ops = std::make_shared<gpu::DeviceOps>();
+  gpu::DlrOps device(ops, host);
+  auto tables = device.storage_bytes();
+  auto fc = coefficients(3, 7, 7, .3), gc = coefficients(3, 7, 7, .8);
+  gpu::Tensor fv(host.coefs2vals(fc)), gv(host.coefs2vals(gc)), fd(fc.shape()), gd(gc.shape()), out(fc.shape());
+  auto tile = gpu::tensor_bytes(3, 7, 7);
+  device.vals2coefs(fv, fd);
+  device.vals2coefs(gv, gd);
+  auto recovered_f = host.vals2coefs(host.coefs2vals(fc));
+  auto recovered_g = host.vals2coefs(host.coefs2vals(gc));
+  device.convolve(2., fd, gd, out);
+  compare(out, host.convolve(2., recovered_f, recovered_g, cppdlr::TIME_ORDERED));
+  EXPECT_EQ(device.storage_bytes(), tables + 4 * tile);
+  device.convolve(2., fd, gd, fd);
+  compare(fd, host.convolve(2., recovered_f, recovered_g, cppdlr::TIME_ORDERED));
+  EXPECT_EQ(device.storage_bytes(), tables + 5 * tile);
+  fd = recovered_f;
+  device.convolve(2., fd, gd, out);
+  EXPECT_EQ(device.storage_bytes(), tables + 4 * tile);
+  device.vals2coefs(fv, fd);
+  EXPECT_EQ(device.storage_bytes(), tables + 5 * tile);
+  device.release_scratch();
+  EXPECT_EQ(device.storage_bytes(), tables);
+}
+#endif
 #else
 TEST(BlockSparseCudaDlr, DISABLED_RequiresCuda) {}
 #endif

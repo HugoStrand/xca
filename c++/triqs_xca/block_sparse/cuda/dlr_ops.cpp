@@ -44,6 +44,7 @@ namespace triqs_xca::block_sparse::cuda {
     nda::cumatrix<Complex, nda::F_layout> rhs;
     Tensor hf, hg, product, cross, diagonal;
     std::array<long, 3> convolution_shape{};
+    bool external_diagonal = false, scratch_external_diagonal = false;
     Impl(std::shared_ptr<DeviceOps> owner, cppdlr::imtime_ops const &host, std::size_t limit)
        : ops(std::move(owner)), r(host.rank()), budget(limit), tables(0) {
       if (!ops) throw std::invalid_argument("Missing DLR device owner");
@@ -113,9 +114,9 @@ namespace triqs_xca::block_sparse::cuda {
     }
     void scratch_for(long M, long K, long N) {
       auto shape = std::array<long, 3>{M, K, N};
-      if (shape == convolution_shape) return;
+      if (shape == convolution_shape && external_diagonal == scratch_external_diagonal) return;
       auto amount = checked_add(tensor_bytes(r, M, K), tensor_bytes(r, K, N));
-      amount      = checked_add(amount, checked_multiply(3, tensor_bytes(r, M, N)));
+      amount      = checked_add(amount, checked_multiply(external_diagonal ? 2 : 3, tensor_bytes(r, M, N)));
       admit(checked_add(tables, checked_add(amount, checked_multiply(rhs.size(), sizeof(Complex)))));
       ops->finish();
       convolution_shape = {};
@@ -128,8 +129,9 @@ namespace triqs_xca::block_sparse::cuda {
       hg                = Tensor(r, K, N);
       product           = Tensor(r, M, N);
       cross             = Tensor(r, M, N);
-      diagonal          = Tensor(r, M, N);
-      convolution_shape = shape;
+      if (!external_diagonal) diagonal = Tensor(r, M, N);
+      scratch_external_diagonal = external_diagonal;
+      convolution_shape         = shape;
     }
   };
   DlrOps::DlrOps(std::shared_ptr<DeviceOps> ops, cppdlr::imtime_ops const &host, std::size_t budget)
@@ -140,13 +142,15 @@ namespace triqs_xca::block_sparse::cuda {
     x.ops->require_current();
     if (x.rhs.size() == 0 && x.scratch_bytes() == 0) return;
     x.ops->finish();
-    x.rhs               = decltype(x.rhs)();
-    x.hf                = Tensor();
-    x.hg                = Tensor();
-    x.product           = Tensor();
-    x.cross             = Tensor();
-    x.diagonal          = Tensor();
-    x.convolution_shape = {};
+    x.rhs                       = decltype(x.rhs)();
+    x.hf                        = Tensor();
+    x.hg                        = Tensor();
+    x.product                   = Tensor();
+    x.cross                     = Tensor();
+    x.diagonal                  = Tensor();
+    x.convolution_shape         = {};
+    x.external_diagonal         = false;
+    x.scratch_external_diagonal = false;
   }
   long DlrOps::rank() const { return impl_->r; }
   std::size_t DlrOps::storage_bytes() const { return impl_->storage_bytes(); }
@@ -186,16 +190,29 @@ namespace triqs_xca::block_sparse::cuda {
     long M = fc.extent(1), K = fc.extent(2), N = gc.extent(2);
     if (!std::isfinite(beta) || gc.extent(1) != K || out.shape() != std::array<long, 3>{x.r, M, N})
       throw std::invalid_argument("Invalid rectangular DLR convolution inputs");
+    auto overlaps = [](TensorConstView a, TensorConstView b) {
+      auto x = reinterpret_cast<std::uintptr_t>(a.data()), y = reinterpret_cast<std::uintptr_t>(b.data());
+      auto na = checked_multiply(a.size(), sizeof(Complex)), nb = checked_multiply(b.size(), sizeof(Complex));
+      return na > UINTPTR_MAX - x || nb > UINTPTR_MAX - y || (x < y + nb && y < x + na);
+    };
+    bool external = !overlaps(fc, out) && !overlaps(gc, out);
+    auto amount   = checked_add(tensor_bytes(x.r, M, K), tensor_bytes(x.r, K, N));
+    amount        = checked_add(amount, checked_multiply(external ? 2 : 3, tensor_bytes(x.r, M, N)));
+    x.admit(checked_add(x.tables, amount)); // Reject before releasing or writing anything.
+    x.ops->finish();
+    x.rhs               = decltype(x.rhs)(); // Solves/unpack completed; no convolution reads RHS.
+    x.external_diagonal = external;
     x.scratch_for(M, K, N);
+    TensorView diagonal = external ? out : TensorView(x.diagonal);
     x.ops->rank_product(x.H, fc, x.hf);
     x.ops->rank_product(x.H, gc, x.hg);
     x.ops->product(fc, gc, x.product);
-    x.ops->rank_product(x.Q, x.product, x.diagonal);
+    x.ops->rank_product(x.Q, x.product, diagonal);
     x.ops->product(x.hf, gc, x.cross);
     x.ops->product(fc, x.hg, x.product);
     x.ops->axpy(1., x.product, x.cross);
     x.ops->rank_product(x.C, x.cross, x.product);
-    x.ops->copy(x.diagonal, out);
+    if (!external) x.ops->copy(x.diagonal, out);
     x.ops->axpy(1., x.product, out);
     x.ops->scale(beta, out);
   }

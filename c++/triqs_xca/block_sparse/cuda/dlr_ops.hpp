@@ -27,7 +27,8 @@ namespace triqs_xca::block_sparse::cuda {
     void coefs2vals(TensorConstView coefficients, TensorView values) const;
     void reflect(TensorConstView values, TensorView reflected) const;
     // Coefficient inputs, time-ordered value output; out may alias an input when
-    // their shapes match. Input reads finish before any caller output is written.
+    // their shapes match. Aliased reads finish before output overwrite. Disjoint
+    // output stores the diagonal term; completed solve RHS is released first.
     void convolve(double beta, TensorConstView fc, TensorConstView gc, TensorView out);
   };
 } // namespace triqs_xca::block_sparse::cuda
