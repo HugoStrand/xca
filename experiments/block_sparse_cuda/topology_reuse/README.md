@@ -85,3 +85,15 @@ exactly. This retains topology summation order rather than factoring any sums.
 The existing eight production observable/control tests are also run against the
 private evaluator, including changed masks, dynamics and correlator behavior.
 This is an experiment, not a production cache policy or a graph implementation.
+
+`configure_prefix_cache(bytes, entries, snapshot)` is a private experiment control
+that can lower each limit, clearing prior state. Limits above 8 MiB, 4096 entries
+or 32 MiB are rejected before changing state. Admission uses the configured byte
+limit. The extra qualification tests force a one-byte cache, one-entry cache and
+one-byte snapshot limit across number/mixed/occupation partitions, comparing exact
+complete outputs for uneven ranges `[0,1)`, `[1,3)` and `[3,4)`, replay, changed G,
+changed masks and restored inputs. Entry saturation must exhibit both hits and
+skipped stores; byte rejection and snapshot bypass must retain no device entries.
+Empty ranges and invalid settings preserve cache contents. Explicit clear releases
+both device entries and host snapshot capacity. Controls run with Library/Reference
+and, when available, Ordered/Mapped; the latter is skipped in native-disabled builds.

@@ -1,19 +1,20 @@
     // Private experiment: model, poles and mesh are immutable for this instance.
-    static constexpr std::size_t prefix_cap = 8ULL * 1024 * 1024;
+    static constexpr std::size_t maximum_prefix_cap = 8ULL * 1024 * 1024;
+    std::size_t prefix_cap = maximum_prefix_cap, prefix_entry_cap = 4096, prefix_snapshot_cap = 32ULL * 1024 * 1024;
     std::map<std::vector<long>, Tensor> prefix_cache;
     std::vector<Complex> prefix_input;
-    std::size_t prefix_bytes = 0, prefix_device_bytes = 0, prefix_hits = 0, prefix_misses = 0;
+    std::size_t prefix_bytes = 0, prefix_device_bytes = 0, prefix_hits = 0, prefix_misses = 0, prefix_skipped = 0;
     bool prefix_enabled = false;
     void clear_prefix_cache() {
       ops->finish();
       prefix_cache.clear();
-      prefix_input.clear();
-      prefix_bytes = prefix_device_bytes = prefix_hits = prefix_misses = 0;
+      std::vector<Complex>{}.swap(prefix_input);
+      prefix_bytes = prefix_device_bytes = prefix_hits = prefix_misses = prefix_skipped = 0;
       prefix_enabled = false;
     }
     void update_prefix_input(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G) {
       auto bytes = function_bytes(r, model.dimensions());
-      if (bytes > 32ULL * 1024 * 1024) {
+      if (bytes > prefix_snapshot_cap) {
         clear_prefix_cache();
         return; // Explicit host snapshot cap; use independent device arithmetic.
       }
@@ -57,12 +58,12 @@
       edge(T, G, backbone, v, path);
       auto charge = checked_add(tensor_bytes(r, T.extent(1), T.extent(2)),
                                 checked_add(256, checked_multiply(key.size(), sizeof(long))));
-      if (prefix_enabled && prefix_cache.size() < 4096 && charge <= prefix_cap - prefix_bytes) {
+      if (prefix_enabled && prefix_cache.size() < prefix_entry_cap && charge <= prefix_cap - prefix_bytes) {
         Tensor saved(T.shape());
         ops->copy(T, saved);
         prefix_cache.emplace(key, std::move(saved));
         prefix_bytes += charge;
         prefix_device_bytes += tensor_bytes(r, T.extent(1), T.extent(2));
         sample_memory();
-      }
+      } else ++prefix_skipped;
     }
