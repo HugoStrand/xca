@@ -34,7 +34,11 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     nda::array<Complex, 3> values(r, lanes, 1);
     values() = 1.;
     for (long lane = 0; lane < count; ++lane)
-      for (long t = 0; t < r; ++t) values(t, lane, 0) = get(work[lane].first, work[lane].second, t);
+      for (long t = 0; t < r; ++t) {
+        if constexpr (requires { get(work[lane].first, work[lane].second, t, lane); })
+          values(t, lane, 0) = get(work[lane].first, work[lane].second, t, lane);
+        else values(t, lane, 0) = get(work[lane].first, work[lane].second, t);
+      }
     weights = Tensor(values);
     ops->wait_for_default_uploads();
     scalar_edge_experiment::check(scalar_edge_experiment::multiply(target.data(), weights.data(), target.data(), target.size(), ops->stream()));

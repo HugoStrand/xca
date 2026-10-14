@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
-    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density'], default='initial')
+    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs'], default='initial')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -50,7 +50,7 @@ def main():
             ('scalar-order6', 4, 'occupation', 'se', 6, False, 1, 8, 'chain'),
             ('mixed-fallback', 4, 'mixed', 'correlator', 2, True, 0, 1, 'crossing'),
         ]
-    if args.cohort == 'density':
+    if args.cohort in ('density', 'signs'):
         experiment = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_sets'
         binaries = {
             'cpu': experiment/'block_sparse_cpu_density_sets_benchmark',
@@ -64,6 +64,14 @@ def main():
             ('density-n6-oca', 6, 'occupation', 'se', 2, True, 1, 8, 'crossing'),
             ('density-n8-oca', 8, 'occupation', 'se', 2, True, 1, 1, 'crossing'),
         ]
+        if args.cohort == 'signs':
+            signs = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_signs'
+            binaries = {
+                'cpu_baseline': experiment/'block_sparse_cpu_batched_density_sets_benchmark',
+                'gpu_baseline': experiment/'block_sparse_scalar_density_sets_benchmark',
+                'cpu_signs': signs/'block_sparse_cpu_density_signs_benchmark',
+                'gpu_signs': signs/'block_sparse_scalar_density_signs_benchmark',
+            }
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
                     cohort=args.cohort,
                     host=platform.node(), platform=platform.platform(),
