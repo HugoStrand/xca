@@ -1,0 +1,211 @@
+{
+  "source_commit": "85ecb2df70abe95d7be2683c756870dd77a6ad4e",
+  "normalization": "UTF-8 text, LF line endings, trailing whitespace removed",
+  "files": [
+    {
+      "file": "xca-debug-storage-launch.py",
+      "original_sha256": "ce3c0154468af3f65f219fd140b816e8b8e6b701b0f3773d7d29229978a73f78",
+      "archived_sha256": "ce3c0154468af3f65f219fd140b816e8b8e6b701b0f3773d7d29229978a73f78"
+    },
+    {
+      "file": "xca-debug-storage-mpi.py",
+      "original_sha256": "332024b0a996ac838f83bf181425742dd861f3fcf40ddc2b3fb1a61faf315d05",
+      "archived_sha256": "332024b0a996ac838f83bf181425742dd861f3fcf40ddc2b3fb1a61faf315d05"
+    },
+    {
+      "file": "xca-storage-python-build.log",
+      "original_sha256": "7f9a84fe7358e135cbaf09d6f0cb37301c2838c813a9b97e05b75c05586b9c00",
+      "archived_sha256": "7f9a84fe7358e135cbaf09d6f0cb37301c2838c813a9b97e05b75c05586b9c00"
+    },
+    {
+      "file": "xca-storage-python-configure.log",
+      "original_sha256": "6a7c76d12ad7a18f6768bed1e46f88f4d827518bd723e73181b4fe8732941d30",
+      "archived_sha256": "59200772e38a6696b7cbe5f43c6e52034c071c6325e6771f228c4cd4bb24b623"
+    },
+    {
+      "file": "xca-storage-python-cpu-build.log",
+      "original_sha256": "9cf5466e45e5b784f9b3565f4cf4ba502cd8528977335cb2771032ce3dd04e3c",
+      "archived_sha256": "9cf5466e45e5b784f9b3565f4cf4ba502cd8528977335cb2771032ce3dd04e3c"
+    },
+    {
+      "file": "xca-storage-python-cpu-configure.log",
+      "original_sha256": "ea250e833b3048fe3c128532cbe8b948af13eadc92ad52493fdc1ce2cdcf6a0f",
+      "archived_sha256": "859dd32c25ab98b0a8354a7a7db06e15477853c0ef1aea169757036ebb16c358"
+    },
+    {
+      "file": "xca-storage-python-cpu-final-configure.log",
+      "original_sha256": "ea250e833b3048fe3c128532cbe8b948af13eadc92ad52493fdc1ce2cdcf6a0f",
+      "archived_sha256": "859dd32c25ab98b0a8354a7a7db06e15477853c0ef1aea169757036ebb16c358"
+    },
+    {
+      "file": "xca-storage-python-cpu-final-test.log",
+      "original_sha256": "40052569091ddd5a217f4dd2acefdbbf784606eb0445bbd0af4022208fb5481d",
+      "archived_sha256": "40052569091ddd5a217f4dd2acefdbbf784606eb0445bbd0af4022208fb5481d"
+    },
+    {
+      "file": "xca-storage-python-cpu-test.log",
+      "original_sha256": "94525249df66ef5012f10b72bb2a1458fe4b6769cb86d74bb0f36eb75fdab2b8",
+      "archived_sha256": "94525249df66ef5012f10b72bb2a1458fe4b6769cb86d74bb0f36eb75fdab2b8"
+    },
+    {
+      "file": "xca-storage-python-ctest.json",
+      "original_sha256": "81115944b8a09b07cdd298a5c0c5bb793af9c9b347005baa380ea00fe7321b7e",
+      "archived_sha256": "e95c56bcd3cdabd5b6ce0b45f76e4ffd9917ee495d561eb5ac7cdb33c73adf7c"
+    },
+    {
+      "file": "xca-storage-python-exception-expectation.log",
+      "original_sha256": "99162d3205e5bf15c95d1fa22111a969544c4db81024a843403614f567435cb2",
+      "archived_sha256": "c2b97ce0055fe7919d7b4dbbed5454ed0dac7664363ccd4d5b0350168ec13300"
+    },
+    {
+      "file": "xca-storage-python-final-LastTest.log",
+      "original_sha256": "6c8430b945ec8f7101c64e722848457662f096c758e55f8823a7a403a7e69511",
+      "archived_sha256": "6c8430b945ec8f7101c64e722848457662f096c758e55f8823a7a403a7e69511"
+    },
+    {
+      "file": "xca-storage-python-final-configure.log",
+      "original_sha256": "6a7c76d12ad7a18f6768bed1e46f88f4d827518bd723e73181b4fe8732941d30",
+      "archived_sha256": "59200772e38a6696b7cbe5f43c6e52034c071c6325e6771f228c4cd4bb24b623"
+    },
+    {
+      "file": "xca-storage-python-final-test.log",
+      "original_sha256": "321adb1d98fed69c1b0c0c5675bdd27424486401c26594e870b0e776acaf3ddf",
+      "archived_sha256": "321adb1d98fed69c1b0c0c5675bdd27424486401c26594e870b0e776acaf3ddf"
+    },
+    {
+      "file": "xca-storage-python-library-LastTest.log",
+      "original_sha256": "4cf6d87c74685f03d153631c9f3e484fb05a1bba442b8781deff19d5d8a0f00e",
+      "archived_sha256": "4cf6d87c74685f03d153631c9f3e484fb05a1bba442b8781deff19d5d8a0f00e"
+    },
+    {
+      "file": "xca-storage-python-library-build.log",
+      "original_sha256": "24c58157116beb58f8e9515868ecebf90a1fd73b0dd9e4a40fca7069e878dfe2",
+      "archived_sha256": "24c58157116beb58f8e9515868ecebf90a1fd73b0dd9e4a40fca7069e878dfe2"
+    },
+    {
+      "file": "xca-storage-python-library-configure.log",
+      "original_sha256": "cffd86e4a954c1e45e215f7574abec47d26dd82666d27b803e83f0bfda180ed0",
+      "archived_sha256": "6ddd56acd684f503b0fdbff2c8962fb11e0a565ec9a6c240feae97f4c9339a16"
+    },
+    {
+      "file": "xca-storage-python-library-final-configure.log",
+      "original_sha256": "438e15eab35cf299277d2bdde7aabd208303869ed71ac2354355bc448a0cd1e9",
+      "archived_sha256": "cf1deb44833b6a74b7d3b3b483f17a1cb285e9bcae342978f9ed44217a87f19b"
+    },
+    {
+      "file": "xca-storage-python-library-test.log",
+      "original_sha256": "1c26b224783c926df30a4b678f0fe4f548e01710ae879e205904041934023e53",
+      "archived_sha256": "1c26b224783c926df30a4b678f0fe4f548e01710ae879e205904041934023e53"
+    },
+    {
+      "file": "xca-storage-python-mpi-command.json",
+      "original_sha256": "4e638b7d4e6988ae0426981ed6bb74230accbdc988299646b5a81f827a851751",
+      "archived_sha256": "4e638b7d4e6988ae0426981ed6bb74230accbdc988299646b5a81f827a851751"
+    },
+    {
+      "file": "xca-storage-python-mpi-debug-fixed.log",
+      "original_sha256": "a6258db435633c3dc4de086b9025153316c403fa2a62975efcf92e1022c8dcce",
+      "archived_sha256": "a6258db435633c3dc4de086b9025153316c403fa2a62975efcf92e1022c8dcce"
+    },
+    {
+      "file": "xca-storage-python-mpi-debug-verification.log",
+      "original_sha256": "08ebee1249019cd04f0f9c4dcf867ea023d9069220e2abbf11c4cc5369192351",
+      "archived_sha256": "08ebee1249019cd04f0f9c4dcf867ea023d9069220e2abbf11c4cc5369192351"
+    },
+    {
+      "file": "xca-storage-python-mpi-debug.log",
+      "original_sha256": "1584c1a9b1245a9fef64e704988e71c3c1f76fc5533370d735aa1a0bf0eb027f",
+      "archived_sha256": "1584c1a9b1245a9fef64e704988e71c3c1f76fc5533370d735aa1a0bf0eb027f"
+    },
+    {
+      "file": "xca-storage-python-mpi-environment-failure.log",
+      "original_sha256": "8ea0422f366b566dc442754c272662ec4973da7c5cb3935fcc8230680ea197dd",
+      "archived_sha256": "8ea0422f366b566dc442754c272662ec4973da7c5cb3935fcc8230680ea197dd"
+    },
+    {
+      "file": "xca-storage-python-mpi-final.log",
+      "original_sha256": "a4099ffadab3454b8cfe2b4bfa6905080402b0a8deb8cc0114d3a63bbf841f67",
+      "archived_sha256": "ee4e7bae3b040d483427301fefa5a2093f8b10bbbca2da7830dc0d0c04d256f8"
+    },
+    {
+      "file": "xca-storage-python-mpi-isolate.log",
+      "original_sha256": "3d3c72b690f98c17fa25d779b704781bf3c66282ca434b30594c593104aa83d6",
+      "archived_sha256": "e256e0b70e78c6a9cd2df1e0a43d5d17e750814b474c6a893dd283fbeee94160"
+    },
+    {
+      "file": "xca-storage-python-mpi-qualified.log",
+      "original_sha256": "543aa2c997c5cd60789aa37e59e9c8b174b2eb318e1848181acfb3188f1d02e1",
+      "archived_sha256": "543aa2c997c5cd60789aa37e59e9c8b174b2eb318e1848181acfb3188f1d02e1"
+    },
+    {
+      "file": "xca-storage-python-mpi.log",
+      "original_sha256": "8ea0422f366b566dc442754c272662ec4973da7c5cb3935fcc8230680ea197dd",
+      "archived_sha256": "8ea0422f366b566dc442754c272662ec4973da7c5cb3935fcc8230680ea197dd"
+    },
+    {
+      "file": "xca-storage-python-postfix-LastTest.log",
+      "original_sha256": "862d567ca307e851aa65877edb0e0851163ebcb6a512f5c55908d3722dfc23b7",
+      "archived_sha256": "862d567ca307e851aa65877edb0e0851163ebcb6a512f5c55908d3722dfc23b7"
+    },
+    {
+      "file": "xca-storage-python-postfix-library-LastTest.log",
+      "original_sha256": "d3246e84288e0592efb4037a626b89ce4e7d95e90f90459678e0e8ad2cacb477",
+      "archived_sha256": "d3246e84288e0592efb4037a626b89ce4e7d95e90f90459678e0e8ad2cacb477"
+    },
+    {
+      "file": "xca-storage-python-postfix-library-test.log",
+      "original_sha256": "e455f250ea9976028d36cf393a34ac8c64ff5ab91acdadbb06b6d57817ff0fec",
+      "archived_sha256": "e455f250ea9976028d36cf393a34ac8c64ff5ab91acdadbb06b6d57817ff0fec"
+    },
+    {
+      "file": "xca-storage-python-postfix-test.log",
+      "original_sha256": "4f982b6903c7e03adf49c4b026b146dd792c66994b7495a85ce5cc28d9f7165d",
+      "archived_sha256": "4f982b6903c7e03adf49c4b026b146dd792c66994b7495a85ce5cc28d9f7165d"
+    },
+    {
+      "file": "xca-storage-python-select-launch.py",
+      "original_sha256": "3e10abf5ae9fb602beb7b9458fb9d6a971302b15a890fdb1f814c0973a166b1b",
+      "archived_sha256": "3e10abf5ae9fb602beb7b9458fb9d6a971302b15a890fdb1f814c0973a166b1b"
+    },
+    {
+      "file": "xca-storage-python-selection.log",
+      "original_sha256": "4b21f77bdef0f23b3912ce4155410f01c5b39e78ad55f107e02813b063162114",
+      "archived_sha256": "4b21f77bdef0f23b3912ce4155410f01c5b39e78ad55f107e02813b063162114"
+    },
+    {
+      "file": "xca-storage-python-selection.py",
+      "original_sha256": "3bee1f504a2f9d2b9ba8ca54ce90262bf9efb33c930951479e35abf71ca12432",
+      "archived_sha256": "3bee1f504a2f9d2b9ba8ca54ce90262bf9efb33c930951479e35abf71ca12432"
+    },
+    {
+      "file": "xca-storage-python-stream-fix-build.log",
+      "original_sha256": "71d1f1ca63d7a8af91425e43b4aacf1000533ef8a9f3f3cf9e0f4ae5910e1998",
+      "archived_sha256": "fedeb55305d1e19ddd9d5613fcc44e534e14782bd97a0a073fd2747c1bbcd280"
+    },
+    {
+      "file": "xca-storage-python-stream-fix-library-build.log",
+      "original_sha256": "5a406758ab844ede618b7f15d8cb9896ad09de315710d92a2e0c137a0c2d59a3",
+      "archived_sha256": "5a406758ab844ede618b7f15d8cb9896ad09de315710d92a2e0c137a0c2d59a3"
+    },
+    {
+      "file": "xca-storage-python-test.log",
+      "original_sha256": "99162d3205e5bf15c95d1fa22111a969544c4db81024a843403614f567435cb2",
+      "archived_sha256": "c2b97ce0055fe7919d7b4dbbed5454ed0dac7664363ccd4d5b0350168ec13300"
+    },
+    {
+      "file": "xca-storage-run-mpi.py",
+      "original_sha256": "6394b4a17bc83c5e14ab44f0fcf132d13109978fcbbe859bdedbf8d2137ef985",
+      "archived_sha256": "6394b4a17bc83c5e14ab44f0fcf132d13109978fcbbe859bdedbf8d2137ef985"
+    },
+    {
+      "file": "xca-storage-wrap-direct.log",
+      "original_sha256": "d2f0a909be933b801917388f22856d5c4358150e77c5a2da475f5b308fbb8ad0",
+      "archived_sha256": "4e8c9249bf862ffa35a58ea84f4e971cb55120f04397ac7529a6d00c9cd1aa54"
+    },
+    {
+      "file": "xca-storage-wrap-gen.log",
+      "original_sha256": "4924eaf27d15efd63e35d64bcb630b7d86f4a5de9570c8ebce016f29af8e5500",
+      "archived_sha256": "4924eaf27d15efd63e35d64bcb630b7d86f4a5de9570c8ebce016f29af8e5500"
+    }
+  ]
+}

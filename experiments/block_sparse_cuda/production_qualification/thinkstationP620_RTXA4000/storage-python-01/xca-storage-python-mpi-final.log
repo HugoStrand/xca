@@ -1,0 +1,84 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Starting run with 2 MPI rank(s) at : 2026-10-14 21:44:33.664495
+..................FF...
+======================================================================
+FAIL: test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables)
+.----------------------------------------------------------------------
+
+======================================================================
+FAIL: test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 119, in test_storage_policies_all_observables
+    for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 920, in assert_array_equal
+    assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+  File "/usr/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError:
+Arrays are not equal
+
+Mismatched elements: 23 / 23 (100%)
+Max absolute difference: 0.18706284
+Max relative difference: 0.33333333
+ x: array([[[0.374126+0.j]],
+
+       [[0.36552 +0.j]],...
+ y: array([[[0.561189+0.j]],
+
+       [[0.54828 +0.j]],...
+
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 119, in test_storage_policies_all_observables
+    for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 920, in assert_array_equal
+    assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+  File "/usr/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError:
+Arrays are not equal
+
+Mismatched elements: 23 / 23 (100%)
+Max absolute difference: 0.18706284
+Max relative difference: 0.33333333
+ x: array([[[0.374126+0.j]],
+
+       [[0.36552 +0.j]],...
+ y: array([[[0.561189+0.j]],
+
+       [[0.54828 +0.j]],...
+
+----------------------------------------------------------------------
+Ran 12 tests in 156.078s
+
+FAILED (failures=1)
+----------------------------------------------------------------------
+Ran 12 tests in 156.082s
+
+FAILED (failures=1)
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[19892,1],1]
+  Exit code:    1
+--------------------------------------------------------------------------

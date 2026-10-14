@@ -1,0 +1,84 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Starting run with 2 MPI rank(s) at : 2026-10-14 21:49:47.011155
+FF
+======================================================================
+FAIL: test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 119, in test_storage_policies_all_observables
+    for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data, err_msg=f"{policy=} {dynamic=} {partition=} {placement=} top={t.tolist()} block={b} rank={mpi.rank}")
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 920, in assert_array_equal
+    assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+  File "/usr/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError:
+Arrays are not equal
+policy='host_inputs' dynamic=False partition='occupation' placement='resident' top=[[0, 1]] block=1 rank=1
+Mismatched elements: 23 / 23 (100%)
+Max absolute difference: 0.31268822
+Max relative difference: 0.4801439
+ x: array([[[0.374085+0.j]],
+
+       [[0.363359+0.j]],...
+ y: array([[[0.686773+0.j]],
+
+       [[0.667362+0.j]],...
+
+----------------------------------------------------------------------
+
+======================================================================
+FAIL: test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 119, in test_storage_policies_all_observables
+    for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data, err_msg=f"{policy=} {dynamic=} {partition=} {placement=} top={t.tolist()} block={b} rank={mpi.rank}")
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 920, in assert_array_equal
+    assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+  File "/usr/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError:
+Arrays are not equal
+policy='host_inputs' dynamic=False partition='occupation' placement='resident' top=[[0, 1]] block=1 rank=0
+Mismatched elements: 23 / 23 (100%)
+Max absolute difference: 0.31268822
+Max relative difference: 0.4801439
+ x: array([[[0.374085+0.j]],
+
+       [[0.363359+0.j]],...
+ y: array([[[0.686773+0.j]],
+
+       [[0.667362+0.j]],...
+
+----------------------------------------------------------------------
+Ran 1 test in 0.586s
+
+Ran 1 test in 0.582s
+
+FAILED (failures=1)
+FAILED (failures=1)
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[19701,1],1]
+  Exit code:    1
+--------------------------------------------------------------------------

@@ -1,0 +1,157 @@
+-- [1;32mNote:  [0mFound Flatiron/h5 Storable concept. Will generate h5 code for all wrapped classes satisfying this concept.
+-- [1;33mRejecting: [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::DiagramEvaluator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::get_num_self_energy_backbones [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;32mModule: [0mtriqs_xca._triqs_xca_cuda
+-- [1;32mClass: [0mxca_python::LibraryCudaEvaluator [Python: DenseCudaDiagramEvaluator]
+-- [1;32m  Method: [0m__init__
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interactions)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interactions)
+-- [1;32m  Method: [0mcompute_one_time_correlator
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_one_time_correlator(xca_python::LibraryCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_one_time_correlator(xca_python::LibraryCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_one_time_correlator_range
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_one_time_correlator_range(xca_python::LibraryCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_one_time_correlator_range(xca_python::LibraryCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long index)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy_by_pairs(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy_by_pairs(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long index)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy_by_pairs(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs_range
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy_by_pairs_range(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy_range
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_self_energy_range(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_single_ptcle_gf(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_single_ptcle_gf(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long index)
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_single_ptcle_gf(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf_range
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::compute_single_ptcle_gf_range(xca_python::LibraryCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mget_num_self_energy_backbones
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::get_num_self_energy_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mget_num_single_ptcle_gf_backbones
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::get_num_single_ptcle_gf_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mworkspace_bytes
+-- [1;32m        . [0mxca_python::LibraryCudaEvaluator::workspace_bytes()
+-- [1;32mClass: [0mxca_python::BlockSparseCudaEvaluator [Python: BlockSparseCudaDiagramEvaluator]
+-- [1;32m  Method: [0m__init__
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad,unsigned long device_budget,unsigned long sparse_budget,std::string operator_backend,std::string special_backend,std::string output_placement,unsigned long host_output_budget,std::string nca_backend,std::string storage_policy)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad,unsigned long device_budget,unsigned long sparse_budget,std::string operator_backend,std::string special_backend,std::string output_placement,unsigned long host_output_budget,std::string nca_backend,std::string storage_policy)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interactions,unsigned long device_budget,unsigned long sparse_budget,std::string operator_backend,std::string special_backend,std::string output_placement,unsigned long host_output_budget,std::string nca_backend,std::string storage_policy)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interactions,unsigned long device_budget,unsigned long sparse_budget,std::string operator_backend,std::string special_backend,std::string output_placement,unsigned long host_output_budget,std::string nca_backend,std::string storage_policy)
+-- [1;32m  Method: [0mcompute_one_time_correlator_range
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_one_time_correlator_range(xca_python::BlockSparseCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_one_time_correlator_range(xca_python::BlockSparseCudaEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& tau,const std::vector<triqs::operators::many_body_operator_complex>& zero,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_self_energy(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_self_energy(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long index)
+-- [1;32m  Method: [0mcompute_self_energy_range
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_self_energy_range(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_single_ptcle_gf(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_single_ptcle_gf(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long index)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf_range
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::compute_single_ptcle_gf_range(xca_python::BlockSparseCudaEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t,long first,long last)
+-- [1;32m  Method: [0mcorrelator_storage_bound
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::correlator_storage_bound(long mu,long kap)
+-- [1;32m  Method: [0mget_num_self_energy_backbones
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::get_num_self_energy_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m  Method: [0mget_num_single_ptcle_gf_backbones
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::get_num_single_ptcle_gf_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> t)
+-- [1;32m  Method: [0mlast_fragment_builds
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::last_fragment_builds()
+-- [1;32m  Method: [0mlast_nca_batch_paths
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::last_nca_batch_paths()
+-- [1;32m  Method: [0mself_energy_storage_bound
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::self_energy_storage_bound()
+-- [1;32m        . [0mxca_python::BlockSparseCudaEvaluator::self_energy_storage_bound(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32mClass: [0mtriqs_xca::dense::cuda_small::DiagramEvaluator [Python: DenseCudaSmallDiagramEvaluator]
+-- [1;32m  Method: [0m__init__
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<1>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interaction_coefficients)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> coefficients,triqs::mesh::dlr_imtime mesh,const triqs::atom_diag::atom_diag<0>& ad,const std::vector<triqs::operators::many_body_operator_complex>& operators,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> interaction_coefficients)
+-- [1;32m  Method: [0mbatch_capacity
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::batch_capacity()
+-- [1;32m  Method: [0mbatch_chunks
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::batch_chunks()
+-- [1;32m  Method: [0mcompute_one_time_correlator
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_one_time_correlator(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_zero,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_one_time_correlator(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_zero,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_one_time_correlator_range
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_one_time_correlator_range(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_zero,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_one_time_correlator_range(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_zero,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long index)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy_by_pairs(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy_by_pairs(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long index)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy_by_pairs(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs_range
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy_by_pairs_range(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy_range
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_self_energy_range(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_single_ptcle_gf(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_single_ptcle_gf(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long index)
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_single_ptcle_gf(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,nda::basic_array_view<const long, 1, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> indices)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf_range
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::compute_single_ptcle_gf_range(triqs_xca::dense::cuda_small::DiagramEvaluator::gf_vt g,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mdevice_memory_reserve
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::device_memory_reserve()
+-- [1;32m  Method: [0mdevice_workspace_bytes
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::device_workspace_bytes()
+-- [1;32m  Method: [0mdimension
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::dimension()
+-- [1;32m  Method: [0mget_num_self_energy_backbones
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::get_num_self_energy_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mget_num_single_ptcle_gf_backbones
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mhost_workspace_bound_bytes
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::host_workspace_bound_bytes()
+-- [1;32m  Method: [0mnum_interactions
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::num_interactions()
+-- [1;32m  Method: [0mnum_orbitals
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::num_orbitals()
+-- [1;32m  Method: [0mrank
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::rank()
+-- [1;32m  Method: [0mset_batch_capacity
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::set_batch_capacity(int capacity)
+-- [1;32m  Method: [0mset_device_memory_reserve
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::set_device_memory_reserve(unsigned long bytes)
+-- [1;32m  Method: [0mset_workspace_budget
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::set_workspace_budget(unsigned long bytes)
+-- [1;32m  Method: [0munified_workspace_bytes
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::unified_workspace_bytes()
+-- [1;32m  Method: [0mworkspace_budget
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::workspace_budget()
+-- [1;32m  Method: [0mworkspace_bytes
+-- [1;32m        . [0mtriqs_xca::dense::cuda_small::DiagramEvaluator::workspace_bytes()
+-- [1;32mFunction: [0mblock_sparse_mapped_available
+-- [1;32m        . [0mxca_python::block_sparse_mapped_available()
+-- [1;32mFunction: [0mblock_sparse_ordered_available
+-- [1;32m        . [0mxca_python::block_sparse_ordered_available()
+-- [1;32mFunction: [0mblock_sparse_real_nca_available
+-- [1;32m        . [0mxca_python::block_sparse_real_nca_available()
+-- [1;32mFunction: [0mcuda_current_device
+-- [1;32m        . [0mxca_python::cuda_current_device()
+-- [1;32mFunction: [0mcuda_device_count
+-- [1;32m        . [0mxca_python::cuda_device_count()
+-- [1;32mFunction: [0mcuda_select_device
+-- [1;32m        . [0mxca_python::cuda_select_device(int device)
+-- [1;34m[Success] [0m
+--    Generated Python bindings: /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca_cuda.wrap.cxx [included in /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca_cuda.cpp]
+--              headers        : /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca_cuda.wrap.hxx [to be used with other modules, cf doc]
+-- Running clang-format ...
+-- Done.
+--    Generated the depfile ../../cbuild-cuda/python/triqs_xca/_triqs_xca_cuda.cpp.d
+

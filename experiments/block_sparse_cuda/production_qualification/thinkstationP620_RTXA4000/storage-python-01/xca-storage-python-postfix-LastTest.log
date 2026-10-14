@@ -1,0 +1,124 @@
+Start testing: Oct 14 22:01 CEST
+----------------------------------------------------------
+45/121 Testing: block_sparse/cuda_storage_policy
+45/121 Test: block_sparse/cuda_storage_policy
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_storage_policy"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_storage_policy" start time: Oct 14 22:01 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 22 tests from 4 test suites.
+[----------] Global test environment set-up.
+[----------] 5 tests from StoragePolicy
+[ RUN      ] StoragePolicy.CompleteCallsBoundsAndRecovery
+[       OK ] StoragePolicy.CompleteCallsBoundsAndRecovery (20589 ms)
+[ RUN      ] StoragePolicy.TightBudgetAndInvalidPolicies
+[       OK ] StoragePolicy.TightBudgetAndInvalidPolicies (475 ms)
+[ RUN      ] StoragePolicy.StridedHostInput
+[       OK ] StoragePolicy.StridedHostInput (381 ms)
+[ RUN      ] StoragePolicy.NativePolicyCombinations
+[       OK ] StoragePolicy.NativePolicyCombinations (6142 ms)
+[ RUN      ] StoragePolicy.AdjacentCutoffMatchesFrozenReference
+[       OK ] StoragePolicy.AdjacentCutoffMatchesFrozenReference (8660 ms)
+[----------] 5 tests from StoragePolicy (36249 ms total)
+
+[----------] 1 test from StoragePolicyInventory
+[ RUN      ] StoragePolicyInventory.AvailableWithoutDevice
+[       OK ] StoragePolicyInventory.AvailableWithoutDevice (0 ms)
+[----------] 1 test from StoragePolicyInventory (0 ms total)
+
+[----------] 8 tests from HostInputsStorageEvaluator
+[ RUN      ] HostInputsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] HostInputsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs (1843 ms)
+[ RUN      ] HostInputsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] HostInputsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (664 ms)
+[ RUN      ] HostInputsStorageEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] HostInputsStorageEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] HostInputsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] HostInputsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] HostInputsStorageEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] HostInputsStorageEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] HostInputsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] HostInputsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks (3361 ms)
+[ RUN      ] HostInputsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] HostInputsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] HostInputsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] HostInputsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity (786 ms)
+[----------] 8 tests from HostInputsStorageEvaluator (6694 ms total)
+
+[----------] 8 tests from StreamFragmentsStorageEvaluator
+[ RUN      ] StreamFragmentsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] StreamFragmentsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs (1989 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] StreamFragmentsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (822 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] StreamFragmentsStorageEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] StreamFragmentsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] StreamFragmentsStorageEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] StreamFragmentsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks (3356 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] StreamFragmentsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] StreamFragmentsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity (785 ms)
+[----------] 8 tests from StreamFragmentsStorageEvaluator (6991 ms total)
+
+[----------] Global test environment tear-down
+[==========] 22 tests from 4 test suites ran. (49936 ms total)
+[  PASSED  ] 22 tests.
+<end of output>
+Test time =  50.18 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_storage_policy" end time: Oct 14 22:02 CEST
+"block_sparse/cuda_storage_policy" time elapsed: 00:00:50
+----------------------------------------------------------
+
+91/121 Testing: Py_cuda_backends
+91/121 Test: Py_cuda_backends
+Command: "/usr/bin/python3" "/home/hugstr/dev/xca/test/python//cuda_backends.py"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/python/
+"Py_cuda_backends" start time: Oct 14 22:02 CEST
+Output:
+----------------------------------------------------------
+Starting serial run at: 2026-10-14 22:02:17.755586
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 1.104s
+
+OK
+Warning: could not identify MPI environment!
+<end of output>
+Test time =   1.59 sec
+----------------------------------------------------------
+Test Passed.
+"Py_cuda_backends" end time: Oct 14 22:02 CEST
+"Py_cuda_backends" time elapsed: 00:00:01
+----------------------------------------------------------
+
+92/121 Testing: Py_block_sparse_cuda
+92/121 Test: Py_block_sparse_cuda
+Command: "/usr/bin/python3" "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/python/
+"Py_block_sparse_cuda" start time: Oct 14 22:02 CEST
+Output:
+----------------------------------------------------------
+Starting serial run at: 2026-10-14 22:02:19.433264
+............
+----------------------------------------------------------------------
+Ran 12 tests in 67.291s
+
+OK
+Warning: could not identify MPI environment!
+<end of output>
+Test time =  67.77 sec
+----------------------------------------------------------
+Test Passed.
+"Py_block_sparse_cuda" end time: Oct 14 22:03 CEST
+"Py_block_sparse_cuda" time elapsed: 00:01:07
+----------------------------------------------------------
+
+End testing: Oct 14 22:03 CEST

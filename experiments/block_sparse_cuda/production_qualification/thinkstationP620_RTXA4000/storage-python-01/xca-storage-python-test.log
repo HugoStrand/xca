@@ -1,0 +1,30 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 92: Py_block_sparse_cuda
+1/1 Test #92: Py_block_sparse_cuda .............***Failed   32.22 sec
+Starting serial run at: 2026-10-14 21:37:55.624521
+.........E..
+======================================================================
+ERROR: test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 109, in test_storage_policies_all_observables
+    with self.assertRaises(ValueError): module.BlockSparseCudaDiagramEvaluator(*args, **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: .. Error  :
+storage_policy must be resident, host_inputs or stream_fragments
+
+----------------------------------------------------------------------
+Ran 12 tests in 31.733s
+
+FAILED (errors=1)
+Warning: could not identify MPI environment!
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =  32.22 sec
+
+The following tests FAILED:
+	 92 - Py_block_sparse_cuda (Failed)
+Errors while running CTest

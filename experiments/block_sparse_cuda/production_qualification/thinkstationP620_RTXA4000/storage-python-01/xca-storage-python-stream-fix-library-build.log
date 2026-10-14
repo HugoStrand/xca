@@ -1,0 +1,16 @@
+[ 16%] Built target c2py
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+/home/hugstr/dev/xca/c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp:485:39: warning: unused parameter 'T' [-Wunused-parameter]
+  485 |     bool apply_mapped_special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
+      |                                       ^
+/home/hugstr/dev/xca/c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp:485:52: warning: unused parameter 'backbone' [-Wunused-parameter]
+  485 |     bool apply_mapped_special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
+      |                                                    ^
+/home/hugstr/dev/xca/c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp:485:84: warning: unused parameter 'path' [-Wunused-parameter]
+  485 |     bool apply_mapped_special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
+      |                                                                                    ^
+3 warnings generated.
+[ 16%] Linking CXX static library libtriqs_xca_c.a
+[100%] Built target triqs_xca_c
+[100%] Linking CXX shared module _triqs_xca_cuda.so
+[100%] Built target _triqs_xca_cuda

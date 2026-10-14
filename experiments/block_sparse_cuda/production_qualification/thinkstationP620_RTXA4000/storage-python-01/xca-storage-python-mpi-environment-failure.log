@@ -1,0 +1,28 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Starting run with 2 MPI rank(s) at : 2026-10-14 21:42:59.948477
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 12, in <module>
+    from triqs_xca import Solver, gpu
+ImportError: cannot import name 'gpu' from 'triqs_xca' (/home/hugstr/apps/xca-cuda/lib/python3.12/site-packages/triqs_xca/__init__.py)
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py", line 12, in <module>
+    from triqs_xca import Solver, gpu
+ImportError: cannot import name 'gpu' from 'triqs_xca' (/home/hugstr/apps/xca-cuda/lib/python3.12/site-packages/triqs_xca/__init__.py)
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[19965,1],1]
+  Exit code:    1
+--------------------------------------------------------------------------

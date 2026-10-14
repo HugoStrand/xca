@@ -1,0 +1,88 @@
+Starting serial run at: 2026-10-14 22:01:26.822853
+Warning: could not identify MPI environment!
+[
+  {
+    "partition": "occupation",
+    "dynamic": false,
+    "policy": "resident",
+    "se_bytes": 33608992,
+    "correlator_bytes": 33614896
+  },
+  {
+    "partition": "occupation",
+    "dynamic": false,
+    "policy": "host_inputs",
+    "se_bytes": 33604208,
+    "correlator_bytes": 33610112
+  },
+  {
+    "partition": "occupation",
+    "dynamic": false,
+    "policy": "stream_fragments",
+    "se_bytes": 33604208,
+    "correlator_bytes": 33604592
+  },
+  {
+    "partition": "occupation",
+    "dynamic": true,
+    "policy": "resident",
+    "se_bytes": 33608992,
+    "correlator_bytes": 33614896
+  },
+  {
+    "partition": "occupation",
+    "dynamic": true,
+    "policy": "host_inputs",
+    "se_bytes": 33604208,
+    "correlator_bytes": 33610112
+  },
+  {
+    "partition": "occupation",
+    "dynamic": true,
+    "policy": "stream_fragments",
+    "se_bytes": 33604208,
+    "correlator_bytes": 33604592
+  },
+  {
+    "partition": "number",
+    "dynamic": false,
+    "policy": "resident",
+    "se_bytes": 33653152,
+    "correlator_bytes": 33663504
+  },
+  {
+    "partition": "number",
+    "dynamic": false,
+    "policy": "host_inputs",
+    "se_bytes": 33629232,
+    "correlator_bytes": 33639584
+  },
+  {
+    "partition": "number",
+    "dynamic": false,
+    "policy": "stream_fragments",
+    "se_bytes": 33629232,
+    "correlator_bytes": 33628176
+  },
+  {
+    "partition": "number",
+    "dynamic": true,
+    "policy": "resident",
+    "se_bytes": 33653152,
+    "correlator_bytes": 33663504
+  },
+  {
+    "partition": "number",
+    "dynamic": true,
+    "policy": "host_inputs",
+    "se_bytes": 33629232,
+    "correlator_bytes": 33639584
+  },
+  {
+    "partition": "number",
+    "dynamic": true,
+    "policy": "stream_fragments",
+    "se_bytes": 33629232,
+    "correlator_bytes": 33628176
+  }
+]

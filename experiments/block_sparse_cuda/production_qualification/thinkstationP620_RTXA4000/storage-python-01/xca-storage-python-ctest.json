@@ -1,0 +1,3278 @@
+{
+  "backtraceGraph" :
+  {
+    "commands" :
+    [
+      "add_test"
+    ],
+    "files" :
+    [
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/operator_apply/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_cutoff/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_sets/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_signs/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_resident/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_staging/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_streams/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_real_nca/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/special_vertex/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/mapped_special/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/compact_dlr/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/nca_admission/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/output_sectors/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/convolution_rows/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/phase_liveness/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/host_inputs/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/stream_fragments/CMakeLists.txt",
+      "/home/hugstr/dev/xca/experiments/block_sparse_cuda/capacity_phase/CMakeLists.txt",
+      "/home/hugstr/dev/xca/test/c++/CMakeLists.txt",
+      "/home/hugstr/dev/xca/test/python/CMakeLists.txt"
+    ],
+    "nodes" :
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 50,
+        "parent" : 0
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 76,
+        "parent" : 2
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 88,
+        "parent" : 4
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 102,
+        "parent" : 6
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 117,
+        "parent" : 8
+      },
+      {
+        "file" : 2
+      },
+      {
+        "command" : 0,
+        "file" : 2,
+        "line" : 20,
+        "parent" : 10
+      },
+      {
+        "file" : 3
+      },
+      {
+        "command" : 0,
+        "file" : 3,
+        "line" : 36,
+        "parent" : 12
+      },
+      {
+        "file" : 4
+      },
+      {
+        "command" : 0,
+        "file" : 4,
+        "line" : 26,
+        "parent" : 14
+      },
+      {
+        "file" : 5
+      },
+      {
+        "command" : 0,
+        "file" : 5,
+        "line" : 30,
+        "parent" : 16
+      },
+      {
+        "file" : 6
+      },
+      {
+        "command" : 0,
+        "file" : 6,
+        "line" : 25,
+        "parent" : 18
+      },
+      {
+        "file" : 7
+      },
+      {
+        "command" : 0,
+        "file" : 7,
+        "line" : 25,
+        "parent" : 20
+      },
+      {
+        "file" : 8
+      },
+      {
+        "command" : 0,
+        "file" : 8,
+        "line" : 18,
+        "parent" : 22
+      },
+      {
+        "file" : 9
+      },
+      {
+        "command" : 0,
+        "file" : 9,
+        "line" : 46,
+        "parent" : 24
+      },
+      {
+        "file" : 9
+      },
+      {
+        "command" : 0,
+        "file" : 9,
+        "line" : 46,
+        "parent" : 26
+      },
+      {
+        "file" : 10
+      },
+      {
+        "command" : 0,
+        "file" : 10,
+        "line" : 4,
+        "parent" : 28
+      },
+      {
+        "file" : 10
+      },
+      {
+        "command" : 0,
+        "file" : 10,
+        "line" : 55,
+        "parent" : 30
+      },
+      {
+        "file" : 11
+      },
+      {
+        "command" : 0,
+        "file" : 11,
+        "line" : 10,
+        "parent" : 32
+      },
+      {
+        "file" : 11
+      },
+      {
+        "command" : 0,
+        "file" : 11,
+        "line" : 46,
+        "parent" : 34
+      },
+      {
+        "file" : 12
+      },
+      {
+        "command" : 0,
+        "file" : 12,
+        "line" : 30,
+        "parent" : 36
+      },
+      {
+        "file" : 13
+      },
+      {
+        "command" : 0,
+        "file" : 13,
+        "line" : 46,
+        "parent" : 38
+      },
+      {
+        "file" : 14
+      },
+      {
+        "command" : 0,
+        "file" : 14,
+        "line" : 23,
+        "parent" : 40
+      },
+      {
+        "file" : 14
+      },
+      {
+        "command" : 0,
+        "file" : 14,
+        "line" : 31,
+        "parent" : 42
+      },
+      {
+        "file" : 15
+      },
+      {
+        "command" : 0,
+        "file" : 15,
+        "line" : 29,
+        "parent" : 44
+      },
+      {
+        "file" : 15
+      },
+      {
+        "command" : 0,
+        "file" : 15,
+        "line" : 51,
+        "parent" : 46
+      },
+      {
+        "file" : 16
+      },
+      {
+        "command" : 0,
+        "file" : 16,
+        "line" : 26,
+        "parent" : 48
+      },
+      {
+        "file" : 17
+      },
+      {
+        "command" : 0,
+        "file" : 17,
+        "line" : 26,
+        "parent" : 50
+      },
+      {
+        "file" : 18
+      },
+      {
+        "command" : 0,
+        "file" : 18,
+        "line" : 26,
+        "parent" : 52
+      },
+      {
+        "file" : 19
+      },
+      {
+        "command" : 0,
+        "file" : 19,
+        "line" : 7,
+        "parent" : 54
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 56
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 58
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 60
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 62
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 64
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 66
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 68
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 70
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 72
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 74
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 76
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 78
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 80
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 82
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 84
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 86
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 88
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 90
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 92
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 94
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 96
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 98
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 100
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 102
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 104
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 106
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 108
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 110
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 112
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 114
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 116
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 118
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 120
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 122
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 124
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 126
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 128
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 130
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 132
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 134
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 136
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 138
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 140
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 142
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 144
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 146
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 148
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 150
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 152
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 154
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 156
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 37,
+        "parent" : 158
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 160
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 162
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 164
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 166
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 168
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 170
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 172
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 74,
+        "parent" : 174
+      },
+      {
+        "file" : 20
+      },
+      {
+        "command" : 0,
+        "file" : 20,
+        "line" : 96,
+        "parent" : 176
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 178
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 180
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 182
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 184
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 186
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 188
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 190
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 192
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 194
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 196
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 198
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 200
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 202
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 204
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 206
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 208
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 210
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 212
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 214
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 216
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 218
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 220
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 222
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 224
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 226
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 228
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 230
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 232
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 234
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 236
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 238
+      },
+      {
+        "file" : 21
+      },
+      {
+        "command" : 0,
+        "file" : 21,
+        "line" : 47,
+        "parent" : 240
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" :
+  [
+    {
+      "backtrace" : 1,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/operator_apply/block_sparse_ordered_evaluator_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/ordered_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/operator_apply"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_path_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_paths",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_fanin_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_fanin",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_arena_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_arena",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_constants_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_constants",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths"
+        }
+      ]
+    },
+    {
+      "backtrace" : 11,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_cutoff/block_sparse_scalar_cutoff_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_cutoff",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_cutoff"
+        }
+      ]
+    },
+    {
+      "backtrace" : 13,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_sets/block_sparse_scalar_sets_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_sets",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_sets"
+        }
+      ]
+    },
+    {
+      "backtrace" : 15,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_signs/block_sparse_scalar_signs_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_signs",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_signs"
+        }
+      ]
+    },
+    {
+      "backtrace" : 17,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_resident/block_sparse_scalar_resident_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_resident",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_resident"
+        }
+      ]
+    },
+    {
+      "backtrace" : 19,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_staging/block_sparse_scalar_staging_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_staging",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_staging"
+        }
+      ]
+    },
+    {
+      "backtrace" : 21,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_streams/block_sparse_scalar_streams_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_streams",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_streams"
+        }
+      ]
+    },
+    {
+      "backtrace" : 23,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/scalar_real_nca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca"
+        }
+      ]
+    },
+    {
+      "backtrace" : 25,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex/block_sparse_kappa_2_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/kappa_2",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex"
+        }
+      ]
+    },
+    {
+      "backtrace" : 27,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex/block_sparse_kappa_16_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/kappa_16",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex"
+        }
+      ]
+    },
+    {
+      "backtrace" : 29,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_column_maps_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/column_maps",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special"
+        }
+      ]
+    },
+    {
+      "backtrace" : 31,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_special_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/mapped_special",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special"
+        }
+      ]
+    },
+    {
+      "backtrace" : 33,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/compact_dlr",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr"
+        }
+      ]
+    },
+    {
+      "backtrace" : 35,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_evaluator_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/compact_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr"
+        }
+      ]
+    },
+    {
+      "backtrace" : 37,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/nca_admission/block_sparse_nca_admission_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/nca_admission",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/nca_admission"
+        }
+      ]
+    },
+    {
+      "backtrace" : 39,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/topology_prefix",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 41,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/output_sectors",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors"
+        }
+      ]
+    },
+    {
+      "backtrace" : 43,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_host_output_tests"
+      ],
+      "name" : "block_sparse/cuda_host_output",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors"
+        }
+      ]
+    },
+    {
+      "backtrace" : 45,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/convolution_rows",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows"
+        }
+      ]
+    },
+    {
+      "backtrace" : 47,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/convolution_row_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows"
+        }
+      ]
+    },
+    {
+      "backtrace" : 49,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/phase_liveness",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness"
+        }
+      ]
+    },
+    {
+      "backtrace" : 51,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/host_inputs",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs"
+        }
+      ]
+    },
+    {
+      "backtrace" : 53,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments/block_sparse_stream_fragment_tests"
+      ],
+      "name" : "experiments/block_sparse_cuda/stream_fragments",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments"
+        }
+      ]
+    },
+    {
+      "backtrace" : 55,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase",
+        "--m",
+        "7",
+        "--k",
+        "5",
+        "--n",
+        "9",
+        "--samples",
+        "2"
+      ],
+      "name" : "experiments/block_sparse_cuda/capacity_phase",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase"
+        }
+      ]
+    },
+    {
+      "backtrace" : 57,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/atom_diag_utils"
+      ],
+      "name" : "atom_diag_utils",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 59,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/backbone_indexing"
+      ],
+      "name" : "backbone_indexing",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 61,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/backbone_parity"
+      ],
+      "name" : "backbone_parity",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 63,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_diag_op_fun"
+      ],
+      "name" : "block_diag_op_fun",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 65,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/atom_prop"
+      ],
+      "name" : "block_sparse/atom_prop",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 67,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/correlator_path"
+      ],
+      "name" : "block_sparse/correlator_path",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 69,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_admission"
+      ],
+      "name" : "block_sparse/cuda_admission",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 71,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_device_ops"
+      ],
+      "name" : "block_sparse/cuda_device_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 73,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_diagram_evaluator"
+      ],
+      "name" : "block_sparse/cuda_diagram_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 75,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_dlr_ops"
+      ],
+      "name" : "block_sparse/cuda_dlr_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 77,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_mapped_special"
+      ],
+      "name" : "block_sparse/cuda_mapped_special",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 79,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_memory_plan"
+      ],
+      "name" : "block_sparse/cuda_memory_plan",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 81,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_nca_dispatch"
+      ],
+      "name" : "block_sparse/cuda_nca_dispatch",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 83,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_nca_liveness"
+      ],
+      "name" : "block_sparse/cuda_nca_liveness",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 85,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_real_nca"
+      ],
+      "name" : "block_sparse/cuda_real_nca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 87,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_sparse_backend"
+      ],
+      "name" : "block_sparse/cuda_sparse_backend",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 89,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_storage_policy"
+      ],
+      "name" : "block_sparse/cuda_storage_policy",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 91,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/dynint_evaluator"
+      ],
+      "name" : "block_sparse/dynint_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 93,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/dynint_sets"
+      ],
+      "name" : "block_sparse/dynint_sets",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 95,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/dynint_spin_flip"
+      ],
+      "name" : "block_sparse/dynint_spin_flip",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 97,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/evaluator_api"
+      ],
+      "name" : "block_sparse/evaluator_api",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 99,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/operator_model"
+      ],
+      "name" : "block_sparse/operator_model",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 101,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/path"
+      ],
+      "name" : "block_sparse/path",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 103,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/sparse_operator"
+      ],
+      "name" : "block_sparse/sparse_operator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 105,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/sparsity_invariance"
+      ],
+      "name" : "block_sparse/sparsity_invariance",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 107,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/sym_set_mask"
+      ],
+      "name" : "block_sparse/sym_set_mask",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 109,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/sym_sets"
+      ],
+      "name" : "block_sparse/sym_sets",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 111,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/benchmark_validation"
+      ],
+      "name" : "dense/benchmark_validation",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 113,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/correlator_statistics"
+      ],
+      "name" : "dense/correlator_statistics",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 115,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda/device_ops"
+      ],
+      "name" : "dense/cuda/device_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda"
+        }
+      ]
+    },
+    {
+      "backtrace" : 117,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda/dlr_ops"
+      ],
+      "name" : "dense/cuda/dlr_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda"
+        }
+      ]
+    },
+    {
+      "backtrace" : 119,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda_small/batch_api"
+      ],
+      "name" : "dense/cuda_small/batch_api",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/cuda_small"
+        }
+      ]
+    },
+    {
+      "backtrace" : 121,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense/dynint_parity"
+      ],
+      "name" : "dense/dynint_parity",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 123,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dense_cuda_benchmark_contract"
+      ],
+      "name" : "dense_cuda_benchmark_contract",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 125,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/dynint_spin_rotation"
+      ],
+      "name" : "dynint_spin_rotation",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 127,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/evaluator_ranges"
+      ],
+      "name" : "evaluator_ranges",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 129,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/flat_index_range"
+      ],
+      "name" : "flat_index_range",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 131,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/hyb"
+      ],
+      "name" : "hyb",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 133,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/manual_routines"
+      ],
+      "name" : "manual_routines",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 135,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/one_fermion_se_spgf_all_evals"
+      ],
+      "name" : "one_fermion_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 137,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/propagator_layout"
+      ],
+      "name" : "propagator_layout",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 139,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/test_nda_cuda_smoke"
+      ],
+      "name" : "test_nda_cuda_smoke",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 141,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/topology"
+      ],
+      "name" : "topology",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 143,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_convolve"
+      ],
+      "name" : "triqs_soehyb/test_convolve",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 145,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_dimer"
+      ],
+      "name" : "triqs_soehyb/test_dimer",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 147,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_dlr"
+      ],
+      "name" : "triqs_soehyb/test_dlr",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 149,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_fastdiagram"
+      ],
+      "name" : "triqs_soehyb/test_fastdiagram",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 151,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_oca"
+      ],
+      "name" : "triqs_soehyb/test_oca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 153,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_oca_equi"
+      ],
+      "name" : "triqs_soehyb/test_oca_equi",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 155,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb/test_tca"
+      ],
+      "name" : "triqs_soehyb/test_tca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 157,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/two_fermions_se_spgf_all_evals"
+      ],
+      "name" : "two_fermions_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 159,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/unitary_invariance_all_evals"
+      ],
+      "name" : "unitary_invariance_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 161,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_one_fermion_se_spgf_all_evals"
+      ],
+      "name" : "dense/cuda_small/one_fermion_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 163,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_two_fermions_se_spgf_all_evals"
+      ],
+      "name" : "dense/cuda_small/two_fermions_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 165,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_unitary_invariance_all_evals"
+      ],
+      "name" : "dense/cuda_small/unitary_invariance_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 167,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_dynint_spin_rotation"
+      ],
+      "name" : "dense/cuda_small/dynint_spin_rotation",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 169,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_flat_index_range"
+      ],
+      "name" : "dense/cuda_small/flat_index_range",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 171,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_propagator_layout"
+      ],
+      "name" : "dense/cuda_small/propagator_layout",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 173,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_dense_dynint_parity"
+      ],
+      "name" : "dense/cuda_small/dense_dynint_parity",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 175,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/cuda_small_dense_correlator_statistics"
+      ],
+      "name" : "dense/cuda_small/dense_correlator_statistics",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 177,
+      "command" :
+      [
+        "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse_native_evaluator"
+      ],
+      "name" : "block_sparse/ordered_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 179,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//cppdlr_imtime_ops.py"
+      ],
+      "name" : "Py_cppdlr_imtime_ops",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 181,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//cuda_backends.py"
+      ],
+      "name" : "Py_cuda_backends",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 183,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py"
+      ],
+      "name" : "Py_block_sparse_cuda",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 185,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/load_module.py"
+      ],
+      "name" : "Py_triqs_soehyb/load_module",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 187,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/spinless_dimer.py"
+      ],
+      "name" : "Py_triqs_soehyb/spinless_dimer",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 189,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/spinless_dimer_solver.py"
+      ],
+      "name" : "Py_triqs_soehyb/spinless_dimer_solver",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 191,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/offdiagonal_nca.py"
+      ],
+      "name" : "Py_triqs_soehyb/offdiagonal_nca",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 193,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//diag.py"
+      ],
+      "name" : "Py_diag",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 195,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/unitary_invariance.py"
+      ],
+      "name" : "Py_triqs_soehyb/unitary_invariance",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 197,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//unitary_invariance.py"
+      ],
+      "name" : "Py_unitary_invariance",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 199,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/h5_io.py"
+      ],
+      "name" : "Py_triqs_soehyb/h5_io",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 201,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//h5_io.py"
+      ],
+      "name" : "Py_h5_io",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 203,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//dynint.py"
+      ],
+      "name" : "Py_dynint",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 205,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//dynint_spin_flip.py"
+      ],
+      "name" : "Py_dynint_spin_flip",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 207,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//dynint_transverse.py"
+      ],
+      "name" : "Py_dynint_transverse",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 209,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//topology.py"
+      ],
+      "name" : "Py_topology",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 211,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/triqs_solver.py"
+      ],
+      "name" : "Py_triqs_soehyb/triqs_solver",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 213,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/one_spinful_fermion.py"
+      ],
+      "name" : "Py_triqs_soehyb/one_spinful_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 215,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python/triqs_soehyb/analytic_diagrams.py"
+      ],
+      "name" : "Py_triqs_soehyb/analytic_diagrams",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 217,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//solver_copy.py"
+      ],
+      "name" : "Py_solver_copy",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 219,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//api.py"
+      ],
+      "name" : "Py_api",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 221,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//api_one_fermion.py"
+      ],
+      "name" : "Py_api_one_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 223,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//api_two_fermions.py"
+      ],
+      "name" : "Py_api_two_fermions",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 225,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//bethe_self_cons.py"
+      ],
+      "name" : "Py_bethe_self_cons",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 227,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//dense_manual_NCA_OCA.py"
+      ],
+      "name" : "Py_dense_manual_NCA_OCA",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 229,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//normalization.py"
+      ],
+      "name" : "Py_normalization",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 231,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//spgf_ordering.py"
+      ],
+      "name" : "Py_spgf_ordering",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 233,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//bug_bs_one_fermion.py"
+      ],
+      "name" : "Py_bug_bs_one_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 235,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//volterra_integral.py"
+      ],
+      "name" : "Py_volterra_integral",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 237,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//one_time_correlator.py"
+      ],
+      "name" : "Py_one_time_correlator",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 239,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//expectation_value.py"
+      ],
+      "name" : "Py_expectation_value",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 241,
+      "command" :
+      [
+        "/usr/bin/python3",
+        "/home/hugstr/dev/xca/test/python//order_conv.py"
+      ],
+      "name" : "Py_order_conv",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+            "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/home/hugstr/dev/xca/cbuild-cuda/test/python/"
+        }
+      ]
+    }
+  ],
+  "version" :
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}
