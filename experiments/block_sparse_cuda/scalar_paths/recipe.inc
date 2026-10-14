@@ -1,5 +1,5 @@
   auto vertex_batch = [&](int v) {
-    apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
+    apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
       int field = backbone.get_vertex_orb(v), p = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v));
       bool dag          = backbone.has_vertex_dag(v);
       auto const &op    = backbone.has_vertex_bar(v) ? model.barred(field, p, dag) : model.field(field, dag);
@@ -29,7 +29,7 @@
     vertex_batch(v);
     edge_batch(v);
   }
-  apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
+  apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
     int field         = model.sets()[path.zero_set][0];
     bool forward      = !backbone.has_vertex_dag(0);
     auto const &block = model.field(field, !forward).blocks[path.output_block];
@@ -42,7 +42,7 @@
     int sign     = backbone.get_parity() * (forward ? 1 : -1);
     return Complex{static_cast<double>(sign)} * (forward ? hyb->values(t, field, field) : hyb->values_reflect(t, field, field));
   });
-  apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
+  apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
     int field         = model.sets()[path.zero_set][0];
     bool forward      = !backbone.has_vertex_dag(0);
     auto const &block = model.field(field, forward).blocks[path.propagator_blocks[special - 1]];
@@ -52,7 +52,7 @@
     edge_batch(v - 1);
     vertex_batch(v);
   }
-  apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &, long) { return Complex{kernel_prefactor(backbone)}; });
-  apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &, long) {
+  apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &, long) { return Complex{kernel_prefactor(backbone)}; });
+  apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &, long) {
     return Complex{double((backbone.m % 2 == 0 ? -1 : 1) * (backbone.get_fb(0) == 0 ? -1 : 1) * backbone.prefactor_sign)};
   });

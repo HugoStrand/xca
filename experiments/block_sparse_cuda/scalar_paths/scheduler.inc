@@ -23,6 +23,20 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     scalar_edge_experiment::check(scalar_edge_experiment::multiply(target.data(), weights.data(), target.data(), target.size(), ops->stream()));
     ops->finish();
   };
+  auto apply_constants = [&](Tensor &target, auto get) {
+#ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS
+    nda::vector<Complex> values(lanes);
+    values() = 1.;
+    for (long lane = 0; lane < count; ++lane) values(lane) = get(work[lane].first, work[lane].second, 0);
+    nda::cuvector<Complex> constants(values);
+    ops->wait_for_default_uploads();
+    scalar_edge_experiment::check(
+       scalar_edge_experiment::multiply_by_lane(target.data(), constants.data(), target.data(), target.size(), lanes, ops->stream()));
+    ops->finish();
+#else
+    apply_weights(target, get);
+#endif
+  };
   auto gather = [&](int edge) {
     nda::vector<std::uintptr_t> pointers(lanes);
     for (long lane = 0; lane < lanes; ++lane)

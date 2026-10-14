@@ -70,6 +70,16 @@ namespace scalar_path_experiment {
         for (long lane = 0; lane < count; ++lane)
           for (long t = 0; t < r; ++t) target(t, lane, 0) *= get(work[lane].first, work[lane].second, t);
       };
+      auto apply_constants = [&](Tensor &target, auto get) {
+#ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS
+        for (long lane = 0; lane < count; ++lane) {
+          auto value = get(work[lane].first, work[lane].second, 0);
+          for (long t = 0; t < r; ++t) target(t, lane, 0) *= value;
+        }
+#else
+        apply_weights(target, get);
+#endif
+      };
       auto gather = [&](int edge) {
         packed.f() = 0.;
         for (long lane = 0; lane < count; ++lane)

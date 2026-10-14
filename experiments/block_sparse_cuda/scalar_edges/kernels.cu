@@ -8,6 +8,15 @@ namespace scalar_edge_experiment {
     long i = long(blockIdx.x) * blockDim.x + threadIdx.x;
     if (i < count) out[i] = product(a[i], b[i]);
   }
+  __global__ void multiply_by_lane_kernel(double2 const *a, double2 const *weights, double2 *out, long count, long lanes) {
+    long i = long(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (i < count) out[i] = product(a[i], weights[i % lanes]);
+  }
+  cudaError_t multiply_by_lane(void const *a, void const *weights, void *out, long count, long lanes, cudaStream_t stream) {
+    multiply_by_lane_kernel<<<(count + 255) / 256, 256, 0, stream>>>(static_cast<double2 const *>(a), static_cast<double2 const *>(weights),
+                                                                  static_cast<double2 *>(out), count, lanes);
+    return cudaGetLastError();
+  }
   __global__ void cross_kernel(double2 const *hf, double2 const *g, double2 const *f, double2 const *hg, double2 *out, long count) {
     long i = long(blockIdx.x) * blockDim.x + threadIdx.x;
     if (i < count) {

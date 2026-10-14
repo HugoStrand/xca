@@ -104,3 +104,22 @@ Profiler wrapper durations include capture/export effects and are excluded from
 benchmark comparisons. Source frontends, report hashes and API-count summaries
 belong in hardware folders. Timing uses the ordinary arena binary in a separate
 isolated paired campaign, with matched CPU and prior controls retained.
+
+## Path-constant coefficient variant
+
+`block_sparse_scalar_constants_benchmark/tests` retains contiguous scalar storage
+and ordered fan-in. Vertex coefficients, special endpoint coefficients, prefactors
+and signs are computed once per lane. A broadcast multiply uploads one coefficient
+per lane and repeats it across DLR nodes, retaining the same complex multiply and
+operation sequence. Node-dependent pole/hybridization weights retain their full
+node-by-lane representation. Nothing is cached across calls: changed path metadata,
+operator values and propagators retain their existing lifetime and update rules.
+
+`block_sparse_cpu_scalar_constants_benchmark` applies the same once-per-lane host
+preparation in the matched CPU scheduler and builds without CUDA. The older CPU,
+arena and per-block controls remain separately selectable. The new GPU workspace
+fits the existing conservative bound, with smaller coefficient uploads. Qualification
+includes exact broadcast-versus-expanded GPU products, in-place updates and kernel
+tails, plus the existing full evaluator, cutoff, ownership and fallback controls.
+Only unprofiled isolated paired runs support performance comparisons; GH200 remains
+the target and local timings do not select a production dispatch policy.
