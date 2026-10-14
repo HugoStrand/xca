@@ -1,0 +1,4 @@
+JobID|State|ExitCode|ElapsedRaw|AllocTRES|MaxRSS|NodeList
+3828369|COMPLETED|0:0|245|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=107569152K,node=1||n123
+3828369.batch|COMPLETED|0:0|245|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=107569152K,node=1|2186432K|n123
+3828369.extern|COMPLETED|0:0|246|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=107569152K,node=1||n123

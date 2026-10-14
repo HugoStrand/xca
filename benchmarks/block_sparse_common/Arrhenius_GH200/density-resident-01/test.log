@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda
+Test project /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda
+    Start  9: experiments/block_sparse_cuda/scalar_resident
+1/5 Test  #9: experiments/block_sparse_cuda/scalar_resident ...   Passed   42.82 sec
+    Start 26: block_sparse/cuda_admission
+2/5 Test #26: block_sparse/cuda_admission .....................   Passed    2.34 sec
+    Start 27: block_sparse/cuda_device_ops
+3/5 Test #27: block_sparse/cuda_device_ops ....................   Passed    0.76 sec
+    Start 28: block_sparse/cuda_diagram_evaluator
+4/5 Test #28: block_sparse/cuda_diagram_evaluator .............   Passed    6.28 sec
+    Start 29: block_sparse/cuda_dlr_ops
+5/5 Test #29: block_sparse/cuda_dlr_ops .......................   Passed    0.85 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  53.07 sec

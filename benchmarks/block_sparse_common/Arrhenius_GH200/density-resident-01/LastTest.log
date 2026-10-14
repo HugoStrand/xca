@@ -1,0 +1,217 @@
+Start testing: Oct 14 14:31 CEST
+----------------------------------------------------------
+9/66 Testing: experiments/block_sparse_cuda/scalar_resident
+9/66 Test: experiments/block_sparse_cuda/scalar_resident
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_resident/block_sparse_scalar_resident_tests"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_resident
+"experiments/block_sparse_cuda/scalar_resident" start time: Oct 14 14:31 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 19 tests from 6 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2556 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (520 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (9 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (28 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2120 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (1 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (618 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (5854 ms total)
+
+[----------] 7 tests from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.CohortTailChangedValuesAndMasks
+[       OK ] ScalarPathQualification.CohortTailChangedValuesAndMasks (1418 ms)
+[ RUN      ] ScalarPathQualification.CompletedPathCutoffAdjacentValues
+[       OK ] ScalarPathQualification.CompletedPathCutoffAdjacentValues (64 ms)
+[ RUN      ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange
+[       OK ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange (22 ms)
+[ RUN      ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute
+[       OK ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute (38 ms)
+[ RUN      ] ScalarPathQualification.ActiveOrderSixCutoffAndReallocatedInputs
+Order-six relative error against long-double arithmetic: reference=5.4404e-13 candidate=3.95037e-13 active_index=10
+[       OK ] ScalarPathQualification.ActiveOrderSixCutoffAndReallocatedInputs (428 ms)
+[ RUN      ] ScalarPathQualification.CutoffReplayAcrossCohortsAndPoleChoices
+[       OK ] ScalarPathQualification.CutoffReplayAcrossCohortsAndPoleChoices (32899 ms)
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[       OK ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (1088 ms)
+[----------] 7 tests from ScalarPathQualification (35960 ms total)
+
+[----------] 1 test from ScalarFaninOrder
+[ RUN      ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput
+[       OK ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput (1 ms)
+[----------] 1 test from ScalarFaninOrder (1 ms total)
+
+[----------] 1 test from ScalarConstants
+[ RUN      ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates
+[       OK ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates (1 ms)
+[----------] 1 test from ScalarConstants (1 ms total)
+
+[----------] 1 test from ScalarSets
+[ RUN      ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission
+[       OK ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission (551 ms)
+[----------] 1 test from ScalarSets (551 ms total)
+
+[----------] 1 test from ResidentWeights
+[ RUN      ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates
+[       OK ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates (1 ms)
+[----------] 1 test from ResidentWeights (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 19 tests from 6 test suites ran. (42372 ms total)
+[  PASSED  ] 19 tests.
+<end of output>
+Test time =  42.82 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/scalar_resident" end time: Oct 14 14:32 CEST
+"experiments/block_sparse_cuda/scalar_resident" time elapsed: 00:00:42
+----------------------------------------------------------
+
+26/66 Testing: block_sparse/cuda_admission
+26/66 Test: block_sparse/cuda_admission
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse/cuda_admission"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_admission" start time: Oct 14 14:32 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BlockSparseCudaAdmission
+[ RUN      ] BlockSparseCudaAdmission.LowerBudgetRejectionAndHigherOrderTransition
+[       OK ] BlockSparseCudaAdmission.LowerBudgetRejectionAndHigherOrderTransition (1154 ms)
+[ RUN      ] BlockSparseCudaAdmission.ScratchReleaseRetainsTablesAndSolvesAgain
+[       OK ] BlockSparseCudaAdmission.ScratchReleaseRetainsTablesAndSolvesAgain (6 ms)
+[ RUN      ] BlockSparseCudaAdmission.CompleteHostOutputPlacement
+[       OK ] BlockSparseCudaAdmission.CompleteHostOutputPlacement (1038 ms)
+[----------] 3 tests from BlockSparseCudaAdmission (2199 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (2199 ms total)
+[  PASSED  ] 3 tests.
+<end of output>
+Test time =   2.34 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_admission" end time: Oct 14 14:32 CEST
+"block_sparse/cuda_admission" time elapsed: 00:00:02
+----------------------------------------------------------
+
+27/66 Testing: block_sparse/cuda_device_ops
+27/66 Test: block_sparse/cuda_device_ops
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse/cuda_device_ops"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_device_ops" start time: Oct 14 14:32 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from BlockSparseCudaOps
+[ RUN      ] BlockSparseCudaOps.RectangularSparseProductsAndSnapshot
+[       OK ] BlockSparseCudaOps.RectangularSparseProductsAndSnapshot (591 ms)
+[ RUN      ] BlockSparseCudaOps.ScalarZeroBudgetsAndRecovery
+[       OK ] BlockSparseCudaOps.ScalarZeroBudgetsAndRecovery (2 ms)
+[ RUN      ] BlockSparseCudaOps.RectangularDenseAndRankProducts
+[       OK ] BlockSparseCudaOps.RectangularDenseAndRankProducts (25 ms)
+[ RUN      ] BlockSparseCudaOps.OwningDeviceAndLifetime
+[       OK ] BlockSparseCudaOps.OwningDeviceAndLifetime (1 ms)
+[ RUN      ] BlockSparseCudaOps.ComplexTracesAndStridedAccumulation
+[       OK ] BlockSparseCudaOps.ComplexTracesAndStridedAccumulation (2 ms)
+[----------] 5 tests from BlockSparseCudaOps (622 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (622 ms total)
+[  PASSED  ] 5 tests.
+<end of output>
+Test time =   0.76 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_device_ops" end time: Oct 14 14:32 CEST
+"block_sparse/cuda_device_ops" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/66 Testing: block_sparse/cuda_diagram_evaluator
+28/66 Test: block_sparse/cuda_diagram_evaluator
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse/cuda_diagram_evaluator"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_diagram_evaluator" start time: Oct 14 14:32 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2175 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (520 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (9 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (28 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2793 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (1 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (612 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6140 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (6140 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   6.28 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_diagram_evaluator" end time: Oct 14 14:32 CEST
+"block_sparse/cuda_diagram_evaluator" time elapsed: 00:00:06
+----------------------------------------------------------
+
+29/66 Testing: block_sparse/cuda_dlr_ops
+29/66 Test: block_sparse/cuda_dlr_ops
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse/cuda_dlr_ops"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_dlr_ops" start time: Oct 14 14:32 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-77f59ac/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from BlockSparseCudaDlr
+[ RUN      ] BlockSparseCudaDlr.RectangularCachedSolvesAndVariableRhs
+[       OK ] BlockSparseCudaDlr.RectangularCachedSolvesAndVariableRhs (612 ms)
+[ RUN      ] BlockSparseCudaDlr.RealMeshesRectangularConvolutionAndComposedEdge
+[       OK ] BlockSparseCudaDlr.RealMeshesRectangularConvolutionAndComposedEdge (92 ms)
+[ RUN      ] BlockSparseCudaDlr.AliasesCancellationAndBudgetRecovery
+[       OK ] BlockSparseCudaDlr.AliasesCancellationAndBudgetRecovery (9 ms)
+[ RUN      ] BlockSparseCudaDlr.CompactStorageAndAliasTransitions
+[       OK ] BlockSparseCudaDlr.CompactStorageAndAliasTransitions (3 ms)
+[----------] 4 tests from BlockSparseCudaDlr (718 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (718 ms total)
+[  PASSED  ] 4 tests.
+<end of output>
+Test time =   0.85 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_dlr_ops" end time: Oct 14 14:32 CEST
+"block_sparse/cuda_dlr_ops" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 14:32 CEST
