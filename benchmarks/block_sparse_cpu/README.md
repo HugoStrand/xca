@@ -85,7 +85,7 @@ python3 benchmarks/block_sparse_cpu/summarize_work.py mixed-work.csv --output we
 ```
 
 Lambda means beta*omega_max, with beta2, eps1e-10 and nonsymmetric nodes. Default
-Lambda40 preserves the original mesh. Actual rank is reported, never truncated;
+Lambda40 selects the standard mesh. Actual rank is reported, never truncated;
 `--rank` is only an analytic capacity parameter. Analytic cases cannot emit work
 or derive a physical mask. A trace exceeding200000 rows fails and leaves an
 explicitly incomplete file; use smaller declared windows, not a truncated report.
@@ -101,6 +101,6 @@ they are not measured HBM traffic, peak memory or a cache model. Packing, alloca
 zero fill, copies, scans, pivot/division and opaque library work are excluded. Use
 complete-call timings and measured peaks for performance/admission decisions.
 
-Keep raw traces, commands, masks, ranks and hashes with the machine report. Existing
-historical histograms remain unchanged; new traces model the reference implementation,
-not the different operation counts of optimized eligible kernels.
+Keep raw traces, commands, masks, ranks and hashes with the machine report. These
+counts model the reference implementation; eligible optimized kernels can have
+different operation counts.

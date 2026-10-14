@@ -141,11 +141,24 @@ pass/fail.
 `run_cohort.py --process-repetitions 3` starts a new subprocess for each repetition,
 backend and case. `--samples` controls samples **within** each process (default3).
 Use repeated `--case`/`--backend` to declare a bounded subset without changing its
-scientific inputs. Backends are interleaved within each repetition. Defaults retain
-the previous single-process case set and raw filenames; multiple repetitions add
+scientific inputs. Backends are interleaved within each repetition. The default is one
+process per case/backend with unsuffixed raw filenames; multiple repetitions add
 `-processN` filenames. Samples carry process-repetition IDs, and `processes.csv`
 records PIDs, control/reported-backend labels, per-process median latency and setup.
 Raw stdout/stderr and exact commands remain in the manifest. A timeout kills and
 waits for that child, retains its output, and stops the cohort. New records distinguish
 child return status from a recorder parse failure. Three samples from one PID must
 not be described as three fresh-process repetitions.
+
+
+`--cohort production` selects six bounded occupation/number/mixed cases and seven
+controls: unchanged CPU, scalar-constants CPU, transform-hoisted CPU, library GPU,
+ordered GPU, production mapped GPU and guarded production real-NCA GPU. The mapped
+frontend is `block_sparse_cuda_mapped_benchmark`; it requires native sparse kernels.
+It evaluates the production policy rather than a private prototype. Record actual
+eligibility/fallback alongside timing; singleton sets and non-SE observables do not
+establish mapped-special fusion benefits. `finalists.sbatch` builds these frontends
+and four focused controls in an isolated Arm tree, then runs three fresh processes
+and three samples per case/backend, with a fifteen-minute one-GPU cap. Python and
+dense-small are OFF in this recipe. No broad crossover or default follows from this
+bounded cohort; retain setup, process ranges and negative cases.

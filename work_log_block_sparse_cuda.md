@@ -1,5 +1,62 @@
 # Block-sparse CUDA work log
 
+## 2026-10-15 — Weighted inventory and fresh GH200 processes
+
+Goal remains active. Closed two measured audit gaps without changing runtime85ecb2d:
+bounded sparse/dense-equivalent work inventory and fresh-process finalist repetition.
+Code50bec42 adds the CPU-only structural recorder, actual nnz/rank/rectangular shapes,
+reference q²/q special work, model arithmetic and operand footprints; physical G0
+mask and Lambda4000/actualrank64 are available without truncation. summarizer rejects
+invalid negative data and row-cap overflow; analytic metadata cannot claim physical
+work. Grouped rows are not runtime order, footprints are not HBM traffic or peak
+memory, and numerical output cutoff/opaque/packing/allocation/copy costs are excluded.
+
+Evidence5e719bb covers eight N4-N10 occupation/number/mixed dynamic windows at actual
+rank23/64; independent path/special-count/cost controls and expected failures retained.
+Final binary7abdc02 replays all six earlier default-mesh traces byte identically.
+No general physical high-rank approximation qualification follows from this model.
+
+Runner e78838f records real PIDs, per-process samples/setup, median-of-process-medians,
+ranges/MAD, strict finite/status checks and timeout cleanup. Production cohort/frontend
+d9fa8a2 compares unchanged/scalar-matched/hoisted CPU and library/ordered/actual mapped/
+guarded real-NCA GPU on six fixed cases. Local60051b3 records27fresh pilot processes,
+three-process final-summary control and42production screen processes. All pass; pilot
+renderer/actual binary hashes are explicit and no local threshold is inferred.
+
+Recipe b052919 stages pinned d9fa8a2/runtime85ecb2d/GTest988ea2c in an isolated Arm tree,
+normalizes mtimes before allocation, preserves installed TRIQS/shared sources, builds
+seven frontends and four tests; Python/dense-small OFF, sparse native ON, sm90. Restored
+SSH works. Scheduling-only3853231 does not consume an allocation. Job3853285 completed
+0:0 on n123 in329seconds, one GH200, accountnaiss2026-3-569-gpu, fifteen-minute cap.
+Four focused CTests pass60.72s: device trap, mapped special, real-NCA dispatch/numerics.
+Trap qualifies owned-stream error plus poisoned evaluator entry, not mid-topology MPI
+recovery; it remains excluded from sanitizer-clean cohorts. No new full-suite claim.
+
+Target126fresh processes/378samples pass,126distinct PIDs,42groups with three PIDs each.
+All signals nonzero/metrics finite; maxabs1.333e-14/maxrelative5.708e-15. Source/binary/
+runner/job/original-download hashes retained before LF/trailing-whitespace normalization.
+Raw CPU/CUDA files remain in corresponding hardware folders; paired summaries and
+qualification logs under finalists-01, evidence93fc683. Three samples in one process
+are now explicitly distinct from three fresh-process medians. No costly N10/N14 repeats.
+
+Median whole-call examples: scalar N8 real-NCA1.352ms versus matched CPU3.533ms (2.61x);
+number N8 mapped13.268ms versus ordered69.052ms (5.20x) and hoisted CPU92.230ms.
+Number N6 OCA mapped10.660ms improves ordered29.605ms but loses to hoisted CPU5.617ms;
+scalar N4 and mixed/higher-order scalar cases retain CPU wins/noise/outliers. All ranges,
+setup and negative results retained. Singleton/non-SE mapped fallback timings do not
+prove fusion. No runtime defaults or automatic dispatch change. This is single-threaded
+rank23 bounded evaluation, not threaded-CPU/fullSolver/physicalN14/general crossover.
+GH200-class remains target; RTX A4000 remains a development proxy.
+
+Tracked allocation3356seconds/.932222nominal GPUh including this329seconds and all
+prior failed/build allocations; shared100GPUh/month cap also serves other user work.
+Job and all local command handles terminal; no further allocation this checkpoint.
+Next implement bounded MPI per-rank local/reduction/transfer and topology/index balance
+measurement with controlled scientific summation, then re-audit completion requirements.
+Prior full suites/split targetMPI remain their documented checkpoints. Preserve all
+experiments/user work. Code/evidence and this plan/log commit separate, no push/install/
+supervisor changes; goal not complete. Report links and git diff --check pass.
+
 ## 2026-10-14 — Requirements audit and new error/order controls
 
 Previous turn was progress through target Python/split MPI. Inspected objective,
