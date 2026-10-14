@@ -1,0 +1,4 @@
+stage,topologies,order,modes,partition,zero_every,visited_paths,truncated,occurrences,unique_keys,cross_topology_keys,distinct_topology_reuses,unique_payload_bytes,replay,repeated_value_checks,max_reuse_error,max_reference_error,unique_value_checksum
+edge,6,4,4,number,0,26,0,34,10,8,24,54464,1,24,0,0,26.983365243086631
+root,6,4,4,number,0,26,0,26,3,2,10,25024,1,23,0,0,128.29200599742666
+vertex,6,4,4,number,0,26,0,34,10,8,24,54464,1,24,0,0,138.54286674882638

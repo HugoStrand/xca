@@ -1,0 +1,913 @@
+{
+  "host": "ThinkStation",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_commit": "ba2d7b7c220bcbd2a746881bd444511a08588b04",
+  "git_status": " M .gitignore\n M experiments/block_sparse_cuda/topology_reuse/README.md\n M experiments/block_sparse_cuda/topology_reuse/probe.cpp\n M experiments/block_sparse_cuda/topology_reuse/run.py\n M experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/README.md\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "triqs_root": "/home/hugstr/apps/triqs",
+  "binary_sha256": "6015d7f78f8285db4d0e3ea0dccde5c8b6dfa38f98e7cba3ac95720b6482487a",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/topology_reuse/run.py": "59e03b64ea9bf59c3b3f1ec60e4b546e0ee8d9ea0939136c88684be56a5647e8",
+    "experiments/block_sparse_cuda/topology_reuse/probe.cpp": "5252105a80e7dc2664acfd4b81b1ff48a37664cc5bbb600ff99ae773f1048b14",
+    "python/triqs_xca/diag.py": "fc6f1f30945e66fe4a3f7b7070e67d9bf389b86e72f226cfb7b3f618750d193e",
+    "c++/triqs_xca/block_sparse/cuda/path.hpp": "ea0c28a4242bea52f0bf92a7660b226467bdf6c1a69f785d7b0d3017c51a69c2",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "f78d3b95c25d58ee8b2290d84d4aa7d9b7d10f46180ac8660a1b41dbdd8a6d64"
+  },
+  "cohorts": [
+    {
+      "order": 2,
+      "scanned_pairings": 3,
+      "scan_cap": 4096,
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      ],
+      "selection": "first connected; biased, not population estimate"
+    },
+    {
+      "order": 3,
+      "scanned_pairings": 15,
+      "scan_cap": 4096,
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            5
+          ]
+        ]
+      ],
+      "selection": "first connected; biased, not population estimate"
+    },
+    {
+      "order": 4,
+      "scanned_pairings": 38,
+      "scan_cap": 4096,
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            4,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            4,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ]
+      ],
+      "selection": "first connected; biased, not population estimate"
+    },
+    {
+      "order": 6,
+      "scanned_pairings": 1088,
+      "scan_cap": 4096,
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            8,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            8,
+            10
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            8,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            8,
+            11
+          ]
+        ]
+      ],
+      "selection": "first connected; biased, not population estimate"
+    }
+  ],
+  "cases": [
+    {
+      "name": "o2-number-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o2-number-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o2-mixed-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o2-mixed-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o2-occupation-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o2-occupation-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o2.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-number-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-number-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-mixed-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-mixed-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-occupation-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-occupation-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-number-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-number-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-mixed-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-mixed-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-occupation-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-occupation-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-number-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-number-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-mixed-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-mixed-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-occupation-z0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "0",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-occupation-z2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--count",
+        "2",
+        "--path-limit",
+        "4096",
+        "--zero-every",
+        "2",
+        "--replay",
+        "1"
+      ],
+      "returncode": 0
+    }
+  ],
+  "controls": {
+    "path_cap": "stage,topologies,order,modes,partition,zero_every,visited_paths,truncated,occurrences,unique_keys,cross_topology_keys,distinct_topology_reuses,unique_payload_bytes,replay,repeated_value_checks,max_reuse_error,max_reference_error,unique_value_checksum\nedge,4,3,4,number,0,1,1,1,1,0,0,8832,0,0,0,0,0\nroot,4,3,4,number,0,1,1,1,1,0,0,5888,0,0,0,0,0\nvertex,4,3,4,number,0,1,1,1,1,0,0,8832,0,0,0,0,0\n",
+    "malformed_stderr": "Missing topology entries\n",
+    "changed-G": {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--replay",
+        "1",
+        "--g-scale",
+        "1.01"
+      ],
+      "stdout": "stage,topologies,order,modes,partition,zero_every,visited_paths,truncated,occurrences,unique_keys,cross_topology_keys,distinct_topology_reuses,unique_payload_bytes,replay,repeated_value_checks,max_reuse_error,max_reference_error,unique_value_checksum\nedge,4,3,4,number,0,18,0,34,14,8,20,89792,1,20,0,8.6736200268615914e-18,27.626330930274019\nroot,4,3,4,number,0,18,0,18,3,2,6,25024,1,15,0,0,129.57492605740057\nvertex,4,3,4,number,0,18,0,34,14,8,20,89792,1,20,0,1.7347234759768071e-18,140.31849636279435\n"
+    },
+    "changed-coefficients": {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_topology_reuse_probe",
+        "--topologies",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "--replay",
+        "1",
+        "--coefficient-scale",
+        ".97"
+      ],
+      "stdout": "stage,topologies,order,modes,partition,zero_every,visited_paths,truncated,occurrences,unique_keys,cross_topology_keys,distinct_topology_reuses,unique_payload_bytes,replay,repeated_value_checks,max_reuse_error,max_reference_error,unique_value_checksum\nedge,4,3,4,number,0,18,0,34,14,8,20,89792,1,20,0,8.6737126705671579e-18,27.068357517695098\nroot,4,3,4,number,0,18,0,18,3,2,6,25024,1,15,0,0,128.29200599742666\nvertex,4,3,4,number,0,18,0,34,14,8,20,89792,1,20,0,8.6736835540806062e-19,138.85319230146732\n"
+    }
+  }
+}

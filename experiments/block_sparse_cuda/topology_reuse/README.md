@@ -39,3 +39,14 @@ changed-input invalidation and complete-call timings. Graph capture additionally
 requires stable storage and capture-safe operations. Production allocations,
 synchronization and host cutoff decisions currently prevent direct whole-call
 capture. Graph replay alone does not reuse numerical values.
+
+Pass `--replay` to the recorder for numerical qualification. Each occurrence is
+recomputed using CSR applications and the retained hoisted CPU convolution,
+then compared against a separately advanced dense-operator/original-CPPDLR
+reference. Repeated keys must give exactly identical recomputed tensors. The
+reference screen is `1e-10 * max(abs(reference)) + 1e-14`; this qualifies key
+identity and replay, not universal solver accuracy. Nonfinite tensors fail.
+Stored candidate values have an explicit total 64 MiB cap; reaching it fails
+the probe. Changed-G and changed-coefficient controls run fresh replay processes
+and verify changed contents. They demonstrate the need for invalidation, not an
+implemented cross-call cache protocol. No device arithmetic is executed here.

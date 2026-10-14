@@ -22,6 +22,7 @@ def main():
     parser.add_argument('--build', type=Path, default=ROOT / 'cbuild')
     parser.add_argument('--machine', required=True)
     parser.add_argument('--campaign', default='prefix-01')
+    parser.add_argument('--replay', action='store_true', help='Qualify repeated values and independent dense/CPPDLR replay')
     args = parser.parse_args()
     for name in (args.machine, args.campaign):
         if not name or Path(name).name != name or name in ('.', '..'):
@@ -64,7 +65,7 @@ def main():
                 name = f'o{order}-{partition}-z{zero_every}'
                 command = [str(binary), '--topologies', str(topology_file), '--modes', '4',
                            '--partition', partition, '--count', '2', '--path-limit', '4096',
-                           '--zero-every', str(zero_every)]
+                           '--zero-every', str(zero_every), '--replay', str(int(args.replay))]
                 result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=60)
                 (folder / f'{name}.stdout').write_text(result.stdout)
                 (folder / f'{name}.stderr').write_text(result.stderr)
@@ -87,6 +88,19 @@ def main():
                              text=True, capture_output=True, timeout=60)
     assert invalid.returncode != 0 and 'Missing topology entries' in invalid.stderr
     manifest['controls'] = dict(path_cap=limited.stdout, malformed_stderr=invalid.stderr)
+    if args.replay:
+        baseline = {row['stage']: row for row in rows if row['case'] == 'o3-number-z0'}
+        for name, option, value in (('changed-G', '--g-scale', '1.01'),
+                                    ('changed-coefficients', '--coefficient-scale', '.97')):
+            command = [str(binary), '--topologies', str(valid), '--replay', '1', option, value]
+            result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=60)
+            assert result.returncode == 0, result.stderr
+            changed = list(csv.DictReader(io.StringIO(result.stdout)))
+            assert all(row['max_reuse_error'] == '0' for row in changed)
+            assert any(row['unique_value_checksum'] != baseline[row['stage']]['unique_value_checksum']
+                       for row in changed if row['stage'] != 'root')
+            (folder / f'{name}.stdout').write_text(result.stdout)
+            manifest['controls'][name] = dict(command=command, stdout=result.stdout)
     with (folder / 'summary.csv').open('w', newline='') as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
         writer.writeheader()

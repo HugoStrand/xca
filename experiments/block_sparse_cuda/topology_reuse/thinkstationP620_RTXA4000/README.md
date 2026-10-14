@@ -25,3 +25,12 @@ not predict overlap for all indices, density operators, or ten/fourteen modes.
 Numerical qualification, cache lifetime/input invalidation and full-call timings
 remain required before any DAG or CUDA graph promotion. Existing evaluator
 arithmetic, topology reduction order and backend defaults are unchanged.
+
+`replay-01` qualifies the same 24 cases numerically: 384 repeated-key comparisons
+are exactly equal. Independent dense-operator/original-CPPDLR prefixes differ
+by at most 8.423845684525094e-18 in absolute value from CSR/hoisted prefixes.
+Maximum retained candidate tensor payload is 204,608 bytes across all stages
+of a case. Fresh changed-G and changed-coefficient controls change non-root
+checksums while retaining exact repeated-key equality. The resource cap and
+malformed-input controls also pass. This is CPU numerical qualification, not
+a measured GPU sharing gain or a complete-call equivalence check.
