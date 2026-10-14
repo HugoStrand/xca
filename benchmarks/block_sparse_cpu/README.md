@@ -68,3 +68,39 @@ is tested against live evaluator bounds for both special/output policies. Native
 CUDA execution still enforces free memory, headroom and configured host output
 limits. Target hardware is GH200-class; local measurements and synthetic dimensions
 alone do not qualify a full ten/fourteen-mode solver or determine physical ranks.
+
+## Weighted reference work
+
+`--work trace.csv` records the actual fields/nonzeros and rectangular shapes of
+accepted structural self-energy paths. The reference special vertex performs q²
+right products and q left products; the shape histogram counts that same schedule.
+`--physical-mask` derives the input-block threshold from this fixture's atomic G0;
+the default remains the all-live metadata control. Neither mode evaluates the
+output cutoff. Potential output accumulation is reported separately.
+
+```bash
+block_sparse_inventory --modes 6 --partition mixed --dynamic --order 2 --count 1 \
+  --physical-mask --lambda 4000 --work mixed-work.csv --shapes mixed-shapes.csv
+python3 benchmarks/block_sparse_cpu/summarize_work.py mixed-work.csv --output weighted
+```
+
+Lambda means beta*omega_max, with beta2, eps1e-10 and nonsymmetric nodes. Default
+Lambda40 preserves the original mesh. Actual rank is reported, never truncated;
+`--rank` is only an analytic capacity parameter. Analytic cases cannot emit work
+or derive a physical mask. A trace exceeding200000 rows fails and leaves an
+explicitly incomplete file; use smaller declared windows, not a truncated report.
+
+The trace identifies index, output/source sector, symmetry set, field/mixing field,
+stage and dimensions. Rows are grouped by operation kind within each path, **not**
+a runtime execution/dependency ordering. The summary reports event, arithmetic and
+operand-footprint shares. Sparse cost uses8*r*nnz*RHS, independently of dense-equivalent
+8*r*M*N*K. Rank products use a single r-by-r matrix; spatial products batch over r.
+LU solves use the leading8*r²*NRHS model. Pointwise operations are listed separately.
+Operand footprints count addressable dense inputs/outputs and CSR/table payload;
+they are not measured HBM traffic, peak memory or a cache model. Packing, allocation,
+zero fill, copies, scans, pivot/division and opaque library work are excluded. Use
+complete-call timings and measured peaks for performance/admission decisions.
+
+Keep raw traces, commands, masks, ranks and hashes with the machine report. Existing
+historical histograms remain unchanged; new traces model the reference implementation,
+not the different operation counts of optimized eligible kernels.
