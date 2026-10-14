@@ -26,3 +26,10 @@ and rejects builds without native sparse kernels. Its backend label is
 binary as the CUDA argument to the common recorder, campaign `ordered-production-01`,
 with the matched CPU binary. Native compilation is controlled independently with
 `XCA_CUDA_BLOCK_SPARSE=AUTO|ON|OFF`; no performance default is implied by compiling it.
+
+`block_sparse_cuda_real_nca_benchmark` opts into the production `RealBatch` NCA
+policy and retains ordered operators for fallback. Its complete-call fixture checks
+that real occupation-partition NCA self-energy uses the batch route; other orders
+and partitions use the reference. Compilation requires native sparse kernels.
+The backend label is `cuda_real_nca_batch`. It shares numerical screening and timing
+with the other frontends and leaves the reference binary available as a baseline.
