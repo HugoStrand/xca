@@ -97,3 +97,16 @@ skipped stores; byte rejection and snapshot bypass must retain no device entries
 Empty ranges and invalid settings preserve cache contents. Explicit clear releases
 both device entries and host snapshot capacity. Controls run with Library/Reference
 and, when available, Ordered/Mapped; the latter is skipped in native-disabled builds.
+
+`run_selection.py --machine YOUR_MACHINE` records broader Ordered/Mapped selections.
+It scans at most 4096 real pairings at orders 3/4/6, then chooses up to six evenly
+spaced connected topologies within that bounded scan. Three-index ranges start at
+0, 7 and 31 for each four-mode partition, plus one six-mode number case. This reduces
+early-selection bias but is not random sampling of the full topology/index space.
+The manifest records selections and discovery time; discovery is outside device
+call timing. Output and accepted/contributing path counts must match exactly for
+each paired sample. Path counters distinguish no-work selections from active calls.
+
+The benchmark retains its original three positional arguments; optional additional
+`first count modes` select a bounded range (first at most 4096, count at most 8,
+modes at most 6). Each topology's actual range domain is checked before timing.

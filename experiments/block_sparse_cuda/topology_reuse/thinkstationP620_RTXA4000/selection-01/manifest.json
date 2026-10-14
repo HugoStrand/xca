@@ -1,0 +1,764 @@
+{
+  "host": "ThinkStation",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_commit": "97b18e6d9b6e695bb2353f0900aff649be23899b",
+  "git_status": " M .gitignore\n M experiments/block_sparse_cuda/topology_reuse/cache_benchmark.cpp\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? experiments/block_sparse_cuda/topology_reuse/run_selection.py\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "gpu": "NVIDIA RTX A4000, 16376 MiB, 580.178.04",
+  "binary_sha256": "264d9fbb8b88440ebf149834fcd24ed5ae4d047f228fe9b4d2b19d5a8212a082",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/topology_reuse/run_selection.py": "c253b50906ccd9c7ba25205d907d8b3b186802be32dca1d42be0b16602013a08",
+    "python/triqs_xca/diag.py": "fc6f1f30945e66fe4a3f7b7070e67d9bf389b86e72f226cfb7b3f618750d193e",
+    "experiments/block_sparse_cuda/topology_reuse/cache_tests.cpp": "3d07a8221a810d2e6a5efacdc0d7251e7b7834d6e2763cfa675af05604f9a46c",
+    "experiments/block_sparse_cuda/topology_reuse/probe.cpp": "5252105a80e7dc2664acfd4b81b1ff48a37664cc5bbb600ff99ae773f1048b14",
+    "experiments/block_sparse_cuda/topology_reuse/cache_benchmark.cpp": "58e15b976f7ecf416f5f2fe5d724cfcc57b3e6b72b3cdd932127fad17e2ddef8",
+    "experiments/block_sparse_cuda/topology_reuse/cache.inc": "b61504ad6fe6def50e8eec05ddb02e1a054e14502de97ac6d535525737fe88f1",
+    "experiments/block_sparse_cuda/topology_reuse/CMakeLists.txt": "7de34d9014ba891e6057340760184e0fb5f94d9462365c542a8da80a95c53b6c",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "f78d3b95c25d58ee8b2290d84d4aa7d9b7d10f46180ac8660a1b41dbdd8a6d64",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.cpp": "61766faf7215400413bdcbe9bfe40504a268e4ef248989d5ea66e5498f42ae14",
+    "c++/triqs_xca/block_sparse/cuda/path.cpp": "d5a2b3ae85b59e81809d3adecd62153717604b3dcc1e1d799ce0fad41b2d64b5",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "ac07a8c34d4f155b9c1ed1d489aeb664ebd2c4ad6e4d5cade2aefea24e77a08b",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.cpp": "cb6a8993dd398cf274cff60fb40f7a7141b632b9efa964ad41934bfbfc1b8b25"
+  },
+  "cohorts": [
+    {
+      "order": 3,
+      "scanned_pairings": 15,
+      "scan_cap": 4096,
+      "connected_count": 4,
+      "positions": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            5
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            5
+          ]
+        ]
+      ],
+      "discovery_seconds": 0.001031204010359943,
+      "scope": "Evenly spaced within bounded generator prefix; not population sampling"
+    },
+    {
+      "order": 4,
+      "scanned_pairings": 105,
+      "scan_cap": 4096,
+      "connected_count": 27,
+      "positions": [
+        0,
+        5,
+        10,
+        15,
+        20,
+        26
+      ],
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            3,
+            6
+          ]
+        ],
+        [
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            7
+          ]
+        ]
+      ],
+      "discovery_seconds": 0.007114885025657713,
+      "scope": "Evenly spaced within bounded generator prefix; not population sampling"
+    },
+    {
+      "order": 6,
+      "scanned_pairings": 4096,
+      "scan_cap": 4096,
+      "connected_count": 963,
+      "positions": [
+        0,
+        192,
+        384,
+        577,
+        769,
+        962
+      ],
+      "selected": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            4,
+            7
+          ],
+          [
+            5,
+            11
+          ],
+          [
+            8,
+            10
+          ]
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            6,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            10
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            9
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            7,
+            10
+          ]
+        ]
+      ],
+      "discovery_seconds": 0.4067065550480038,
+      "scope": "Evenly spaced within bounded generator prefix; not population sampling"
+    }
+  ],
+  "cases": [
+    {
+      "name": "n4-o3-number-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "number",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-number-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "number",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-number-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "number",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-mixed-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "mixed",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-mixed-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "mixed",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-mixed-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "mixed",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-occupation-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "occupation",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-occupation-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "occupation",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o3-occupation-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "occupation",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-number-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "number",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-number-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "number",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-number-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "number",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-mixed-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "mixed",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-mixed-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "mixed",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-mixed-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "mixed",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-occupation-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "occupation",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-occupation-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "occupation",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o4-occupation-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o4.txt",
+        "occupation",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-number-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "number",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-number-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "number",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-number-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "number",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-mixed-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "mixed",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-mixed-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "mixed",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-mixed-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "mixed",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-occupation-first0",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "occupation",
+        "ordered_mapped",
+        "0",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-occupation-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "occupation",
+        "ordered_mapped",
+        "7",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-o6-occupation-first31",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o6.txt",
+        "occupation",
+        "ordered_mapped",
+        "31",
+        "3",
+        "4"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-o3-number-first7",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/selection-01/o3.txt",
+        "number",
+        "ordered_mapped",
+        "7",
+        "3",
+        "6"
+      ],
+      "returncode": 0
+    }
+  ]
+}

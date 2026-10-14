@@ -58,3 +58,27 @@ and reconstruct the cache, and both baseline policies are represented.
 Eight inherited observable/API/numerical controls pass; Library and Ordered/Mapped
 memcheck runs report zero errors and leaks. Cache-cap saturation, wider index ranges,
 full topology cohorts and GH200 qualification remain before production adoption.
+
+`selection-01` broadens Ordered/Mapped cohorts: all 15/105 pairings are scanned at
+orders 3/4, yielding 4/27 connected topologies, with all four or six evenly spaced
+connected selections. Order 6 scans 4096 of 10,395 pairings, yielding 963 connected
+members; six are spread across that bounded prefix. This is not population sampling.
+First indices 0/7/31 each cover three indices, across the three four-mode partitions;
+one additional six-mode number case uses first 7. All 28 processes / 252 samples
+match complete outputs and accepted/contributing counts exactly. Maximum cache
+charge is 2,278,656 bytes, below the default 8 MiB cap.
+
+Changed-G order-3 active four-mode medians improve 18.0–27.1%; the six-mode number
+case improves 21.5% (202.672 versus 159.149 ms). Order-4 active cases improve
+11.1–20.3%, while order-6 number cases improve about 8.9–9.0%. Order-6 mixed cases
+range from a 0.7% regression to a 1.0% reduction, with zero or two cache hits. The
+occupation order-4 first-zero and all selected order-6 cases have zero accepted
+paths and are excluded from active-work gain claims. Some order-4/6 number paths
+are accepted but fail the output cutoff; both evaluator counts still agree.
+
+Discovery and model construction are outside call timing; input invalidation,
+cache key construction, retained copies and transfers are inside it. Sequential
+paired medians use three samples and four/six small modes, not GH200 or full large-
+sector systems. Nonzero-offset mixed order-4 memcheck and argument-limit controls
+are checked separately. Larger random/index cohorts and a selection policy remain
+before production adoption. Earlier forced-limit controls cover cache saturation.
