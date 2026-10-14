@@ -1824,6 +1824,55 @@ probes before any full physical N14 run. Preserve resident baseline and failed r
 candidate; target hardware/default policy remains a separate gate. No new Arrhenius
 job was used or is justified solely by local sampled peaks.
 
+### Host-backed input candidate (2026-10-14)
+
+The separate [host-input experiment](experiments/block_sparse_cuda/host_inputs/README.md)
+(a0ae481) layers borrowed host propagator blocks on the full-shape lifetime schedule.
+It uploads starting blocks directly into T and edge sources directly into the weighted
+value tensor, with an explicit default-to-owned-stream handoff. No full device input
+array or extra host function snapshot is allocated. Tiny correlator roots are preserved;
+all original solve/GEMM shapes, path order, cutoff and complete output policies remain.
+Reference NCA is supported; the separate RealBatch arena policy explicitly rejects,
+because its whole-input upload violates this experiment's storage bound. Production
+and Python defaults are unchanged. Do not silently combine this policy with that arena.
+
+Eleven controls pass in native/library-only CUDA (9.79/9.76 s), including exact baseline
+comparisons, changed G/masks/output placements, tight budgets and invalid-call recovery.
+Three focused memcheck controls pass, zero errors/leaks. All18 adjacent-cutoff probes
+match production matrices and keep/drop decisions exactly. CPU configure omits the
+experiment and both native flags stay OFF in library tree. Forced ordered/mapped policy,
+constructor arena incompatibility, broader suites and Python/MPI remain explicit future
+qualification gates; these default-policy C++ checks are not evidence for those scopes.
+
+Six cases/three routes/three samples =54 local timing rows compare unchanged reference,
+resident lifetime and host input on the same CPU-screened fixture. All ordinary finite/
+CPU/replay checks and offline signal/error/structural summaries agree. N10 number OCA
+medians1104.346/1110.430/1114.810 ms, declared bounds450012768/333165408/265175200 bytes.
+Host input reduces bound41.1% vs reference with0.95% higher median latency in this small
+sample. Sampled global memory deltas343932928/299892736/226492416 bytes are not continuous
+or process-local peaks. A selected topology/index does not establish full-sum transfer
+reuse cost or dispatch. Resident output is used for these timings; host-sector output
+has separate correctness controls. Evidence:
+[host-input record](experiments/block_sparse_cuda/host_inputs/thinkstationP620_RTXA4000/host-input-01/README.md).
+
+The bound removes one complete input function from the lifetime schedule. With host
+input and complete host-sector output, N14/r64 OCA explicit device payload is89.895 GiB,
+below the observed95.58 GiB GH200 total, but **fit remains unproven**: check actual free
+bytes, opaque workspaces/headroom, allocations and host peaks. Host input/output alone
+are76.516 GiB before atom/model/scratch; the standard CPU-control fixture can exceed
+node RAM. Do not launch a full N14 Solver from these formulas. N14/r26 remains a rank/
+capacity diagnostic requiring separate physical accuracy qualification.
+
+Next first qualify a bounded full-shape phase/map probe locally at reduced dimensions,
+then a carefully capped GH200 finalist only after staging/budget/account checks. Charge
+all allocations/transfer and record free-memory peaks and early admission failure. Reuse
+cached Arm dependencies/builds; do not spend the shared100 GPU-hour/month quota on a full
+Cartesian sweep or oversized CPU reference. Retained correlator fragments independently
+need streaming: host-input correlator base at N14/r64 is155.179 GiB before endpoint/result
+extras. Keep endpoint/path/summation order and tiny roots when changing fragment residency.
+Qualify explicit policy combinations and eventually the consolidated C++/Python/MPI facade
+before promoting any input/lifetime policy. No new target allocation was used this turn.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

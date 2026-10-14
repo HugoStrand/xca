@@ -1,5 +1,55 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Host-backed input blocks with unchanged arithmetic
+
+Previous turn was progress: exact full-shape lifetime candidate, tighter phase admission
+and local benchmarks. Added a separate HostInputDiagramEvaluator generator layered on
+that schedule, preserving production/lifetime/row candidates. Borrows the caller's host
+GF for the synchronous call; starting blocks upload directly to T, edge sources to the
+weighted value tensor with owned-stream handoff. No full device input array/host mirror.
+Both SE/correlator edge orientations, tiny correlator roots and complete output policies
+remain. Same weights/solves/GEMM shapes/path order/cutoff; no reassociation or heuristic
+band. Bound removes one complete input function, all old non-input reserves preserved.
+Reference NCA covered; separate RealBatch arena explicitly rejects in source because
+its whole-input upload needs a different bound. No silent override or production API change.
+
+Native/library-only eleven controls pass9.79/9.76 s, including inherited dynamic/high-
+order/SE/SPGF/correlator cases plus exact baseline changed-G/masks, both output placements,
+exact budget/one-byte-below/baseline rejection and invalid-call recovery. Focused three-
+control memcheck27.998 s, zero errors/leaks. Eighteen adjacent-scale cutoff probes at
+ranks23/28 match baseline matrices and decisions exactly. CPU configure omits experiment;
+library native flags both OFF. Builds independent; all GPU verification/campaigns sequential.
+No new broad suite, forced ordered/mapped, Python/MPI or target qualification claim.
+
+Shared complete-call cohort six cases/three routes/three warm samples:54 rows, route
+order reversed on alternating cases, one OMP/BLAS thread. Number OCA N4/N6/N8/N10, mixed
+N6 SPGF, dynamic N4 number correlator, one topology/index and rank23. Every process returns
+zero, finite/CPU-screening/exact self-replay checks pass. Offline signal/error/structural
+fields agree across reference/lifetime/host input. N10 medians1104.346/1110.430/1114.810 ms;
+bounds450012768/333165408/265175200 bytes. Host input bound41.1% lower, median0.95% slower
+than baseline in this sample. Sampled deltas343932928/299892736/226492416 bytes are global,
+not continuous/process-local peaks; small cases can be zero due to caching. Timings use
+resident complete outputs; host-output correctness separately qualified. No full-sum
+transfer/crossover/default inference.
+
+Metadata-only N14/r64 host input/host output OCA estimate89.895 GiB falls below observed
+GH20095.58 GiB total but fit remains unproven. Host input/output alone76.516 GiB, before
+atom/model/scratch; standard whole CPU-control fixture risks exceeding node RAM. No full
+physical N14 run or rank accuracy claim. Correlator base155.179 GiB still exceeds device
+capacity because fragments remain resident. Next bounded full-shape phase/map probe,
+policy-combination qualification and independent fragment residency; prepare any capped
+GH200 finalist only after local evidence and quota/free-memory/host-peak checks. Preserve
+all baselines/counterexamples; eventually expose qualified policies via consolidated
+facade and mutable Python/MPI orchestration. No hidden CPU fallback.
+
+Codea0ae481 and evidence9ede41f committed separately from plan/log. Record under
+experiments/block_sparse_cuda/host_inputs/thinkstationP620_RTXA4000/host-input-01 includes
+commands/binary hashes,54 raw samples/summaries, all controls/build/memcheck logs, cutoff
+CSV and capacity formulas. Archive-only whitespace normalization preserves values and
+records original hashes; staged whitespace check passes. All handles terminal, goal
+active, unrelated files retained. No new Arrhenius GPU time (cumulative .435 nominal
+hours), push/install/supervisor changes. GH200-class target; A4000 is a local screen.
+
 ## 2026-10-14 — Exact-shape liveness and tighter private admission
 
 Previous turn was progress: complete row chunking exposed a cutoff disagreement and
