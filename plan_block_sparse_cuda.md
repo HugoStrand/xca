@@ -303,6 +303,23 @@ Measure certified policy cost inclusively against baselines before promotion and
 bounded GH200 finalist qualification. No new target allocation; cumulative .27556
 GPU-hours unchanged. Production reference/current selectors remain qualified.
 
+### 2026-10-14 — Multiple DLR numerical effects isolated
+
+Stage audit42rows separates RHS solvewidth from convolution arithmetic/layout.
+Narrow/512-column coefficients differ, while smoothr23 convolution remains close;
+r36/r47 large coefficients/cancellation amplify differences. Narrow BLAS-product
+variant matches general convolution exactly; wide remains different on the same
+coefficients. Scalar BLAS products match across widths, while rank transforms vary.
+Twenty retained controls and finalstage memcheck pass. Local stages-01 evidence
+includes residual/condition diagnostics, not interval certificates or timing claims.
+
+Next quantify observable sensitivity rather than raw coefficient condition alone.
+A conservative eligibility/replay policy must bound both solve and convolution
+errors, output accuracy and cutoff classification; nonfinite/uncertain lanes replay.
+Small residual, matching scalar products, empirical rank cutoffs or wider fixedbands
+are insufficient. Keep numerical experiments private until that gate and inclusive
+performance qualification pass. No new targetallocation; goal remains active.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device

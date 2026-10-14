@@ -1,5 +1,45 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — DLR stage isolation
+
+Previous turn was progress: fixedband counterexamples and diagnostic fullreplay.
+Added block_sparse_scalar_stage_audit,42rows comparing narrow/512-column solves,
+coefficient injection into narrow general convolution, literal versus general BLAS
+products/additions, and same-coefficient rank transforms. All broadcast coefficient
+lanes must be identical before isolation comparisons. Factored ScalarPack coefficient
+execution into compute_from_coefficients; original solve/order/math retained.
+
+Smoothr23 coefficient differences ~1e-7 but convolution2.78e-16. Oscillatingr36/
+complexr47 coefficient norms4.70e11/2.76e12, estimated conditions1.02e13/2.02e15;
+residuals ~1e-4/~1e-3 versus smooth~2e-16. Residuals computed hostlongdouble64mantissa
+against sampled doubleC, inverse estimate via hostcachedLU; neither is a certificate.
+Final unit-scale convolution differences5.90e7/1.15e8, distinct from threshold-scaled
+whole-diagram probes. Narrow general convolution with wide coefficients changes
+3.94e7/3.24e8. Wide arithmetic with identical coefficients still differs.
+
+Replacing literal products/addition with general BLAS primitives eliminates narrow
+pack/general discrepancies exactly for all3fixtures. Flattened independent1×1 scalar
+BLAS products identical across widths. Wide Hf/Hg rank transforms on same complex
+coefficients differ6.15e-5/3.08e-5 on~1e11 quantities, amplified by cancellation;
+wide BLAS-product convolution still differs3.35e8. Thus solvewidth, scalar arithmetic
+and rank-transform layout all enter an error/replay policy. Product replacement or
+small solve residual alone cannot establish safe agreement. No performance claim.
+
+Twenty inherited stream controls pass46.26s after helperfactorization. Finalstage
+memcheck zeroerrors/leaks after adding flattenedBLAS products and same-coefficient
+isolation. All42metrics finite. Intermediate27/33row explorations retained with no
+capturehash claim; final source/binaryhashes recorded. Code d184e07/evidenceb69886f
+separate from this checkpoint, stage-audit localstages-01. Temporary /tmp/xca-stage-
+audit-* may disappear. All handles terminal; no new targethours (.27556 cumulative),
+install/push/unrelatedchanges or productionselectorchanges. Goal remains active.
+
+Next measure observable sensitivity/Jacobian versus raw coefficient conditioning,
+then bound both solve and convolution arithmetic before classifying safe lanes.
+Certification must address output accuracy as well as cutoff counts, cancellation
+and nonfinite intermediates. Replay uncertain lanes. Do not substitute arbitrary
+rank/condition/residual thresholds or widen the oldempiricalband. Optimized scalar
+integration and larger convolution capacity remain open; GH200 target limits explicit.
+
 ## 2026-10-14 — Scalar cutoff counterexamples and audit control
 
 Previous goal turn was progress: CPU/native/library-only production suites and MPI
