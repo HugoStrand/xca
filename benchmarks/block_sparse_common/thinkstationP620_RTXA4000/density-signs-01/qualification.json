@@ -1,0 +1,10 @@
+{
+  "recorded_code_revision": "c10acf23655d8ce31a00a5490661baf8b10763f9",
+  "rebuilt_routes": "all four",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "threads": {
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1
+  },
+  "arrhenius_gpu_hours_added": 0
+}
