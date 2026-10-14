@@ -1,0 +1,4 @@
+{
+  "python": "@TRIQS_PYTHON_EXECUTABLE@",
+  "python_paths": ["@PROJECT_BINARY_DIR@/python", "@adapol_SOURCE_DIR@/src", "@pyed_SOURCE_DIR@"]
+}

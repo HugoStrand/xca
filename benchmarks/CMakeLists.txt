@@ -9,6 +9,7 @@ add_subdirectory(dense_cpu)
 add_subdirectory(dense_cuda)
 add_subdirectory(dense_cuda_small)
 
+add_subdirectory(block_sparse_common)
 add_subdirectory(block_sparse_cpu)
 add_subdirectory(block_sparse_cuda)
 
