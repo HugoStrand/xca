@@ -500,6 +500,28 @@ Solver/archive selection, full rebuilt suites, MPI and production-path timings a
 the next qualification step; the private candidate's timings are not substituted
 for a measured production implementation. No target default has been chosen.
 
+Python/MPI checkpoint (2026-10-14): the consolidated facade accepts
+`operator_backend='library'|'ordered'`, and Solver persists
+`block_sparse_operator_backend` (library default). Capability checks in gpu.py and
+the facade reject unsupported native selection before model export/device setup.
+Older archives restore library defaults; CPU evaluation retains preferences without
+loading CUDA. All observables, ordinary/retarded partitions, self-consistency,
+rank-local count/setup/compute failures and recovery are tested for both routes.
+Complete suites pass: CPU 77/77, CUDA 87/87, native-disabled CUDA 77/77. Two-rank MPI
+passes all five Python tests on each rank. The operator selector is now integrated,
+not only an isolated candidate; library and all experiments remain available.
+
+[Production timing](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-production-01/README.md)
+measures the actual descriptor-owning production route in 30 isolated processes /
+82 samples, with counts matching reference and numerical/replay gates passing.
+The eight-mode number window takes 92.9 ms native / 266.8 ms library (prior clean
+run) / 130.2 ms matched CPU. Ten-mode number sectors take 698 / 1130 / 5091 ms,
+while scalar ten-mode sectors take 2846 ms native versus 802 ms CPU. Ten-mode rows
+have only one repetition. The remaining small-block bottleneck therefore requires
+E4/E5 work; this does not select a GH200 default or prove complete Solver speedup.
+The production snapshot retains descriptor creation even for native application,
+so its cost differs from the private snapshot as recorded.
+
 ### E4 — Where to batch and where to fuse
 
 Compare one path at a time with bounded batches across output sectors, flat indices

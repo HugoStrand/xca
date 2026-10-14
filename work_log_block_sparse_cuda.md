@@ -1013,3 +1013,82 @@ or supervisor changes. This plan/work-log checkpoint is separate from code.
 Temporary logs: /tmp/xca-bs-native-{configure,build,test,memcheck,cpu-configure,
 cpu-build,cpu-test,library-configure,library-build,library-test,experiment-build,
 experiment-test}.log. Build/test artifacts in the three retained cbuild trees.
+
+
+### 2026-10-14 — Native selection through bindings and MPI
+
+Previous goal turn made verified progress (optional production C++ backend plus
+native/library/no-native checks). Goal remains active. This turn integrates the
+native route through the consolidated bindings, Solver and archives and measures
+the production implementation itself.
+
+938e73b [solv] select ordered sparse CUDA operators: consolidated facade constructors
+accept operator_backend='library'/'ordered'. Their private parser checks capability
+before export_model, so unsupported native requests do not build a sparse model or
+submit GPU work. Module block_sparse_ordered_available exposes compiled capability;
+gpu.py owns lazy capability/selection. Solver gains block_sparse_operator_backend,
+validated/stored/archived with library default. Old archive dictionaries restore
+library defaults, deepcopy/HDF preserve ordered preference, and CPU evaluation can
+keep preferences without importing CUDA. Selection occurs before device configuration
+in GPU setup; existing collective setup/count/compute guards apply to both routes.
+No new CUDA Python module or index-vector API was introduced.
+
+Regenerated only the consolidated CUDA wrapper with clair and the optional-small
+class guard. The first two focused runs failed because the new capability function
+was outside the module's explicit TOML export regex. Corrected the regex and verified
+the generated function entry before rebuilding; both final module variants pass.
+This was an export configuration error, not a numerical failure. Constructor
+real/complex ordinary/retarded template declarations/instantiations include the new
+string argument. Native-disabled wrappers retain the full schema and report false
+capability, rather than removing public classes or silently selecting another route.
+
+Python tests now run all observables on library and native across scalar, number
+and mixed partitions with/without retarded channels. They cover archive/deepcopy/
+old defaults, range-only selectors, native-disabled direct facade and Solver errors,
+collective rank-local invalid selection, initialization/count/compute failures,
+barriers/recovery and self-consistency. Native error tests reuse the same meaningful
+Solver workflows as library controls. Five unittest methods run in each eligible
+CUDA build; CPU skips hardware cases while exercising preference/archive behavior.
+
+Final full builds passed in CPU, CUDA and native-disabled CUDA trees. Complete CPU
+suite passed 77/77 in 49.79 s; complete CUDA 87/87 in 275.78 s; native-disabled CUDA
+77/77 in 122.26 s. Focused regenerated-module tests passed for native and library-only
+(70.56/66.74 s while concurrent verification was running). Two-rank MPI passed all
+five Python tests on each rank in 109.1 s, including native numerical results and
+failure/recovery. Verification GPU jobs overlapped; those durations are not timing
+benchmarks. The same absolute /usr/bin/python3 and build/dependency PYTHONPATH setup
+as the previous MPI checkpoint was used. Documentation API selection notes updated;
+documentation was not built. No installed prefix was changed.
+
+5d0a825 [bench] time production ordered evaluator adds a separate explicit native
+frontend (actual production class) with unchanged shared fixtures/call scope. The
+recorder now hashes production kernel source/CMake as well as the experiment sources.
+After all verification/build/MPI handles were terminal, ordered-production-01 ran
+30 isolated processes / 82 samples successfully. Results 008e4e5 [bench] record
+production ordered timings. Counts match retained library reference; matched CPU
+outputs remain bitwise original CPU; GPU screening/replay checks passed. Maximum
+relative screening error remains 3.645e-13 for a weak higher-order contribution;
+strict C++ gates were not loosened. All timing rows/provenance are retained.
+
+Production native / prior clean library / freshly paired matched CPU: N8 number
+92.88/266.79/130.20 ms; N10 number 698.03/1130.46/5091.18 ms; N10 scalar
+2845.91/5614.41/802.02 ms. The last two have one repetition, not noise-qualified
+promotion evidence. Production retains CSR descriptor construction even for native
+application, unlike the private snapshot, and its latency is measured separately.
+No full Solver/topology-sum speedup or target threshold is claimed. Library stays
+default. GH200 remains the performance target, with no target run/N=14 full workload
+performed here. Goal is not complete: small-block batching/DLR amortization, wider
+RHS, memory refinement, topology reuse decisions and target qualification remain.
+
+Next: isolate remaining per-node/product/solve overhead and evaluate bounded rank/
+RHS/work grouping or fusion without changing per-path cutoff/accumulation semantics.
+Retain both production routes, unchanged/matched CPU and every experiment. No install,
+push, supervisor change or unrelated user work edits. Plan/work-log commit remains
+separate from code and benchmark commits; git diff --check passed.
+
+Logs: /tmp/xca-bs-native-bindings-generate.log,
+/tmp/xca-bs-native-python-{cpu,cuda,library}-{build,test,module,full-test}.log,
+/tmp/xca-bs-native-python-mpi-test.log,
+/tmp/xca-bs-native-production-{bench-configure,bench-build,campaign}.log.
+Persistent results: benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-production-01.
+Temporary logs may disappear; three build trees and source checkpoints are retained.
