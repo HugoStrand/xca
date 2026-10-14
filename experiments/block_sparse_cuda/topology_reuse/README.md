@@ -50,3 +50,38 @@ Stored candidate values have an explicit total 64 MiB cap; reaching it fails
 the probe. Changed-G and changed-coefficient controls run fresh replay processes
 and verify changed contents. They demonstrate the need for invalidation, not an
 implemented cross-call cache protocol. No device arithmetic is executed here.
+
+## Complete-call device cache experiment
+
+The CUDA-only `block_sparse_prefix_benchmark` uses a generated private copy of
+the production evaluator. Its prefix cache stores post-edge tensors only; the
+special vertex, remaining path, cutoff and output accumulation stay unchanged.
+Model, coefficients, poles and mesh are immutable per evaluator. Before every
+nonempty self-energy call, a byte-for-byte snapshot comparison of the complete
+propagator input invalidates the cache on change, including changed zero masks.
+The snapshot is limited to 32 MiB; larger inputs clear/disable caching and keep
+independent device arithmetic. Old/new snapshot peak payload may reach 64 MiB.
+
+Stored tensor payload plus conservative key/node charges is capped at 8 MiB and
+4096 entries. Misses beyond the cap compute independently. The admission envelope
+charges the full cap; existing device payload is accounted separately from host
+metadata. Correlator admission also charges retained cache storage. An explicit
+clear synchronizes the owner before releasing entries; device errors propagate.
+Metadata key discovery, snapshot comparison, misses, cache copies and input/output
+transfers are inside complete-call timing. External cold-cache cleanup and evaluator
+construction are excluded. Changed-G invalidation/cleanup occurs inside timing.
+
+```sh
+cmake --build cbuild-cuda --target block_sparse_prefix_benchmark block_sparse_prefix_tests
+python3 experiments/block_sparse_cuda/topology_reuse/run_cache.py \
+  --build cbuild-cuda --machine YOUR_MACHINE --cohorts PATH_TO_REPLAY_COHORTS
+```
+
+Compare independent Library/Reference and Ordered/Mapped self-energy calls with cached calls over the
+same topologies and two flat indices per topology, three samples per phase. Cold
+cohorts populate the cache; repeated cohorts retain it; changed-G cohorts test
+automatic numerical invalidation before every sample. Every per-topology complete output must agree
+exactly. This retains topology summation order rather than factoring any sums.
+The existing eight production observable/control tests are also run against the
+private evaluator, including changed masks, dynamics and correlator behavior.
+This is an experiment, not a production cache policy or a graph implementation.

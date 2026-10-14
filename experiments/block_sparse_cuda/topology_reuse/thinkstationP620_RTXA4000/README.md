@@ -34,3 +34,27 @@ of a case. Fresh changed-G and changed-coefficient controls change non-root
 checksums while retaining exact repeated-key equality. The resource cap and
 malformed-input controls also pass. This is CPU numerical qualification, not
 a measured GPU sharing gain or a complete-call equivalence check.
+
+`cache-01` measures complete device self-energy cohorts using both Library/Reference
+and Ordered/Mapped policies. Eighteen processes / 162 samples cover orders 3/4/6,
+three partitions and cold, unchanged replay and per-sample changed-G phases. All
+per-topology outputs match independent device calls exactly. Median timings include
+snapshot comparisons, cache population/misses/copies and public call transfers;
+construction and externally requested cold cleanup are excluded. Changed-G cleanup
+is inside timing. Neither MPI nor Python topology summation is timed.
+
+Ordered/Mapped order-3 number symmetry: independent/cached medians are 62.884/49.439
+ms cold, 63.214/39.347 ms replay and 63.308/49.422 ms changed G, respectively 21.4%,
+37.8% and 21.9% reductions. Order-4 number changed G improves 13.2%; order-6 number
+7.1%. Order-3 mixed changed G improves 18.0%, but order-6 mixed loses 0.6% with no
+cross-topology prefix hits. The selected occupation order-4/6 calls have no surviving
+prefix work and show small overhead; they do not characterize the full occupation
+workload. Candidate charges range from zero to 96,800 bytes in these selections.
+
+These are paired three-sample local medians, not GH200 predictions or population
+statistics. The first uncommitted timing run was replaced: it changed G only once
+per phase and tested only Library/Reference. Final changed-G samples all invalidate
+and reconstruct the cache, and both baseline policies are represented.
+Eight inherited observable/API/numerical controls pass; Library and Ordered/Mapped
+memcheck runs report zero errors and leaks. Cache-cap saturation, wider index ranges,
+full topology cohorts and GH200 qualification remain before production adoption.

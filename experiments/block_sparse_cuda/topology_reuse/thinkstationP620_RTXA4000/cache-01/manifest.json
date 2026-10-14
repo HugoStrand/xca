@@ -1,0 +1,204 @@
+{
+  "host": "ThinkStation",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_commit": "9eee3c4db98ea16b96e23177d9af4bfb9acce91c",
+  "git_status": " M .gitignore\n M experiments/block_sparse_cuda/topology_reuse/CMakeLists.txt\n M experiments/block_sparse_cuda/topology_reuse/README.md\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? experiments/block_sparse_cuda/topology_reuse/cache.inc\n?? experiments/block_sparse_cuda/topology_reuse/cache_benchmark.cpp\n?? experiments/block_sparse_cuda/topology_reuse/run_cache.py\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "gpu": "NVIDIA RTX A4000, 16376 MiB, 580.178.04",
+  "binary_sha256": "5c3eeee117ef64840f47aec8db8a5a1bb24f3eb486865336642eb2899ea22bf7",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/topology_reuse/cache.inc": "e1eea7ba3d7fd7e397203a796c3393c731eb9505c322ce654fe48026290d0a54",
+    "experiments/block_sparse_cuda/topology_reuse/probe.cpp": "5252105a80e7dc2664acfd4b81b1ff48a37664cc5bbb600ff99ae773f1048b14",
+    "experiments/block_sparse_cuda/topology_reuse/cache_benchmark.cpp": "dc148ae9017439eec54bfda75124b93492b20770f5f32cae0014e1e6f4610928",
+    "experiments/block_sparse_cuda/topology_reuse/run_cache.py": "659cfdc4c16d71c7998dc8973e3d1846660eccaa717b9d2823ea74189fbf5dab",
+    "experiments/block_sparse_cuda/topology_reuse/CMakeLists.txt": "f0a5f6a4bbbb152faca7bc6379691fd23c23cf591357019bff02db09d30b674f",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "f78d3b95c25d58ee8b2290d84d4aa7d9b7d10f46180ac8660a1b41dbdd8a6d64",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.cpp": "61766faf7215400413bdcbe9bfe40504a268e4ef248989d5ea66e5498f42ae14",
+    "c++/triqs_xca/block_sparse/cuda/path.cpp": "d5a2b3ae85b59e81809d3adecd62153717604b3dcc1e1d799ce0fad41b2d64b5",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "ac07a8c34d4f155b9c1ed1d489aeb664ebd2c4ad6e4d5cade2aefea24e77a08b",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.cpp": "cb6a8993dd398cf274cff60fb40f7a7141b632b9efa964ad41934bfbfc1b8b25"
+  },
+  "cases": [
+    {
+      "name": "o3-number-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "number",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-number-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "number",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-mixed-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "mixed",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-mixed-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "mixed",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-occupation-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "occupation",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o3-occupation-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o3.txt",
+        "occupation",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-number-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "number",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-number-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "number",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-mixed-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "mixed",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-mixed-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "mixed",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-occupation-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "occupation",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o4-occupation-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o4.txt",
+        "occupation",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-number-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "number",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-number-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "number",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-mixed-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "mixed",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-mixed-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "mixed",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-occupation-library",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "occupation",
+        "library"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "o6-occupation-ordered_mapped",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/topology_reuse/block_sparse_prefix_benchmark",
+        "/home/hugstr/dev/xca/experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/replay-01/o6.txt",
+        "occupation",
+        "ordered_mapped"
+      ],
+      "returncode": 0
+    }
+  ]
+}
