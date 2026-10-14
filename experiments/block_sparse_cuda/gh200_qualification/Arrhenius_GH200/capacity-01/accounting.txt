@@ -1,0 +1,7 @@
+JobID|JobName|State|ExitCode|Elapsed|AllocCPUS|AllocTRES|MaxRSS
+3847180|xca-bs-gh200-capacity|COMPLETED|0:0|00:02:18|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3847180.batch|batch|COMPLETED|0:0|00:02:18|72|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|2313472K
+3847180.extern|extern|COMPLETED|0:0|00:02:18|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+PASS
+5322884670b2bae2d0af2083c522bb0ee9b4cb505ed5cb0f429d519918b9f83e  /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase
+9bb8b54ae05511c1c145f00776ef5d4fe0a99c4eba40a6d72a05a677cd0b1c8b  /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments/block_sparse_stream_fragment_tests

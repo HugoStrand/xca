@@ -1,0 +1,2 @@
+lambda=20 rank=18 explicit_bytes=33704268 budget_bytes=1048576 dry_run=0
+Explicit phase budget rejected before device allocation

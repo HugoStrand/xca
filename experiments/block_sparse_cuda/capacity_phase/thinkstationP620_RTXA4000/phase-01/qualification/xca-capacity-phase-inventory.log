@@ -1,0 +1,5 @@
+rank=30 explicit_bytes=42436672956 budget_bytes=1073741824 dry_run=1
+rank=40 explicit_bytes=56571077796 budget_bytes=1073741824 dry_run=1
+rank=50 explicit_bytes=70705498636 budget_bytes=1073741824 dry_run=1
+rank=58 explicit_bytes=82013046828 budget_bytes=1073741824 dry_run=1
+rank=60 explicit_bytes=84839935476 budget_bytes=1073741824 dry_run=1

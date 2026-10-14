@@ -1,0 +1,73 @@
+[  8%] Building CXX object deps/GTest/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[  8%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/kernels.cu.o
+[  8%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/mapped.cu.o
+[  8%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/real_nca.cu.o
+[  8%] Linking CUDA static library libtriqs_xca_sparse_kernels.a
+[  8%] Built target triqs_xca_sparse_kernels
+[  8%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[  8%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+[ 25%] Linking CXX static library ../../../lib/libgtest.a
+[ 25%] Built target gtest
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 25%] Building CXX object deps/GTest/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[ 25%] Linking CXX static library ../../../lib/libgtest_main.a
+[ 25%] Built target gtest_main
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:194:12: warning: declaration of ‘x’ shadows a previous local [-Wshadow=local]
+  194 |       auto x = reinterpret_cast<std::uintptr_t>(a.data()), y = reinterpret_cast<std::uintptr_t>(b.data());
+      |            ^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:186:11: note: shadowed declaration is here
+  186 |     auto &x = *impl_;
+      |           ^
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 41%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 41%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:284:30: warning: declaration of ‘bool is_forward’ shadows a parameter [-Wshadow=compatible-local]
+  284 |   auto F_selector = [&](bool is_forward, int b_ix_ix, int p_ix, int ix) {
+      |                         ~~~~~^~~~~~~~~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:272:128: note: shadowed declaration is here
+  272 | void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0,
+      |                                                                                                                           ~~~~~^~~~~~~~~~
+[ 41%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 41%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 58%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 58%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 58%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 58%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 58%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+[ 75%] Linking CXX static library libtriqs_xca_c.a
+[ 75%] Built target triqs_xca_c
+[ 83%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 83%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 83%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_evaluator.dir/stream_evaluator.cpp.o
+[ 83%] Linking CXX static library libblock_sparse_stream_fragment_evaluator.a
+[ 83%] Built target block_sparse_stream_fragment_evaluator
+[ 91%] Linking CXX static library libtriqs_xca_test_utils.a
+[ 91%] Built target triqs_xca_test_utils
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_tests.dir/inherited_tests.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_tests.dir/tests.cpp.o
+[100%] Linking CXX executable block_sparse_stream_fragment_tests
+[100%] Built target block_sparse_stream_fragment_tests
+[ 11%] Built target triqs_xca_sparse_kernels
+[ 88%] Built target triqs_xca_c
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/capacity_phase/CMakeFiles/block_sparse_capacity_phase.dir/probe.cpp.o
+[100%] Linking CXX executable block_sparse_capacity_phase
+[100%] Built target block_sparse_capacity_phase

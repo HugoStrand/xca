@@ -1,0 +1,25 @@
+{
+  "policy": "Archive-only LF/trailing whitespace normalization; numeric values unchanged.",
+  "files": {
+    "CMakeCache.txt": {
+      "original_sha256": "1b1a839db345351d69876f4cad6510bb6cf2f94283f009b32d16c4bb9bd6bf36",
+      "archived_sha256": "d1f51a9d99163e9f17039d5f9d0bbd7af6bff6fd28ed2bf0d29b31f5132b9fa4"
+    },
+    "compiler.txt": {
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archived_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    "configure.log": {
+      "original_sha256": "d76e2c6d62139f83036b0bbf9712056eccfc27727c8d0aec185aba15e9f427ab",
+      "archived_sha256": "01dcdde132b4dd10f29cbec1f241bcaab601b005f43190bc01a57456093e5932"
+    },
+    "gpu.txt": {
+      "original_sha256": "c772ec76aa5b3b2a0e350f6278d7d8daa083849c3751b0994fe84adea0b53561",
+      "archived_sha256": "7bd494db6a088d31e3b86702472687cc350766c9365580f218cdaba702966d1b"
+    },
+    "xca-bs-gh200-capacity-3847180.err": {
+      "original_sha256": "3901a0ba4ab9f49246f49b6632bdbaa1a09f85723af8959e1e3aef764344d91a",
+      "archived_sha256": "ea72cbdb733aca80046e2766e90dab6d82fef533f835d8f041937e57b0e2cfc4"
+    }
+  }
+}

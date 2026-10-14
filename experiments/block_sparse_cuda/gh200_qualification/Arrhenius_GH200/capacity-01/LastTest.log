@@ -1,0 +1,77 @@
+Start testing: Oct 14 20:46 CEST
+----------------------------------------------------------
+27/79 Testing: experiments/block_sparse_cuda/stream_fragments
+27/79 Test: experiments/block_sparse_cuda/stream_fragments
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments/block_sparse_stream_fragment_tests"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments
+"experiments/block_sparse_cuda/stream_fragments" start time: Oct 14 20:46 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 14 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2653 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (654 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (9 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (28 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2792 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (1 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (636 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6775 ms total)
+
+[----------] 6 tests from StreamFragmentEvaluator
+[ RUN      ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement (1517 ms)
+[ RUN      ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery (236 ms)
+[ RUN      ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery (415 ms)
+[ RUN      ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation
+[       OK ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation (307 ms)
+[ RUN      ] StreamFragmentEvaluator.RejectsResidentArenaPolicy
+[       OK ] StreamFragmentEvaluator.RejectsResidentArenaPolicy (3 ms)
+[ RUN      ] StreamFragmentEvaluator.NativePolicyCombinations
+[       OK ] StreamFragmentEvaluator.NativePolicyCombinations (2535 ms)
+[----------] 6 tests from StreamFragmentEvaluator (5016 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 2 test suites ran. (11791 ms total)
+[  PASSED  ] 14 tests.
+<end of output>
+Test time =  11.98 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/stream_fragments" end time: Oct 14 20:46 CEST
+"experiments/block_sparse_cuda/stream_fragments" time elapsed: 00:00:11
+----------------------------------------------------------
+
+28/79 Testing: experiments/block_sparse_cuda/capacity_phase
+28/79 Test: experiments/block_sparse_cuda/capacity_phase
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase" "--m" "7" "--k" "5" "--n" "9" "--samples" "2"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-edb8b73/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase
+"experiments/block_sparse_cuda/capacity_phase" start time: Oct 14 20:46 CEST
+Output:
+----------------------------------------------------------
+lambda=20 rank=18 explicit_bytes=33704268 budget_bytes=1073741824 dry_run=0
+rank,m,k,n,sample,setup_ms,oracle_ms,convolve_ms,explicit_bytes,sampled_delta,max_abs_error,oracle_norm,retained_dlr_bytes
+18,7,5,9,0,623.40467799999999,0.88781500000000002,25.991647,33704268,33554432,4.8637360628206024e-19,0.0018671230600433304,85324
+18,7,5,9,1,623.40467799999999,0.88781500000000002,0.20799400000000001,33704268,33554432,4.8637360628206024e-19,0.0018671230600433304,85324
+<end of output>
+Test time =   0.79 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/capacity_phase" end time: Oct 14 20:46 CEST
+"experiments/block_sparse_cuda/capacity_phase" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 20:46 CEST

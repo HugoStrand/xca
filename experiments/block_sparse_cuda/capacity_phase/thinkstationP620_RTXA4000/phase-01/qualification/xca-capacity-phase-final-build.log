@@ -1,0 +1,6 @@
+[ 11%] Built target triqs_xca_sparse_kernels
+[ 11%] Built target triqs_xca_small_kernels
+[ 88%] Built target triqs_xca_c
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/capacity_phase/CMakeFiles/block_sparse_capacity_phase.dir/probe.cpp.o
+[100%] Linking CXX executable block_sparse_capacity_phase
+[100%] Built target block_sparse_capacity_phase

@@ -1,0 +1,1 @@
+Linux n412 5.14.0-687.54.1.el9_8.aarch64+64k #1 SMP PREEMPT_DYNAMIC Mon Oct 5 21:45:18 EDT 2026 aarch64 aarch64 aarch64 GNU/Linux

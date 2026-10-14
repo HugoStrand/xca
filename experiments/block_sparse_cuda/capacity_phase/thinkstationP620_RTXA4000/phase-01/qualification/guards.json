@@ -1,0 +1,46 @@
+[
+  {
+    "case": "budget",
+    "command": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase",
+      "--m",
+      "7",
+      "--k",
+      "5",
+      "--n",
+      "9",
+      "--budget-mib",
+      "1"
+    ],
+    "returncode": 2,
+    "expected_message": "Explicit phase budget rejected"
+  },
+  {
+    "case": "large_guard",
+    "command": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase",
+      "--m",
+      "3432",
+      "--k",
+      "3003",
+      "--n",
+      "3432",
+      "--lambda",
+      "4000",
+      "--budget-mib",
+      "92160"
+    ],
+    "returncode": 1,
+    "expected_message": "Large execution requires"
+  },
+  {
+    "case": "suffix",
+    "command": [
+      "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/capacity_phase/block_sparse_capacity_phase",
+      "--m",
+      "12bad"
+    ],
+    "returncode": 1,
+    "expected_message": "Invalid option suffix"
+  }
+]

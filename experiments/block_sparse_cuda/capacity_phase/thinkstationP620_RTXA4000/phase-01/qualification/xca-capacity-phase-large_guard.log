@@ -1,0 +1,2 @@
+lambda=4000 rank=64 explicit_bytes=90493714692 budget_bytes=96636764160 dry_run=0
+Large execution requires --allow-large inside a GH200 Slurm job

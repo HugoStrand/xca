@@ -1,0 +1,13 @@
+{
+  "policy": "Archive-only LF/trailing whitespace normalization; numeric values unchanged.",
+  "files": {
+    "compiler.txt": {
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archived_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    "gpu.txt": {
+      "original_sha256": "c772ec76aa5b3b2a0e350f6278d7d8daa083849c3751b0994fe84adea0b53561",
+      "archived_sha256": "7bd494db6a088d31e3b86702472687cc350766c9365580f218cdaba702966d1b"
+    }
+  }
+}

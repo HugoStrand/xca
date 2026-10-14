@@ -1,0 +1,16 @@
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[  9%] Built target triqs_xca_small_kernels
+[ 18%] Built target gtest_main
+[ 81%] Built target triqs_xca_c
+[ 81%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_evaluator.dir/stream_evaluator.cpp.o
+[ 81%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 81%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 90%] Linking CXX static library libblock_sparse_stream_fragment_evaluator.a
+[ 90%] Built target block_sparse_stream_fragment_evaluator
+[100%] Linking CXX static library libtriqs_xca_test_utils.a
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_tests.dir/inherited_tests.cpp.o
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/stream_fragments/CMakeFiles/block_sparse_stream_fragment_tests.dir/tests.cpp.o
+[100%] Linking CXX executable block_sparse_stream_fragment_tests
+[100%] Built target block_sparse_stream_fragment_tests

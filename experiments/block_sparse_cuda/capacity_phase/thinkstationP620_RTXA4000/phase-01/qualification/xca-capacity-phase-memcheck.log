@@ -1,0 +1,7 @@
+========= COMPUTE-SANITIZER
+rank=64 explicit_bytes=34937092 budget_bytes=1073741824 dry_run=0
+rank,m,k,n,sample,setup_ms,oracle_ms,convolve_ms,explicit_bytes,sampled_delta,max_abs_error,oracle_norm,retained_dlr_bytes
+64,13,9,11,0,339.98256199999997,3.7177440000000002,48.714323,34937092,33554432,2.3552845375685803e-20,8.4173636601538271e-05,841988
+64,13,9,11,1,339.98256199999997,3.7177440000000002,2.0062929999999999,34937092,33554432,2.3552845375685803e-20,8.4173636601538271e-05,841988
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

@@ -1,0 +1,17 @@
+{
+  "policy": "Archive-only LF/trailing whitespace normalization; numeric values unchanged.",
+  "files": {
+    "qualification/xca-capacity-phase-configure.log": {
+      "original_sha256": "e861d7c8bfbef669811b965bfe90513e4a7efa0a1baea54cae3105b03bf34dc2",
+      "archived_sha256": "c93598b9b779cb50de0f261533c0c5fa083bf90deb676cea43d7bdd77d29d095"
+    },
+    "qualification/xca-capacity-phase-cpu-configure.log": {
+      "original_sha256": "9adb7446b33bccfbb4eeb9b6ee4cc1444cd9ebb093959a698d60ee6b5ea03b73",
+      "archived_sha256": "4320cac866f765e7c78d8ac669a7890e6f6d426d389f7a2efe5a7aad06a4a654"
+    },
+    "qualification/xca-capacity-phase-library-configure.log": {
+      "original_sha256": "fd7d03f54017f4d034b896e52cb6730712554c10f10cad65f426739f73aba672",
+      "archived_sha256": "8934a29d8dac19429ae6d15e0f46115f869c8a3ffe2d169d6f9b54146c28adbc"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "source": "edb8b73",
+  "native_stream_tests": 14,
+  "native_total_CTests": 2,
+  "native_ctest_seconds": 14.52,
+  "library_stream_active_tests": 13,
+  "library_stream_skipped_tests": 1,
+  "library_total_CTests": 2,
+  "library_ctest_seconds": 11.15,
+  "native_policy_memcheck_tests": 2,
+  "native_policy_memcheck_seconds": 34.377,
+  "phase_memcheck_shape": [
+    13,
+    9,
+    11
+  ],
+  "phase_memcheck_rank": 64,
+  "phase_memcheck_errors": 0,
+  "phase_memcheck_leaks": 0,
+  "provenance_note": "Reduced size screens preceded logging/BLAS-limit hardening, with identical arithmetic; final small CTest and guards use edb8b73. No exact binary hash retained for pre-hardening size screens.",
+  "binaries": {
+    "cbuild-cuda/block_sparse_capacity_phase": {
+      "sha256": "9aa9faba2fd5abd09998eae1adb19fe8fa6e5c885ebd69212fcaf470f92b3801"
+    },
+    "cbuild-cuda-library-api/block_sparse_capacity_phase": {
+      "sha256": "2aa0569080a372914b915ee587b93ed9c9cbbcd1d8509cd0da0564f5178025cd"
+    },
+    "cbuild-cuda/block_sparse_stream_fragment_tests": {
+      "sha256": "3f1e1173ad01ca43a0510c29503017411613b534399f6d6a43a5a4e98487ff07"
+    }
+  }
+}

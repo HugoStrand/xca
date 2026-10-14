@@ -1,0 +1,35 @@
+-- Found Boost Headers: /usr/include
+-- Found Cpp2PyConfig.cmake with version 3.3.0, hash = 4721d6484237ba0e402648cd963ff036b2557c67, root = /home/hugstr/apps/triqs-cuda
+-- Found itertools-config.cmake with version 2.0.0, hash = d32d2b20a1beda709a43bd56ac85ea6d41efcdef, root = /home/hugstr/apps/triqs-cuda
+-- Found mpi-config.cmake with version 2.0.0, hash = 27e1c9353320b3ed80a6e7e3bf0414bf405039d6, root = /home/hugstr/apps/triqs-cuda
+-- Found h5-config.cmake with version 2.0.0, hash = bdbb040157088e156032edb33714a915d7782f3b, root = /home/hugstr/apps/triqs-cuda
+-- Found nda-config.cmake with version 2.0.0, hash = 4e590772784c2ca855dd9b6218300047dea5abcb, root = /home/hugstr/apps/triqs-cuda
+-- Found cppdlr-config.cmake with version 1.3.0, hash = 7a0f60cba2da69d64361971613b6859bb8c078ce, root = /home/hugstr/apps/triqs-cuda
+-- Found TRIQSConfig.cmake with version 4.0.0, hash = 29301201c26de3b2c9d824718a406f981d3adea7, root = /home/hugstr/apps/triqs-cuda
+-- triqs_xca version : 0.1.0
+-- triqs_xca Git hash: cb687bf06e55280719f42a573fb3ec0da562c1c2
+-- -------- CMAKE_INSTALL_PREFIX: /home/hugstr/apps/xca-cuda --------
+-- -------- BUILD-TYPE: Release --------
+--  =============== Configuring Dependency c2py ===============
+-- -------- c2py version and git hash detection -------------
+-- c2py version : 1.0.0
+-- c2py Git hash: 58e0586a32cd3e4bc197b2ca753b51f128db39d2
+-- -------- Python detection -------------
+--  =============== End c2py Configuration ===============
+--  =============== Configuring Dependency adapol ===============
+--  =============== End adapol Configuration ===============
+--  =============== Configuring Dependency pyed ===============
+--  =============== End pyed Configuration ===============
+--  =============== Configuring Dependency GTest ===============
+--  =============== End GTest Configuration ===============
+-- CUDA-small enabled; architectures=86
+-- *********************************************************************************
+-- * Custom install Location. Use:
+-- *
+-- *   source /home/hugstr/apps/xca-cuda/share/triqs_xca/triqs_xcavars.sh
+-- *
+-- * to set up the environment variables
+-- *********************************************************************************
+-- Configuring done (1.8s)
+-- Generating done (0.6s)
+-- Build files have been written to: /home/hugstr/dev/xca/cbuild-cuda

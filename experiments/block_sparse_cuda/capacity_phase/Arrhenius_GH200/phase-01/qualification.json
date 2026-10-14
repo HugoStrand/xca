@@ -1,0 +1,30 @@
+{
+  "source": "edb8b73",
+  "recipe_commit": "290d65f",
+  "job_id": 3847180,
+  "node": "n412",
+  "state": "COMPLETED",
+  "exit_code": "0:0",
+  "allocated_gpus": 1,
+  "elapsed_seconds": 138,
+  "nominal_GPU_hours": 0.03833333333333333,
+  "tracked_cumulative_GPU_seconds": 1704,
+  "tracked_cumulative_nominal_GPU_hours": 0.47333333333333333,
+  "ctests": 2,
+  "active_GoogleTests": 14,
+  "ctest_seconds": 12.8,
+  "large_phase_rank": 64,
+  "large_shape": [
+    3432,
+    3003,
+    3432
+  ],
+  "explicit_phase_bytes": 90493714692,
+  "observed_sampled_delta_bytes": 90503839744,
+  "large_process_MaxRSS_KiB": 467136,
+  "independent_oracle": "3 spatial entries at every rank node, long-double full inner/rank sums; other entries not independently checked",
+  "phase_binaries": {
+    "capacity_phase_sha256": "5322884670b2bae2d0af2083c522bb0ee9b4cb505ed5cb0f429d519918b9f83e",
+    "stream_test_sha256": "9bb8b54ae05511c1c145f00776ef5d4fe0a99c4eba40a6d72a05a677cd0b1c8b"
+  }
+}
