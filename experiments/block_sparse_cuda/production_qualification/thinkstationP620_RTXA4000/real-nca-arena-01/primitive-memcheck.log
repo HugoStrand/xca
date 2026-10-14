@@ -1,0 +1,23 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from RealNcaStorage
+[ RUN      ] RealNcaStorage.CheckedPayload
+[       OK ] RealNcaStorage.CheckedPayload (0 ms)
+[----------] 1 test from RealNcaStorage (0 ms total)
+
+[----------] 3 tests from RealNcaPrimitive
+[ RUN      ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery
+[       OK ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery (3129 ms)
+[ RUN      ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission
+[       OK ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission (0 ms)
+[ RUN      ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal
+[       OK ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal (2 ms)
+[----------] 3 tests from RealNcaPrimitive (3132 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 2 test suites ran. (3133 ms total)
+[  PASSED  ] 4 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

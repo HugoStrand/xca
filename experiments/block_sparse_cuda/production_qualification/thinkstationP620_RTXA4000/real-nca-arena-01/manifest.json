@@ -1,0 +1,21 @@
+{
+  "code_commit": "ef59a06",
+  "integration_commit": "cd54781",
+  "frontend_commit": "40f1a0e",
+  "native_active_controls": 9,
+  "cpu_active_controls": 1,
+  "native_disabled_active_controls": 3,
+  "results": {
+    "native_ctest_seconds": 53.62,
+    "cpu_ctest_seconds": 0.03,
+    "native_disabled_ctest_seconds": 0.79,
+    "integration_memcheck": "two controls, zero errors/leaks, 5.883 s",
+    "primitive_memcheck": "four controls, zero errors/leaks, 3.133 s"
+  },
+  "scope": "Focused C++ only. New policy not bound into Python/MPI or target-qualified.",
+  "binary_sha256": {
+    "cbuild": "c9d5947aa2c09f5878b9d0372050a963f8e3da79f486b8bdc16d319518724db6",
+    "cbuild-cuda": "4646ea4186c9c93f355f9381033362d3675588954f7caa362ceb761e77e1ae3b",
+    "cbuild-cuda-library-api": "a9ab0024a4b30f7b784034c9fb7be277dd51a0d86fa2ac191f6104fef18c6888"
+  }
+}

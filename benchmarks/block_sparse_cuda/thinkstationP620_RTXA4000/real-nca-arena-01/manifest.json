@@ -1,0 +1,252 @@
+{
+  "source_commit": "ef59a062738841335a6cf30f973515eff0c7d09d",
+  "binary_sha256": {
+    "general_ordered": "b81d1ac2cdcbd6a2bf3b2a904cccb612e6e855fb7c3311e33f69f0bfe972d2fe",
+    "prototype": "2e53edf2e01e46af59cc89eb3ac29c4bbdb4e7972c906c7402cff4e16c05eb76",
+    "production": "45a814aef301efafc0bf3c84b4bc7e512f1559a21dffccb77b49f29b2e890842"
+  },
+  "commands": [
+    {
+      "case": "n4-nca",
+      "backend": "general_ordered",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-nca",
+      "backend": "prototype",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-nca",
+      "backend": "production",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n8-nca",
+      "backend": "general_ordered",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n8-nca",
+      "backend": "prototype",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n8-nca",
+      "backend": "production",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-oca-fallback",
+      "backend": "general_ordered",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-oca-fallback",
+      "backend": "prototype",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-oca-fallback",
+      "backend": "production",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-number-fallback",
+      "backend": "general_ordered",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-number-fallback",
+      "backend": "prototype",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "case": "n4-number-fallback",
+      "backend": "production",
+      "argv": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "target_qualification": false,
+  "unchanged_control_source": "40f1a0e (general and prototype binaries unchanged from production-01)"
+}
