@@ -44,3 +44,10 @@ larger than CPU latency. This supports investigating the two regimes separately;
 it does not establish full topology-sum or Solver speedups. DLR algorithm-matched
 CPU controls, detailed launch/transfer profiling, changed-input replay and target
 hardware measurements remain outstanding. No N=14 diagonalization was performed.
+
+## Matched CPU convolution control
+
+[hoisted-cpu-02](hoisted-cpu-02/README.md) supplies the matched full-evaluator CPU
+control and fresh paired CUDA timings. Its CPU outputs match the original bit for
+bit. Use those ratios when assessing device advantage. `hoisted-cpu-01` is excluded
+from timing comparisons because it overlapped a verification build.

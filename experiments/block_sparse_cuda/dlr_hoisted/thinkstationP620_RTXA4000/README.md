@@ -38,3 +38,12 @@ controls and differ from complete evaluator calls. See [methodology](../README.m
 A full-evaluator hoisted CPU control, changed-input measurements, sensible threaded
 CPU control and target-hardware runs remain pending. No N=14 diagonalization or
 full diagram was performed.
+
+## Complete evaluator control
+
+[Clean paired complete-call results](../../../../../benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-02/README.md)
+qualify the private generated CPU evaluator on 15 physical workloads with bitwise
+agreement against unchanged CPU. The 8-mode number window favors hoisted CPU
+(131 ms vs 267 ms CUDA); the 10-mode number window favors CUDA (5.04 s vs 1.13 s).
+These are bounded-index controls, with one repetition at 10 modes. An earlier
+overlapped run is explicitly excluded.

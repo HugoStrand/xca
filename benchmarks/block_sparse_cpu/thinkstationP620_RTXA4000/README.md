@@ -37,3 +37,7 @@ diagonalization or GPU arithmetic was run.
 
 `reference-01/` contains raw bounded complete-call samples. Paired timings and
 provenance are in [block_sparse_common](../../block_sparse_common/thinkstationP620_RTXA4000/README.md).
+
+[Matched CPU/CUDA calls](../../block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-02/README.md)
+use raw rows in `hoisted-cpu-02/`. `hoisted-cpu-01/` timings are excluded because
+they overlapped compilation; numerical checks are retained.
