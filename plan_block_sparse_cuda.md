@@ -284,6 +284,25 @@ finalist comparisons must answer a concrete promotion question. Larger convoluti
 capacity/full physical14-mode execution remain open. Keep the whole objective active;
 this production refresh is a verification milestone, not completion.
 
+### 2026-10-14 — Fixed scalar replay band disproved
+
+Matched Ordered/Ordered scalar_audit cases reveal19/27 cutoff-count disagreements
+outside1e-26 band at ranks36/47 (finite oscillating/complex node inputs). Oldband
+leaves all46 uncorrected; r23 smoothOCA/order6 controls remain covered. Full general
+replacement yields exact counts/output for all472 sampled rows. This is an execution
+reference and isolated-lane characterization, not physical DLR/wholeSolver proof or
+an optimized policy. Twenty inherited controls and forced-repair memcheck pass.
+Evidence: scalar_audit local cutoff-01; initial mixed-backend exploration distinguished.
+
+The fixedband is now known insufficient. Retain allvariants as experiments. Next
+isolate solve/convolution conditioning/residuals, derive a conservative certificate
+covering both arithmetic routes/cancellation/nonfinite intermediates, and replay
+uncertain lanes. A wider empirical constant, a rank cutoff inferred from these few
+samples, or full replay alone does not finish the optimized integration goal.
+Measure certified policy cost inclusively against baselines before promotion and
+bounded GH200 finalist qualification. No new target allocation; cumulative .27556
+GPU-hours unchanged. Production reference/current selectors remain qualified.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device

@@ -1,5 +1,51 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Scalar cutoff counterexamples and audit control
+
+Previous goal turn was progress: CPU/native/library-only production suites and MPI
+refreshed. Added separate scalar_audit diagnostic over the streams candidate. Every
+completed lane is evaluated by its generalCUDA path before filtering; thread-local
+observer records raw magnitude/value discrepancies and inside/outside-band counts.
+Normal audit retains old1e-26 band replacement, preserving failures. --repair replaces
+all lanes; independent general evaluator must match counts and output arrays exactly.
+No production interface/default/selector changes. Existing per-cohort owned input and
+lane replay payload used/charged; explicit finite-entry checks prevent max() hidingNaN.
+
+Bounded2mode occupation/zero-pole fixtures locate one active path in≤64metadataindices,
+calibrate homogeneous input scaling,54bisections+adjacent doubles (59rows/case). Four
+patterns: rank23 smoothOCA, rank36 oscillatingnodes(Lambda60,eps1e-12), rank47complex
+nodes(Lambda100,eps1e-14), rank23smoothorder6. Inputs finite/admitted; difficult node
+patterns are not physical-propagator or DLR-accuracy qualification. Initial exploration
+used Library candidate/Ordered calibration; retained as such. Matched final audit uses
+Ordered on both sides, fourcases/band+repair =472rows. At r36/r47 oldband leaves19/27
+cutoff-count disagreements outside itsband; all46 survive normal replacement. Smooth
+r23 controls have raw disagreements caught byband. No nonfinite results. Full repair
+fixes counts and yields exactly equal output in every sampled isolated lane. General
+CUDA is execution reference, not exact arithmetic/independent long-double oracle.
+Bisection rows correlated, not failure probability estimates.
+
+Twenty inherited streams controls pass46.33s after shared experimental hook refactoring.
+Rank8 smooth forced-repair frontend (59probes) memcheck zeroerrors/leaks. No competing
+GPU tests, no performance claims: audit computes allgeneralpaths evenwithoutrepair,
+and repair is a correctness control that does not establish optimized speedup.
+Build/copied CMake include quoting corrected before qualification. Callback observes
+one lane/call; multi-lane/multi-set repair and a conservative certificate remain gates.
+
+Codebf09e04/evidenceacb7c16 separate from this plan/log. Raw initial/matched commands,
+binary/sourcehashes, rows, summaries, controls/memcheck under scalar_audit local
+cutoff-01. Initial exploration retains oldbinaryhash, no sourcehash claim. Logs
+/tmp/xca-scalar-audit-* may disappear. All handles terminal; no install/push/unrelated
+changes or targethours (.27556GPU-hours unchanged). Persistent goal active.
+
+This disproves the old fixedband as a general policy, rather than merely leaving it
+unproven. Do not promote by enlarging an empiricalconstant or loosening comparisons.
+Next isolate DLR solve/convolution residuals and conditioning in these reproductions,
+then derive conservative lane eligibility/error/replay bounds that cover both batch
+and general arithmetic, cancellation and nonfinite intermediates. Uncertain lanes
+must use generalexecution. Keep full-replay diagnostic as oracle/control and measure
+any certified rule's inclusive cost against retained baselines before integration.
+Large convolution capacity and final target/optimized integration remain open.
+
 ## 2026-10-14 — Production configurations and MPI refresh
 
 Previous goal turn was progress: qualified six-tensor NCA reserve and boundedN10
