@@ -4,6 +4,7 @@
 #include "operator_model.hpp"
 #include "path.hpp"
 #include "output_placement.hpp"
+#include "storage_policy.hpp"
 #include "real_nca_types.hpp"
 #ifdef NDA_HAVE_CUDA
 #include "dlr_ops.hpp"
@@ -22,11 +23,14 @@ namespace triqs_xca::block_sparse::cuda {
     std::unique_ptr<Impl> impl_;
 
     public:
+    // Host-input policies use completed phase scratch and may pack one strided
+    // host block. RealBatch requires Resident. StreamFragments trades endpoint
+    // recomputation for bounded device residency, retaining complete results.
     DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh,
                      std::size_t device_budget = 1024ULL * 1024 * 1024, std::size_t sparse_budget = 32ULL * 1024 * 1024,
                      SparseBackend operator_backend = SparseBackend::Library, SpecialBackend special_backend = SpecialBackend::Reference,
                      OutputPlacement output_placement = OutputPlacement::Resident, std::size_t host_output_budget = 512ULL * 1024 * 1024,
-                     NcaBackend nca_backend = NcaBackend::Reference);
+                     NcaBackend nca_backend = NcaBackend::Reference, StoragePolicy storage_policy = StoragePolicy::Resident);
     ~DiagramEvaluator();
     DiagramEvaluator(DiagramEvaluator const &)            = delete;
     DiagramEvaluator &operator=(DiagramEvaluator const &) = delete;
@@ -41,6 +45,8 @@ namespace triqs_xca::block_sparse::cuda {
     std::size_t self_energy_storage_bound() const;
     // Validated topology estimate; NCA omits inactive convolution scratch.
     std::size_t self_energy_storage_bound(nda::array_const_view<int, 2> topology) const;
+    // Successful fragment builds in the latest call; zero for self-energy.
+    std::size_t last_fragment_builds() const;
     PathCounts last_path_counts() const;
     std::size_t last_contributing_paths() const;
     // Structural paths executed through the guarded pointwise NCA route.

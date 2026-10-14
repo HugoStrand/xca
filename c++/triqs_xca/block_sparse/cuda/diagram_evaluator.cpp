@@ -48,6 +48,9 @@ namespace triqs_xca::block_sparse::cuda {
     SparseBackend operator_backend;
     SpecialBackend special_backend;
     NcaBackend nca_backend;
+    StoragePolicy storage_policy;
+    bool host_inputs() const { return storage_policy != StoragePolicy::Resident; }
+    std::size_t fragment_builds = 0;
     std::size_t nca_batch_paths = 0;
     OutputPlacement output_placement;
     std::size_t host_output_budget;
@@ -60,7 +63,8 @@ namespace triqs_xca::block_sparse::cuda {
       if (free < baseline_free) peak_delta = std::max(peak_delta, baseline_free - free);
     }
     Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit,
-         SparseBackend selected, SpecialBackend special_selected, OutputPlacement placement, std::size_t host_limit, NcaBackend nca_selected)
+         SparseBackend selected, SpecialBackend special_selected, OutputPlacement placement, std::size_t host_limit, NcaBackend nca_selected,
+         StoragePolicy storage_selected)
        : model(std::move(input)),
          mesh(std::move(tau)),
          r(mesh.dlr_it().rank()),
@@ -70,14 +74,15 @@ namespace triqs_xca::block_sparse::cuda {
          operator_backend(selected),
          special_backend(special_selected),
          nca_backend(nca_selected),
+         storage_policy(storage_selected),
          output_placement(placement),
          host_output_budget(host_limit) {
+      if (!valid_storage_policy(storage_selected)) throw std::invalid_argument("Invalid CUDA storage policy");
+      if (host_inputs() && nca_selected == NcaBackend::RealBatch) throw std::invalid_argument("Real NCA arena requires resident input storage");
       if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)
         throw std::invalid_argument("Invalid output placement");
-      if (nca_selected != NcaBackend::Reference && nca_selected != NcaBackend::RealBatch)
-        throw std::invalid_argument("Invalid NCA backend");
-      if (nca_selected == NcaBackend::RealBatch && !real_nca_available())
-        throw std::runtime_error("Real NCA CUDA kernels were not built");
+      if (nca_selected != NcaBackend::Reference && nca_selected != NcaBackend::RealBatch) throw std::invalid_argument("Invalid NCA backend");
+      if (nca_selected == NcaBackend::RealBatch && !real_nca_available()) throw std::runtime_error("Real NCA CUDA kernels were not built");
       if (special_selected != SpecialBackend::Reference && special_selected != SpecialBackend::Mapped)
         throw std::invalid_argument("Invalid special backend");
       if (special_selected == SpecialBackend::Mapped && !mapped_special_available())
@@ -117,11 +122,14 @@ namespace triqs_xca::block_sparse::cuda {
         } catch (...) {}
     }
     std::size_t bound() const {
-      return reference_storage_bound(r, model.dimensions(), dlr_bound, operator_budget, kernel_bytes, mapped_storage_bound());
+      auto tables = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(r + 1, sizeof(int)));
+      auto amount =
+         reference_storage_bound(r, model.dimensions(), host_inputs() ? tables : dlr_bound, operator_budget, kernel_bytes, mapped_storage_bound());
+      return host_inputs() ? amount - function_bytes(r, model.dimensions()) : amount;
     }
     std::size_t self_energy_bound(bool nca) const {
       auto generic = bound();
-      generic = checked_add(generic, nca_extra_bound());
+      generic      = checked_add(generic, nca_extra_bound());
       if (output_placement == OutputPlacement::HostSectors)
         generic = checked_add(generic - function_bytes(r, model.dimensions()), inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer);
       if (!nca) return generic;
@@ -130,7 +138,7 @@ namespace triqs_xca::block_sparse::cuda {
       // NCA has no ordinary vertex/edge convolutions. Its largest special
       // fallback owns T, out, kap, weighted, mu and term: six rank tensors.
       // Mapped execution uses fewer; scalar/cache experiments charge extras.
-      return generic - (dlr_bound - tables) - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
+      return generic - (host_inputs() ? 0 : dlr_bound - tables) - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
     }
     void prepare_self_energy(nda::array_const_view<int, 2> topology, std::size_t extra = 0) const {
       bool nca    = topology.extent(0) == 1;
@@ -142,6 +150,7 @@ namespace triqs_xca::block_sparse::cuda {
     void admit(std::size_t needed) const {
       ops->require_current();
       if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");
+      if (host_inputs()) dlr->release_scratch();
       std::size_t free = 0, total = 0;
       if (cudaMemGetInfo(&free, &total) != cudaSuccess) throw std::runtime_error("CUDA free-memory query failed");
       auto existing = checked_add(dlr->storage_bytes(), checked_add(kernel_bytes, cached ? cached->storage_bytes() : 0));
@@ -150,9 +159,13 @@ namespace triqs_xca::block_sparse::cuda {
     }
     void admit() const { admit(bound()); }
     std::size_t correlator_bound(long mu, long kap) const {
-      auto base     = bound();
       auto function = function_bytes(r, model.dimensions());
-      auto result   = tensor_bytes(r, mu, kap);
+      auto base     = bound();
+      if (storage_policy == StoragePolicy::StreamFragments) {
+        base     = checked_add(base - function, inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer);
+        function = 0;
+      }
+      auto result = tensor_bytes(r, mu, kap);
       if (result / sizeof(Complex) > std::size_t(std::numeric_limits<int>::max())) throw std::length_error("Correlator exceeds BLAS vector range");
       long maximum = *std::max_element(model.dimensions().begin(), model.dimensions().end());
       return checked_add(base, checked_add(function, checked_add(checked_multiply(2, result), checked_multiply(maximum, sizeof(Complex)))));
@@ -182,6 +195,44 @@ namespace triqs_xca::block_sparse::cuda {
       }
       return *cached;
     }
+    struct Inputs {
+      triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> host;
+      std::shared_ptr<DeviceOps> ops;
+      bool on_host;
+      std::vector<Tensor> resident;
+      Inputs(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, std::shared_ptr<DeviceOps> owner, bool stream, std::vector<bool> const &live,
+             bool keep_tiny)
+         : host(G), ops(std::move(owner)), on_host(stream), resident(stream ? 0 : G.size()) {
+        if (!stream)
+          for (long b = 0; b < G.size(); ++b)
+            if (keep_tiny || live[b]) resident[b] = Tensor(G[b].data());
+      }
+      auto shape(long b) const { return host[b].data().shape(); }
+      void copy_to(long b, TensorView out) const {
+        if (!on_host) {
+          ops->copy(resident[b], out);
+          return;
+        }
+        auto data = host[b].data();
+        if (data.shape() != out.shape()) throw std::logic_error("Host input copy shape mismatch");
+        nda::array<Complex, 3> packed;
+        Complex const *source = data.data();
+        if (data.strides() != std::array<long, 3>{data.extent(1) * data.extent(2), data.extent(2), 1}) {
+          packed = nda::array<Complex, 3>(data);
+          source = packed.data();
+        }
+        try {
+          auto status = cudaMemcpyAsync(out.data(), source, checked_multiply(data.size(), sizeof(Complex)), cudaMemcpyHostToDevice, ops->stream());
+          if (status != cudaSuccess) throw std::runtime_error(cudaGetErrorString(status));
+          ops->finish(); // Includes last read of optional noncontiguous host packing.
+        } catch (...) {
+          try {
+            ops->finish();
+          } catch (...) {}
+          throw;
+        }
+      }
+    };
     void vertex(Tensor &T, Backbone &backbone, int v, SelfEnergyPath const &path) {
       int field         = backbone.get_vertex_orb(v);
       int pole          = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v));
@@ -195,18 +246,39 @@ namespace triqs_xca::block_sparse::cuda {
       sample_memory();
       T = std::move(out);
     }
-    void edge(Tensor &T, std::vector<Tensor> const &G, Backbone &backbone, int e, SelfEnergyPath const &path) {
-      auto const &source = G[path.propagator_blocks[e]];
-      Tensor weighted(source.shape()), gc(source.shape()), tc(T.shape()), out(T.shape());
-      ops->copy(source, weighted);
+    void edge(Tensor &T, Inputs const &G, Backbone &backbone, int e, SelfEnergyPath const &path) {
+      if (host_inputs()) dlr->release_scratch();
+      long source = path.propagator_blocks[e];
+      Tensor weighted(G.shape(source)), gc(G.shape(source)), tc, out;
+      if (!host_inputs()) {
+        tc  = Tensor(T.shape());
+        out = Tensor(T.shape());
+      }
+      G.copy_to(source, weighted);
       for (int x = 0; x < backbone.m - 1; ++x) {
         int sign = backbone.get_edge(e, x), p = backbone.get_pole_ind(x);
         if (sign != 0) ops->weight_rows(weighted, sign > 0 ? positive[p] : negative[p], weighted);
       }
       dlr->vals2coefs(weighted, gc);
+      if (host_inputs()) {
+        ops->finish();
+        weighted = Tensor();
+        tc       = Tensor(T.shape());
+      }
       dlr->vals2coefs(T, tc);
+      if (host_inputs()) {
+        ops->finish();
+        T   = Tensor();
+        out = Tensor(tc.shape());
+      }
       dlr->convolve(beta, gc, tc, out);
       sample_memory();
+      if (host_inputs()) {
+        ops->finish();
+        gc = Tensor();
+        tc = Tensor();
+        dlr->release_scratch();
+      }
       T = std::move(out);
     }
     double kernel_prefactor(Backbone &backbone) const {
@@ -236,31 +308,52 @@ namespace triqs_xca::block_sparse::cuda {
       sample_memory();
       T = std::move(out);
     }
-    void correlator_edge(Tensor &T, TensorConstView source, CorrelatorBackbone &backbone, int e, bool right) {
-      Tensor weighted(source.shape()), gc(source.shape()), tc(T.shape()), out(T.shape());
-      ops->copy(source, weighted);
+    void correlator_edge(Tensor &T, Inputs const &G, long source, CorrelatorBackbone &backbone, int e, bool right) {
+      if (host_inputs()) dlr->release_scratch();
+      Tensor weighted(G.shape(source)), gc(G.shape(source)), tc, out;
+      if (!host_inputs()) {
+        tc  = Tensor(T.shape());
+        out = Tensor(T.shape());
+      }
+      G.copy_to(source, weighted);
       for (int x = 0; x < backbone.m - 1; ++x) {
         int sign = backbone.get_edge(e, x), p = backbone.get_pole_ind(x);
         if (sign != 0) ops->weight_rows(weighted, sign > 0 ? positive[p] : negative[p], weighted);
       }
       dlr->vals2coefs(weighted, gc);
+      if (host_inputs()) {
+        ops->finish();
+        weighted = Tensor();
+        tc       = Tensor(T.shape());
+      }
       dlr->vals2coefs(T, tc);
+      if (host_inputs()) {
+        ops->finish();
+        T   = Tensor();
+        out = Tensor(tc.shape());
+      }
       if (right)
         dlr->convolve(beta, tc, gc, out);
       else
         dlr->convolve(beta, gc, tc, out);
       sample_memory();
+      if (host_inputs()) {
+        ops->finish();
+        gc = Tensor();
+        tc = Tensor();
+        dlr->release_scratch();
+      }
       T = std::move(out);
     }
-    Tensor fragment(std::vector<Tensor> const &G, CorrelatorBackbone &backbone, CorrelatorFragment const &path, bool left) {
-      int s              = backbone.get_topology(0, 1);
-      auto const &source = G[left ? path.end_block : path.root_block];
-      Tensor T(source.shape());
-      ops->copy(source, T);
+    Tensor fragment(Inputs const &G, CorrelatorBackbone &backbone, CorrelatorFragment const &path, bool left) {
+      int s       = backbone.get_topology(0, 1);
+      long source = left ? path.end_block : path.root_block;
+      Tensor T(G.shape(source));
+      G.copy_to(source, T);
       if (!left) {
         for (int v = 1; v < s; ++v) {
           correlator_vertex(T, backbone, v, path.propagator_blocks[v - 1], false);
-          correlator_edge(T, G[path.propagator_blocks[v]], backbone, v, false);
+          correlator_edge(T, G, path.propagator_blocks[v], backbone, v, false);
         }
         ops->scale(kernel_prefactor(backbone), T);
         ops->scale(backbone.prefactor_sign, T);
@@ -268,7 +361,7 @@ namespace triqs_xca::block_sparse::cuda {
         for (int v = 2 * backbone.m - 1; v > s; --v) {
           int source_block = path.propagator_blocks[v - s - 1];
           correlator_vertex(T, backbone, v, source_block, true);
-          correlator_edge(T, G[source_block], backbone, v - 1, true);
+          correlator_edge(T, G, source_block, backbone, v - 1, true);
         }
         Tensor reflected(T.shape());
         dlr->reflect(T, reflected);
@@ -289,10 +382,11 @@ namespace triqs_xca::block_sparse::cuda {
           op->validate();
           if (op->dimensions != model.dimensions()) throw std::invalid_argument("Endpoint model dimensions differ");
         }
-      counts        = {};
-      contributions = 0;
+      fragment_builds = 0;
+      counts          = {};
+      contributions   = 0;
       nca_batch_paths = 0;
-      peak_delta    = 0;
+      peak_delta      = 0;
       // Endpoint snapshots can be temporary. Never retain an address-based cache
       // across their lifetime, including an exception or a reused host allocation.
       struct CacheGuard {
@@ -311,10 +405,7 @@ namespace triqs_xca::block_sparse::cuda {
       admit(correlator_bound(mu.size(), kap.size()));
       std::size_t total = 0;
       if (cudaMemGetInfo(&baseline_free, &total) != cudaSuccess) throw std::runtime_error("CUDA entry memory query failed");
-      std::vector<Tensor> input(G.size());
-      // Unlike self-energy, a masked starting root can contribute. Keep every
-      // stored input value, including tiny blocks below the whole-block mask.
-      for (long b = 0; b < G.size(); ++b) input[b] = Tensor(G[b].data());
+      Inputs input(G, ops, host_inputs(), live, true); // Tiny starting roots remain significant.
       Tensor answer(r, mu.size(), kap.size()), value(answer.shape()), traced(r, 1, 1);
       ops->zero(answer);
       sample_memory();
@@ -322,19 +413,46 @@ namespace triqs_xca::block_sparse::cuda {
         backbone.set_flat_index(index, hyb->poles);
         auto paths = collect_correlator_fragments(model, backbone, live);
         std::vector<Tensor> right(G.size()), left(G.size());
-        for (long b = 0; b < G.size(); ++b)
-          if (paths.right[b] && live[paths.right[b]->end_block]) right[b] = fragment(input, backbone, *paths.right[b], false);
-        for (long b = 0; b < G.size(); ++b)
-          if (paths.left[b] && live[b]) left[b] = fragment(input, backbone, *paths.left[b], true);
+        bool stream = storage_policy == StoragePolicy::StreamFragments;
+        if (!stream) {
+          for (long b = 0; b < G.size(); ++b)
+            if (paths.right[b] && live[paths.right[b]->end_block]) {
+              right[b]        = fragment(input, backbone, *paths.right[b], false);
+              fragment_builds = checked_add(fragment_builds, 1);
+            }
+          for (long b = 0; b < G.size(); ++b)
+            if (paths.left[b] && live[b]) {
+              left[b]         = fragment(input, backbone, *paths.left[b], true);
+              fragment_builds = checked_add(fragment_builds, 1);
+            }
+        }
+        Tensor right_slot, left_slot;
+        int right_key = -1, left_key = -1;
+        auto ensure = [&](Tensor &slot, int &key, int root, CorrelatorFragment const &path, bool is_left) {
+          if (key == root) return;
+          ops->finish();
+          slot            = Tensor();
+          key             = -1;
+          slot            = fragment(input, backbone, path, is_left);
+          key             = root;
+          fragment_builds = checked_add(fragment_builds, 1);
+          sample_memory();
+        };
         ops->zero(value);
         sample_memory();
         auto observed   = for_each_correlator_endpoint(model, paths, live, mu, kap,
-                                                       [&](CorrelatorEndpoint const &end, CorrelatorFragment const &, CorrelatorFragment const &) {
+                                                       [&](CorrelatorEndpoint const &end, CorrelatorFragment const &rp, CorrelatorFragment const &lp) {
+                                                       if (stream) {
+                                                         ensure(right_slot, right_key, end.right_root, rp, false);
+                                                         ensure(left_slot, left_key, end.left_root, lp, true);
+                                                       }
+                                                       auto const &R = stream ? right_slot : right[end.right_root];
+                                                       auto const &L = stream ? left_slot : left[end.left_root];
                                                        auto const &F = mu[end.mu]->blocks[end.right_end];
-                                                       Tensor applied(r, F.rows, right[end.right_root].extent(2));
-                                                       device_operator(F).apply_left(right[end.right_root], applied);
-                                                       Tensor product(r, left[end.left_root].extent(1), applied.extent(2));
-                                                       ops->product(left[end.left_root], applied, product);
+                                                       Tensor applied(r, F.rows, R.extent(2));
+                                                       device_operator(F).apply_left(R, applied);
+                                                       Tensor product(r, L.extent(1), applied.extent(2));
+                                                       ops->product(L, applied, product);
                                                        auto const &K = kap[end.kap]->blocks[end.left_end];
                                                        Tensor square(r, product.extent(1), K.columns);
                                                        device_operator(K).apply_right(product, square);
@@ -410,7 +528,8 @@ namespace triqs_xca::block_sparse::cuda {
     }
     std::size_t nca_extra_bound() const {
       if (nca_backend != NcaBackend::RealBatch || output_placement != OutputPlacement::Resident || nca_width() == 0
-          || !std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })) return 0;
+          || !std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; }))
+        return 0;
       return real_nca_storage_bound(r, model.num_fields(), nca_width());
     }
     bool nca_eligible(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, nda::array_const_view<int, 2> topology) const {
@@ -439,14 +558,14 @@ namespace triqs_xca::block_sparse::cuda {
       paths *= backbone.num_flat_indices(hyb->poles.size());
       if (paths > std::ldexp(1.L, std::numeric_limits<double>::digits - 4)) return false;
       long double bound = input_max;
-      auto grow = [&](long double factor) {
+      auto grow         = [&](long double factor) {
         bound *= factor;
         return std::isfinite(bound) && bound <= std::numeric_limits<double>::max() / 2.L;
       };
       return grow(field_max) && grow(weight_max) && grow(nca_width()) && grow(field_max) && grow(nca_width()) && grow(paths);
     }
-    PathCounts evaluate_nca(std::vector<TensorConstView> const &G, std::vector<TensorView> const &Sigma,
-                           nda::array_const_view<int, 2> topology, std::vector<bool> const &live, long first, long last) {
+    PathCounts evaluate_nca(std::vector<TensorConstView> const &G, std::vector<TensorView> const &Sigma, nda::array_const_view<int, 2> topology,
+                            std::vector<bool> const &live, long first, long last) {
       ops->wait_for_default_uploads();
       RealNcaBatch batch(ops, hyb->values, hyb->values_reflect, nca_width(), nca_extra_bound());
       std::vector<RealNcaLane> lanes;
@@ -458,61 +577,70 @@ namespace triqs_xca::block_sparse::cuda {
         contributions += batch.evaluate_add_views(G, Sigma, lanes, fields, left, right, signs);
         nca_batch_paths += lanes.size();
         sample_memory();
-        lanes.clear(); fields.clear(); signs.clear(); left.clear(); right.clear();
+        lanes.clear();
+        fields.clear();
+        signs.clear();
+        left.clear();
+        right.clear();
       };
-      auto result = for_each_self_energy_path(model, hyb->poles, topology, live, first, last,
-        [&](Backbone &backbone, SelfEnergyPath const &path) {
-          if (path.special_vertex != 1 || path.final_block != path.output_block)
-            throw std::logic_error("Invalid pointwise NCA path");
-          bool forward = !backbone.has_vertex_dag(0);
-          int source = path.propagator_blocks[0];
-          auto const &set = model.sets()[path.zero_set];
-          int final_sign = (backbone.get_fb(0) == 0 ? -1 : 1) * backbone.prefactor_sign;
-          lanes.push_back({source, path.output_block, long(fields.size()), long(signs.size()), int(set.size()), int(forward), final_sign});
-          for (int i : set) {
-            auto const &a = model.field(i, forward).blocks[source];
-            auto const &b = model.field(i, !forward).blocks[path.output_block];
-            fields.push_back(i);
-            left.push_back(a.values.empty() ? 0. : a.values[0].real());
-            right.push_back(b.values.empty() ? 0. : b.values[0].real());
-          }
-          for (int i : set) for (int j : set) {
+      auto result = for_each_self_energy_path(model, hyb->poles, topology, live, first, last, [&](Backbone &backbone, SelfEnergyPath const &path) {
+        if (path.special_vertex != 1 || path.final_block != path.output_block) throw std::logic_error("Invalid pointwise NCA path");
+        bool forward    = !backbone.has_vertex_dag(0);
+        int source      = path.propagator_blocks[0];
+        auto const &set = model.sets()[path.zero_set];
+        int final_sign  = (backbone.get_fb(0) == 0 ? -1 : 1) * backbone.prefactor_sign;
+        lanes.push_back({source, path.output_block, long(fields.size()), long(signs.size()), int(set.size()), int(forward), final_sign});
+        for (int i : set) {
+          auto const &a = model.field(i, forward).blocks[source];
+          auto const &b = model.field(i, !forward).blocks[path.output_block];
+          fields.push_back(i);
+          left.push_back(a.values.empty() ? 0. : a.values[0].real());
+          right.push_back(b.values.empty() ? 0. : b.values[0].real());
+        }
+        for (int i : set)
+          for (int j : set) {
             backbone.set_orb_inds_of_0_and_vct0(j, i);
             signs.push_back(backbone.get_parity() * (forward ? 1 : -1));
           }
-          if (lanes.size() == real_nca_capacity) flush();
-        });
+        if (lanes.size() == real_nca_capacity) flush();
+      });
       flush();
       return result;
     }
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> nca_arena_compute(
-        triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, nda::array_const_view<int, 2> topology,
-        std::vector<bool> const &live, long first, long last) {
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> nca_arena_compute(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                    nda::array_const_view<int, 2> topology, std::vector<bool> const &live, long first,
+                                                                    long last) {
       std::size_t total = 0;
       if (cudaMemGetInfo(&baseline_free, &total) != cudaSuccess) throw std::runtime_error("NCA arena memory query failed");
       auto host_input = nda::zeros<Complex>(G.size(), r, 1);
-      for (long b = 0; b < G.size(); ++b) if (live[b])
-        for (long t = 0; t < r; ++t) host_input(b,t,0) = G[b].data()(t,0,0);
-      Tensor input_storage(host_input), output_storage(G.size(),r,1);
+      for (long b = 0; b < G.size(); ++b)
+        if (live[b])
+          for (long t = 0; t < r; ++t) host_input(b, t, 0) = G[b].data()(t, 0, 0);
+      Tensor input_storage(host_input), output_storage(G.size(), r, 1);
       struct Drain {
         std::shared_ptr<DeviceOps> owner;
-        ~Drain() { try { owner->finish(); } catch (...) {} }
+        ~Drain() {
+          try {
+            owner->finish();
+          } catch (...) {}
+        }
       } drain{ops};
       ops->zero(output_storage);
       constexpr auto all = nda::range::all;
       std::vector<TensorConstView> input;
       std::vector<TensorView> output;
-      input.reserve(G.size()); output.reserve(G.size());
+      input.reserve(G.size());
+      output.reserve(G.size());
       for (long b = 0; b < G.size(); ++b) {
-        input.emplace_back(nda::reshape(input_storage(b,all,all),r,1,1));
-        output.emplace_back(nda::reshape(output_storage(b,all,all),r,1,1));
+        input.emplace_back(nda::reshape(input_storage(b, all, all), r, 1, 1));
+        output.emplace_back(nda::reshape(output_storage(b, all, all), r, 1, 1));
       }
-      counts = evaluate_nca(input,output,topology,live,first,last);
+      counts = evaluate_nca(input, output, topology, live, first, last);
       sample_memory();
       auto host_output = nda::to_host(output_storage);
       std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
       result.reserve(G.size());
-      for (long b = 0; b < G.size(); ++b) result.emplace_back(mesh,nda::reshape(host_output(b,all,all),r,1,1));
+      for (long b = 0; b < G.size(); ++b) result.emplace_back(mesh, nda::reshape(host_output(b, all, all), r, 1, 1));
       return {std::move(result)};
     }
     void special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
@@ -545,11 +673,11 @@ namespace triqs_xca::block_sparse::cuda {
       }
       T = std::move(out);
     }
-    void evaluate(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma, Backbone &backbone, SelfEnergyPath const &path) {
+    void evaluate(Inputs const &G, std::vector<Tensor> &Sigma, Backbone &backbone, SelfEnergyPath const &path) {
       if (path.final_block != path.output_block) throw std::invalid_argument("Self-energy path does not close on its output sector");
-      auto const &first = G[path.propagator_blocks[0]];
-      Tensor T(first.shape());
-      ops->copy(first, T);
+      long first = path.propagator_blocks[0];
+      Tensor T(G.shape(first));
+      G.copy_to(first, T);
       for (int v = 1; v < path.special_vertex; ++v) {
         vertex(T, backbone, v, path);
         edge(T, G, backbone, v, path);
@@ -579,9 +707,10 @@ namespace triqs_xca::block_sparse::cuda {
   };
   DiagramEvaluator::DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh, std::size_t budget,
                                      std::size_t sparse_budget, SparseBackend operator_backend, SpecialBackend special_backend,
-                                     OutputPlacement output_placement, std::size_t host_output_budget, NcaBackend nca_backend)
+                                     OutputPlacement output_placement, std::size_t host_output_budget, NcaBackend nca_backend,
+                                     StoragePolicy storage_policy)
      : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend, special_backend,
-                                    output_placement, host_output_budget, nca_backend)) {}
+                                    output_placement, host_output_budget, nca_backend, storage_policy)) {}
   DiagramEvaluator::~DiagramEvaluator() = default;
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();
@@ -592,6 +721,7 @@ namespace triqs_xca::block_sparse::cuda {
     get_num_self_energy_backbones(topology);
     return impl_->self_energy_bound(topology.extent(0) == 1);
   }
+  std::size_t DiagramEvaluator::last_fragment_builds() const { return impl_->fragment_builds; }
   PathCounts DiagramEvaluator::last_path_counts() const { return impl_->counts; }
   std::size_t DiagramEvaluator::last_contributing_paths() const { return impl_->contributions; }
   std::size_t DiagramEvaluator::last_nca_batch_paths() const { return impl_->nca_batch_paths; }
@@ -659,6 +789,7 @@ namespace triqs_xca::block_sparse::cuda {
       }
       live[b] = magnitude >= 1e-16;
     }
+    x.fragment_builds = 0;
     x.counts          = {};
     x.contributions   = 0;
     x.nca_batch_paths = 0;
@@ -667,8 +798,9 @@ namespace triqs_xca::block_sparse::cuda {
     if (host_sectors && function_bytes(x.r, x.model.dimensions()) > x.host_output_budget)
       throw std::length_error("Full self-energy output exceeds host payload budget");
     if (first != last) x.prepare_self_energy(topology); // Before input/output upload or path arithmetic.
-    if (first != last && x.nca_eligible(G,topology)) return x.nca_arena_compute(G,topology,live,first,last);
-    std::vector<Tensor> input(G.size()), output(G.size());
+    if (first != last && x.nca_eligible(G, topology)) return x.nca_arena_compute(G, topology, live, first, last);
+    std::vector<Tensor> output(G.size());
+    std::unique_ptr<Impl::Inputs> input;
     std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
     long active_output = -1;
     auto flush_output  = [&] {
@@ -687,9 +819,9 @@ namespace triqs_xca::block_sparse::cuda {
     if (first != last) {
       std::size_t total = 0;
       if (cudaMemGetInfo(&x.baseline_free, &total) != cudaSuccess) throw std::runtime_error("CUDA entry memory query failed");
+      input = std::make_unique<Impl::Inputs>(G, x.ops, x.host_inputs(), live, false);
       for (long b = 0; b < G.size(); ++b) {
         auto d = x.model.dimensions()[b];
-        if (live[b]) input[b] = Tensor(G[b].data());
         if (!host_sectors) {
           output[b] = Tensor(x.r, d, d);
           x.ops->zero(output[b]);
@@ -698,7 +830,7 @@ namespace triqs_xca::block_sparse::cuda {
       x.sample_memory();
       if (!host_sectors) {
         x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
-                                             [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });
+                                             [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(*input, output, backbone, path); });
       } else {
         x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last, [&](Backbone &backbone, SelfEnergyPath const &path) {
           if (active_output != path.output_block) {
@@ -708,7 +840,7 @@ namespace triqs_xca::block_sparse::cuda {
             x.ops->wait_for_default_uploads();
             x.sample_memory();
           }
-          x.evaluate(input, output, backbone, path);
+          x.evaluate(*input, output, backbone, path);
         });
       }
     }
