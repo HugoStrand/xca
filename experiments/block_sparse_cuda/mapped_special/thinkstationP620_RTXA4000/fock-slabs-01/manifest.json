@@ -1,0 +1,189 @@
+{
+  "git_commit": "1cc80db93e02a835dd0cfa8d5446c191638ae403",
+  "git_status": " M .gitignore\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "host": "ThinkStation",
+  "cpu_info": "processor\t: 0\nvendor_id\t: AuthenticAMD\ncpu family\t: 23\nmodel\t\t: 49\nmodel name\t: AMD Ryzen Threadripper PRO 3945WX 12-Cores\nstepping\t: 0\nmicrocode\t: 0x830107c\ncpu MHz\t\t: 2200.000\ncache size\t: 512 KB\nphysical id\t: 0\nsiblings\t: 24\ncore id\t\t: 0\ncpu cores\t: 12\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 16\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr rdpru wbnoinvd arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif v_spec_ctrl umip rdpid overflow_recov succor smca sev sev_es\nbugs\t\t: sysret_ss_attrs spectre_v1 spectre_v2 spec_store_bypass retbleed smt_rsb srso ibpb_no_ret spectre_v2_user vmscape\nbogomips\t: 7984.72\nTLB size\t: 3072 4K pages\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 43 bits physical, 48 bits virtual\npower management: ts ttp tm hwpstate cpb eff_freq_ro [13] [14]",
+  "gpu_info": "NVIDIA RTX A4000, 16376 MiB, 580.178.04",
+  "compiler": "Ubuntu clang version 19.1.1 (1ubuntu1~24.04.2)",
+  "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0\n",
+  "binary_sha256": "6f52a57b0172e766c6edfb4f90337beed93f5b910cef47903a43f8eb57ebb3e9",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/mapped_special/benchmark.cpp": "86a88ca1667decd69531897165db1d9a10bebaa926f1d338d2ad5c9861e365ac",
+    "experiments/block_sparse_cuda/mapped_special/fock_fields.hpp": "d88514dbaf579246bd03a4d5fb2b29f872757b4cd5207abf9be5a58a173d564c",
+    "experiments/block_sparse_cuda/mapped_special/slab_benchmark.cpp": "bf32aa930cadec7454b7e3ec6a0117168023d7bd9b72c67e9fb072c7ba92828d",
+    "experiments/block_sparse_cuda/mapped_special/column_maps.hpp": "c7177687e55d51dbd626e62b2beed8a35baf13fbfadf49bf3f2e15f4589737a8",
+    "experiments/block_sparse_cuda/mapped_special/qualification.cpp": "bddc77d29fe5c74261fca59ec8bf407802fc76eaf9a567dd27178926a258f768",
+    "experiments/block_sparse_cuda/mapped_special/kernels.hpp": "8ad05321d38dad62120041dfa46207aa7ef1b5fa17b1f2fcabe3f3c430c8bd17",
+    "experiments/block_sparse_cuda/mapped_special/README.md": "83bb088bdcc78298310f8aefa2c2e29e15d95226f421dd16e70eb8988071fadd",
+    "experiments/block_sparse_cuda/mapped_special/special.inc": "0e555ee31b9a8a1243eb32ed3be2e475bd2a45750decb2f5a40ffbe22ec41ec3",
+    "experiments/block_sparse_cuda/mapped_special/column_maps_tests.cpp": "4a6103d933ceee1ffb891779f88e66301554a9ebfbb7780bd1bf7b500ec0061a",
+    "experiments/block_sparse_cuda/mapped_special/run_slabs.py": "8e32563f37b71367143ba0fc832d705437bce755871c96ff4a44aa3a699df68d",
+    "experiments/block_sparse_cuda/mapped_special/CMakeLists.txt": "f8b999b61db6943638669cacf3ee94345b2f63666d388d87f65c5f8b2847dac6",
+    "experiments/block_sparse_cuda/mapped_special/kernels.cu": "48d4b6f841a855fbef8382df4895941229aaebe2e0e2cb292dc35ff14edc57d3",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "a29e22720cba4a3fedfde294e66abb6e99770d5ea6af27318be821509f6e2b12",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "73cde4c1565cbf8c5ac35c426ede3184e2fe32379d59d740bce548777d4583de",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.cpp": "61766faf7215400413bdcbe9bfe40504a268e4ef248989d5ea66e5498f42ae14",
+    "c++/triqs_xca/block_sparse/cuda/path.cpp": "d5a2b3ae85b59e81809d3adecd62153717604b3dcc1e1d799ce0fad41b2d64b5",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "02620e99ed5315b4e17ff379f8c25a1b653adccdde2c649d3665e387a1bbc4f4",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.cpp": "cb6a8993dd398cf274cff60fb40f7a7141b632b9efa964ad41934bfbfc1b8b25",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.hpp": "e39962ecd64e45bf2f7f11d1c79ff96823186e718beefcc818bf00e2649f4ff0",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.hpp": "0c9e5742498a5cb0f63f9be22031895072f43c751f74e728446f3a3c7911be65",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.hpp": "b6da2955c22f969229b2188d70020064726c60bcb7c0b09d225f03a3f068c892",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.hpp": "233c0d04eed2d16b5ffa9afd3a740ba32e7cd118a2d14d0c2563ccba627058d5",
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "9fb95c4ff1aed7f9c1e30ba7e95113b2c09845b6b6a9784577fb283d6233a9b6",
+    "c++/triqs_xca/block_sparse/cuda/path.hpp": "ea0c28a4242bea52f0bf92a7660b226467bdf6c1a69f785d7b0d3017c51a69c2",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.hpp": "1ed8dbd95dc194ab23bc513b65881af9705d52ccac50cfa56273842886503a84",
+    "c++/triqs_xca/block_sparse/cuda/kernels/kernels.hpp": "447d507c1de33939d2f1f0d01210f227b1c08944c6a0f4829b0527501776dc66",
+    "c++/triqs_xca/block_sparse/cuda/kernels/kernels.cu": "54c900bd531d2ca572c4a8c69b71b7acc1e1e79415402dcb34ef13cd271d8ecc"
+  },
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "cases": [
+    {
+      "name": "n4-r3-rows3-annihilation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "4",
+        "--rank",
+        "3",
+        "--rows",
+        "3",
+        "--direction",
+        "annihilation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.4744320579338819
+    },
+    {
+      "name": "n4-r3-rows3-creation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "4",
+        "--rank",
+        "3",
+        "--rows",
+        "3",
+        "--direction",
+        "creation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.4256294190417975
+    },
+    {
+      "name": "n10-r26-rows32-annihilation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "10",
+        "--rank",
+        "26",
+        "--rows",
+        "32",
+        "--direction",
+        "annihilation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.504256799002178
+    },
+    {
+      "name": "n10-r26-rows32-creation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "10",
+        "--rank",
+        "26",
+        "--rows",
+        "32",
+        "--direction",
+        "creation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.4926368639571592
+    },
+    {
+      "name": "n14-r26-rows32-annihilation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--rows",
+        "32",
+        "--direction",
+        "annihilation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.8597938370658085
+    },
+    {
+      "name": "n14-r26-rows32-creation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--rows",
+        "32",
+        "--direction",
+        "creation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.761567595996894
+    },
+    {
+      "name": "n14-r26-rows128-annihilation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--rows",
+        "128",
+        "--direction",
+        "annihilation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 6.068609984009527
+    },
+    {
+      "name": "n14-r26-rows128-creation",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_slab_benchmark",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--rows",
+        "128",
+        "--direction",
+        "creation",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 5.644632533076219
+    }
+  ]
+}
