@@ -1,0 +1,121 @@
+Start testing: Oct 14 19:43 CEST
+----------------------------------------------------------
+12/73 Testing: experiments/block_sparse_cuda/scalar_real_nca
+12/73 Test: experiments/block_sparse_cuda/scalar_real_nca
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_tests"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca
+"experiments/block_sparse_cuda/scalar_real_nca" start time: Oct 14 19:43 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 11 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2598 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (538 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (9 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (28 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2820 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (1 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (618 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6615 ms total)
+
+[----------] 3 tests from RealNca
+[ RUN      ] RealNca.MultiSetTailChangedInputsAndGeneralFallback
+[       OK ] RealNca.MultiSetTailChangedInputsAndGeneralFallback (48765 ms)
+[ RUN      ] RealNca.AdjacentCutoffWithoutReplay
+[       OK ] RealNca.AdjacentCutoffWithoutReplay (24 ms)
+[ RUN      ] RealNca.UnsafeRangeAndComplexModelFallback
+[       OK ] RealNca.UnsafeRangeAndComplexModelFallback (35 ms)
+[----------] 3 tests from RealNca (48826 ms total)
+
+[----------] Global test environment tear-down
+[==========] 11 tests from 2 test suites ran. (55441 ms total)
+[  PASSED  ] 11 tests.
+<end of output>
+Test time =  55.89 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/scalar_real_nca" end time: Oct 14 19:44 CEST
+"experiments/block_sparse_cuda/scalar_real_nca" time elapsed: 00:00:55
+----------------------------------------------------------
+
+35/73 Testing: block_sparse/cuda_nca_dispatch
+35/73 Test: block_sparse/cuda_nca_dispatch
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/test/c++/block_sparse/cuda_nca_dispatch"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_nca_dispatch" start time: Oct 14 19:44 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from ProductionRealNca
+[ RUN      ] ProductionRealNca.MultiSetTailChangedInputsAndGeneralFallback
+[       OK ] ProductionRealNca.MultiSetTailChangedInputsAndGeneralFallback (49073 ms)
+[ RUN      ] ProductionRealNca.AdjacentCutoffWithoutReplay
+[       OK ] ProductionRealNca.AdjacentCutoffWithoutReplay (14 ms)
+[ RUN      ] ProductionRealNca.UnsafeRangeAndComplexModelFallback
+[       OK ] ProductionRealNca.UnsafeRangeAndComplexModelFallback (33 ms)
+[ RUN      ] ProductionRealNca.RangeAdmissionAndOtherObservables
+[       OK ] ProductionRealNca.RangeAdmissionAndOtherObservables (424 ms)
+[ RUN      ] ProductionRealNca.PolicyAvailability
+[       OK ] ProductionRealNca.PolicyAvailability (3 ms)
+[----------] 5 tests from ProductionRealNca (49550 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (49550 ms total)
+[  PASSED  ] 5 tests.
+<end of output>
+Test time =  49.68 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_nca_dispatch" end time: Oct 14 19:45 CEST
+"block_sparse/cuda_nca_dispatch" time elapsed: 00:00:49
+----------------------------------------------------------
+
+37/73 Testing: block_sparse/cuda_real_nca
+37/73 Test: block_sparse/cuda_real_nca
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/test/c++/block_sparse/cuda_real_nca"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_real_nca" start time: Oct 14 19:45 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from RealNcaStorage
+[ RUN      ] RealNcaStorage.CheckedPayload
+[       OK ] RealNcaStorage.CheckedPayload (0 ms)
+[----------] 1 test from RealNcaStorage (0 ms total)
+
+[----------] 3 tests from RealNcaPrimitive
+[ RUN      ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery
+[       OK ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery (914 ms)
+[ RUN      ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission
+[       OK ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission (1 ms)
+[ RUN      ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal
+[       OK ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal (1 ms)
+[----------] 3 tests from RealNcaPrimitive (917 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 2 test suites ran. (917 ms total)
+[  PASSED  ] 4 tests.
+<end of output>
+Test time =   1.04 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_real_nca" end time: Oct 14 19:45 CEST
+"block_sparse/cuda_real_nca" time elapsed: 00:00:01
+----------------------------------------------------------
+
+End testing: Oct 14 19:45 CEST

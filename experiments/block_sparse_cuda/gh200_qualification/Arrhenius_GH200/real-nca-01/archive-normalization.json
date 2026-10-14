@@ -1,0 +1,41 @@
+{
+  "policy": "Archive-only LF and trailing-whitespace normalization; numeric values unchanged.",
+  "files": {
+    "job-3843116/CMakeCache.txt": {
+      "original_sha256": "4c3a3d10962efd0db2a2a6875ac74b0790e92b4617f771086f0684ba7b0f013e",
+      "archived_sha256": "a745bd41b31903d7d2d3db6fc697f5a5e727aab51a3ff7b2fc05fd68d0198862"
+    },
+    "job-3843116/compiler.txt": {
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archived_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    "job-3843116/configure.log": {
+      "original_sha256": "a988a4f3d54d6980edebca230d826d121581909c87c4dae387a12487a1945876",
+      "archived_sha256": "20ce0d15052837eb84abe3c6e51db5ddc1f238e71340cfacc7da56f4b7496d58"
+    },
+    "job-3843116/gpu.txt": {
+      "original_sha256": "3d18c6986f889d2fd5c7775c04d2591f3f272554804973e3955c3a39bd30e1fb",
+      "archived_sha256": "9622c2a9d6830f6e817b05f882064db77d72146589ec0d902c43ea3bfa72e7ff"
+    },
+    "job-3843405/CMakeCache.txt": {
+      "original_sha256": "25ac24f4c81d94b23338c785482c263cc28d0a0c3b6336ccb778659222711a11",
+      "archived_sha256": "e3b2f5451d17b09b1367093f043394998265107dea67d4feb7f5a985a29399e6"
+    },
+    "job-3843405/compiler.txt": {
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archived_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    "job-3843405/configure.log": {
+      "original_sha256": "04ad0ba048d52f07dd8b2a67010e020772c031ee22ea1044b8b09a808da4c7d0",
+      "archived_sha256": "e4be794d87a5c312587cb1d2cdc7c4076bdd00f600c20c928fa5ad18eabbdbbf"
+    },
+    "job-3843405/gpu.txt": {
+      "original_sha256": "b3b82627b1624351b7beed8f389f35cbc3b36dd916d9914dad349f3c6fb7082c",
+      "archived_sha256": "f35790e6acda4eb47c270057c584c10bbbc115bc961ab7b7e0c66e9e41064b32"
+    },
+    "xca-bs-gh200-real-nca-3843405.err": {
+      "original_sha256": "3901a0ba4ab9f49246f49b6632bdbaa1a09f85723af8959e1e3aef764344d91a",
+      "archived_sha256": "ea72cbdb733aca80046e2766e90dab6d82fef533f835d8f041937e57b0e2cfc4"
+    }
+  }
+}

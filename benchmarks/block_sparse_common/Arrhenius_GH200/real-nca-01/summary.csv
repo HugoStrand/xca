@@ -1,0 +1,17 @@
+case,backend,median_call_ms,samples
+n4-nca,cpu_scalar_constants,0.186234,3
+n4-nca,cuda_ordered_production,10.028712,3
+n4-nca,cuda_real_nca,2.240698,3
+n4-nca,cuda_real_nca_batch,0.238457,3
+n8-nca,cpu_scalar_constants,3.62488,3
+n8-nca,cuda_ordered_production,292.954774,3
+n8-nca,cuda_real_nca,3.167613,3
+n8-nca,cuda_real_nca_batch,1.399253,3
+n4-oca-fallback,cpu_scalar_constants,1.720394,3
+n4-oca-fallback,cuda_ordered_production,14.896593,3
+n4-oca-fallback,cuda_real_nca,14.107722,3
+n4-oca-fallback,cuda_real_nca_batch,14.142441,3
+n4-number-fallback,cpu_scalar_constants,0.199994,3
+n4-number-fallback,cuda_ordered_production,9.148611,3
+n4-number-fallback,cuda_real_nca,9.103429,3
+n4-number-fallback,cuda_real_nca_batch,9.119172,3

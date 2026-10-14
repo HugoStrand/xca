@@ -1,0 +1,63 @@
+[ 11%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Built target block_sparse_cpu_scalar_constants_benchmark
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 90%] Built target triqs_xca_c
+[100%] Built target block_sparse_cuda_ordered_benchmark
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target block_sparse_scalar_edge_kernels
+[ 18%] Built target block_sparse_resident_weight_kernels
+[ 90%] Built target triqs_xca_c
+[100%] Built target block_sparse_scalar_real_nca_evaluator
+[100%] Built target block_sparse_scalar_real_nca_benchmark
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 90%] Built target triqs_xca_c
+[100%] Built target block_sparse_cuda_real_nca_benchmark
+[  8%] Built target triqs_xca_sparse_kernels
+[  8%] Built target block_sparse_scalar_edge_kernels
+[ 16%] Built target block_sparse_resident_weight_kernels
+[ 25%] Built target gtest
+[ 25%] Built target gtest_main
+[ 91%] Built target triqs_xca_c
+[100%] Built target block_sparse_scalar_real_nca_evaluator
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_tests.dir/qualification.cpp.o
+[100%] Linking CXX executable block_sparse_scalar_real_nca_tests
+[100%] Built target block_sparse_scalar_real_nca_tests
+[  9%] Built target triqs_xca_sparse_kernels
+[ 18%] Built target gtest
+[ 18%] Built target gtest_main
+[ 90%] Built target triqs_xca_c
+[ 90%] Built target triqs_xca_test_utils
+[ 90%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_dispatch.dir/block_sparse/cuda_nca_dispatch.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:5:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp: In member function ‘virtual void ProductionRealNca_AdjacentCutoffWithoutReplay_Test::TestBody()’:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:69:5: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   69 |     for (long b=0;b<G.size();++b) G[b].data()=0.;G[0].data()=amplitude;
+      |     ^~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:69:50: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   69 |     for (long b=0;b<G.size();++b) G[b].data()=0.;G[0].data()=amplitude;
+      |                                                  ^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp: In member function ‘virtual void ProductionRealNca_PolicyAvailability_Test::TestBody()’:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:129:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wdangling-else]
+  129 |   if (!gpu::real_nca_available()) EXPECT_THROW(BatchEvaluator(model,poles,mesh),std::runtime_error);
+      |      ^
+[100%] Linking CXX executable block_sparse/cuda_nca_dispatch
+[100%] Built target block_sparse_cuda_nca_dispatch
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 20%] Built target gtest
+[ 20%] Built target gtest_main
+[100%] Built target triqs_xca_c
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_real_nca.dir/block_sparse/cuda_real_nca.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_real_nca
+[100%] Built target block_sparse_cuda_real_nca

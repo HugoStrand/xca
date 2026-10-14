@@ -1,0 +1,8 @@
+JobID|JobName|State|ExitCode|Elapsed|AllocCPUS|AllocTRES|MaxRSS
+3843116|xca-bs-gh200-real-nca|CANCELLED by 4000949|0:0|00:06:32|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3843116.batch|batch|CANCELLED|0:15|00:06:33|72|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|288M
+3843116.extern|extern|COMPLETED|0:0|00:06:34|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3843116.0|ps|COMPLETED|0:0|00:00:02|1|cpu=1,mem=105048M,node=1|36M
+3843405|xca-bs-gh200-real-nca|COMPLETED|0:0|00:03:02|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3843405.batch|batch|COMPLETED|0:0|00:03:02|72|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|288M
+3843405.extern|extern|COMPLETED|0:0|00:03:02|72|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|

@@ -1,0 +1,9 @@
+{
+  "xca": "b5a131c84bd558b3708fb67e1a528172c477fc6f",
+  "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+  "recipe_commit": "a6ae6ef",
+  "job_sha256": "8012548acc8d522c07ce19225e6b4f3135cbea28a49a97f012b2fb968fbe160a",
+  "runner_sha256": "33917cec5f6f7ed0d9d93472bc2dcd8c34f150a7e3bf1086d4840d7760191cf3",
+  "gpu_count": 1,
+  "walltime_cap_seconds": 900
+}

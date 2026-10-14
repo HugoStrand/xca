@@ -1,0 +1,63 @@
+-- The CXX compiler identification is GNU 14.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /software/sse2/el9_gh200/easybuild/prefix/software/GCCcore/14.3.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Boost Headers: /software/sse2/el9_gh200/easybuild/prefix/software/Boost/1.88.0-GCC-14.3.0/include
+-- Found Cpp2PyConfig.cmake with version 3.3.0, hash = 4721d6484237ba0e402648cd963ff036b2557c67, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- Found Python: /software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13 (found version "3.13.5") found components: Interpreter Development NumPy Development.Module Development.Embed
+-- Found itertools-config.cmake with version 2.0.0, hash = d32d2b20a1beda709a43bd56ac85ea6d41efcdef, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- Found mpi-config.cmake with version 2.0.0, hash = c760e19bd79b3fb84fca2b1e861a3478047f6a42, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- The C compiler identification is GNU 14.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /software/sse2/el9_gh200/easybuild/prefix/software/GCCcore/14.3.0/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Found HDF5: hdf5-shared (found version "1.14.6") found components: C HL
+-- Found h5-config.cmake with version 2.0.0, hash = bdbb040157088e156032edb33714a915d7782f3b, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX
+-- Found CUDAToolkit: /software/sse2/el9_gh200/easybuild/prefix/software/CUDA/12.9.1/targets/sbsa-linux/include (found version "12.9.86")
+-- Found Threads: TRUE
+-- Found nda-config.cmake with version 2.0.0, hash = 4e590772784c2ca855dd9b6218300047dea5abcb, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- Found cppdlr-config.cmake with version 1.3.0, hash = 7a0f60cba2da69d64361971613b6859bb8c078ce, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+-- Found TRIQSConfig.cmake with version 4.0.0, hash = 29301201c26de3b2c9d824718a406f981d3adea7, root = /nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs
+fatal: not a git repository (or any parent up to mount point /nobackup/proj)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+-- triqs_xca version : 0.1.0
+-- triqs_xca Git hash:
+-- -------- CMAKE_INSTALL_PREFIX: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/unused-install --------
+-- -------- BUILD-TYPE: Release --------
+--  =============== Configuring Dependency GTest ===============
+-- Found Git: /usr/bin/git (found version "2.55.0")
+--  =============== End GTest Configuration ===============
+-- Looking for a CUDA compiler
+-- Looking for a CUDA compiler - /software/sse2/el9_gh200/easybuild/prefix/software/CUDA/12.9.1/bin/nvcc
+-- The CUDA compiler identification is NVIDIA 12.9.86 with host compiler GNU 14.3.0
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /software/sse2/el9_gh200/easybuild/prefix/software/CUDA/12.9.1/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Found Python3: /software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13 (found version "3.13.5") found components: Interpreter
+-- *********************************************************************************
+-- * Custom install Location. Use:
+-- *
+-- *   source /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/unused-install/share/triqs_xca/triqs_xcavars.sh
+-- *
+-- * to set up the environment variables
+-- *
+-- * Consider copying /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda/share/triqs_xca.modulefile
+-- *   into your environment module directories
+-- *********************************************************************************
+-- Configuring done (17.0s)
+-- Generating done (3.1s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    Update_Python_Bindings
+
+
+-- Build files have been written to: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-b5a131c/cbuild_cuda

@@ -1,0 +1,17 @@
+***************************************************
+You have loaded a buildenv module
+***************************************************
+The buildenv-gcc module makes available:
+ - Compilers: gcc, gfortran, etc.
+ - MPI library with mpi-wrapped compilers: OpenMPI with mpicc, mpifort, etc.
+ - Numerical libraries: OpenBLAS, LAPACK, ScaLAPACK, FFTW
+
+It also makes a set of dependency library modules available via
+the regular module command. Just do:
+  module avail
+to see what is available.
+
+NOTE: You shoud never load build environments inside submitted jobs.
+(with the single exception of when using supercomputer time to compile code.)
+
+[2026-10-14T19:38:13.469] error: *** JOB 3843116 ON n455 CANCELLED AT 2026-10-14T19:38:13 DUE to SIGNAL Terminated ***
