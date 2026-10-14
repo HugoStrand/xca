@@ -425,6 +425,33 @@ Decision: a small capability table keyed by structure/shape/reuse, with reproduc
 numerical behavior. Do not infer complex-double acceleration from real or reduced-
 precision tensor-core peak rates.
 
+E3 checkpoint (2026-10-14): [operator_apply](experiments/block_sparse_cuda/operator_apply/README.md)
+compares a one-launch, ordered general CSR kernel against the retained deterministic
+cuSPARSE path and a dense cuBLAS strided batch with shared operator storage. The
+fixtures use exact adjacent-number Fock sectors without diagonalization, individual
+signed maps and complex weighted field sums. Both multiplication directions use
+plain-transpose CSR for right products, including empty rows. It is not yet a compact
+map representation or implicit weighted sum.
+
+The [local sweep](experiments/block_sparse_cuda/operator_apply/thinkstationP620_RTXA4000/README.md)
+passed all 24 processes / 432 rows with exact replay; native output matched the CPU
+sparse control bit for bit and both library controls had relative error below
+5.34e-16. A width-17 tail/multi-entry memory check reported zero errors. The sweep
+includes the exact 3003/3432 N=14 geometry with bounded RHS width 1/16, not full
+sector-sized rank functions or N=14 diagonalization. It records nnz/row degrees,
+packing/setup/first-use and warm timings, explicit operator/workspace bytes and
+source/binary/library/toolchain provenance. At width 16 for all-field sums, ordered
+CSR / retained cuSPARSE left application takes 0.0056/0.333 ms at 4 modes,
+0.0369/0.337 ms at 10 modes and 0.572/0.786 ms at 14 modes; right applications show
+similar benefits. The cuSPARSE reference also charges per-node descriptor queries
+and synchronization, so these ratios do not establish fundamental library limits.
+
+Next test the native route in an isolated complete evaluator, with the existing
+reference retained. Qualify budgets, lifecycle, strict numerics and inclusive
+complete calls before promotion. Width/degree/reuse-dependent dispatch, wider RHS,
+compact maps, implicit sums, COO alternatives and target hardware remain pending;
+no production dispatch threshold is selected from these primitive measurements.
+
 ### E4 — Where to batch and where to fuse
 
 Compare one path at a time with bounded batches across output sectors, flat indices

@@ -809,3 +809,74 @@ Temporary logs: /tmp/xca-bs-hoisted-{build,cpu-build,smoke,cpu-smoke,campaign}.*
 /tmp/xca-bs-hoisted-evaluator-{build,cpu-build,smoke,cpu-smoke,campaign,clean-campaign}.*.
 Persistent evidence lives in experiments/block_sparse_cuda/dlr_hoisted/thinkstationP620_RTXA4000
 and benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-{01,02}.
+
+
+### 2026-10-14 — E3 ordered operator controls
+
+Previous goal turn made progress by establishing primitive and full-evaluator
+matched CPU convolution controls. This turn adds isolated native sparse-operator
+experiments; goal remains active and production evaluator dispatch is unchanged.
+
+Code 9561926 [bench] compare sparse operator kernels; measured results 9258ed8
+[bench] record sparse operator controls. Native/general CSR applies one output per
+thread, traverses sorted row entries, uses no atomics and launches once for all DLR
+nodes. CUDA FMA contraction is disabled for this numerical control. Both directions
+are tested; the right snapshot is a plain transpose (adjoint then conjugated values),
+not a complex adjoint. The library controls are retained DeviceSparseBlock ALG3
+(per-node queries/descriptors/synchronization) and complex-double cuBLAS strided
+batches with zero operator batch stride. Dense storage holds a single matrix,
+without rank replication. No inference about ideal cuSPARSE performance is made
+from the retained reference's descriptor/synchronization costs.
+
+Fixtures enumerate adjacent total-number Fock sectors at half filling, with exact
+parity for individual fields and complex weighted sums of all fields. Modes
+2/4/6/8/10/14 cover rectangular dimensions up to exactly 3003-by-3432. Empty rows,
+left/right products, one/all-field sums, RHS widths 1/16 and three repetitions with
+reuse eight are recorded. No atom_diag diagonalization is needed. The N=14 cases
+are bounded spatial slabs, not full sector-sized rank functions or a complete model.
+Native CSR is general ordered storage; compact signed maps and implicit sums remain
+additional strategies, not claims about this implementation.
+
+CSV records separate host packing, route setup/upload, first-call and warm repeated
+application time, numerical errors, nnz/forward and transpose degrees, operator
+payload and retained sparse workspace. Context/input/output allocation and input
+upload are outside warm timing; output copy/checks are also outside it. Sparse
+workspace is reported separately and excluded from the operator-payload column,
+correcting the initial smoke's inconsistent accounting. First call charges lazy
+workspace/first-use costs. No complete peak or full Solver speedup is asserted.
+
+Initial configure needed CUDA language initialization in the experiment directory
+(the existing sibling's enable_language scope was insufficient); corrected locally
+without altering production native kernels. NDA vector conversion from std::vector
+was replaced with explicit host staging before building. Final build is warning-free
+for the experiment. CPU-only configure succeeded and exposes no native operator
+experiment target. CUDA small complex weighted smoke, two-mode narrow/empty-row
+control and 14-mode seven-field width-four smoke passed. Invalid terms rejected.
+compute-sanitizer memcheck on six modes/six fields/width 17 reported zero errors and
+its numerical/replay checks passed. No production change warrants rerunning whole
+solver suites; earlier full CPU/CUDA/MPI qualification remains the core checkpoint.
+
+After all builds/sanitizer processes terminated, the sequential operator-01 campaign
+completed all 24 processes and 432 rows. Native outputs bitwise matched the CPU
+sparse reference throughout; cuSPARSE/dense maximum relative error was 5.332e-16.
+All GPU routes repeated exactly. Code, binary and NDA-library hashes, commands,
+CUDA compiler and machine metadata are persisted, including per-case outcomes.
+The hardware README and paired summary retain all rows, not only the best results.
+For width-16 complex all-field sums, native/retained-cuSPARSE left medians are
+0.00560/0.33252 ms (N4), 0.03695/0.33738 ms (N10), 0.57248/0.78626 ms (N14).
+Right medians are 0.00478/0.33704, 0.03583/0.34011 and 0.47965/0.79528 ms. The
+native advantage shrinks as useful work grows; dense expansion is costly for these
+large narrow-RHS sparse fields. No hardware-independent winner is declared.
+
+Next: build a private complete-evaluator native candidate retaining library reference
+and unchanged/matched CPU controls. Verify strict all-observable numerics, sparse
+budget/lifecycle errors and inclusive timing before production promotion; do not
+replace reference solely from primitive rates. Continue bounded batching and memory
+refinement; broader degree/RHS, COO, implicit sums, GH200 measurements and N=14
+capacity qualification remain pending. No install, push, supervisor change or user
+work edits. Plan/work-log checkpoint is separate from code/results commits.
+
+Temporary logs: /tmp/xca-bs-operator-{configure,build,cpu-configure,cpu-targets,invalid,
+memcheck,campaign}.log and /tmp/xca-bs-operator-{smoke,tail-smoke,large-smoke}.csv.
+Persistent artifacts: experiments/block_sparse_cuda/operator_apply/thinkstationP620_RTXA4000.
+Git diff --check passed; unrelated .gitignore/untracked user work is preserved.
