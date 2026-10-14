@@ -1,5 +1,59 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Production NCA dispatch and packed sectors
+
+Previous goal turn made progress by extracting and qualifying the internal primitive.
+Added opt-in C++ NcaBackend::RealBatch, leaving Reference as the default. Selection
+requires NCA self-energy, resident output, every block 1x1, exactly real finite fields,
+forward/reflected tables and current G, and bounds for every intermediate/whole output
+sum with rounding headroom. Unsupported domains retain the selected general CUDA
+operator/special route. Native-disabled and invalid policies reject at construction.
+Batch workspace is included conservatively in self-energy admission, even if an
+opt-in call subsequently uses the reference. No fallback after failed batch submission.
+The observer last_nca_batch_paths proves selected paths and resets for other observables.
+
+Nine final active native controls pass in two CTests / 53.62 s. Dynamic multi-set data,
+511-plus-tail batches, all four sparse/special modes, changed real/complex G, cutoff
+adjacency, subnormal node, unsafe range recovery, complex models, higher-order and
+host-sector fallback, mixed/large blocks, SPGF, empty range and budget rejection are
+covered. CPU entries pass .03 s (one active metadata test, GPU disabled). Native-disabled
+entries pass .79 s (three active metadata/rejection controls; native-only tests skip).
+Two integration memchecks pass 5.883 s and four primitive controls 3.133 s, zero errors
+and leaks. Primitive view API rejects partial input/output overlap and shared output
+storage before submission. Stream cleanup precedes arena destruction on exceptions.
+
+Preserved generator source seams after configuration exposed exact-string dependencies
+in kappa reuse and prefix cache. Retained streams and real-NCA controls pass 104.17 s
+before packing. Packing does not change their numerical implementations; final native
+production controls were repeated after the arena/view changes. No new full-suite or
+Python/MPI qualification claimed. All build/test/timing handles are terminal.
+
+Initial production complete-call campaign uncovered N8 regression versus retained
+prototype: 8.602 vs 2.146 ms. Packed scalar sectors into two arenas, avoiding one
+allocation/upload per sector, while charging the same complete device function payload.
+Repeated all four cases / three routes / three samples = 36 rows. Final general ordered /
+prototype / production median ms: N4 NCA 9.351 / 1.173 / .211; N8 NCA 293.538 / 2.158 /
+1.284; N4 OCA fallback 15.009 / 15.246 / 15.113; N4 number fallback 8.721 / 8.532 / 8.558.
+All finite, CPU-screening and exact replay checks pass; norm/error/path-count summaries
+agree. Production is locally 5.56x / 1.68x faster than the prototype for these N4/N8 NCA
+samples, 44.4x / 228.6x versus general ordered. Three samples do not establish universal
+crossovers, CPU comparison with earlier differently prepared controls, GH200 defaults or
+whole Solver/topology-sum speedups. Both before/after campaigns are retained.
+
+Code cd54781/ef59a06; frontend 40f1a0e; evidence 9e3f009/2625b72 separate from this
+plan/log commit. Benchmark artifacts: benchmarks/block_sparse_cuda/thinkstationP620_
+RTXA4000/real-nca-{production,arena}-01. Focused verification: experiments/block_sparse_
+cuda/production_qualification/thinkstationP620_RTXA4000/real-nca-{dispatch,arena}-01.
+No Arrhenius job or new target hours (.27556 nominal cumulative), push, install,
+supervisor or unrelated-work changes. SSH restoration still requires connection from
+this process; the pending user reconnection question must not trigger duplicate jobs.
+
+Goal active. Next expose the explicit policy/capability through consolidated bindings,
+gpu.py, Solver archive/deepcopy/validation and collective MPI initialization/evaluation,
+then refresh relevant full builds/suites and consider capped GH200 qualification.
+Higher-order numerical promotion and larger convolution capacity remain open; retain
+all experiments and do not promote the disproved fixed cutoff band.
+
 ## 2026-10-14 — Pointwise real NCA primitive
 
 Extracted the guarded experiment's pointwise arithmetic into an internal production

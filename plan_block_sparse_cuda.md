@@ -371,6 +371,30 @@ cutoff band is promoted by this NCA extraction. GH200 qualification is still req
 for target conclusions; current evidence uses the local RTX A4000. No new cluster
 allocation was consumed, and the earlier resident job 3828369 must not be resubmitted.
 
+## 2026-10-14 — Guarded NCA production policy
+
+C++ integration is now explicit: NcaBackend::RealBatch opts into the pointwise path
+for resident self-energy at NCA with all 1x1 blocks and finite exactly real model/
+tables/current input. A preselection range guard bounds partial products, inner/outer
+sums and whole output; other inputs, orders and observables retain general CUDA.
+Default remains Reference. Native-disabled builds reject the opt-in policy rather
+than silently changing execution. Bounded packed input/output sectors and transient
+batch workspace are included in admission; no replay or post-failure fallback.
+
+Final code ef59a06 has nine active native controls, CPU/native-disabled controls,
+partial-view alias rejection and clean integration/primitive memory checks. Evidence
+2625b72 records local complete calls. Packing corrected a measured N8 regression:
+8.602 to 1.284 ms; N4 .660 to .211 ms. Retained prototype controls take 2.158/1.173 ms
+for N8/N4 in the repeat campaign. General/fallback routes and every experiment are
+retained. Three samples on RTX A4000 do not establish GH200 crossover/defaults or
+whole Solver speedup. No additional Arrhenius allocation consumed.
+
+Next wire explicit selection/capability into _triqs_xca_cuda, gpu.py, Solver preferences
+and archive/deepcopy, including collective MPI validation/recovery. Then refresh
+appropriate broad verification and qualify a bounded target finalist. Higher-order
+DLR/cutoff acceptance and large convolution capacity remain unresolved; this successful
+NCA increment does not shrink the full goal or justify arbitrary replay-band changes.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
