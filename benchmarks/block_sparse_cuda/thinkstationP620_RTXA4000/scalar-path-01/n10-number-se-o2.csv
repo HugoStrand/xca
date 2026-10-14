@@ -1,0 +1,2 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cuda_scalar_paths,10,number,0,se,crossing,2,23,11,252,0,1,0,2768.9585790000001,236.650453,7646.4686780000002,705.29010600000004,0.020024267029991678,3.953620611124803e-16,1.9744146465901605e-14,1414408,473382240,387973120,11,9,2

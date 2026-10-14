@@ -58,3 +58,7 @@ results; production Python/MPI promotion and target qualification remain pending
 
 [Production ordered route timings](ordered-production-01/README.md) measure the explicitly selected
 integrated backend. The private candidate and library baseline remain separate.
+
+[Bounded scalar self-energy scheduler](scalar-path-02/README.md) retains general
+execution for other cohorts. scalar-path-01 is excluded because the revised
+workspace-bound source had not rebuilt; corrected data is in scalar-path-02.
