@@ -26,6 +26,7 @@ else:
     parser.add_argument('--record', required=True)
     parser.add_argument('--ranks', type=int, default=2)
     parser.add_argument('--launcher', default='mpprun')
+    parser.add_argument('--python', help='Alias of the CTest interpreter carrying site MPI metadata')
     parser.add_argument('--launcher-arg', action='append', default=[])
     parser.add_argument('test_args', nargs='*')
     args = parser.parse_args()
@@ -33,6 +34,9 @@ else:
         parser.error('--ranks must be positive')
     tests = json.loads(Path(args.ctest_json).read_text())['tests']
     test = next(t for t in tests if t['name'] == args.test)
+    interpreter = args.python or test['command'][0]
+    if not os.path.samefile(interpreter, test['command'][0]):
+        raise RuntimeError('--python must resolve to the CTest interpreter')
     props = {p['name']: p['value'] for p in test['properties']}
     env = os.environ.copy()
     for entry in props.get('ENVIRONMENT', []):
@@ -52,12 +56,13 @@ else:
         else:
             raise RuntimeError(f'Unsupported CTest environment modification: {operation}')
     env.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
-    command = [args.launcher, *args.launcher_arg, test['command'][0],
+    command = [args.launcher, *args.launcher_arg, interpreter,
                str(Path(__file__).resolve()), '--worker', str(args.ranks),
                *test['command'][1:], *args.test_args]
     Path(args.record).write_text(json.dumps({
         'command': command, 'working_directory': props.get('WORKING_DIRECTORY'),
         'expected_ranks': args.ranks,
+        'ctest_command': test['command'],
         'ctest_environment': props.get('ENVIRONMENT', []),
         'ctest_environment_modification': props.get('ENVIRONMENT_MODIFICATION', []),
         'resolved_PYTHONPATH': env.get('PYTHONPATH'),

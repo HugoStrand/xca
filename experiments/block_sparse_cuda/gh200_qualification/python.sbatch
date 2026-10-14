@@ -102,8 +102,23 @@ timeout 180 ctest --test-dir cbuild_cuda --parallel 1 \
   -R '^(Py_cuda_backends|Py_block_sparse_cuda)$' \
   --output-on-failure > "$record/test.log" 2>&1
 cp cbuild_cuda/Testing/Temporary/LastTest.log "$record/LastTest.log"
-timeout 420 python3 src/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py \
-  --ctest-json "$record/ctest.json" --record "$record/mpi-command.json" \
-  --launcher /software/sse2/generic/manual/ssetools/v2.1.0/bin/mpprun --launcher-arg=--no-modules --launcher-arg=--allow-runpath \
+# Give the site helper explicit OpenMPI metadata on a private alias of the
+# identical configured Python interpreter. Python itself does not link libmpi,
+# so automatic mpprun detection otherwise falls back to plain srun.
+qualified_python="$PWD/qualified-mpi-python"
+if ! test -L "$qualified_python"; then ln -s "$(command -v python3)" "$qualified_python"; fi
+python3 - "$qualified_python.hpcinfo" "$EBROOTOPENMPI" <<'PYMPI'
+import json, sys
+from pathlib import Path
+launcher = Path(sys.argv[2]) / 'bin/mpirun'
+assert launcher.is_file(), launcher
+Path(sys.argv[1]).write_text(json.dumps({'launcher': 'mpirun',
+ 'launcher_path': str(launcher), 'native': True, 'modules': []}, indent=2) + '\n')
+PYMPI
+cp "$qualified_python.hpcinfo" "$record/python.hpcinfo"
+sha256sum run_python_mpi.py > "$record/mpi-runner.sha256"
+timeout 420 python3 run_python_mpi.py \
+  --ctest-json "$record/ctest.json" --record "$record/mpi-command.json" --python "$qualified_python" \
+  --launcher /software/sse2/generic/manual/ssetools/v2.1.0/bin/mpprun --launcher-arg=--no-modules --launcher-arg=--allow-runpath --launcher-arg=--launcher=mpirun \
   --launcher-arg=-n --launcher-arg=2 > "$record/mpi.log" 2>&1
 printf '%s\n' PASS > "$record/result.txt"
