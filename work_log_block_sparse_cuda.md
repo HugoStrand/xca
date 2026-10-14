@@ -2038,3 +2038,52 @@ cutoff and reduction order. Selection bias, broader input-update behavior and
 GH200-class measurements remain unresolved. No speedup, graph capture or full-system
 N=14 qualification is claimed. Code/data and plan/log commits stay separate; no
 push/install/supervisor or unrelated work changes.
+
+## 2026-10-14 — Bounded device prefix cache
+
+Previous turn was progress: independent CPU prefix qualification and hashes/data
+were committed. Added a generated private PrefixEvaluator under topology_reuse,
+retaining production arithmetic except reusing exact post-edge intermediates.
+Model/poles/mesh/coefficients are immutable per instance. A complete byte-for-byte
+G snapshot invalidates entries before a changed-input call, including zero masks.
+Host snapshot cap is 32 MiB (old/new peak up to 64 MiB); larger inputs clear/disable
+cache while retaining independent device execution. Stored tensors plus conservative
+metadata charges are capped at 8 MiB/4096 entries; misses beyond it recompute.
+Admission charges the cap, subtracts only actual already-resident device payload
+and includes retained cache in correlator bounds. Clear synchronizes the owner.
+Special sums, suffixes, per-path cutoff and output/topology reduction remain ordered.
+
+Native-enabled inherited eight evaluator controls pass (one CTest, 6.86 s), covering
+self-energy, SPGF, bosonic/fermionic/dynamic correlators, masks, cutoffs, range/error
+recovery and long-double reference comparisons. CPU-only configure passes. The
+native-disabled tree keeps both native options OFF and passes the same eight private
+evaluator controls (one CTest, 6.78 s). Library and Ordered/Mapped memcheck/full leaks run the complete
+order-3 number cold/replay/changed-G benchmark: zero errors and zero bytes leaked.
+No profiler/test/build work overlapped final timing samples.
+
+Final cache-01 contains 18 processes / 162 paired samples over 3 orders and 3
+partitions, each Library/Reference and Ordered/Mapped, three cold/replay/changed-G
+samples. Every per-topology output matches the independent device evaluator exactly.
+The first uncommitted campaign was replaced: G changed only on the first sample
+and Library alone was measured. Final G changes before every changed-G sample;
+Ordered/Mapped is included. Cold cleanup outside timing is explicitly excluded;
+input comparison, misses, discovery, population, copies and transfers are included,
+and changed-G invalidation/cleanup is timed. Construction/Python/MPI are excluded.
+
+Ordered/Mapped order-3 number independent/cached medians: cold 62.884/49.439 ms,
+replay 63.214/39.347 ms, changed G 63.308/49.422 ms. Changes reduce time 21.4/37.8/
+21.9%. Order-4/6 number changed G reduces 13.2/7.1%. Order-3 mixed reduces 18.0%,
+but order-6 mixed increases .6% without cross-topology prefix overlap. The selected
+occupation order-4/6 paths do no prefix work; small overhead there cannot characterize
+the whole workload. Largest charged cache is 96,800 bytes; no cap saturation claim.
+
+Goal stays active. Selected cohorts justify further graph-free sharing experiments,
+not unconditional production promotion. Next force saturation and tails, broaden
+index/topology selections, and evaluate setup/selection overhead. GH200-class target
+qualification and broader memory/batching/cutoff gates remain. All baseline and prior
+experiments retained; code/data and plan/log commits separate. No push/install or
+supervisor changes; unrelated user work preserved. Evidence is retained cache-01
+manifest/samples and /tmp/xca-bs-prefix-cache-{configure,build,test,memcheck}.log,
+/tmp/xca-bs-prefix-cache-final-{build,memcheck,campaign}.log and associated CPU/library
+configure/build/test logs. Full-suite verification remains the earlier production
+checkpoint; these are isolated experiment controls.

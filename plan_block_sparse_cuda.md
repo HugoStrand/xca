@@ -1045,6 +1045,19 @@ cache against independent complete calls, preserving special/cutoff/reduction or
 and charging discovery, cache misses and retained memory. Broader index selections
 and target-hardware qualification still govern any production decision.
 
+Private device checkpoint `cache-01` implements an 8 MiB/4096-entry post-edge cache
+and exact full-G snapshot invalidation (32 MiB host snapshot cap, independent device
+execution beyond it). Eighteen paired processes/162 samples preserve special,
+cutoff and output order and match independent complete per-topology calls exactly.
+On the local Ordered/Mapped route, order-3 number cohorts improve 21.9% with G
+changed every sample (37.8% unchanged replay); order-6 mixed changed-input cohorts
+regress 0.6%. Thus graph-free sharing can pay on selected cohorts, but is not a
+universal default. Eight inherited evaluator controls and both-policy memcheck pass.
+Next widen index/cohort choices, force cache saturation and tails, and measure the
+selection/setup cost of enabling reuse. Keep the private cache separate until these
+gates and target-hardware evidence justify a production policy. CUDA graphs remain
+conditional and are not implemented by this cache experiment.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
