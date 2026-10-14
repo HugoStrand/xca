@@ -336,8 +336,13 @@ static auto const _c2py_fun_18 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    "self", "t")};
 
 // self_energy_storage_bound
-static auto const _c2py_fun_19 =
-   c2py::dispatcher_f_kw_t{c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.self_energy_storage_bound(); }, "self")};
+static auto const _c2py_fun_19 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod([](_c2py_cls_1 const &self) -> decltype(auto) { return self.self_energy_storage_bound(); }, "self"),
+   c2py::cmethod(
+      [](_c2py_cls_1 const &self,
+         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+         -> decltype(auto) { return self.self_energy_storage_bound(topology); },
+      "self", "topology")};
 
 static const auto _c2py_doc_11 = _c2py_fun_11.doc(R"DOC()DOC");
 static const auto _c2py_doc_12 = _c2py_fun_12.doc(R"DOC()DOC");

@@ -64,6 +64,15 @@ its archive default are independent of any unqualified GH200 crossover policy.
 (default 1 GiB); ``block_sparse_operator_budget`` limits the cached operator and
 its sparse-library workspace (default 32 MiB). Host and opaque-library storage are
 additional. Larger sectors require capacity qualification and suitable budgets.
+The evaluator exposes ``self_energy_storage_bound(topology)`` for a validated
+schedule-specific estimate; the no-argument form remains an order-independent
+upper bound. NCA omits inactive convolution scratch and releases completed DLR
+scratch from earlier higher-order calls before checking available memory. Fixed
+rank tables and full input/output reserves remain. Higher orders and correlators
+retain their conservative working-set estimates. A topology-specific budget can
+therefore admit NCA while rejecting OCA; such rejection precedes input upload and
+path arithmetic and leaves later valid calls usable.
+
 This initial reference covers self-energy, SPGF and one-time correlators; its
 dispatch/batching optimizations are still under investigation. The performance
 target is GH200-class hardware; workstation measurements are development proxies.

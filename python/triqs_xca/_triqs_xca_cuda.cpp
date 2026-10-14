@@ -138,6 +138,7 @@ namespace xca_python {
       return evaluator_->compute_one_time_correlator_range(g, tau, zero, ad, t, first, last);
     }
     std::size_t self_energy_storage_bound() const { return evaluator_->self_energy_storage_bound(); }
+    std::size_t self_energy_storage_bound(nda::array_const_view<int, 2> topology) const { return evaluator_->self_energy_storage_bound(topology); }
     std::size_t correlator_storage_bound(long mu, long kap) const { return evaluator_->correlator_storage_bound(mu, kap); }
   };
 } // namespace xca_python

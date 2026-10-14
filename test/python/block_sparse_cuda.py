@@ -141,6 +141,36 @@ class BlockSparseCudaTests(unittest.TestCase):
         np.testing.assert_allclose(actual.G_tau['f'].data, expected.G_tau['f'].data, rtol=1e-9, atol=1e-12)
 
     @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
+    def test_topology_storage_admission_and_transitions(self):
+        nca = np.array([[0, 1]], np.int32)
+        oca = np.array([[0, 2], [1, 3]], np.int32)
+        specials = ('reference', 'mapped') if gpu.block_sparse_mapped_available() else ('reference',)
+        for special in specials:
+            S = make_solver('cuda', special_backend=special)
+            S.init_diagram_evaluator()
+            generic = S.d.self_energy_storage_bound()
+            lower = S.d.self_energy_storage_bound(nca)
+            self.assertLess(lower, generic)
+            self.assertEqual(S.d.self_energy_storage_bound(oca), generic)
+            expected = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, nca)
+            S.block_sparse_workspace_budget = lower
+            S.init_diagram_evaluator()
+            actual = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, nca)
+            for b in range(len(actual)):
+                np.testing.assert_allclose(actual[b].data, expected[b].data, rtol=1e-11, atol=1e-13)
+            with self.assertRaisesRegex(RuntimeError, 'GPU evaluation failed'):
+                S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, oca)
+            mpi.barrier()
+            S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, nca)
+            S.block_sparse_workspace_budget = 1024*1024*1024
+            S.init_diagram_evaluator()
+            S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, oca)
+            after = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, nca)
+            for b in range(len(after)):
+                np.testing.assert_allclose(after[b].data, expected[b].data, rtol=1e-11, atol=1e-13)
+            S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, oca)
+
+    @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
     def test_native_capability_and_collective_failures(self):
         from triqs_xca import _triqs_xca_cuda as runtime
         self.assertEqual(gpu.block_sparse_ordered_available(), runtime.block_sparse_ordered_available())
