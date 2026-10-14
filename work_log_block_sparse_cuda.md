@@ -2004,3 +2004,37 @@ and user work preserved; benchmark changes and plan/log updates committed separa
 No installation, push or supervisor changes. Logs /tmp/xca-bs-reuse-{configure,build}.log
 and /tmp/xca-bs-reuse-cuda-{configure,build}.log; retained machine manifest and CSVs
 under experiments/block_sparse_cuda/topology_reuse/thinkstationP620_RTXA4000/prefix-01.
+
+## 2026-10-14 — Numerical topology prefix qualification
+
+Previous goal turn classified as progress: committed bounded structural discovery
+and actual CPU/CUDA-build evidence. This turn adds optional independent numerical
+replay to the retained topology_reuse experiment, without production arithmetic or
+default changes. Each path recomputes CSR/hoisted-CPU prefixes and a separately
+advanced dense-operator/original-CPPDLR reference. All repeated structural keys
+must produce exactly equal tensors. Finite checks precede comparisons; stored
+candidate tensors are capped at 64 MiB across stages. The reference screen remains
+1e-10 times signal plus 1e-14, not a new universal solver accuracy promise.
+
+Final replay-01 campaign completes 24 bounded cases / 72 rows and 384 exact repeated
+value checks. Independent-reference max absolute error is 8.423845684525094e-18;
+largest all-stage candidate payload is 204,608 bytes. Changed propagators (1.01x)
+and coefficients (.97x) in fresh processes yield changed non-root checksums while
+within-call repeated keys remain exactly equal. These controls prove recomputation
+needs, not implemented cross-call invalidation. Path-cap truncation, malformed
+input and low-overlap controls pass. Initial uncommitted run was replaced after
+finite guards/rebuild so the final manifest matches the executable/source hashes.
+
+CPU target build and complete recorder pass. CUDA target build and order-4 number
+numerical replay reproduce CPU CSV byte-for-byte. These host operations do not
+constitute GPU numerical or full-suite regression testing. Logs:
+/tmp/xca-bs-reuse-replay-build.log, /tmp/xca-bs-reuse-replay-cuda-build.log,
+/tmp/xca-bs-reuse-replay-cuda.csv. Final data/manifests are retained under the
+experiment's thinkstationP620_RTXA4000/replay-01 folder.
+
+Goal remains active. Next test a bounded call-local device cache against independent
+complete evaluations, including discovery/misses/storage and unchanged special,
+cutoff and reduction order. Selection bias, broader input-update behavior and
+GH200-class measurements remain unresolved. No speedup, graph capture or full-system
+N=14 qualification is claimed. Code/data and plan/log commits stay separate; no
+push/install/supervisor or unrelated work changes.

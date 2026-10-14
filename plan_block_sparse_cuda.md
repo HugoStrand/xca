@@ -1033,6 +1033,18 @@ making a workload-wide decision. Current allocation/synchronization/cutoff paths
 require refactoring before whole-call capture. GH200-class hardware remains the
 target; the local RTX A4000 inventory does not qualify target performance.
 
+The subsequent `replay-01` control independently advances CSR/hoisted-DLR and
+dense-operator/original-CPPDLR prefixes. Across the 24 local cases, 384 repeated-key
+comparisons are exactly equal and independent-reference maximum absolute error
+is 8.424e-18. Retained candidate payload stays below 205 kB (explicit cap 64 MiB).
+Fresh changed-G/coefficient replays change contents, confirming that structural
+identity alone cannot justify numerical cache hits. This qualifies the selected
+CPU prefix keys only; no device DAG, input-update cache protocol, complete-call
+timing or CUDA graph is implemented. Next compare a bounded call-local device
+cache against independent complete calls, preserving special/cutoff/reduction order
+and charging discovery, cache misses and retained memory. Broader index selections
+and target-hardware qualification still govern any production decision.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
