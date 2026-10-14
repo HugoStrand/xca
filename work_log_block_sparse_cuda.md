@@ -1,5 +1,63 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Broad suite refresh and capped target recipe
+
+Previous turn made progress by wiring and qualifying the real NCA Python/MPI policy.
+Reconfigured and built every configured target in CPU, native CUDA and native-disabled
+library-only CUDA trees, including retained experiments and benchmark frontends. CPU
+binding regeneration introduced no tracked changes. Source b5a131c contains runtime
+code fbbde67. Builds ran independently; verification used single-thread OpenMP/BLAS.
+
+Production CTests exclude ^experiments/. CPU passes 83/83 in 52.38 s with two workers;
+library-only CUDA passes 84/84 in 159.61 s; native CUDA passes 93/93 in 302.13 s, each
+GPU suite with one worker and no overlap. Each tree includes 32 Python entries. CPU
+GPU cases remain disabled, not hardware proof. Both native flags remain OFF in the
+library variant. Complete configure/build/test logs, raw output, test inventories,
+compiler/GPU metadata and dependency revisions are archived in production-02.
+Retained experiments were all built, not all rerun in these production suite totals.
+Prior focused experiment and two-rank MPI evidence remains separately identified.
+
+Prepared real_nca.sbatch and a real_nca cohort in the existing target recorder,
+using the Arrhenius/Arrhenius-software workflow and the previous isolated recipe.
+Pinned source b5a131c; runner/job recipe copied separately with hashes. One GPU,
+fifteen-minute cap (.25 nominal GPU-hours maximum), at most six compile workers,
+installed Arm TRIQS reused, no installation or shared-checkout update. Production
+primitive/dispatcher and retained prototype tests precede timing. Bash syntax and
+runner help pass; remote queue/account checks, sbatch --test-only and submission
+remain pending. SSH reconnection question is still unanswered from this process;
+no repeated authentication request or duplicate earlier completed job.
+
+Local real-binary cohort replay passes four cases/four routes/three samples = 48 rows.
+CPU constants/general ordered/prototype/production median ms: N4 NCA .446/9.484/1.123/
+.216; N8 NCA 4.157/292.372/2.102/1.326; N4 OCA fallback 2.637/15.237/14.924/15.010;
+N4 number fallback .275/8.550/8.658/8.534. Frontends pass finite/CPU-screening/exact
+repeatability checks; offline GPU norm/error/path-count summaries agree. CPU constants
+preparation differs from unchanged CPU; three samples do not establish universal
+crossovers or GH200 performance. This proves local recorder execution, not target runs.
+
+Recipe a6ae6ef and evidence 84909ab separate from this plan/log commit. Public API
+observer wording clarified in e71f6f9: counters describe latest evaluation, which may
+have failed; no runtime behavior changed or redundant test run. Evidence assembly
+first stopped on lowercase GTest cache name, corrected to GTest_src. Git whitespace
+checks then rejected raw CSV CRLF/CTest JSON/log trailing spaces; archive-only LF/
+trailing-whitespace normalization preserves values and records original hashes. Runner
+output itself is unchanged. Evidence now passes repository whitespace checks.
+
+Goal active; no completion claim. Current full API, direct sparse export, explicit
+ordered/mapped/real-NCA selection and bounded complete-output admission have strong
+local qualification. New NCA target finalist, higher-order optimized scalar numerical
+policy and larger convolution capacity/full fourteen-mode production execution remain
+open. Existing bounded N10 calls/N14 slabs and memory estimates are not full-system
+qualification. Next inspect remaining requirements against source/evidence and progress
+these gates; do not promote the disproved cutoff band. Preserve all experiments.
+
+All handles terminal; no new GPU allocation (cumulative .27556 nominal hours), push,
+install, supervisor or unrelated-work changes. Local A4000 remains proxy for GH200.
+Records: experiments/block_sparse_cuda/production_qualification/thinkstationP620_
+RTXA4000/production-02 and benchmarks/block_sparse_cuda/thinkstationP620_RTXA4000/
+real-nca-cohort-local-01. Target recipe: experiments/block_sparse_cuda/
+gh200_qualification/real_nca.sbatch. Temporary /tmp/xca-nca-full-* logs may disappear.
+
 ## 2026-10-14 — Consolidated real NCA Python/MPI policy
 
 Previous turn made progress: guarded C++ dispatch, packed sectors and local complete-

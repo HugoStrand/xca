@@ -418,6 +418,33 @@ when this process has SSH access. Preserve the shared 100 GPU-hours/month alloca
 ceiling. Higher-order numerical batching and large convolution capacity remain open;
 NCA success does not redefine the full objective or promote the disproved cutoff band.
 
+## 2026-10-14 — Broad qualification and next target gate
+
+All configured targets build for source b5a131c (runtime fbbde67). Production suites,
+excluding retained experiment CTests, pass CPU 83/83, native CUDA 93/93 and library-only
+CUDA 84/84. Each includes 32 Python entries. GPU suites ran serially. Evidence 84909ab
+records full logs, inventories and dependency/compiler metadata; prior MPI evidence
+remains in real-nca-python-01. CPU regeneration leaves tracked bindings unchanged.
+
+| Requirement group | Current evidence and remaining scope |
+| --- | --- |
+| Direct Fock operators, adjoints, signs, barred construction and model ownership | Production sparse-operator/model tests and exact-input CPU controls pass in the refreshed suites. |
+| Current SE/SPGF/correlator API, dynamic operators, ranges and MPI orchestration | Production C++/Python suites and separate two-rank nine-method qualification pass; no new full N14 claim. |
+| Small/mixed-block execution and explicit optimized policies | Ordered/mapped and guarded real-NCA routes qualified locally, with general CUDA fallback and native-disabled rejection. |
+| Complete-output memory admission and bounded large shapes | N10 calls, N14 primitive slabs/shape estimates and HostSectors controls retained; larger convolution capacity/full N14 production execution remains unqualified. |
+| Higher-order scalar batching | Experiments/diagnostics retained; numerical promotion unresolved and fixed cutoff band disproved. General evaluator remains available. |
+| GH200-class final selection | Earlier target reference/prototype records retained; new pointwise NCA finalist still requires target qualification. |
+| Topology sharing/graphs | Bounded reuse experiments retained; no graph promotion without demonstrated complete-call benefit. |
+
+Prepared a6ae6ef adds real_nca.sbatch for isolated b5a131c sources: one GPU, fifteen
+minutes maximum (.25 nominal GPU-hours), tests before four-case/four-route/three-sample
+cohort. Local shell/help and 48-sample real-binary replay pass. Remote scheduler checks
+and execution remain pending SSH access; no new allocation consumed. This does not
+establish GH200 crossover/defaults or whole Solver performance. Account ceiling remains
+100 GPU-hours/month shared across workloads. Goal remains active; inspect and resolve
+remaining gates without reducing scope or treating retained reference coverage as
+proof of an unqualified optimization.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
