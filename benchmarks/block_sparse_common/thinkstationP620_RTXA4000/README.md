@@ -70,3 +70,7 @@ GPU scheduling beats matched CPU; this full-call screen favors CPU in that regim
 [Output-owned scalar GPU accumulation](scalar-fanin-01/README.md) improves the
 serial candidate while retaining original contribution order. The measured scalar
 GPU still trails matched CPU; no production promotion follows from this screen.
+
+[Contiguous scalar device arenas](scalar-arena-01/README.md) reduce allocation/copy
+multiplicity identified by a separately scoped trace. Unprofiled matched timings
+remain separate from profiler diagnostics; all prior candidates are retained.
