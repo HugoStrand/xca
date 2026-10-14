@@ -1620,3 +1620,72 @@ Logs: /tmp/xca-bs-kappa-{configure,build,test,campaign}.log,
 /tmp/xca-bs-kappa-{2,16}-memcheck.log,
 /tmp/xca-bs-kappa-{boson,final,library}-{build,test}.log,
 /tmp/xca-bs-kappa-boson-memcheck.log and cpu/library configure logs.
+
+## 2026-10-14 — Mapped kappa weighting
+
+Previous turn progressed through bounded kappa retention and recorded the memory
+tradeoff. ad4393b [bench] fuse mapped kappa weighting implements the next E6/E7
+candidate in a separate folder. A CPU-testable classifier validates CSR and builds
+owned source/value tables when each column has at most one entry, preserving tiny
+complex values and empty columns. Incompatible dimensions and multiple entries
+reject the trait. The generated full evaluator keeps the original special vertex
+as a reference fallback for non-mapping operators and singleton sets. A native
+kernel directly forms mu in field order, with right product then weight then
+sequential addition; the original left sparse application and mu-to-output addition
+remain separate. Contraction disabled, no atomics/factoring/tree sum. Fusion can
+change rounding versus library primitives; no universal bitwise claim or tolerance
+changes. Shapes and checked map/weight allowance are guarded before input upload.
+GPU maps/weights live through upload handoff and stream completion. No cross-call
+numerical cache, public production change or altered Python/MPI interface.
+
+The final suite has fifteen evaluator tests (eight unchanged physics/API plus
+seven controls) and two host classifier cases. Both CUDA CTest entries pass in
+7.49 s. Controls cover rectangular changed inputs/masks, complex off-diagonal
+bosonic mixing/reflection, metadata-budget rejection/empty ranges/recovery,
+non-mapping bosonic operators witnessed on accepted live paths, complex rectangular
+kernel comparisons with changed weights/empty columns/tails, exact cancellation
+field order, and nine representable amplitudes around a calibrated four-field NCA
+completed-path cutoff. Kept and rejected cases both occur and contribution counts
+match reference. Higher-order cutoff-adjacent behavior remains unqualified. The
+fallback witness tightening independently passes its focused run. Seven focused
+cases pass memcheck/full leaks in 9.65 s: zero errors, zero leaked bytes. Mixed
+real/complex operator fixture addition needed explicit complex hopping operators;
+corrected before final qualification. Two host cases pass CPU-only CTest in 0.02 s.
+
+After all build/test/sanitizer handles were terminal, the shared recorder's new
+--with-mapped option ran kappa-mapped-01: 28 isolated processes / 140 rows, five
+samples each after warm-up, comparing reference, two-slot, sixteen-slot and mapper.
+Every process passes screening and exact replay; discovery counts match all routes.
+Number-symmetry reference/mapper medians: N4 NCA 16.904/4.519 ms (73.3%), N4 OCA
+10.805/6.191 ms (42.7%), N6 OCA 30.544/12.673 ms (58.5%), N8 NCA 138.598/30.395 ms
+(78.1%), selected N10 NCA 351.544/187.962 ms (46.5%). Mixed improves 18.3%; singleton
+regresses 1.6%, within provisional protected screen. Maximum mapper screening error
+8.567e-15. Five repeated calls in one process are not five independent process
+repetitions. Original CPU control time is not an algorithm-matched throughput
+benchmark; no CPU hardware speedup, full Solver/topology or target claim.
+
+a4b8a14 [bench] record mapped kappa timings preserves raw GPU files, common samples/
+medians, commands/source/binary/header hashes and analytic map allowances. Separately
+collected post-timing build metadata records unchanged CMake flags/architecture and
+nvcc version. N10/r23 map allowance 64,160 bytes; N14/r26 allowance 1,158,976 bytes
+(1.105 MiB), versus prior full-set cache 63.888 GiB. This does not eliminate the
+reference's 90.409 GiB variable envelope, nor fixed/operator/host/opaque storage.
+No N=14 atom_diag or full evaluation was performed. All prior controls remain.
+
+Post-campaign, native-disabled library-only configuration/build runs both host
+classifier cases (CTest 0.13 s) and confirms the compiler-dependent mapper target
+is absent. No overlap with timings. Both native production options remain OFF in
+that tree; benchmark fixtures remain ON from prior verification. Full production
+suites/MPI were not repeated for private fixture changes; prior integration remains.
+
+Next qualify actual fourteen-mode Fock maps on bounded row slabs without atom_diag,
+continue liveness/streaming admission, and qualify optional production/Python/MPI
+integration of the promising route. Higher-order boundary and GH200 target gates
+remain. Goal active, not complete. No install/push/supervisor or unrelated user-work
+changes. Plan/log checkpoint separate from code/data; git diff --check passes.
+
+Evidence: experiments/block_sparse_cuda/mapped_special/README.md;
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/kappa-mapped-01/README.md.
+Logs /tmp/xca-bs-mapped-{configure,build,test,campaign,memcheck}.log,
+/tmp/xca-bs-mapped-{final,cpu,library}-{build,test}.log and configuration logs,
+/tmp/xca-bs-mapped-fallback-{build,test}.log.

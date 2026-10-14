@@ -821,6 +821,43 @@ prove numerical behavior before any promotion, including cutoff-sensitive cases.
 Continue E7 streaming/admission work and target-hardware qualification; GH200-class
 hardware remains the optimization target.
 
+Mapped-kappa checkpoint (2026-10-14):
+[mapped_special](experiments/block_sparse_cuda/mapped_special/README.md) implements
+the planned sparse-column route. It classifies actual CSR blocks, retaining exact
+complex/tiny values and empty columns. A thread forms one mu element by traversing
+fields in original order, applying the mapped right product and corresponding
+weight, then adding sequentially. The original left application and mu-to-output
+addition remain separate. Non-mapping operators/singleton sets use the reference.
+There is no q-tensor cache, cross-call numerical reuse or sum factoring. Checked
+admission adds only maps and one rank-by-field weight table; all other conservative
+function/rank-buffer envelopes remain. Shape checks and stream ownership are explicit.
+
+The fifteen-test evaluator suite and two host cases pass. Seven focused cases pass
+memcheck with zero errors/leaks, including complex rectangular kernels, cancellation
+order, changed inputs/weights, metadata rejection and a nine-point four-field NCA
+cutoff neighborhood. Unsupported structure is witnessed on accepted live paths;
+reference fallback is checked. The classifier passes in CPU-only and native-disabled
+library-only builds, which omit the compiler-dependent kernel/evaluator. Original
+physics tolerances are unchanged; fusion can alter rounding versus library calls,
+so this is not a universal bitwise-equivalence or higher-order boundary guarantee.
+
+The [isolated four-route comparison](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/kappa-mapped-01/README.md)
+records 28 processes / 140 samples. Selected number-symmetry calls improve 43–78%
+over the ordered GPU reference; mixed improves 18%; singleton regresses 1.6%.
+Discovery counts agree and maximum mapper screening relative error is 8.567e-15.
+Five samples per process are not independent process repetitions. These are GPU
+route comparisons, not matched CPU, Solver/topology-sum or GH200 speedups.
+
+Analytic extra map allowances are 64,160 bytes at N10/r23 and 1,158,976 bytes
+(1.105 MiB) at N14/r26, versus the prior 63.888 GiB full-set kappa cache allowance.
+No atom_diag/evaluation was performed at fourteen modes. The reference's 90.409 GiB
+variable envelope and additional fixed/operator/host/opaque costs remain, so the
+mapper alone does not prove a fitting fourteen-mode full call. Next replay actual
+fourteen-mode Fock maps on bounded row slabs, then refine E7 liveness/streaming and
+qualify optional production/Python/MPI integration. Higher-order cutoff-adjacent
+paths and target hardware remain gates. Preserve all current controls and reference
+fallbacks. GH200-class hardware remains the optimization target.
+
 ### E7 — Large-sector memory and placement
 
 Test liveness-based reuse, output spatial slabs, streamed special-vertex buffers and
