@@ -1,0 +1,21 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = StreamFragmentEvaluator.*
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from StreamFragmentEvaluator
+[ RUN      ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement (19836 ms)
+[ RUN      ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery (3099 ms)
+[ RUN      ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery (6321 ms)
+[ RUN      ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation
+[       OK ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation (4121 ms)
+[----------] 4 tests from StreamFragmentEvaluator (33378 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (33378 ms total)
+[  PASSED  ] 4 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

@@ -1,0 +1,27 @@
+{
+  "source": "90e04ac",
+  "native_controls": 12,
+  "native_ctest_seconds": 10.6,
+  "library_controls": 12,
+  "library_ctest_seconds": 10.72,
+  "memcheck_controls": 4,
+  "memcheck_seconds": 33.378,
+  "memcheck_errors": 0,
+  "memcheck_leaks": 0,
+  "SE_cutoff_probes": 18,
+  "SE_cutoff_matrices_and_counts_exact": true,
+  "CPU_experiment_entries": 0,
+  "library_native_flags": "both OFF",
+  "limitations": "Private C++ experiment, reference-NCA/library-sparse policies; no forced ordered/mapped/broad-suite/Python/MPI/target/full physical N14 claim.",
+  "binaries": {
+    "cbuild-cuda/block_sparse_stream_fragment_tests": {
+      "sha256": "2251605b64cbf60dd7c08d80cd0f75574a02c1e0aefeae59352a57897190eab2"
+    },
+    "cbuild-cuda-library-api/block_sparse_stream_fragment_tests": {
+      "sha256": "ea8b9ab8c3cac0d8b75b77383a0e91926b65864cd996def89997d4d1fce84018"
+    },
+    "cbuild-cuda/block_sparse_stream_fragment_cutoff_audit": {
+      "sha256": "9d8f3f6b9dba09dd515e4de4369bc21232653854de9a7d2a3b9ecd55e7fa7a03"
+    }
+  }
+}

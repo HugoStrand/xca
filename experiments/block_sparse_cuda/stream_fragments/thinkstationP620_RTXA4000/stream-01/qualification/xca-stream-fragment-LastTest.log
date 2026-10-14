@@ -1,0 +1,54 @@
+Start testing: Oct 14 20:38 CEST
+----------------------------------------------------------
+27/119 Testing: experiments/block_sparse_cuda/stream_fragments
+27/119 Test: experiments/block_sparse_cuda/stream_fragments
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments/block_sparse_stream_fragment_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments
+"experiments/block_sparse_cuda/stream_fragments" start time: Oct 14 20:38 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 12 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2298 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (822 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3342 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (784 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (7286 ms total)
+
+[----------] 4 tests from StreamFragmentEvaluator
+[ RUN      ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement (1854 ms)
+[ RUN      ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery (279 ms)
+[ RUN      ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery (528 ms)
+[ RUN      ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation
+[       OK ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation (388 ms)
+[----------] 4 tests from StreamFragmentEvaluator (3050 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 2 test suites ran. (10337 ms total)
+[  PASSED  ] 12 tests.
+<end of output>
+Test time =  10.59 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/stream_fragments" end time: Oct 14 20:38 CEST
+"experiments/block_sparse_cuda/stream_fragments" time elapsed: 00:00:10
+----------------------------------------------------------
+
+End testing: Oct 14 20:38 CEST
