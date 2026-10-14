@@ -1,0 +1,64 @@
+Start testing: Oct 14 12:10 CEST
+----------------------------------------------------------
+5/62 Testing: experiments/block_sparse_cuda/scalar_constants
+5/62 Test: experiments/block_sparse_cuda/scalar_constants
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-3f462c3/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_constants_tests"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-3f462c3/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths
+"experiments/block_sparse_cuda/scalar_constants" start time: Oct 14 12:10 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-3f462c3/src/deps/GTest/googletest/src/gtest_main.cc
+[==========] Running 14 tests from 4 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (1997 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (572 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (13 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (32 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2253 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (2 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (670 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (5541 ms total)
+
+[----------] 4 tests from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.CohortTailChangedValuesAndMasks
+[       OK ] ScalarPathQualification.CohortTailChangedValuesAndMasks (1555 ms)
+[ RUN      ] ScalarPathQualification.CompletedPathCutoffAdjacentValues
+[       OK ] ScalarPathQualification.CompletedPathCutoffAdjacentValues (40 ms)
+[ RUN      ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange
+[       OK ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange (22 ms)
+[ RUN      ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute
+[       OK ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute (68 ms)
+[----------] 4 tests from ScalarPathQualification (1686 ms total)
+
+[----------] 1 test from ScalarFaninOrder
+[ RUN      ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput
+[       OK ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput (2 ms)
+[----------] 1 test from ScalarFaninOrder (2 ms total)
+
+[----------] 1 test from ScalarConstants
+[ RUN      ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates
+[       OK ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates (2 ms)
+[----------] 1 test from ScalarConstants (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 4 test suites ran. (7233 ms total)
+[  PASSED  ] 14 tests.
+<end of output>
+Test time =   7.36 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/scalar_constants" end time: Oct 14 12:10 CEST
+"experiments/block_sparse_cuda/scalar_constants" time elapsed: 00:00:07
+----------------------------------------------------------
+
+End testing: Oct 14 12:10 CEST

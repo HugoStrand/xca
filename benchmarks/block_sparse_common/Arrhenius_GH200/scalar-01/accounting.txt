@@ -1,0 +1,4 @@
+JobID|State|ExitCode|Elapsed|AllocTRES|MaxRSS
+3819263|COMPLETED|0:0|00:01:30|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3819263.batch|COMPLETED|0:0|00:01:30|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3819263.extern|COMPLETED|0:0|00:01:30|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
