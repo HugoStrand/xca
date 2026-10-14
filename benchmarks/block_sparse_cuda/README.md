@@ -18,3 +18,11 @@ Shared workloads, numerical screening, sample definitions and the paired campaig
 recorder are in [block_sparse_common](../block_sparse_common/README.md). Results
 belong under informative hardware directories here; generic methodology stays here.
 No full N=14 atomic model is constructed by this benchmark.
+
+`block_sparse_cuda_ordered_benchmark` selects the production ordered operator route
+explicitly. It uses the same complete-call fixtures/output as the library frontend
+and rejects builds without native sparse kernels. Its backend label is
+`cuda_ordered_production`; the private experiment is a separate control. Use this
+binary as the CUDA argument to the common recorder, campaign `ordered-production-01`,
+with the matched CPU binary. Native compilation is controlled independently with
+`XCA_CUDA_BLOCK_SPARSE=AUTO|ON|OFF`; no performance default is implied by compiling it.

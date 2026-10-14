@@ -55,3 +55,6 @@ from timing comparisons because it overlapped a verification build.
 [Ordered sparse candidate complete calls](ordered-evaluator-01/README.md) retain the original GPU
 reference and compare an isolated native operator route. These are local screening
 results; production Python/MPI promotion and target qualification remain pending.
+
+[Production ordered route timings](ordered-production-01/README.md) measure the explicitly selected
+integrated backend. The private candidate and library baseline remain separate.
