@@ -1,0 +1,70 @@
+{
+  "base_revision": "d944f52aa94ae906f7cd745f2cc7e79dc5eb65fc",
+  "source_sha256": {
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "dc52143a4f57f1d16dd01e8472657d10b4cfc4b9f6bc91e078a5a07ad5bb3937",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "31d3f095364c4d4f3eaab11861b4b5ddd63798bf5a8df0269b41b2bc0f27ad98",
+    "test/c++/block_sparse/cuda_nca_liveness.cpp": "3f682b00da4dac26fef6f697b4924fd79ae4449925e72584a1ce48af89133386",
+    "experiments/block_sparse_cuda/nca_admission/CMakeLists.txt": "68f358731dedf6d7b6b6aca0d4a646c514d57d4686a60b8ab020f734682e72bd"
+  },
+  "binary_sha256": "bd317f343a9e4f8de8bbc41de9152adb1e027e2543089b14f46e00df2434ffd0",
+  "hostname": "ThinkStation",
+  "cases": [
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "10",
+        "--rank",
+        "26",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "10",
+        "--rank",
+        "64",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "14",
+        "--rank",
+        "64",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    }
+  ],
+  "notes": "Host-only metadata: one tile less NCA reserve, generic/correlator/output unchanged. Not physical DLR or GH200 allocation qualification."
+}

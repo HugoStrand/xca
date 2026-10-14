@@ -1,0 +1,57 @@
+Start testing: Oct 14 15:16 CEST
+----------------------------------------------------------
+34/111 Testing: block_sparse/cuda_nca_liveness
+34/111 Test: block_sparse/cuda_nca_liveness
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_nca_liveness"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_nca_liveness" start time: Oct 14 15:16 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from BlockSparseNcaLiveness
+[ RUN      ] BlockSparseNcaLiveness.TightAdmissionDynamicFallbacksAndChangedInputs
+nca-live,number,0,0,0,33729696,33742944,13248,0
+nca-live,number,0,0,1,33717184,33730432,13248,0
+nca-live,number,0,1,0,33731744,33744992,13248,0
+nca-live,number,0,1,1,33719232,33732480,13248,0
+nca-live,number,1,0,0,33729696,33742944,13248,0
+nca-live,number,1,0,1,33717184,33730432,13248,0
+nca-live,number,1,1,0,33731744,33744992,13248,0
+nca-live,number,1,1,1,33719232,33732480,13248,0
+nca-live,mixed,0,0,0,33660512,33666400,5888,0
+nca-live,mixed,0,0,1,33653152,33659040,5888,0
+nca-live,mixed,0,1,0,33661440,33667328,5888,0
+nca-live,mixed,0,1,1,33654080,33659968,5888,0
+nca-live,mixed,1,0,0,33660512,33666400,5888,0
+nca-live,mixed,1,0,1,33653152,33659040,5888,0
+nca-live,mixed,1,1,0,33661440,33667328,5888,0
+nca-live,mixed,1,1,1,33654080,33659968,5888,0
+nca-live,occupation,0,0,0,33612672,33613040,368,0
+nca-live,occupation,0,0,1,33607152,33607520,368,0
+nca-live,occupation,0,1,0,33613456,33613824,368,0
+nca-live,occupation,0,1,1,33607936,33608304,368,0
+nca-live,occupation,1,0,0,33612672,33613040,368,0
+nca-live,occupation,1,0,1,33607152,33607520,368,0
+nca-live,occupation,1,1,0,33613456,33613824,368,0
+nca-live,occupation,1,1,1,33607936,33608304,368,0
+[       OK ] BlockSparseNcaLiveness.TightAdmissionDynamicFallbacksAndChangedInputs (5673 ms)
+[ RUN      ] BlockSparseNcaLiveness.BoundedTenModeNumberSectorCall
+nca-live,n10-number,0,0,0,309795936,333165408,23369472,274726912
+nca-live,n10-number,0,0,1,265175200,288544672,23369472,226492416
+[       OK ] BlockSparseNcaLiveness.BoundedTenModeNumberSectorCall (6110 ms)
+[----------] 2 tests from BlockSparseNcaLiveness (11783 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (11783 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =  12.04 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_nca_liveness" end time: Oct 14 15:16 CEST
+"block_sparse/cuda_nca_liveness" time elapsed: 00:00:12
+----------------------------------------------------------
+
+End testing: Oct 14 15:16 CEST

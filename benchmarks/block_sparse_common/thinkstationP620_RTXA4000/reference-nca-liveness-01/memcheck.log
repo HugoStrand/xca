@@ -1,0 +1,39 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = BlockSparseNcaLiveness.TightAdmissionDynamicFallbacksAndChangedInputs
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseNcaLiveness
+[ RUN      ] BlockSparseNcaLiveness.TightAdmissionDynamicFallbacksAndChangedInputs
+nca-live,number,0,0,0,33729696,33742944,13248,0
+nca-live,number,0,0,1,33717184,33730432,13248,0
+nca-live,number,0,1,0,33731744,33744992,13248,0
+nca-live,number,0,1,1,33719232,33732480,13248,0
+nca-live,number,1,0,0,33729696,33742944,13248,0
+nca-live,number,1,0,1,33717184,33730432,13248,0
+nca-live,number,1,1,0,33731744,33744992,13248,0
+nca-live,number,1,1,1,33719232,33732480,13248,0
+nca-live,mixed,0,0,0,33660512,33666400,5888,0
+nca-live,mixed,0,0,1,33653152,33659040,5888,0
+nca-live,mixed,0,1,0,33661440,33667328,5888,0
+nca-live,mixed,0,1,1,33654080,33659968,5888,0
+nca-live,mixed,1,0,0,33660512,33666400,5888,0
+nca-live,mixed,1,0,1,33653152,33659040,5888,0
+nca-live,mixed,1,1,0,33661440,33667328,5888,0
+nca-live,mixed,1,1,1,33654080,33659968,5888,0
+nca-live,occupation,0,0,0,33612672,33613040,368,0
+nca-live,occupation,0,0,1,33607152,33607520,368,0
+nca-live,occupation,0,1,0,33613456,33613824,368,0
+nca-live,occupation,0,1,1,33607936,33608304,368,0
+nca-live,occupation,1,0,0,33612672,33613040,368,0
+nca-live,occupation,1,0,1,33607152,33607520,368,0
+nca-live,occupation,1,1,0,33613456,33613824,368,0
+nca-live,occupation,1,1,1,33607936,33608304,368,0
+[       OK ] BlockSparseNcaLiveness.TightAdmissionDynamicFallbacksAndChangedInputs (55940 ms)
+[----------] 1 test from BlockSparseNcaLiveness (55940 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (55940 ms total)
+[  PASSED  ] 1 test.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors
