@@ -393,8 +393,8 @@ six-mode occupation window. The eight-mode number case is approximately at parit
 (maximum dimension 252) takes 7.01 s CPU / 1.14 s CUDA, whereas ten-mode scalar
 sectors take 1.02 s CPU / 5.60 s CUDA. These are first-index crossing windows,
 not full-sum or target-hardware results; ten-mode cases have only one repetition.
-The large-sector ratio still needs the E5 algorithm-matched CPU control before
-attributing it to device execution. Small-sector work should prioritize launch,
+That baseline ratio preceded the E5 algorithm-matched CPU control below; use
+the subsequent matched complete-call comparison when assessing device advantage. Small-sector work should prioritize launch,
 packing and DLR amortization rather than selecting sparse products from these
 complete-call timings alone. Detailed phase/launch profiling is still pending.
 
@@ -465,6 +465,29 @@ For scalar blocks, compare fusion across DLR work and independent paths; sparse
 vertices alone may be negligible. For large blocks, profile dense convolution after
 sparse vertices have removed their share of work. Decision: which transformations
 and resident coefficient copies earn their bandwidth and memory cost.
+
+E5 checkpoint (2026-10-14): [dlr_hoisted](experiments/block_sparse_cuda/dlr_hoisted/README.md)
+is an isolated CPU control that hoists the two complete-array Hilbert transforms
+without changing products/addition order. Eight primitive geometries/ranks (108
+samples) match unchanged CPU bit for bit, for coefficient convolution and an edge
+including both coefficient solves. The largest bounded edge (210/252/210, rank 23)
+takes 894/210/56.5 ms for unchanged CPU / hoisted CPU / retained CUDA, respectively;
+CUDA includes download, with inputs/scratch resident. A private generated evaluator
+uses exactly the current CPU path/operator/accumulation code and a cached rank-ops
+adapter, without changing production sources or installed headers. Generation checks
+the two convolution sites and regenerates on source changes.
+
+The [clean full-call control](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-02/README.md)
+contains all 15 original physical workloads (30 processes, 82 samples). All hoisted
+CPU outputs match unchanged CPU bit for bit, including retarded/reverse traversal
+and zero-survival controls; CUDA screening checks pass. Eight-mode number sectors
+now favor hoisted CPU (131 ms versus 267 ms CUDA). The ten-mode number sample still
+favors CUDA (5.04 s versus 1.13 s); scalar sectors favor hoisted CPU (0.795 s versus
+5.61 s CUDA). Ten-mode rows have one repetition, not a noise-qualified promotion.
+The preceding hoisted-cpu-01 timings are excluded because they overlapped a CPU
+verification build; numerical results and the exclusion are retained. Target runs,
+threaded CPU comparison, changed-G replay, RHS grouping/caching and detailed phase
+profiling remain pending. No dispatch choice follows from hoisting alone.
 
 ### E6 — Special-vertex mixing
 

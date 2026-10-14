@@ -737,3 +737,75 @@ Logs: /tmp/xca-bs-call-{cpu-configure,cpu-build,final-build,campaign}.log,
 /tmp/xca-bs-call-{cpu-smoke,smoke}.csv. Persistent campaign artifacts are in
 benchmarks/block_sparse_common/thinkstationP620_RTXA4000/reference-01. Temporary
 logs may disappear. git diff --check passed.
+
+
+### 2026-10-14 — E5 matched CPU convolution controls
+
+Previous goal turn made verified progress (paired reference benchmarks and committed
+checkpoint). Goal remains active. This turn establishes the requested matched CPU
+control before interpreting device speedups; production evaluator code is unchanged.
+
+Added experiments/block_sparse_cuda/dlr_hoisted. Hoisted time-ordered rank-three
+convolution uses the installed cppdlr helper formulas and NDA products/addition
+order, moving only the two complete-input Hilbert transforms out of the node loop.
+It preserves the cached-LU solves. The executable compares coefficient convolution
+and a full edge on identical complex inputs, requiring bitwise CPU agreement and
+exact replays. CUDA uses the retained DlrOps, includes synchronization/output copy,
+excludes initial input upload/setup and retains scratch. Reported device payload
+excludes opaque allocations. Workload dimensions cap at 252, with rank/shape/sample
+metadata and finite-output screening. Initial compilation used the wrong matmul
+namespace; corrected to cppdlr::matmul before qualification/commit.
+
+Primitive code d8f3c44, results c27011c. CPU-only/CUDA builds passed, including a
+second-rank rectangular CPU smoke; invalid dimension 253 rejected. Eight isolated
+cases, 108 rows passed: scalar/square/rectangular and 210/252/210 geometries plus
+Lambda=10/120 controls. CPU bitwise errors are zero throughout. CUDA relative errors
+are at most 1.56e-14. Largest edge original/hoisted/CUDA is 894.09/209.56/56.49 ms,
+with one repetition there. Small edges strongly favor hoisted CPU over reference
+CUDA, so primitive improvements alone cannot establish a device advantage.
+
+Added a private generated full CPU evaluator control (79cb24c). CMake derives it
+from current production cpp/hpp, renames the class and changes only the rank-ops
+member to a cached ImtimeControl adapter. Both existing convolve calls use hoisting;
+all inherited solves/transforms and path/vertex/accumulation code remain unchanged.
+Generation fails if the expected member or two convolution-site patterns change,
+and depends on production sources. Generated files remain in the build tree; no
+installed-header override or production backend mutation. The complete-call frontend
+uses shared physical workloads and requires bitwise agreement against unchanged CPU.
+The extra helper tables are charged to constructor time. Both CPU-only/CUDA-linked
+builds passed; CPU-only dynamic SPGF and a dynamic chain correlator with reverse
+traversal/two-index range matched bit for bit. Recorder now hashes experiment source
+and generation rules as well as core/fixture sources (6446c2b).
+
+The first paired matched campaign overlapped CPU verification compilation. This was
+an avoidable timing mistake, identified and corrected before drawing conclusions.
+All 30 processes passed numerical checks, but hoisted-cpu-01 timing rows are explicitly
+excluded in its README/manifest and retained as evidence. Verified CPU build and
+first-campaign handles terminal before running clean hoisted-cpu-02; no concurrent
+build or benchmark was started during that repeat. Clean campaign also passed all
+30 processes, 82 samples, and bitwise CPU agreement on all 15 original physical
+workloads, including zero-survival and ordinary/retarded/all-observable regimes.
+Results committed separately (13979c7; hardware-link correction follows).
+
+Clean full-call medians: eight-mode number sectors 131.30 ms hoisted CPU / 266.79 ms
+CUDA; ten-mode number 5039.57 / 1130.46 ms; ten-mode scalar sectors 794.69 / 5614.41 ms.
+Thus a useful large-sector device advantage survives the matched CPU comparison,
+but eight-mode parity against the old CPU was misleading. These are selected first
+indexed evaluations, not full Solver/topology sums. Ten-mode cases have one timed
+repetition; no promotion/noise gate, target threshold or N=14 qualification follows.
+Unchanged CPU results from reference-01 are separate-run context, not a substituted
+same-process timing. CPU-control fields include flattening as documented.
+
+No production changes warrant repeating the complete solver suites here; prior
+full CPU/CUDA/MPI qualification is preserved, with meaningful experiment numerical
+checks covering the new code. Plan updated with E5 evidence and remaining gates.
+Next: E3 operator maps/sparse/dense inclusive costs (including bounded 3003/3432
+proxies), phase profiling and bounded ready-work batching/fusion. E5 RHS batching,
+cache keys/changed-G, threaded CPU and GH200 measurements remain outstanding.
+Keep reference and all experiments; goal is not complete. No install, push or
+supervisor change. Unrelated user changes preserved; git diff --check passed.
+
+Temporary logs: /tmp/xca-bs-hoisted-{build,cpu-build,smoke,cpu-smoke,campaign}.*,
+/tmp/xca-bs-hoisted-evaluator-{build,cpu-build,smoke,cpu-smoke,campaign,clean-campaign}.*.
+Persistent evidence lives in experiments/block_sparse_cuda/dlr_hoisted/thinkstationP620_RTXA4000
+and benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-{01,02}.
