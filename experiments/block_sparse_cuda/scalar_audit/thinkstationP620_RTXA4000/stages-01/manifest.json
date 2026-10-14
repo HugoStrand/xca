@@ -1,0 +1,16 @@
+{
+  "code_revision": "d184e076523c8d1d509a7cf3764495d475d3d966",
+  "source_sha256": {
+    "experiments/block_sparse_cuda/scalar_audit/stages.cpp": "41bea1135f9058b96a5142319ec96fb7008371944ee0512668ff0986452c90b1",
+    "experiments/block_sparse_cuda/scalar_edges/scalar_pack.hpp": "7dc0b811e664054890a7f401058ef0b857249058b31f108ae7ee5af03efd540e",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "c4ed6b58cc1835583a4960d9cd4ff3799918e943ced6212511f0bad45c9b987e",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1"
+  },
+  "binary_sha256": "28be0123e6b5769dd4c69a19501501360d77efdbb65b623f5d77dcafa4b6d35d",
+  "command": [
+    "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_stage_audit"
+  ],
+  "blas_threads": 1,
+  "omp_threads": 1,
+  "notes": "Final42row diagnostic; earlier27/33row exploratory outputs retained without source/binary hash claim. No timing or conservative error-certificate claim."
+}
