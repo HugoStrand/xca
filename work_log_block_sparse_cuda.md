@@ -1,5 +1,41 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — GH200 scalar batching qualification
+
+Previous turn was progress: committed initial target matched baseline. Inspected the
+retained scalar experiment, its constants/arena/fan-in variant and exact matched CPU
+control. Added scalar cohort selection to the archive-aware recorder, preserving
+initial defaults. Prepared a one-GPU/fifteen-minute job reusing pinned 3f462c3 Arm
+tree. Selected six cases across unchanged CPU/ordered GPU/batched CPU/batched GPU:
+zero/active order-three windows, N=6 eight-index range, N=10 scalar order two,
+order-six chain window and mixed retarded correlator fallback. Syntax/help/diff and
+remote scheduling checks passed; exactly one job submitted, 3819263.
+
+Job COMPLETED exit 0 in 90 seconds, one GPU, billing TRES 1, nominal .025 GPU-hours.
+Built candidate and matched CPU, then all 14 active GoogleTests passed (7.38 s CTest).
+Controls cover evaluator observables, multi-cohort tails, changed masks, NCA cutoff
+adjacency, admission/empty ranges, multi-field general route, ordered cancellation
+and coefficient layout/updates. All 24 benchmark processes/72 samples passed finite,
+CPU-screening and exact repeat checks. Matched CPU equals original exactly. Structural
+counts/ranges/rank match ordered versus candidate; largest absolute error 1.955e-16.
+
+Range ordered GPU 732.530 ms becomes 6.739 ms (108.7x), matched CPU 6.071 ms.
+N=10 ordered 3362.550 ms becomes 17.587 ms (191.2x), matched CPU 18.371 ms (only
+1.045x). Active smaller window candidate 3.897 ms versus matched CPU 3.116 ms;
+original CPU .806 ms. Mixed correlator falls back as intended, ~10.8 ms for both GPU
+routes. Order-six and zero windows reject all paths, so high-order active arithmetic
+is still unqualified. Three samples/one allocation cannot establish robust crossover
+or whole Solver throughput. No production promotion, binding or default change.
+
+Committed recipe, benchmark evidence and plan/log separately. Raw samples and hashes,
+semantic LastTest.log and accounting retained under Arrhenius_GH200/scalar-01 in
+CPU/CUDA/common benchmark folders; full remote logs/cache retained. Batch RSS reported
+36 MiB is not interpreted as whole child-process peak. Total target GPU allocation
+301 seconds across three jobs, nominal .08361 GPU-hours. Goal active: next close
+active high-order/cutoff and broader scalar capability/lifetime gates locally before
+additional target runs, then continue Python/MPI and capacity qualification. No
+install/push; baselines/experiments and unrelated user work preserved.
+
 ## 2026-10-14 — Initial matched GH200 baseline
 
 Previous turn was progress: first target C++ smoke qualified 20 GoogleTests and

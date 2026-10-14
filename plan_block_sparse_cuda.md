@@ -55,6 +55,19 @@ Next target experiment: retained scalar-path batching with semantic gates and
 active/rejected windows. Initial target allocation total is 211 seconds, nominally
 0.05861 GPU-hours. Broader Python/MPI, capacity and target policies remain open.
 
+Scalar target evidence: job 3819263 ran the retained constants/arena/fan-in candidate
+against ordered GPU, unchanged CPU and matched batched CPU. Fourteen active semantic
+tests and 72 samples passed, with matching structural counts. The eight-index scalar
+range and N=10 scalar case reduce GPU latency by 108.7x/191.2x versus ordered GPU,
+but the matched CPU remains faster on the range; N=10 GPU has only a 1.045x advantage
+over matched CPU in this small sample. General correlator fallback is unchanged.
+The order-six chain window has zero surviving paths, so active high-order/cutoff
+qualification remains required before promotion. Evidence is under
+`benchmarks/block_sparse_common/Arrhenius_GH200/scalar-01`. Keep the candidate
+experimental while closing those gates; no dispatch policy follows from this cohort.
+This job used 90 seconds, nominally 0.025 GPU-hours; total target allocation across
+the three jobs is 301 seconds, nominally 0.08361 GPU-hours.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
