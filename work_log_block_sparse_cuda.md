@@ -1,5 +1,41 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Observable sensitivity and roundoff scale
+
+Previous turn was progress: DLR stage effects isolated. Added optional host-only
+--sensitivity output to stage audit. Analytic coefficient/node Jacobians, cached-
+table ideal convolution differences and fully expanded absolute term scales use
+224/320binary-bit arithmetic. Directional/bilinear identities check1e-30; precision
+agreement checks1e-25. Initial ADL norm naming error fixed. Initial160-bit cancellation
+calculation failed convergence; increased precision rather than relaxing criterion.
+All3final rows finite/converged; all42prior GPU stage rows exactly unchanged.
+No GPU arithmetic/ownership change; no redundant device memory/full-suite claim.
+
+Smoothr23 nodeJacobian f/g≈1.15/1.27 despite raw matrix condition≈1e11. Oscillatingr36
+node sensitivity≈2.19e7, complexr47≈4.06e9. Absolute expanded scales2.16,2.60e24,
+4.00e25: intermediate cancellation is crucial. Ideal coefficient-change effects
+2.04e-16/.0718/36.2 are far below difficult executed-convolution changes3.94e7/
+3.24e8. Thus those executed changes include amplified floating evaluation effects,
+not merely exact-formula sensitivity to coefficient changes. Norms use complexl1;
+prior GPU output maxima used Euclidean norm, so avoid direct equality comparisons.
+
+The inverse is still double cachedLU approximate; high precision treats sampled
+double tables/coefficients as constants. Convergence/identities do not establish
+physical DLR accuracy, a certified inverse or a cuSOLVER/cuBLAS error enclosure.
+Codef0b5758/evidenceca11838 separate from this checkpoint. Artifacts scalar_audit
+local sensitivity-01 include final/source/binary hashes and labeled160-bit partial
+failure. /tmp/xca-sensitivity-* may disappear. All handles terminal; no new target
+hours (.27556 cumulative), install/push or unrelated changes. Goal active.
+
+Next make production progress on pointwise real scalar NCA, which avoids these DLR
+solve/convolution effects: first qualify a structural/data/range guard and arithmetic
+order against current reference, then integrate a bounded native path with general
+fallback for all other supported inputs/observables. This does not close higher-order
+batching: retain its experiments and continue solve/roundoff enclosures including
+observable sensitivity and absolute intermediate scale. Full-replay diagnostic remains
+oracle/control; arbitrary condition/rank/band thresholds are insufficient. Preserve
+wholegoal, fullAPI/output and numerical acceptance; no premature scalar promotion.
+
 ## 2026-10-14 — DLR stage isolation
 
 Previous turn was progress: fixedband counterexamples and diagnostic fullreplay.

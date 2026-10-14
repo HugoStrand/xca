@@ -320,6 +320,23 @@ Small residual, matching scalar products, empirical rank cutoffs or wider fixedb
 are insufficient. Keep numerical experiments private until that gate and inclusive
 performance qualification pass. No new targetallocation; goal remains active.
 
+### 2026-10-14 — Sensitivity and staged production path
+
+224/320-bit sensitivity diagnostics pass analytic/convergence checks;42GPU stage
+rows unchanged. Smooth node sensitivity≈1 despite coefficient matrix condition≈1e11;
+difficult cases≈2e7/4e9. Absolute intermediate scales2.16 versus2.6e24/4.0e25 explain
+why arithmetic roundoff matters beyond exact-formula coefficient response. These
+are cached-double-table diagnostics, not interval/library error certificates.
+Evidence: scalar_audit local sensitivity-01, including initial precision failure.
+
+Next qualify a pointwise real scalar NCA guard/kernel and integrate it with general
+fallback for other inputs/observables; it contains no DLR transforms. Preserve
+arithmetic/sum/cutoff order and range/overflow/lifetime/budget invariants. Higher-order
+batching remains part of the goal and requires an enclosure covering both solve
+uncertainty and expanded intermediate arithmetic scale. Do not replace that work
+with a narrower success definition. Retain all experiments, base implementations
+and target limits. No target allocation this step; goal remains active.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
