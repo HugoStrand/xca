@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
-    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams', 'real_nca'], default='initial')
+    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams', 'real_nca', 'production'], default='initial')
     parser.add_argument('--process-repetitions', type=int, choices=range(1, 4), default=1)
     parser.add_argument('--samples', type=int, choices=range(1, 6), default=3)
     parser.add_argument('--case', action='append', help='Select named cases without changing their scientific inputs')
@@ -117,6 +117,21 @@ def main():
             ('n8-nca', 8, 'occupation', 'se', 1, False, 0, 1, 'crossing'),
             ('n4-oca-fallback', 4, 'occupation', 'se', 2, False, 0, 1, 'crossing'),
             ('n4-number-fallback', 4, 'number', 'se', 1, False, 0, 1, 'crossing'),
+        ]
+    if args.cohort == 'production':
+        experiment = args.build/'benchmarks/experiments/block_sparse_cuda'
+        binaries.update(
+            cpu_hoisted=experiment/'dlr_hoisted/block_sparse_cpu_hoisted_benchmark',
+            cpu_constants=experiment/'scalar_paths/block_sparse_cpu_scalar_constants_benchmark',
+            mapped=args.build/'benchmarks/block_sparse_cuda/block_sparse_cuda_mapped_benchmark',
+            production=args.build/'benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark')
+        cases = [
+            ('scalar-n4-nca', 4, 'occupation', 'se', 1, False, 0, 1, 'crossing'),
+            ('scalar-n8-nca', 8, 'occupation', 'se', 1, False, 0, 1, 'crossing'),
+            ('scalar-oca-fallback', 4, 'occupation', 'se', 2, False, 1, 1, 'crossing'),
+            ('number-n6-oca', 6, 'number', 'se', 2, False, 0, 1, 'crossing'),
+            ('number-n8-nca', 8, 'number', 'se', 1, False, 0, 1, 'crossing'),
+            ('mixed-retarded', 6, 'mixed', 'correlator', 2, True, 0, 1, 'crossing'),
         ]
     if args.case:
         if set(args.case) - {case[0] for case in cases}:
