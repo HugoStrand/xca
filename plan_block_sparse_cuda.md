@@ -1115,6 +1115,16 @@ fits; investigate the return move as a separate production improvement, preservi
 the copy-return baseline. Streaming remains a capacity route pending independent
 peak/host measurements, transfer/placement policy and GH200-class qualification.
 
+Production ownership checkpoint: self-energy returns its full host vector by explicit
+move. CopyOutputEvaluator remains generated as a copying control; streaming/copy/move
+experiments retain their meaning. Main four focused CTests and native-disabled three
+pass, covering production observables, Python integration and complete-output controls.
+CPU-only library compilation and focused memcheck pass. `outputs-03` has 147 exact
+paired rows; local changed-G eight/ten-mode production medians improve 11.94%/21.53%
+against copying. Device arithmetic, bounds and public API remain unchanged. Full
+production suites/MPI remain the preceding compact checkpoint; no new full-suite or
+target-hardware claim is inferred from this ownership qualification.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical

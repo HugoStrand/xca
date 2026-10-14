@@ -2317,3 +2317,37 @@ no push/install/supervisor changes, unrelated work retained. Evidence: output_se
 thinkstationP620_RTXA4000/{outputs-01,outputs-02}; /tmp/xca-bs-output-bench-{configure,
 build,campaign,memcheck}.log, corresponding move configure/build/campaign logs and
 library configure/build logs with /tmp/xca-bs-output-bench-library-control.csv.
+
+## 2026-10-14 — Production self-energy return ownership
+
+Previous turn was progress: ownership-controlled complete-call measurements changed
+the streaming decision. Production compute_self_energy_range now moves its host GF
+vector into the owning block_gf constructor instead of copying it. No device arithmetic,
+device bounds, method signatures or Python API change. The experiment generator
+normalizes return syntax for its streaming template and explicitly emits copy/move
+controls. Benchmark resident now names CopyOutputEvaluator; resident_move uses the
+actual production DiagramEvaluator. Earlier baselines and raw work remain available.
+
+CPU-only configure/library compilation passes. Main targeted build and four CTests
+pass in 39.73 s: production evaluator/admission, private complete-output controls and
+six-method Python integration. Native-disabled targeted build/bindings and three
+matching CTests pass in 24.47 s, flags remain OFF. Focused three-route memcheck gives
+zero errors/leaks. GPU verification stages are sequential; performance starts only
+after all builders/tests/profilers are terminal. Binding regeneration is unnecessary
+because no exported signature changed. Full suites and two-rank MPI remain the prior
+compact checkpoint, not newly claimed for this one-line ownership change.
+
+Final production outputs-03: seven processes / 147 rows match exact outputs/counts;
+all recorded source hashes match current executable inputs. Changed-G copy/production/
+streamed medians: eight-mode 21.375454/18.823287/18.766029 ms, ten-mode 207.280464/
+162.649520/173.526853 ms. Production reduces local API time 11.94%/21.53% versus the
+preserved copying control. This avoids attributing ownership savings to sector
+placement and is not a whole-Solver or GH200 speedup claim. Device envelopes unchanged.
+
+Goal active. Next investigate/select a production memory placement policy, retaining
+resident execution when it fits and requiring complete-output/host accounting for
+streaming; remaining input/slab, many-small batching, cutoff and target gates stay
+open. All handles terminal. Code, measurement and plan/log commits stay separate;
+no install/push/supervisor changes; unrelated work preserved. Logs /tmp/xca-bs-return-
+move-{configure,build,test,cpu-configure,cpu-build,library-configure,library-build,
+library-test,memcheck,campaign}.log; output_sectors/thinkstationP620_RTXA4000/outputs-03.
