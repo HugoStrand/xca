@@ -1,0 +1,3 @@
+modes,rank,maximum_dimension,function_bytes,maximum_tile_bytes,generic_variable_bytes,nca_variable_bytes,inactive_scratch_bytes
+10,23,252,67990208,23369472,439783552,299566720,140216832
+14,26,3432,16688505600,4899907584,97075809792,67676364288,29399445504
