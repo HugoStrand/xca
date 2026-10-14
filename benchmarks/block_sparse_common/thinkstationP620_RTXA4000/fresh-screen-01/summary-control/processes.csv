@@ -1,0 +1,4 @@
+case,backend,repetition,pid,samples,median_call_ms,reported_backend,evaluator_setup_ms
+n4-nca,cpu_constants,0,551345,1,0.450365,cpu_scalar_constants,0.24252499999999999
+n4-nca,cpu_constants,1,551346,1,0.450124,cpu_scalar_constants,0.248306
+n4-nca,cpu_constants,2,551347,1,0.446337,cpu_scalar_constants,0.232155

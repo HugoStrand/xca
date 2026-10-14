@@ -1,0 +1,120 @@
+{
+  "revisions": {
+    "sources": {
+      "xca": "7b5d223",
+      "c2py": "58e0586a32cd3e4bc197b2ca753b51f128db39d2",
+      "adapol": "d3c4ab78f83922dbaae4d78c5c9d91e22fb974ce",
+      "pyed": "248bd34aa1ba974dc77dad4d8004631fc83d5515",
+      "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a"
+    },
+    "recipe_commit": "e2c0737",
+    "job_sha256": "76dff6af2614f59221f0725ba394838b385d4254611f5f295971d3e5ea049e71",
+    "gpu_count": 1,
+    "mpi_ranks": 2,
+    "walltime_cap_seconds": 900,
+    "build_timeout_seconds": 420,
+    "serial_timeout_seconds": 180,
+    "mpi_timeout_seconds": 420,
+    "note": "Isolated build; existing coherent Arm TRIQS/Python modules, no install; shared100 GPUh/month ceiling"
+  },
+  "cohort": "real_nca",
+  "host": "ThinkStation",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "job_id": null,
+  "samples_per_case": 1,
+  "process_repetitions": 3,
+  "timeout_per_process_seconds": 120,
+  "cases": [
+    {
+      "name": "n4-nca",
+      "backend": "cpu_constants",
+      "repetition": 0,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--topology",
+        "crossing",
+        "--samples",
+        "1"
+      ],
+      "pid": 551345,
+      "returncode": 0,
+      "child_returncode": 0,
+      "elapsed_seconds": 0.12861100502777845
+    },
+    {
+      "name": "n4-nca",
+      "backend": "cpu_constants",
+      "repetition": 1,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--topology",
+        "crossing",
+        "--samples",
+        "1"
+      ],
+      "pid": 551346,
+      "returncode": 0,
+      "child_returncode": 0,
+      "elapsed_seconds": 0.13750969606917351
+    },
+    {
+      "name": "n4-nca",
+      "backend": "cpu_constants",
+      "repetition": 2,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--topology",
+        "crossing",
+        "--samples",
+        "1"
+      ],
+      "pid": 551347,
+      "returncode": 0,
+      "child_returncode": 0,
+      "elapsed_seconds": 0.1288540909299627
+    }
+  ],
+  "runner_sha256": "d9ed00152a2a2e8cf35e5dc590a81b245434f246fa8015e85b6c34bdb4becee5",
+  "binaries": {
+    "cpu_constants": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+      "sha256": "77c6ef6d3381746f1918c21b2eee55d7512a25881cb07f8a305f261ad0926d6b"
+    }
+  }
+}
