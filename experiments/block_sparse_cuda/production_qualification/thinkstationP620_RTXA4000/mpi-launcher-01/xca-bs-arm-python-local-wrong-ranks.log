@@ -1,0 +1,27 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py", line 18, in <module>
+    raise RuntimeError(f'Expected {expected} MPI ranks, got {actual}')
+RuntimeError: Expected 3 MPI ranks, got 2
+Traceback (most recent call last):
+  File "/home/hugstr/dev/xca/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py", line 18, in <module>
+    raise RuntimeError(f'Expected {expected} MPI ranks, got {actual}')
+RuntimeError: Expected 3 MPI ranks, got 2
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[1368,1],1]
+  Exit code:    1
+--------------------------------------------------------------------------

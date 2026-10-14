@@ -1,0 +1,55 @@
+{
+  "runner_commits": [
+    "7b5d223",
+    "c5cf230",
+    "9a2d0f7"
+  ],
+  "normalization": "LF, trailing whitespace/empty EOF lines removed",
+  "files": [
+    {
+      "file": "xca-bs-arm-python-local-alias-command.json",
+      "original_sha256": "7b7933266d72f8dbbdae30ea46c0fb69531c7a1f8391f35635ccbb306a349813",
+      "archive_sha256": "7b7933266d72f8dbbdae30ea46c0fb69531c7a1f8391f35635ccbb306a349813"
+    },
+    {
+      "file": "xca-bs-arm-python-local-alias.log",
+      "original_sha256": "a6c4020e02aa7201498dfa20f3f789067e931d1e98bf6967ee8b5fcf06d2f2c3",
+      "archive_sha256": "a6c4020e02aa7201498dfa20f3f789067e931d1e98bf6967ee8b5fcf06d2f2c3"
+    },
+    {
+      "file": "xca-bs-arm-python-local-command.json",
+      "original_sha256": "db868a71b02aa4c6fe1e67fc136fb7771371156341fdc3db4e3130104c8136f0",
+      "archive_sha256": "db868a71b02aa4c6fe1e67fc136fb7771371156341fdc3db4e3130104c8136f0"
+    },
+    {
+      "file": "xca-bs-arm-python-local-ctest.json",
+      "original_sha256": "81fef7cbfec7fae1704651c32fa811d1a7493ed8ec5e5b3c71b9873034d08985",
+      "archive_sha256": "2edb5b1bc430b4af36c23831ec8e66feda0cd0ec29a15edf4f4831a1a89a317a"
+    },
+    {
+      "file": "xca-bs-arm-python-local-mpi.log",
+      "original_sha256": "11aef45c0c8b7e07edd197907abed875d2329d17f5e2ec8cffab5019af2ff346",
+      "archive_sha256": "11aef45c0c8b7e07edd197907abed875d2329d17f5e2ec8cffab5019af2ff346"
+    },
+    {
+      "file": "xca-bs-arm-python-local-preflight-command.json",
+      "original_sha256": "dbb2400629a8e428a63e7f674265aa13bca024d1f400ba20178cf75fbba3b817",
+      "archive_sha256": "dbb2400629a8e428a63e7f674265aa13bca024d1f400ba20178cf75fbba3b817"
+    },
+    {
+      "file": "xca-bs-arm-python-local-preflight.log",
+      "original_sha256": "43a0c60d0c1cbf382e75d0f943e42f39bbd0b61c254f3c783dcfc6ca880a9fa1",
+      "archive_sha256": "43a0c60d0c1cbf382e75d0f943e42f39bbd0b61c254f3c783dcfc6ca880a9fa1"
+    },
+    {
+      "file": "xca-bs-arm-python-local-wrong-ranks-command.json",
+      "original_sha256": "30a6bb37b41610d1a7ba5bae7390a2be38cb7f04973ba824908cd3cb268ab542",
+      "archive_sha256": "30a6bb37b41610d1a7ba5bae7390a2be38cb7f04973ba824908cd3cb268ab542"
+    },
+    {
+      "file": "xca-bs-arm-python-local-wrong-ranks.log",
+      "original_sha256": "cc28af7a864842f411e0b60e95566b660e56c126b5b6b6dec91238fe6b4a0fc8",
+      "archive_sha256": "cc28af7a864842f411e0b60e95566b660e56c126b5b6b6dec91238fe6b4a0fc8"
+    }
+  ]
+}

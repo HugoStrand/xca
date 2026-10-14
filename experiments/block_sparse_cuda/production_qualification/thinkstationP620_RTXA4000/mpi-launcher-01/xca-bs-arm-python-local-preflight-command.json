@@ -1,0 +1,28 @@
+{
+  "command": [
+    "mpirun",
+    "--oversubscribe",
+    "-n",
+    "2",
+    "/usr/bin/python3",
+    "/home/hugstr/dev/xca/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py",
+    "--worker",
+    "2",
+    "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py",
+    "-v",
+    "BlockSparseCudaTests.test_storage_preferences_serialization"
+  ],
+  "working_directory": "/home/hugstr/dev/xca/cbuild-cuda/test/python/",
+  "expected_ranks": 2,
+  "ctest_command": [
+    "/usr/bin/python3",
+    "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py"
+  ],
+  "ctest_environment": [],
+  "ctest_environment_modification": [
+    "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src",
+    "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+    "PYTHONPATH=path_list_prepend:/home/hugstr/dev/xca/cbuild-cuda/python"
+  ],
+  "resolved_PYTHONPATH": "/home/hugstr/dev/xca/cbuild-cuda/python:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src:/home/hugstr/apps/xca-cuda/lib/python3.12/site-packages:/home/hugstr/apps/triqs-cuda/lib/python3.12/site-packages:/home/hugstr/dev/adapol/src/:/home/hugstr/dev/pyed/:/home/hugstr/apps/duperty/lib/python3.12/site-packages:/home/hugstr/apps/clair/lib/python3.12/dist-packages"
+}
