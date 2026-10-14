@@ -1,0 +1,25 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ResidentWeights.*:ScalarSets.*:ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[==========] Running 3 tests from 3 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[       OK ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (12863 ms)
+[----------] 1 test from ScalarPathQualification (12863 ms total)
+
+[----------] 1 test from ScalarSets
+[ RUN      ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission
+[       OK ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission (4375 ms)
+[----------] 1 test from ScalarSets (4375 ms total)
+
+[----------] 1 test from ResidentWeights
+[ RUN      ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates
+[       OK ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates (1 ms)
+[----------] 1 test from ResidentWeights (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 3 test suites ran. (17240 ms total)
+[  PASSED  ] 3 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

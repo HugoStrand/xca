@@ -1,0 +1,21 @@
+{
+  "code_revision": "ce97eaa56e794d4f5a833c97e85428a72055bc81",
+  "profiler": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0",
+  "binary_sha256": "805f224c4be0ce1aa42fc2384c7db33bb37bc6f0f7625e171982b89beb12f5b5",
+  "report_path": "/tmp/xca-density-profile-resident.nsys-rep",
+  "report_sha256": "7504a17f5997dadfeddea73162098c2ee067273781828ea1267313968530ff33",
+  "case": {
+    "modes": 6,
+    "partition": "occupation",
+    "dynamic": true,
+    "order": 2,
+    "first": 1,
+    "count": 8
+  },
+  "notes": "One warmed call; not benchmark timing. Compared trace baseline predates parity hoisting.",
+  "htod": [
+    115,
+    1014324
+  ],
+  "runtime_span_ms": 12.098293
+}

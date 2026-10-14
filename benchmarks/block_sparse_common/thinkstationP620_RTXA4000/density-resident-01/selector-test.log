@@ -1,0 +1,12 @@
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ResidentWeights.*
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ResidentWeights
+[ RUN      ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates
+[       OK ] ResidentWeights.ExpandedControlStridesIdentityZeroAndUpdates (272 ms)
+[----------] 1 test from ResidentWeights (272 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (272 ms total)
+[  PASSED  ] 1 test.

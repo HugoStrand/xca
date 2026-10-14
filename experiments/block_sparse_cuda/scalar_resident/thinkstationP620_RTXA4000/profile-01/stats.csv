@@ -1,0 +1,49 @@
+Generating SQLite file /tmp/xca-density-profile-resident.sqlite from /tmp/xca-density-profile-resident.nsys-rep
+Processing [/tmp/xca-density-profile-resident.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_api_sum.py]... 
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+20.7,1676221,272,6162.6,3917.0,732,30056,7409.6,cudaStreamSynchronize
+19.7,1592237,57,27934.0,5951.0,5380,110306,42255.4,cudaMemcpyAsync
+12.9,1042003,231,4510.8,4409.0,3707,13155,783.8,cudaLaunchKernel
+10.8,876143,158,5545.2,2329.0,761,261400,24812.3,cudaFree
+9.7,788189,156,5052.5,2555.0,1452,180840,16864.2,cudaMalloc
+9.5,772236,117,6600.3,4739.0,3546,119284,11574.7,cudaMemcpy
+3.3,267311,258,1036.1,962.0,801,6723,438.0,cudaEventRecord
+2.4,195536,258,757.9,722.0,621,5119,289.0,cudaStreamWaitEvent
+2.1,166278,32,5196.2,4007.0,2725,28603,4489.9,cudaMemset
+2.0,165437,276,599.4,581.0,451,3096,172.1,cudaEventCreateWithFlags
+1.6,125585,6,20930.8,17994.0,12964,44182,11608.6,cudaMemGetInfo
+1.5,122711,276,444.6,430.0,350,1583,89.5,cudaEventDestroy
+1.2,99726,24,4155.3,4032.5,3797,5431,365.7,cuLaunchKernel
+0.9,73737,16,4608.6,4428.5,3065,7985,1203.1,cudaMemsetAsync
+0.6,47450,231,205.4,180.0,150,652,68.7,cuKernelGetName
+0.5,39555,6,6592.5,6337.0,4298,8406,1454.6,cudaMemcpy2D
+0.2,17493,1,17493.0,17493.0,17493,17493,0.0,cuProfilerStart
+0.1,10434,49,212.9,191.0,160,371,49.6,cuStreamGetGreenCtx
+0.1,10210,24,425.4,346.0,321,1653,265.1,cuKernelGetFunction
+0.1,8436,4,2109.0,1843.5,1052,3697,1225.2,cudaDeviceSynchronize
+0.0,3727,1,3727.0,3727.0,3727,3727,0.0,cudaStreamGetDevResource
+
+Processing [/tmp/xca-density-profile-resident.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+33.8,841465,12,70122.1,70127.5,70080,70144,24.6,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+26.9,668057,24,27835.7,27839.0,27775,27935,40.4,void cutlass::Kernel2<cutlass_80_tensorop_z884gemm_32x16_16x3_nn_align1>(T1::Params)
+10.3,255165,12,21263.8,21263.5,21247,21280,16.8,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)0, (bool)1>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+8.3,206751,12,17229.3,17232.0,17184,17279,28.7,"void laswp_kernel2_reverse<double2, (bool)0, int>(int, T1 *, unsigned long, int, int, const T3 *, int)"
+4.9,121022,39,3103.1,3200.0,2464,3264,248.3,"scalar_resident_experiment::apply_kernel(double2 *, const scalar_resident_experiment::Weight *, long, long)"
+4.4,109183,48,2274.6,2272.0,2208,2336,36.6,"scalar_edge_experiment::multiply_by_lane_kernel(const double2 *, const double2 *, double2 *, long, long)"
+3.8,95103,42,2264.4,2272.0,2208,2368,44.0,"void axpy_kernel_val<double2, double2>(cublasAxpyParamsVal<T1, T1, T2>)"
+3.8,94783,24,3949.3,3936.0,3744,4160,191.8,"void transpose_readWrite_alignment_kernel<double2, double2, (int)1, (bool)0, (int)5, (int)4, (int)4>(cublasTransposeParams<T2>, const T1 *, T1 *, const T2 *)"
+0.8,18784,9,2087.1,2080.0,1984,2272,95.7,"scalar_edge_experiment::gather_kernel(const unsigned long *, const unsigned long *, double2 *, double2 *, long, long)"
+0.7,18528,3,6176.0,5760.0,4128,8640,2284.6,"scalar_edge_experiment::fanin_kernel(const double2 *, const unsigned long *, const long *, const long *, long, long, long)"
+0.7,18144,6,3024.0,3024.0,3008,3040,17.5,"scalar_edge_experiment::cross_kernel(const double2 *, const double2 *, const double2 *, const double2 *, double2 *, long)"
+0.6,14144,12,1178.7,1184.0,1152,1216,18.5,"copy_info_kernel(int, int *)"
+0.5,12672,6,2112.0,2112.0,2112,2112,0.0,"scalar_edge_experiment::multiply_kernel(const double2 *, const double2 *, double2 *, long)"
+0.5,12192,6,2032.0,2032.0,2016,2048,17.5,"void scal_kernel_val<double2, double2>(cublasScalParamsVal<T1, T2>)"
+
+Processing [/tmp/xca-density-profile-resident.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_mem_time_sum.py]... 
+Time (%),Total Time (ns),Count,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Operation
+41.8,127262,115,1106.6,864.0,416,2720,475.3,[CUDA memcpy Host-to-Device]
+24.3,73920,49,1508.6,1504.0,1280,1536,37.5,[CUDA memcpy Device-to-Device]
+19.1,58208,48,1212.7,1344.0,480,1600,350.4,[CUDA memset]
+14.8,45088,16,2818.0,1120.0,1120,9664,3395.9,[CUDA memcpy Device-to-Host]
+
