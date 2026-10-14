@@ -1,0 +1,29 @@
+{
+  "job_id": 3818566,
+  "account": "naiss2026-3-569-gpu",
+  "partition": "gpu",
+  "source_revision": "3f462c3f3a6d73c8ea64594d6e3a7972e3f4f1cf",
+  "gtest_revision": "988ea2c1798de7779f656df2281dd36d6039a17a",
+  "gpu": "NVIDIA GH200 120GB",
+  "reported_framebuffer_mib": 97871,
+  "driver": "580.178.04",
+  "toolkit": "12.9.86",
+  "architecture": "aarch64",
+  "cuda_architectures": [
+    90
+  ],
+  "native_block_sparse": true,
+  "native_dense_small": false,
+  "python_support": false,
+  "allocated_gpus": 1,
+  "allocated_cpus": 72,
+  "build_workers_cap": 6,
+  "walltime_cap_seconds": 600,
+  "elapsed_seconds": 120,
+  "nominal_gpu_hours": 0.03333333333333333,
+  "slurm_billing_tres": 1,
+  "ctest_passed": 4,
+  "gtests_passed": 20,
+  "ctest_seconds": 10.63,
+  "qualification": "focused C++ correctness; no performance, full suite, Python/MPI or large-system claim"
+}

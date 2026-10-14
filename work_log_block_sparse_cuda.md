@@ -1,5 +1,34 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — First GH200 smoke qualification
+
+Previous goal turn was progress: committed the user's 100 GPU-hours/month constraint.
+Used Arrhenius/Arrhenius-software workflows, isolated source archive 3f462c3 and pinned
+GTest 988ea2c. Preserved older shared checkout, CPU/CUDA installs and environments.
+Cleaned inherited project CPU paths and CUDA driver stubs before Arm modules/TRIQS.
+First transfer failed because the parent qualification directory was absent; created
+the selected directory and retried transfer only. No compute was spent on that error.
+
+Shell syntax and remote sbatch --test-only passed. Scheduler grants 72 CPUs per GPU;
+build worker count uses allocated CPUs capped at six, without extra resource requests.
+Submitted exactly one job, 3818566, one GPU/ten-minute cap. projinfo reported 2.79 GPU
+hours over the preceding 30 days and warned its estimate may be unreliable. Polling
+confirmed RUNNING, then COMPLETED exit 0. Actual allocation 120 seconds, nominal
+0.0333 GPU-hours, billing TRES 1; batch MaxRSS 828 MiB. No duplicate/retry compute.
+
+GCC 14.3.0/CUDA 12.9.86/aarch64 configure and focused build passed with native BS ON,
+dense-small native OFF, architecture 90, Python OFF. Four CTests passed in 10.63 s:
+admission/device/evaluator/DLR. Retrieved LastTest.log proves 20 active GoogleTests
+(3/5/8/4), not disabled CUDA cases. Numerical tests cover focused SE/SPGF/correlators.
+Empty CMake Git hash is expected for source archives; revision JSON pins the source.
+Warnings were the unused binding-update option and existing shadowing warnings.
+
+Compact hardware-specific evidence committed separately from the job recipe;
+full logs and reusable Arm build remain in shared/qualification/xca-block-sparse-3f462c3.
+Goal active: no target speedup, full suite, Python/MPI or full N=14 qualification claim.
+Next use the retained Arm build for a small matched benchmark cohort and broader
+semantic gates within the declared one-GPU-hour initial cohort cap. No install/push.
+
 ## 2026-10-14 — Arrhenius allocation constraint
 
 User specifies only 100 GPU-hours/month on Arrhenius. Updated the plan to treat this

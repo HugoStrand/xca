@@ -35,6 +35,13 @@ available, including build time and failed jobs. Check the allocation's remainin
 balance before further campaigns and leave room for the user's other workloads.
 Queued jobs and scheduler validation do not constitute hardware qualification.
 
+First target smoke evidence: Arrhenius job 3818566 built pinned source 3f462c3
+with GCC 14.3.0/CUDA 12.9.86 and native block-sparse sm_90 kernels. Four focused
+C++ CTests (20 GoogleTests) passed in 10.63 seconds. The one-GPU allocation lasted
+120 seconds, nominally 0.0333 GPU-hours. Evidence is retained under
+`experiments/block_sparse_cuda/gh200_qualification/Arrhenius_GH200/smoke-01`.
+Python/MPI, full-suite, target performance and large-system gates remain open.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
