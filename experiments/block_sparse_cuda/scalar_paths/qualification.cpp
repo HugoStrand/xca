@@ -4,6 +4,7 @@
 #include <triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>
 #include "../../../benchmarks/block_sparse_common/call_runner.hpp"
 #include <gtest/gtest.h>
+#include "precision.hpp"
 namespace {
   namespace gpu = triqs_xca::block_sparse::cuda;
   using block_sparse_bench::Gf;
@@ -117,4 +118,87 @@ TEST(ScalarPathQualification, MultipleFieldScalarSetRetainsGeneralRoute) {
   gpu::ScalarPathEvaluator candidate(model, poles, mesh);
   EXPECT_EQ(candidate.self_energy_storage_bound(), reference.self_energy_storage_bound());
   compare(candidate.compute_self_energy(G, topology), reference.compute_self_energy(G, topology));
+}
+
+TEST(ScalarPathQualification, ActiveOrderSixCutoffAndReallocatedInputs) {
+  auto ad = block_sparse_bench::atom(2, "occupation");
+  auto coeff = nda::zeros<nda::dcomplex>(1, 2, 2);
+  coeff(0, 0, 0) = 1.;
+  coeff(0, 1, 1) = 1.;
+  auto model = gpu::export_model(ad, coeff);
+  nda::vector<double> poles{0.};
+  block_sparse_bench::CallOptions options;
+  options.order = 6;
+  options.topology = "chain";
+  auto topology = block_sparse_bench::topology(options);
+  triqs_xca::backbone::Backbone backbone(topology, model.num_fields(), model.num_interactions());
+  long first = -1;
+  // Bounded metadata-only discovery; assert activity instead of assuming first=1.
+  for (long index = 0; index < std::min(4096L, backbone.num_flat_indices(poles.size())); ++index) {
+    auto counts = gpu::for_each_self_energy_path(model, poles, topology, std::vector<bool>(ad.n_subspaces(), true),
+                                                index, index + 1, [](auto &, auto const &) {});
+    if (counts.accepted != 0) {
+      first = index;
+      break;
+    }
+  }
+  ASSERT_GE(first, 0);
+  SCOPED_TRACE(first);
+  triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 10., 1e-10, false);
+  gpu::DiagramEvaluator reference(model, poles, mesh);
+  gpu::ScalarPathEvaluator candidate(model, poles, mesh);
+  auto G = block_sparse_bench::propagator(ad, mesh);
+  long double reference_relative = 0, candidate_relative = 0;
+  auto check_extended = [&](auto const &actual, auto const &expected, auto const &inputs) {
+    auto precise = scalar_path_experiment::extended_self_energy(model, inputs, poles, topology, first, first + 1);
+    long double signal = 0, reference_error = 0, candidate_error = 0;
+    for (long b = 0; b < actual.size(); ++b)
+      for (long t = 0; t < mesh.dlr_it().rank(); ++t) {
+        auto z = precise[b](t, 0, 0);
+        signal = std::max(signal, std::abs(z));
+        reference_error = std::max(reference_error, std::abs(triqs_xca::test_utils::precision::extended(expected[b].data()(t, 0, 0)) - z));
+        candidate_error = std::max(candidate_error, std::abs(triqs_xca::test_utils::precision::extended(actual[b].data()(t, 0, 0)) - z));
+      }
+    if (signal != 0) {
+      reference_relative = std::max(reference_relative, reference_error / signal);
+      candidate_relative = std::max(candidate_relative, candidate_error / signal);
+    }
+    // Order-six arithmetic accumulates >1e-13 relative error in both routes.
+    // Keep the older comparisons unchanged; qualify this new case independently.
+    EXPECT_LE(reference_error, 1e-12L * signal + 1e-30L);
+    EXPECT_LE(candidate_error, 1e-12L * signal + 1e-30L);
+  };
+  auto evaluate = [&](double amplitude) {
+    for (long b = 0; b < G.size(); ++b) G[b].data() = amplitude;
+    auto expected = reference.compute_self_energy_range(G, topology, first, first + 1);
+    auto actual = candidate.compute_self_energy_range(G, topology, first, first + 1);
+    check_extended(actual, expected, G);
+    EXPECT_GT(candidate.last_path_counts().accepted, 0);
+    EXPECT_EQ(candidate.last_contributing_paths(), reference.last_contributing_paths());
+    return reference.last_contributing_paths();
+  };
+  ASSERT_GT(evaluate(1.), 0);
+  ASSERT_EQ(evaluate(1e-4), 0);
+  // Locate the completed-path threshold using the real high-order arithmetic.
+  // Probe both sides with a stated margin, rather than claiming an exact boundary.
+  double low = 1e-4, high = 1.;
+  for (int step = 0; step < 24; ++step) {
+    double middle = (low + high) / 2;
+    if (evaluate(middle) == 0) low = middle;
+    else high = middle;
+  }
+  EXPECT_EQ(evaluate(low * (1. - 1e-4)), 0);
+  EXPECT_GT(evaluate(high * (1. + 1e-4)), 0);
+  // Keep old storage alive while supplying separately allocated, changed inputs.
+  auto changed = block_sparse_bench::propagator(ad, mesh);
+  for (long b = 0; b < changed.size(); ++b) changed[b].data() *= nda::dcomplex{.8, .1};
+  auto actual = candidate.compute_self_energy_range(changed, topology, first, first + 1);
+  auto expected = reference.compute_self_energy_range(changed, topology, first, first + 1);
+  check_extended(actual, expected, changed);
+  EXPECT_GT(candidate.last_contributing_paths(), 0);
+  EXPECT_EQ(candidate.last_contributing_paths(), reference.last_contributing_paths());
+  // Reusing the previous owner must not read stale data from the new allocation.
+  EXPECT_GT(evaluate(1.), 0);
+  std::cout << "Order-six relative error against long-double arithmetic: reference=" << reference_relative
+            << " candidate=" << candidate_relative << " active_index=" << first << '\n';
 }

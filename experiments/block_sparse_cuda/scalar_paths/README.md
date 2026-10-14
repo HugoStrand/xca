@@ -123,3 +123,22 @@ includes exact broadcast-versus-expanded GPU products, in-place updates and kern
 tails, plus the existing full evaluator, cutoff, ownership and fallback controls.
 Only unprofiled isolated paired runs support performance comparisons; GH200 remains
 the target and local timings do not select a production dispatch policy.
+
+## Active high-order arithmetic control
+
+`ActiveOrderSixCutoffAndReallocatedInputs` finds a structurally active index with a
+bounded CPU metadata search, then asserts nonzero arithmetic at ordinary amplitude.
+It brackets the completed-path cutoff with 24 bisection probes and checks both sides
+with a stated relative amplitude margin of 1e-4. It also retains the old input owner
+while evaluating separately allocated, changed inputs and then reuses the old owner.
+This is distinct from the target benchmark's zero-survival order-six window.
+
+The independent long-double scalar oracle in `precision.hpp` uses qualified path
+descriptors and the same cached double LU/rank/kernel constants. It diagnoses
+arithmetic; it does not independently validate connectivity or DLR approximation.
+At the sampled order-six index, both general and batched GPU arithmetic exceed the
+older 1e-13 comparison bound (about 4.28e-13/3.90e-13 relative to the oracle locally).
+The new case checks each route independently at 1e-12, keeping all older tolerances
+unchanged and requiring contributing-path count agreement. ULP-adjacent high-order
+cutoff guarantees, more topologies/poles and target validation of this new test remain
+open. No production promotion follows from this bounded qualification.
