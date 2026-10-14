@@ -1923,6 +1923,64 @@ keeping resident defaults and complete results. No new heuristic cutoff or autom
 post-submission fallback. New target work must respect shared100 GPU-hours/month and
 reuse staged Arm builds; this turn used no new allocation.
 
+### Native policies and bounded GH200 phase qualified (2026-10-14)
+
+Forced policy controls now compare streamed and original evaluators exactly for all
+four Library/Ordered × Reference/Mapped selections, dynamic interactions, NCA/OCA,
+SE/SPGF and selected first/middle/last indices. Native14 controls pass; library-only
+13 active plus one native-policy skip pass. Explicit RealBatch incompatibility is
+runtime-tested. Two new native controls pass memcheck, zero errors/leaks. These close
+the candidate's previously pending native policy gates, not its Python/MPI integration.
+
+A [bounded capacity probe](experiments/block_sparse_cuda/capacity_phase/README.md)
+(edb8b73) runs unchanged production convolution with a retained opposite-square tensor
+and32 MiB simulated operator reserve. Coefficients upload one host rank plane at a
+time. Independent long-double sums evaluate three spatial entries at every rank node,
+using the full inner/rank dimensions; other output entries are not independently checked.
+Acceptance is predeclared1e-11*sampled norm +1e-24, exact sampled replay, and completed
+scratch release to tables. It is a phase control, not an atom/model/complete solver.
+Host-only inventory, checked BLAS/byte extents, explicit budget rejection before large
+allocation, actual free-memory/headroom admission and a GH200/Slurm-only large guard
+are implemented. No relaxed-budget automatic retry. Local rank64 screens through512,
+small memcheck and negative guards pass. Reduced-screen hashes predating logging/extent
+hardening were not retained; final small tests/guards and target source are pinned.
+
+Arrhenius job3847180 (source edb8b73, recipe290d65f, GTest988ea2c) completed0:0 on n412.
+Both target CTests/fourteen active GoogleTests pass12.80 s. A reduced phase precedes
+one3432x3003x3432/rank64 phase, corresponding to N14 central/adjacent sector dimensions.
+Actual rank64 comes from lambda4000/eps1e-10/nonsymmetric nodes, without rank truncation.
+Large explicit payload90493714692 bytes (84.28 GiB), sampled global delta90503839744.
+Setup/upload21.031 s, independent oracle4.022 s, first/warm convolution1.756/1.691 s;
+large-process host MaxRSS467136 KiB (456.19 MiB). Sampled max error1.290e-22 at norm
+3.629e-10 (~3.55e-13 relative) passes; replay exact. Final scratch release passes.
+Observed device memory97871 MiB/95.58 GiB. [Target record](experiments/block_sparse_cuda/capacity_phase/Arrhenius_GH200/phase-01/README.md).
+
+This proves the expensive bounded phase fits/runs on target hardware. It does not prove
+complete physical N14 model construction, intended physical rank accuracy, all output
+entries, cutoff equivalence, full observable composition or whole Solver throughput.
+Complete host inputs/outputs/model are additional to the probe's small host plane.
+Global sampled delta is not a continuous/process-local peak. Keep these distinctions.
+
+One-GPU allocation elapsed138 s (.03833 nominal GPU-hours), fifteen-minute cap, at most
+six compiler workers; tracked cumulative1704 GPU-seconds (.47333 hours), including prior
+cancelled attempt. Preflight projinfo3.22 hours/30days was marked unreliable and includes
+other work, not this project's available budget. No pending job, install/shared-checkout
+update or prefix change. Source-only isolated staging normalizes timestamps before
+allocation; hashes, shell/scheduler checks and empty matching queue precede submission.
+The sbatch test-only ID3847166 was not a second allocation. Respect shared100 hours/month.
+
+Next integrate explicit resident, host-input/resident-fragment, and host-input/streamed-
+fragment memory choices into the production C++ evaluator, keeping resident default and
+current output-placement control. Consolidate shared operations rather than generating
+production from experiments. First freeze the current evaluator source used by retained
+experiments/baseline generators so later production changes cannot silently alter their
+semantics or break their checked seams. Preserve row counterexample and all experiments.
+Runtime-validate incompatible arena choices and budgets before uploads. Carry qualified
+phase bounds/error drains unchanged, then test CPU-only/native/library variants, complete
+API comparisons, consolidated bindings, mutable Solver preferences, archives/deepcopy and
+collective MPI failure/recovery. Target phase success is one gate toward this integration,
+not a completion claim or permission to drop complete-output checks.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

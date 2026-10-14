@@ -1,5 +1,66 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Native policies and GH200 large phase
+
+Previous turn was progress: two-slot fragment streaming qualified/benchmarked locally,
+with explicit recomputation cost. Added exact comparisons across Library/Ordered ×
+Reference/Mapped, dynamic interactions, NCA/OCA SE/SPGF and first/middle/last indices.
+Incompatible RealBatch arena selection runtime-tested. Native two CTests pass14.52 s,
+including14 active stream controls and the phase control. Library two pass11.15 s,
+stream13 active plus one native-policy skip. Two new native controls memcheck34.377 s,
+zero errors/leaks. CPU config omits both experiments; library native flags both OFF.
+No new broad-suite/Python/MPI claim. Existing lifetime/cache memcheck remains separate.
+
+Implemented capacity_phase probe: unchanged full production convolution, one retained
+opposite-square rank tensor and32 MiB operator reserve. Host coefficients staged one rank
+plane at a time. Independent long-double full inner/rank sums check three spatial entries
+at every node, predeclared1e-11*sampled norm+1e-24 screen, exact sampled replay and final
+scratch-release check. Other output entries not independently checked. Host-only dry-run,
+checked extents/BLAS limits, explicit-budget rejection before allocation, actual-free/
+headroom admission and GH200/Slurm guard for extents>512. Negative budget(status2), large-
+workstation(status1) and malformed-suffix(status1) cases verified without cap relaxation.
+Local rank64/lambda4000 sizes65/129/252/512 pass; at512 first/warm906.98/784.10 ms and
+explicit2181366020 bytes. Small13x9x11/rank64 memcheck zero errors/leaks. Size screens
+precede logging/BLAS-hardening patch; final small tests/guards use edb8b73, arithmetic
+unchanged. Old screen binary hash was not retained; provenance explicitly distinguishes.
+
+Read Arrhenius/Arrhenius-software skills and references; bounded SSH works. Fresh queue
+empty; GPU account association valid. Projinfo3.22 hours/30days marked unreliable, includes
+other work. Initial prefix test used lowercase config filename and returned1; verified
+actual TRIQSConfig.cmake before proceeding (no source/build failure). Staged pinned
+edb8b73/GTest988ea2c with normalized timestamps before transfer, source-only isolated
+root xca-block-sparse-edb8b73. Source/recipe hashes, bash syntax and remote sbatch-test-only
+pass. Test-only ID3847166 not an allocation. Submitted exactly one job3847180, one GPU,
+fifteen-minute cap, no CPU/memory overrides, build workers<=6. Minimal coherent Arm
+modules/reused installed TRIQS; no install/shared checkout or prefix changes.
+
+Job3847180 COMPLETED0:0 on n412, elapsed138 s. Both CTests pass12.80 s,14 active GoogleTests,
+including forced policies. Reduced129x128x127/rank64 passes, then large3432x3003x3432/rank64
+phase admitted and passes. Actual rank64 at lambda4000/eps1e-10, not truncated. Explicit
+90493714692 bytes/84.28 GiB, sampled global delta90503839744. Setup/upload21.031 s,
+independent oracle4.022 s, first/warm convolution1.756/1.691 s. Large wall28.72 s,
+MaxRSS467136 KiB/456.19 MiB; batch build/test MaxRSS2313472K. Sampled max error1.290e-22
+at norm3.629e-10 (~3.55e-13 relative), exact sampled replay and scratch-release pass.
+Observed GPU FB97871 MiB/95.58 GiB. This qualifies a bounded expensive phase, not full
+physical N14 atom/solver, all output entries, physical rank accuracy, cutoff policy,
+full-observable composition or whole Solver speed. Host functions/model are additional.
+
+Accounting138 GPU-seconds/.03833 nominal hours this turn; tracked cumulative1704 s/
+.47333 hours including prior cancelled attempt. Shared100-hour/month ceiling still covers
+other work; tracked total is not remaining balance. All job/step/session handles terminal,
+no local GPU workload overlapped target. No retry or cap relaxation. Codeedb8b73,
+recipe290d65f, evidence07eb35a; plan/log separate. Records in capacity_phase hardware
+subfolders and gh200_qualification/Arrhenius_GH200/capacity-01, source/binary hashes,
+logs/accounting/commands/raw CSVs and limits retained. Archive-only whitespace normalization
+records original hashes; README links and staged checks pass. Unrelated user work retained.
+
+Goal active. Next production memory-choice integration with resident default, host-input
+and streamed-fragment options, then consolidated bindings/Solver/MPI/archive qualification.
+First freeze original evaluator sources used by experiment generators to preserve all
+existing baselines and checked seams. No generating production from experimental source,
+heuristic cutoff band, hidden CPU replay or automatic post-submission fallback. GH200
+is target; local A4000 is only semantic/mechanism screen. No push/supervisor changes.
+
 ## 2026-10-14 — Two-slot correlator fragment streaming
 
 Previous turn was progress: host-backed inputs qualified and benchmarked, but retained
