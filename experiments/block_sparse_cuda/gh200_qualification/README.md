@@ -61,3 +61,10 @@ Its literal Slurm paths refer to `shared/qualification/xca-block-sparse-6987c4d`
 Prepare pinned GTest source and source-revisions.json as for the first snapshot.
 Remote syntax/scheduler checks, live queue/balance inspection and actual submission
 are still required; local preparation does not establish target qualification.
+
+`resident.sbatch` qualifies pinned snapshot 77f59ac in a separate directory. It reuses
+the installed Arm TRIQS stack, builds the resident-weight candidate and matched
+parity-hoisted CPU/GPU frontends, and runs nineteen candidate controls plus four
+production CUDA CTests before the four-case/36-sample resident campaign. One GPU,
+fifteen-minute cap (0.25 nominal GPU-hours); no install or shared-checkout update.
+Record actual job status and allocated time before claiming target qualification.
