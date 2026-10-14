@@ -522,3 +522,87 @@ one-time correlator full/single/range calls. Keep masked starting data, endpoint
 summation order and borrowed-operator cache lifetime safe. Then complete E2 admission
 and numerical gates before production bindings, MPI integration and optimization.
 No N=14 diagonalization, target GPU run, supervisor change, install or push occurred.
+
+## 2026-10-14 — E2 device SPGF and one-time correlators
+
+Code commit: `47f41c7` (`[bs] add CUDA correlator evaluation`). All three observable
+families now have C++ device reference paths. The implementation goal remains active:
+production bindings/MPI, complete capacity qualification and optimization gates remain.
+
+Added SPGF full/single/range calls, low-level sparse-endpoint correlator ranges and
+many-body-operator one-time correlator full/single/range overloads for real/complex
+atom_diag. Many-body endpoints are exported directly in Fock coordinates and their
+shared fermion parity is inferred/validated. Internal fields still use immutable
+model snapshots and the existing supported dynamic-operator domain.
+
+The right fragment uses left products and forward edge convolutions; the left
+fragment walks in reverse with sparse right products, opposite vertex kernel signs,
+right edge convolutions and device DLR reflection. Both empty-side cases are covered.
+Endpoint products form left * (O_mu * right) * O_kap, then nonconjugating device
+traces. Traces use the owned cuBLAS handle in device-result pointer mode, restoring
+host-scalar mode even on exceptions. Strided trace accumulation preserves mu/root/
+kappa order. An index-local tensor receives external fermion parity before ordered
+addition to the global result. Correlators have no self-energy magnitude cutoff.
+
+Every stored starting G block is uploaded, including masked tiny values; endpoint
+and post-internal-operator masks retain CPU semantics. A targeted scalar regression
+isolates a 1e-18 starting block's SPGF contribution and matches the exact CPU signal
+at relative 1e-13. Setting that block to zero removes the component exactly. Actual
+rectangular side functions replace padded side arrays. Conservative admission adds
+one all-sector function capacity to the SE bound, two correlator tensors and trace
+storage. It remains deliberately conservative and requires schedule-sensitive
+large-sector refinement; no practical N=14 capacity claim is made.
+
+Temporary endpoint snapshots must not leave address-based cache keys behind. A
+scope guard clears the one-entry sparse cache at correlation entry and exit, including
+exceptions; changed endpoints in reused temporary allocations are checked. Input,
+endpoint metadata, range/proposal arithmetic, statistics, shape and budget failures
+propagate without post-submission CPU replay. SPGF results exclude dynamic flavours
+from external legs. Empty ranges and low-level empty endpoint lists return shaped
+zero arrays, with current input/index validation.
+
+Numerical finding and investigation: one order-4 bosonic number-sector sample has
+CPU/CUDA difference 1.18587e-21 on a 1.71186e-9 signal (relative 6.93e-13), with identical
+exact Fock inputs. Changing only final trace reduction to CPU order left the difference
+essentially unchanged; serial narrow RHS solves reduced it to 7.1297e-22 but did not
+pass the original 1e-13 bound. Both temporary production probes were restored.
+The reusable arithmetic diagnostic in test_utils/correlator_precision.hpp uses
+independent long-double scalar products, triangular solves, rank transforms and
+endpoint traces with the SAME cached double LU/rank/kernel constants. It shares
+qualified connectivity metadata, so it is an arithmetic control, not an independent
+path/physical-DLR reference. A small well-conditioned cached-LU/convolution test
+checks its transpose/pivot convention independently against cppdlr.
+
+For that sample, the arithmetic control measures CPU error 8.22557e-22 (relative
+4.81e-13) and CUDA error 3.86884e-22 (relative 2.26e-13). This demonstrates a rounding
+floor in the CPU control as well. Existing order-1/2/3 controls retain relative 1e-13;
+added order-4 bosonic comparisons use 1e-12 against both CPU and long-double arithmetic.
+SPGF samples still use 1e-13. No general high-order/cancellation guarantee follows;
+qualification must grow with later experiment shapes/orders. Production CPU behavior
+and the default GPU solve/trace algorithms were not changed to fit the failing sample.
+The plan now records the evidence and explicit acceptance scope.
+
+Eight evaluator GoogleTests cover self-energy plus SPGF and bosonic/non-Hermitian
+correlators in scalar, number and mixed partitions, retarded channels, both branch
+traversals, empty sides, changed masks, split-range additivity, endpoint cache lifetime,
+real atom_diag/fermionic overloads, statistics/dimension/budget/range errors and recovery.
+Five device primitive tests include complex trace values, strided slots, no conjugation,
+pointer-mode restoration, alias/slot rejection and recovery.
+
+Verification: full CPU build and 75/75 CTest entries passed in 49.23 s; full CUDA build
+and 83/83 passed in 119.66 s. Final library-only CUDA focused tests passed 2/2 in 7.82 s
+with XCA_CUDA_SMALL=OFF. Isolated Compute Sanitizer memcheck/leak-check ran all eight
+evaluator tests with memory-bound assertions enabled and all five primitive tests:
+0 errors and 0 bytes leaked in both runs. Normal focused CUDA entries passed in
+7.80 s. `git diff --check` passed; unrelated user files are preserved.
+Logs: `/tmp/xca-bs-correlator-{cpu,cuda}-full-{build,test}.log`,
+`/tmp/xca-bs-correlator-library-final-{build,test}.log`,
+`/tmp/xca-bs-correlator-{memcheck,primitives-memcheck}.log`. Investigation logs:
+`/tmp/xca-bs-{trace,rhs,precision}-probe-{build,test}.log`; /tmp files may disappear.
+
+Next: constructors/registration usable through consolidated CUDA bindings, mutable
+Python block-sparse GPU selection and MPI numerical/error checks; benchmark complete
+calls and phase timings, refine host/device admission, then controlled dispatch/
+batching/layout/reuse experiments while preserving this reference. Target remains
+GH200-class hardware. No N=14 diagonalization/full evaluation, target GPU timing,
+quota-supervisor change, install or push was performed.

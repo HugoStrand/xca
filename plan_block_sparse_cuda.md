@@ -3,9 +3,9 @@
 Date: 2026-10-14. Status: implementation in progress. Exact sparse model packing,
 CPU path controls and a bounded workload inventory are implemented. Owned-stream
 rectangular CUDA products and DLR operations are qualified at the primitive level.
-A bounded self-energy device reference now passes small physical controls, including
-sampled orders 4/5 against exact-Fock CPU inputs. SPGF/correlator device traversals,
-integration and the remaining experiments below are still pending.
+A bounded device reference now covers self-energy, SPGF and one-time correlators
+on small physical controls. Production bindings/MPI integration, broader capacity
+qualification and the remaining experiments below are still pending.
 This replaces the earlier stub. Preserve the dense implementations,
 benchmarks and all existing experiments, including negative results.
 
@@ -323,6 +323,17 @@ CUDA-versus-exact-input CPU keeps `1e-13` through the sampled fifth order. This 
 limited qualification, not a general high-order cancellation guarantee or a reason
 to change the current production CPU path.
 
+Correlator observation (2026-10-14): an added order-4 bosonic sample differs by
+`1.186e-21` between CUDA and exact-input CPU on a `1.712e-9` signal. Independent
+long-double scalar arithmetic using the same cached double LU/rank/kernel constants
+finds CPU error about `4.8e-13` relative and CUDA error about `2.3e-13`. A CPU-order
+trace probe does not explain it; single-RHS solves reduce but do not eliminate it.
+Both probes were reverted. Order-1/2/3 device controls retain `1e-13`; added order-4
+bosonic controls use `1e-12` against both CPU and the arithmetic control. This control
+shares qualified connectivity descriptors, so it isolates arithmetic precision;
+it does not independently validate traversal or DLR approximation error. Larger
+orders/shapes and stronger cancellation still require qualification.
+
 Measure export cost, host RSS, bytes uploaded and changed-coefficient update cost.
 Decision: which structural representation is reliable and compact; kernel speed is
 not the only reason to retain exact sparse construction.
@@ -350,6 +361,17 @@ tables/RHS, kernel weights and a configurable sparse-workspace reserve; a global
 free-memory check adds headroom. Sampled free-memory deltas include other processes,
 so compare them with predictions only in isolated runs. Complete host/opaque-library
 peak qualification and larger shapes remain E0/E2 work.
+
+The initial correlator reference retains actual rectangular fragments (one function
+capacity per side), executes the reverse traversal and reflection on device, and
+forms sparse endpoint products followed by nonconjugating device traces. It uploads
+all stored starting-block values, including masked tiny inputs. Endpoint snapshots
+can be temporary, so their address-based operator cache is cleared on entry/exit,
+including exceptions. Index-local results receive parity before ordered global
+addition; no self-energy magnitude cutoff is imposed on correlators. The conservative
+correlator admission bound includes a third function capacity, two output tensors
+and trace storage. Its large-sector bound needs schedule-sensitive refinement before
+claiming practical N=14 execution on target hardware.
 
 ### E3 — Operator applications: maps, sparse libraries, dense products
 
