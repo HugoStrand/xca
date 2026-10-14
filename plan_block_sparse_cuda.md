@@ -1731,6 +1731,50 @@ The higher-order scalar cutoff policy remains unresolved: the earlier fixed-band
 candidate was disproved. NCA target success and this row primitive do not close that
 separate gate. Full target Python/MPI and full physical N14 capacity remain open.
 
+### Complete row-convolution result and next liveness gate (2026-10-14)
+
+The row primitive is now composed with a private complete evaluator, generated from
+production with checked seams (21e1100). Both edge orientations and correlator fragment
+edges use the row route; all current APIs and output policies remain available.
+The DLR bound is tables + one maximum rank tensor + five row strips; caller reserves
+remain conservative and unchanged. Ten inherited/additional controls pass in native
+and native-disabled CUDA (9.62/9.54 s); two focused controls pass memcheck, zero errors/
+leaks. CPU omits the experiment. These are focused C++ controls, not new Python/MPI
+or broad-suite qualification. Production is unchanged.
+
+The complete-call cutoff diagnostic disproves semantic equivalence: of 54 sampled
+probes, rank23/cap1 at scale 2.1680390464468913e-05 retains one reference contribution
+and drops it in the candidate. Output error equals the retained signal,
+1.0000000000000003e-16. A successful diagnostic process does not mean acceptance.
+Keep the counterexample and candidate, and do not promote this route or create a
+heuristic cutoff band. The earlier twelve primitive probes were insufficient.
+
+Five local complete-call cases, baseline/rows/independent allocation diagnostic,
+produce 35 samples. N10 number-sector OCA at rank23/cap16 lowers the explicit bound
+450012768 to 363953760 bytes (19.1%) but raises median call time 1116.00 to 1213.26 ms
+(8.7%). All ordinary-amplitude finite/CPU/repeatability screens and structural counts
+pass. Every sampled row case is slower. Sampled global free-memory changes are not
+continuous/process-local peaks; allocation caching can legitimately yield zero.
+Evidence: [complete-call record](experiments/block_sparse_cuda/convolution_rows/thinkstationP620_RTXA4000/evaluator-01/README.md).
+
+Metadata-only N14/r64 host-output OCA estimates fall 184.318 to 139.648 GiB with cap16,
+still above the observed target's 95.58 GiB. N14/r26 row estimate 56.751 GiB is not
+physical rank/accuracy or complete execution qualification. Therefore scratch chunking
+alone neither solves the actual capacity limit nor meets existing numerical semantics.
+
+Next prioritize a separate liveness experiment retaining original convolution shapes
+and arithmetic. Inspect completed solve/convolution scratch held across special vertices
+and the edge-local weighted propagator after coefficient conversion. Release only after
+its last queued read, on the owned stream; drain safely on errors. Preserve the baseline
+and row experiment. Initially keep conservative public bounds, then derive phase-specific
+bounds from actual SE and both correlator-fragment schedules, including stored fragments,
+complete outputs, operator replacement, RHS and opaque headroom. Qualify changed G,
+output placements and rejected-call recovery. Require exact baseline outputs/counts on
+ordinary and adjacent-cutoff probes, measure allocation-inclusive latency and live peaks,
+and only tighten admission after this evidence. If this still cannot fit target memory,
+qualify resident-input/fragment streaming separately without changing GEMM reduction
+shapes. No new Arrhenius job is justified by the failed row candidate.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

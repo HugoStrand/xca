@@ -1,5 +1,59 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Complete row-convolution capacity and cutoff audit
+
+Previous turn was progress: recorded GH200 NCA qualification and a private primitive
+row-chunking screen. Inspected current evaluator/DLR source and composed a private
+RowDiagramEvaluator with checked generation seams, preserving production and experiments.
+Routes both self-energy/correlator edge directions through the row primitive; configurable
+positive row cap, conservative seven caller tensors unchanged, DLR reserve tables +
+maximum full rank tensor + five strips. NCA omits inactive convolution scratch. Added
+ordinary changed-G/mask and both-output-placement comparisons, exact-budget admission,
+rejection then successful NCA recovery. Optional diagnostic samples memory while row
+buffers are live; ordinary timing leaves it off. No production/Python API changes.
+
+Ten complete evaluator controls (eight inherited, two new) pass native in 9.62 s and
+native-disabled in 9.54 s; both native flags remain OFF in library tree. CPU config/list
+omits the experiment. Focused memcheck two new controls passes 23.47 s, zero errors/leaks.
+Builds in independent trees; all GPU checks/campaigns sequential. Formatting followed by
+rebuild verified. Initial audit-target invocation needed reconfiguration to register the
+new target. An added positive global-memory-delta assertion failed (allocator caching
+can produce zero); removed the invalid assumption, preserving numerical/budget controls,
+rebuilt and repeated native/library checks. Complete failed/final logs retained.
+
+The complete-call cutoff diagnostic bisects physical OCA to adjacent scales, then probes
+nine neighbors at ranks23/28 and caps1/3/8. Final 54-probe replay reproduces one semantic
+failure: rank23/cap1, scale 2.1680390464468913e-05, reference contributes one path while
+candidate contributes none; reference norm/error 1.0000000000000003e-16. The diagnostic
+exits zero on complete recording, not on acceptance; this concrete counterexample blocks
+promotion. Existing twelve primitive probes agreeing on decisions did not prove safety.
+No cutoff change, heuristic band, hidden fallback or rank-specific promotion.
+
+Complete-call campaign uses the shared CPU-screened fixture and matching library sparse/
+reference special policies: number OCA N4/N6/N8/N10 plus mixed N6 SPGF, one selected
+index/topology, rank23. Three ordinary samples per route plus one separately sampled
+row diagnostic:35 rows, all process statuses zero, finite/CPU-screen/exact replay checks
+pass and ordinary structural counts agree. All row cases slower. N10 median baseline
+1116.00 ms vs rows1213.26 ms (+8.7%); explicit bound450012768 vs363953760 bytes (-19.1%).
+Sampled N10 row delta287309824 vs baseline343932928 bytes is not a continuous or process-
+local peak. Bounds/payload and noisy global allocation deltas reported separately.
+
+Metadata-only total-number capacity calculation (no N14 atom/GPU allocation) yields
+rank64 host-output OCA reference184.318 vs row-cap16 139.648 GiB; both exceed observed
+GH20095.58 GiB. Rank26 row56.751 GiB does not qualify physical accuracy/capacity.
+Therefore next work is exact-shape buffer lifetime/residency, rather than row promotion.
+Inspect retained convolution scratch across special vertices and edge weighted tensors
+past their last read, then separate phase bounds/fragment/input streaming as necessary.
+Require exact baseline/cutoff comparisons and measure allocation cost before promotion.
+
+Code21e1100 and evidence76697bd committed separately from this plan/log. Evidence under
+experiments/block_sparse_cuda/convolution_rows/thinkstationP620_RTXA4000/evaluator-01
+contains commands, binary hashes, raw samples, summaries, control/memcheck/build logs,
+cutoff CSV and capacity formulas. Archive-only whitespace normalization records original
+hashes; staged whitespace check passed. Goal remains active; no new target allocation
+(cumulative .435 nominal GPU-hours), install, push, supervisor or unrelated user changes.
+All handles terminal. GH200-class is target; A4000 is local mechanism/semantic screen.
+
 ## 2026-10-14 — GH200 NCA qualification and row-convolution screen
 
 The user restored SSH authentication; the bounded noninteractive probe then succeeded.
