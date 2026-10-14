@@ -1,5 +1,50 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Production configurations and MPI refresh
+
+Previous goal turn was progress: qualified six-tensor NCA reserve and boundedN10
+calls. Reconfigured/rebuilt alltargets CPU, nativeCUDA and separate library-onlyCUDA
+with binding regenerationOFF. CPU/native builds independent; library build overlapped
+compile only. CUDA tests serialized; MPI run only between completed GPU suites.
+All production CTest entries (-E '^experiments/') pass: CPU81/81 in50.52s, native
+CUDA91/91 in247.15s, library-onlyCUDA82/82 in156.27s. All32 registered Python entries
+included. Experimentaltargets compile but this refresh does not claim their full
+CTest suite. Existing scalar/NCA experiments were separately qualified previous turns.
+
+Current build-tree imports confirm CPU cuda/small/ordered/mapped=false, nativealltrue,
+library-only cuda=true with small/ordered/mapped=false. Python block-sparse7methods
+pass on bothCUDA configurations withoutskips; CPUskips6. Backend14-method suite
+skips7onCPU/3onlibrary-only. CPUdisabled GPU entries do not establish device execution.
+Two MPIranks eachpass7 block-sparse methods119.179s, launcher0: observables/dynamic
+channels/archives, nativeavailability, collective setup/count/evaluation errors,
+host-placement recovery and NCA/OCA transitions. InheritedX11 authorization messages
+remain but unittest/launcher succeed. No competing localGPU jobs during tests/MPI.
+
+Documented host-only preflight/six-tensor NCA in userAPI docs24ed62d. Qualification
+artifacts in experiments/block_sparse_cuda/production_qualification/localproduction-01:
+exact testlists, CTest summaries, focusedPython/MPI transcripts, capability/source/log
+hashes. Full /tmp/xca-bs-production-* logs may disappear. Artifact JSON parser initially
+encountered TRIQS startup warning before JSON; parsed the JSONline and completed the
+fresh unpublished evidencecommit before this checkpoint. Qualified code82ec8cc;
+subsequent API-doc change does not alter binaries. No generated source/unrelated
+changes, installs or push. All process handles terminal; no target hours, cumulative
+.27556GPU-hours unchanged. Goal remains active.
+
+Promotion review against current evidence: retain Library default and explicit Ordered/
+Mapped routes; initialGH200larger number-sector cases support Ordered but do not define
+a universal threshold. Keep compactDLR/topologyNCA/host-sector output production
+policies with their qualified complete-output/admission contracts. Scalar variants
+remain private: fixed1e-26 cutoff replay band is not a proved error envelope across
+ranks/orders/conditioning/cancellation, and GH200 resident cohort still favors matched
+CPU in allfourcases. Do not change automatic dispatch from A4000 gains or expose an
+unqualified scalar route merely because existing controls pass. All experimental
+code/results remain for further work. No new claim of fullN14 physical rank/capacity.
+
+Next close the scalar numerical-promotion gate with a conservative replay/error policy
+and bounded adversarial tests, then a capped target finalist comparison if justified.
+Large convolution capacity remains open; production fullqualification is refreshed,
+not completion of optimized integration or the full persistent objective.
+
 ## 2026-10-14 — Six-tensor NCA liveness qualification
 
 Previous goal turn was progress: production host-only preflight exposed rank sensitivity.

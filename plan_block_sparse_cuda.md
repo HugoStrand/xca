@@ -259,6 +259,31 @@ CPU/CUDA/Python/MPI checks next and resolve scalar promotion/defer policy using
 numerical/target evidence. Larger convolution capacity requires separate work.
 Target cumulative .27556GPU-hours unchanged this step; goal remains active.
 
+### 2026-10-14 — Production refresh and promotion review
+
+All targets rebuilt; production CTest excludes experimental entries and passes CPU81,
+nativeCUDA91 and library-onlyCUDA82. All32 Python entries included. TwoMPIranks each
+pass7 block-sparse methods; imported capabilities match configurations. No new target
+allocation or generated binding changes. Evidence in production_qualification/local
+production-01; API docs now describe host-only planning and NCA six-tensor reserve.
+
+| Route/policy | Current decision and limit |
+| --- | --- |
+| Exact CSR and Library | Retain default, qualified all current observables/domain. |
+| Ordered/Mapped | Retain explicit opt-in; target samples do not define automatic crossover. |
+| Compact DLR/NCA admission | Retain qualified production liveness bounds; physical14-mode capacity remains distinct. |
+| Host-sector SE output | Retain explicit complete-output policy and independent host budget. |
+| Scalar batching/residency/events | Keep private while closing conservative cutoff-error/replay policy; target matchedCPU wins all four resident cases. |
+| Topology reuse/graphs | Preserve experiments; further work conditional on complete-call/target evidence and capture-safe lifetimes. |
+
+Adversarial check: passing adjacent-cutoff controls cannot prove a fixed absolute
+replay band for arbitrary ranks/orders/conditioning/cancellation. Do not promote by
+loosening tolerances or infer GH200 policy from A4000 wins. Next develop/qualify a
+conservative scalar replay/error policy before optimized integration; bounded target
+finalist comparisons must answer a concrete promotion question. Larger convolution
+capacity/full physical14-mode execution remain open. Keep the whole objective active;
+this production refresh is a verification milestone, not completion.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
