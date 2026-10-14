@@ -384,6 +384,20 @@ numerical results plus rank-local setup/count/compute failures and recovery.
 Library-only CUDA builds work with native CUDA-small disabled. This integration
 does not select optimized dispatch or establish target-hardware throughput.
 
+Complete-call checkpoint (2026-10-14): the shared bounded benchmark now records
+unchanged CPU and CUDA-reference calls for all observables and ordinary/retarded
+models. The [local baseline](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/README.md)
+contains 30 successful processes and 82 raw samples, including a zero-survival
+six-mode occupation window. The eight-mode number case is approximately at parity
+(245 ms CPU / 265 ms CUDA). A single measured ten-mode number-sector evaluation
+(maximum dimension 252) takes 7.01 s CPU / 1.14 s CUDA, whereas ten-mode scalar
+sectors take 1.02 s CPU / 5.60 s CUDA. These are first-index crossing windows,
+not full-sum or target-hardware results; ten-mode cases have only one repetition.
+The large-sector ratio still needs the E5 algorithm-matched CPU control before
+attributing it to device execution. Small-sector work should prioritize launch,
+packing and DLR amortization rather than selecting sparse products from these
+complete-call timings alone. Detailed phase/launch profiling is still pending.
+
 ### E3 — Operator applications: maps, sparse libraries, dense products
 
 For left and right products compare:
@@ -589,8 +603,9 @@ measurements. Prefer a few explainable routes over an unstable large tuning tabl
 6. Repeat finalists on GH200-class hardware, publish measured capability/crossover
    tables and revise the implementation plan before committing to production dispatch.
 
-The present deliverable is this reviewed experiment plan, not an assertion that a
-block-sparse CUDA backend or a 14-mode production workload has been qualified.
+The operational small-system reference and its local qualification are checkpoints
+toward the implementation goal. Optimized dispatch, target-hardware qualification
+and a 14-mode production workload remain unqualified.
 
 ## 8. Adversarial review
 

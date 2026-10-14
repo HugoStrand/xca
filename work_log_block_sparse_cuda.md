@@ -676,3 +676,64 @@ libraries, rank/RHS grouping, layouts, dispatch, batching and topology reuse/gra
 in separate experimental folders. Keep all dense baselines/experiments. GH200-class
 hardware remains the target; no target run or N=14 diagonalization/full evaluation
 was performed. No supervisor reconfiguration, install, history squash or push.
+
+
+### 2026-10-14 — Bounded complete-call baseline
+
+Goal remains active. Added shared complete-call fixtures/timers and separate CPU /
+CUDA benchmark factories, with independent CMake targets under benchmarks. Generic
+methodology lives at the respective roots; raw results and paired comparisons use
+thinkstationP620_RTXA4000 subdirectories. Existing dense experiments are preserved.
+Code commit: d79e8d7 [bench] time block-sparse reference calls. Measured results:
+0944108 [bench] record block-sparse call baseline. This checkpoint is a separate
+plan/work-log commit.
+
+The CLI bounds actual modes to 2–10, orders to 1–10, index-window size to 1–8 and
+samples to 1–5. It supports explicit crossing/chain topologies, all observables and
+ordinary/retarded models, with physical Fock-basis propagators. It separates model
+preparation, evaluator construction and complete synchronous API calls; flattening
+and CSV output are outside call timing. CUDA first checks unchanged CPU results;
+finite checks and exact deterministic replay are required. Screening uses
+1e-10*max(CPU norm, GPU norm)+1e-14 and reports observed errors, rather than changing
+strict evaluator test tolerances. CPU rows have no independent comparison and
+zero error fields by definition. Device free-memory samples are not complete peak
+qualification. CPU numerical-control timing includes flattening and is not the
+paired baseline; the separate CPU frontend supplies the baseline.
+
+Recorder validates folder names and positive finite timeout, runs CPU/GPU cases
+sequentially, checkpoints raw rows/manifests after each process, retains failures
+and refuses overwriting campaigns. Provenance pins source/binary/header hashes,
+compiler, git revision/status, TRIQS prefix, GPU/CPU metadata and exact commands.
+It retains preexisting user changes in the manifest rather than pretending the
+entire tree was clean. No unrelated files were staged.
+
+Verification: CPU-only configure/build and a dynamic SPGF two-index/two-sample
+smoke passed; CUDA paired frontends built and a dynamic chain correlator smoke
+passed. Invalid oversized count and NaN timeout rejected. Recorder syntax checked
+without generating repository bytecode. The isolated reference-01 campaign completed
+all 30 processes, 15 paired workloads and 82 samples successfully. All CUDA screening
+checks and deterministic repetitions passed. No production evaluator was changed,
+so the previous complete CPU/CUDA/MPI qualification remains the core checkpoint.
+
+Results: small four-mode calls take roughly 1.2–1.8 ms on CPU and 18.5–56.3 ms on
+CUDA. The zero-signal six-mode occupation order-three window is retained (0 accepted
+paths, 0.74/1.96 ms CPU/CUDA). Eight-mode number sectors are near parity at 244.83 /
+265.30 ms. Ten-mode number sectors (maximum 252) take 7008.67 / 1142.76 ms, but
+that case has only one measured repetition and the CPU uses unchanged convolution.
+Ten-mode scalar blocks take 1021.28 / 5603.63 ms. Relative errors for the two nonzero
+six-mode higher-order controls are 3.25e-13 and 2.43e-13; remaining nonzero cases
+are below 2e-14. These pass the declared screening gate, not an assertion of a
+universal 1e-13 high-order bound. No target-hardware result or full Solver speedup
+is inferred from selected indexed evaluations.
+
+Next: isolate E3 operator/format/packing costs and establish the E5 hoisted CPU
+convolution control, then test bounded ready-work batching/fusion for scalar and
+mixed regimes. Refine schedule-sensitive capacity before larger correlators and
+N=14 proxies. Keep the current CUDA reference and unchanged CPU controls available;
+GH200 remains the performance target. Plan updated with observations and pending
+gates. No install, push, supervisor change or N=14 diagonalization was performed.
+
+Logs: /tmp/xca-bs-call-{cpu-configure,cpu-build,final-build,campaign}.log,
+/tmp/xca-bs-call-{cpu-smoke,smoke}.csv. Persistent campaign artifacts are in
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/reference-01. Temporary
+logs may disappear. git diff --check passed.
