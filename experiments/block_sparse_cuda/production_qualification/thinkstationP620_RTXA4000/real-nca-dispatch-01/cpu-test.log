@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild
+Test project /home/hugstr/dev/xca/cbuild
+    Start 14: block_sparse/cuda_nca_dispatch
+1/2 Test #14: block_sparse/cuda_nca_dispatch ...   Passed    0.01 sec
+    Start 16: block_sparse/cuda_real_nca
+2/2 Test #16: block_sparse/cuda_real_nca .......   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.03 sec
