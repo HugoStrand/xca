@@ -660,6 +660,23 @@ promotion: threshold-adjacent contribution tests, larger symmetry-set sums,
 correlator batching, lifecycle/budget/changed-address gates, matched CPU full calls
 and GH200 evidence. Retain all general/reference/experimental paths.
 
+Scheduler qualification checkpoint (2026-10-14): four additional independent
+[scalar-path tests](experiments/block_sparse_cuda/scalar_paths/qualification.cpp)
+now pass alongside the eight inherited cases. They cover more than 512 accepted
+paths with a non-full tail and split-range additivity; in-place complex G changes,
+changed masks and all-zero inputs; adjacent NCA completed-path cutoff values;
+extra workspace rejection before submission and a zero-budget-admission empty
+range; and multi-field scalar symmetry sets retaining general execution. Focused
+memcheck/leak-check passes all four cases with zero errors/leaked bytes.
+
+Cutoff probes use actual reconstructed hybridization factors rather than assuming
+an exactly representable analytic half, and keep input masks live while crossing
+the completed-output threshold. NCA has no convolution, so this establishes policy
+and accumulation behavior, not every higher-order rounding-boundary case. Matched
+batched-CPU complete calls, higher-order threshold sensitivity, multi-field/correlator
+batching and production/Python/MPI promotion remain pending. No benchmark or target
+dispatch claim changes from these added tests.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused

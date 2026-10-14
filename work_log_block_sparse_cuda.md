@@ -1269,3 +1269,52 @@ Logs: /tmp/xca-bs-scalar-path-{configure,build,test,cpu-configure,memcheck,campa
 clean-campaign}.log; /tmp/xca-bs-scalar-path-{tail-smoke,large-smoke,component-test}.csv.
 Persistent code experiments/block_sparse_cuda/scalar_paths; corrected paired data
 benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-path-02.
+
+
+### 2026-10-14 — Independent scalar scheduler semantic gates
+
+Previous turn made progress by implementing and qualifying the bounded scalar
+candidate plus corrected inclusive full-call evidence. Goal remains active. This
+turn adds independent promotion gates, not merely implementation-mirroring tests.
+4a3b5a4 [bench] qualify scalar scheduler semantics adds four qualification cases to
+the private evaluator test executable; production files/bindings are unchanged.
+
+A six-mode scalar OCA range with 640 accepted paths crosses the 512-cohort boundary
+and leaves a tail. It compares numerical results and contributing/discovery counts
+against production native, then checks split-range sums. Complex in-place G scaling,
+a dead block and all-zero inputs verify fresh data/masks and empty discovery.
+A separate budget case uses candidate bound minus one byte, verifies rejection
+with zero sampled memory delta/accepted count, permits an empty range, and recovers
+through a correctly admitted instance. Multi-field retarded scalar symmetry sets
+have identical connection rows but multiple mu/kappa members; the candidate reports
+no extra scalar workspace and matches retained general execution.
+
+The NCA cutoff case keeps all input blocks live and probes adjacent representable
+values below/on/above the actual completed-path boundary. Each path's output must
+be excluded at maxabs<=1e-16 even if adding paths would exceed that threshold, and
+accepted above; numerical results/contributing counts match the native reference.
+Initial assumptions caused two fixture failures, not candidate mismatches: zero-pole
+hybridization is reconstructed through DLR and differed slightly from exact 0.5,
+so nominal amplitude2e-16 was already above cutoff; a 1e-20 constant did not produce
+the intended multi-field connection set in operator construction. The corrected
+fixture derives boundary from actual reconstructed values and uses a resolvable
+1e-8 constant for the grouping test, without modifying production grouping/export
+behavior or tolerances. NCA excludes convolution; higher-order rounding boundary
+qualification is still needed, not inferred from this case.
+
+Final CUDA build and all 12 GoogleTests pass (CTest1/1,8.27s). Focused memcheck+full
+leak check on the four new cases passes in17.9s with0errors and0bytes leaked. Existing
+numerical tolerance for these exact scalar/reference comparisons is relative1e-13
+plus1e-30; no production/inherited gate was loosened. No full solver suite repeated
+because this turn changes only experiment qualification. Prior production full
+CPU/CUDA/no-native/MPI checks and all experiment data remain available.
+
+Next: matched full batched-scalar CPU control, higher-order cutoff sensitivity and
+remaining ownership/address/irregular special/correlator gates before production
+promotion. Then qualify any selector in full builds and MPI; continue wider memory,
+topology sharing and GH200 work. Goal not complete. No install/push/supervisor/user
+work edits. Generic candidate README and plan updated; documentation checkpoint
+separate from code; git diff --check passed.
+
+Logs: /tmp/xca-bs-scalar-qualification-{configure,build,test,memcheck}.log.
+Persistent qualification source: experiments/block_sparse_cuda/scalar_paths/qualification.cpp.

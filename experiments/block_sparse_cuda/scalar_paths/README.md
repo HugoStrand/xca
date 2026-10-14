@@ -27,8 +27,10 @@ zero-survival windows. The additional conservative workspace is admitted/reporte
 before input upload; host metadata/opaque allocations are not complete peak admission.
 
 The private class exposes the same API. Its test executable runs the unchanged eight
-CUDA evaluator tests against it. Additional multi-cohort/tail benchmarks compare
-CPU and require exact GPU replay. No Python/MPI selector exposes this candidate.
+CUDA evaluator tests against it. Four independent qualification tests also cover multi-cohort/tail range sums,
+changed data/masks, adjacent NCA cutoff values, additional-workspace rejection
+before submission, empty ranges and multi-field scalar-set general execution.
+Additional multi-cohort/tail benchmarks compare CPU and require exact GPU replay. No Python/MPI selector exposes this candidate.
 
 ```bash
 source ~/env/xca-cuda.sh
@@ -46,6 +48,6 @@ python3 benchmarks/block_sparse_common/run_calls.py \
 Generic definitions stay here; shared hardware/campaign results use the benchmark
 backend folders, with paired comparisons in block_sparse_common. The retained native,
 library, unchanged/matched CPU and edge experiments remain available. Full-candidate
-CPU batching, irregular special sets/correlators, threshold-adjacent paths, wider shapes,
+CPU batching, irregular special sets/correlators, higher-order cutoff-adjacent paths, wider shapes,
 changed-address ownership and target dispatch remain pending. Selected-index speedups
 do not establish complete Solver/topology-sum throughput or N=14 qualification.
