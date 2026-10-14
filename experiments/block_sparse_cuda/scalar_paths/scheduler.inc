@@ -4,12 +4,19 @@ std::size_t scalar_replayed_lanes = 0;
 #include "../scalar_cutoff/replay.inc"
 #endif
 bool scalar_eligible() const {
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+  return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; });
+#else
   return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })
      && std::all_of(model.sets().begin(), model.sets().end(), [](auto const &set) { return set.size() == 1; });
+#endif
 }
 std::size_t scalar_extra_bound() const {
   if (!scalar_eligible()) return 0;
   auto bound = checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1));
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+  bound = checked_add(bound, tensor_bytes(r, 3 * 512, 1));
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
   // General replay owns an extra copy of G and one returned scalar lane.
   bound = checked_add(bound, checked_add(tensor_bytes(r, model.dimensions().size(), 1), tensor_bytes(r, 1, 1)));

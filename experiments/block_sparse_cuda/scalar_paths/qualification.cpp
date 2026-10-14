@@ -116,7 +116,11 @@ TEST(ScalarPathQualification, MultipleFieldScalarSetRetainsGeneralRoute) {
   nda::array<int, 2> topology{{0, 1}};
   gpu::DiagramEvaluator reference(model, poles, mesh);
   gpu::ScalarPathEvaluator candidate(model, poles, mesh);
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+  EXPECT_GT(candidate.self_energy_storage_bound(), reference.self_energy_storage_bound());
+#else
   EXPECT_EQ(candidate.self_energy_storage_bound(), reference.self_energy_storage_bound());
+#endif
   compare(candidate.compute_self_energy(G, topology), reference.compute_self_energy(G, topology));
 }
 

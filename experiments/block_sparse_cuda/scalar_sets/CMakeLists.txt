@@ -1,0 +1,21 @@
+if(NOT TARGET block_sparse_scalar_constants_evaluator)
+  return()
+endif()
+set(scalar_dir "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_paths")
+set(generated_dir "${PROJECT_BINARY_DIR}/benchmarks/experiments/block_sparse_cuda/scalar_paths")
+add_library(block_sparse_scalar_sets_evaluator STATIC "${generated_dir}/scalar_evaluator.cpp")
+target_include_directories(block_sparse_scalar_sets_evaluator PUBLIC "${generated_dir}"
+  "${PROJECT_SOURCE_DIR}/c++/triqs_xca/block_sparse/cuda" PRIVATE "${scalar_dir}")
+target_compile_definitions(block_sparse_scalar_sets_evaluator PRIVATE XCA_EXPERIMENT_SCALAR_FANIN
+  XCA_EXPERIMENT_SCALAR_ARENA XCA_EXPERIMENT_SCALAR_CONSTANTS XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY XCA_EXPERIMENT_SCALAR_SETS)
+target_link_libraries(block_sparse_scalar_sets_evaluator PUBLIC ${PROJECT_NAME}::${PROJECT_NAME}_c block_sparse_scalar_edge_kernels)
+add_executable(block_sparse_scalar_sets_benchmark "${scalar_dir}/block_sparse_scalar_arena_benchmark.cpp")
+target_compile_definitions(block_sparse_scalar_sets_benchmark PRIVATE XCA_EXPERIMENT_SCALAR_CONSTANTS XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY XCA_EXPERIMENT_SCALAR_SETS)
+target_link_libraries(block_sparse_scalar_sets_benchmark PRIVATE block_sparse_scalar_sets_evaluator ${PROJECT_NAME}_warnings)
+if(Build_Tests)
+  add_executable(block_sparse_scalar_sets_tests "${generated_dir}/scalar_path_tests.cpp"
+    "${scalar_dir}/qualification.cpp" "${scalar_dir}/fanin_order.cpp" "${scalar_dir}/constants_layout.cpp" qualification.cpp)
+  target_compile_definitions(block_sparse_scalar_sets_tests PRIVATE XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY XCA_EXPERIMENT_SCALAR_SETS)
+  target_link_libraries(block_sparse_scalar_sets_tests PRIVATE block_sparse_scalar_sets_evaluator ${PROJECT_NAME}_test_utils gtest_main)
+  add_test(NAME "experiments/block_sparse_cuda/scalar_sets" COMMAND block_sparse_scalar_sets_tests)
+endif()

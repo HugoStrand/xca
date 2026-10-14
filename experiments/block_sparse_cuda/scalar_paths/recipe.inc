@@ -29,6 +29,15 @@
     vertex_batch(v);
     edge_batch(v);
   }
+  auto special_batch = [&] {
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+    std::size_t width = 0;
+    for (auto const &entry : work) width = std::max(width, model.sets()[entry.second.zero_set].size());
+    if (width > 1) {
+#include "../scalar_sets/special.inc"
+      return;
+    }
+#endif
   apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
     int field         = model.sets()[path.zero_set][0];
     bool forward      = !backbone.has_vertex_dag(0);
@@ -48,6 +57,8 @@
     auto const &block = model.field(field, forward).blocks[path.propagator_blocks[special - 1]];
     return block.values.empty() ? Complex{0.} : block.values[0];
   });
+  };
+  special_batch();
   for (int v = special + 1; v < 2 * m; ++v) {
     edge_batch(v - 1);
     vertex_batch(v);
