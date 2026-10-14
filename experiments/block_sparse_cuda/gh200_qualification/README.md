@@ -135,3 +135,17 @@ single-process-lifetime twelve-method run. No shapes, tolerances or scientific
 cases are changed to make a cohort fit. Timed diagnostic stack dumps may appear
 in otherwise successful suites; unittest assertions and final exit status decide
 pass/fail.
+
+## Fresh-process timing
+
+`run_cohort.py --process-repetitions 3` starts a new subprocess for each repetition,
+backend and case. `--samples` controls samples **within** each process (default3).
+Use repeated `--case`/`--backend` to declare a bounded subset without changing its
+scientific inputs. Backends are interleaved within each repetition. Defaults retain
+the previous single-process case set and raw filenames; multiple repetitions add
+`-processN` filenames. Samples carry process-repetition IDs, and `processes.csv`
+records PIDs, control/reported-backend labels, per-process median latency and setup.
+Raw stdout/stderr and exact commands remain in the manifest. A timeout kills and
+waits for that child, retains its output, and stops the cohort. New records distinguish
+child return status from a recorder parse failure. Three samples from one PID must
+not be described as three fresh-process repetitions.

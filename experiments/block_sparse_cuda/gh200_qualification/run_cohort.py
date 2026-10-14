@@ -5,9 +5,11 @@ import csv
 import hashlib
 import io
 import json
+import math
 import os
 from pathlib import Path
 import platform
+import statistics
 import subprocess
 import time
 
@@ -18,6 +20,10 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
     parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams', 'real_nca'], default='initial')
+    parser.add_argument('--process-repetitions', type=int, choices=range(1, 4), default=1)
+    parser.add_argument('--samples', type=int, choices=range(1, 6), default=3)
+    parser.add_argument('--case', action='append', help='Select named cases without changing their scientific inputs')
+    parser.add_argument('--backend', action='append', help='Select named backend controls')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -112,54 +118,95 @@ def main():
             ('n4-oca-fallback', 4, 'occupation', 'se', 2, False, 0, 1, 'crossing'),
             ('n4-number-fallback', 4, 'number', 'se', 1, False, 0, 1, 'crossing'),
         ]
+    if args.case:
+        if set(args.case) - {case[0] for case in cases}:
+            parser.error('Unknown case selection')
+        cases = [case for case in cases if case[0] in args.case]
+    if args.backend:
+        if set(args.backend) - binaries.keys():
+            parser.error('Unknown backend selection')
+        binaries = {key: value for key, value in binaries.items() if key in args.backend}
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
                     cohort=args.cohort,
                     host=platform.node(), platform=platform.platform(),
-                    job_id=os.environ.get('SLURM_JOB_ID'), samples_per_case=3,
+                    job_id=os.environ.get('SLURM_JOB_ID'), samples_per_case=args.samples,
+                    process_repetitions=args.process_repetitions,
                     timeout_per_process_seconds=120, cases=[],
                     runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                     binaries={key: dict(path=str(binary.resolve()),
                               sha256=hashlib.sha256(binary.read_bytes()).hexdigest())
                               for key, binary in binaries.items()})
     args.output.mkdir(parents=True, exist_ok=False)
-    rows = []
+    rows, processes = [], []
     env = dict(os.environ, OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
-    for name, modes, partition, observable, order, dynamic, first, count, topology in cases:
-        for backend, binary in binaries.items():
-            command = [str(binary.resolve()), '--modes', str(modes), '--partition', partition,
-                       '--observable', observable, '--order', str(order), '--first', str(first),
-                       '--count', str(count), '--topology', topology, '--samples', '3']
-            if dynamic:
-                command.append('--dynamic')
-            start = time.monotonic()
-            record = dict(name=name, backend=backend, command=command)
-            try:
-                result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=120)
-                record['returncode'] = result.returncode
-                (args.output/f'{name}-{backend}.csv').write_text(result.stdout)
-                (args.output/f'{name}-{backend}.log').write_text(result.stderr)
-                if result.returncode == 0:
-                    data = list(csv.DictReader(io.StringIO(result.stdout)))
-                    if len(data) != 3:
-                        raise ValueError('Unexpected sample count')
-                    rows.extend(dict(case=name, **row) for row in data)
-            except subprocess.TimeoutExpired as error:
-                record['timeout'] = True
-                for suffix, content in [('csv', error.stdout), ('log', error.stderr)]:
-                    if content:
-                        (args.output/f'{name}-{backend}.{suffix}').write_bytes(
-                            content if isinstance(content, bytes) else content.encode())
-            record['elapsed_seconds'] = time.monotonic()-start
-            manifest['cases'].append(record)
-            (args.output/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
-            if rows:
-                with (args.output/'samples.csv').open('w', newline='') as stream:
-                    writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
-                    writer.writeheader()
-                    writer.writerows(rows)
-            print(name, backend, record.get('returncode', 'timeout'), flush=True)
-            if record.get('returncode') != 0:
-                raise SystemExit('Stop cohort on failure; inspect retained logs before retrying')
+    for case in cases:
+        name, modes, partition, observable, order, dynamic, first, count, topology = case
+        for repetition in range(args.process_repetitions):
+            for backend, binary in binaries.items():
+                command = [str(binary.resolve()), '--modes', str(modes), '--partition', partition,
+                           '--observable', observable, '--order', str(order), '--first', str(first),
+                           '--count', str(count), '--topology', topology, '--samples', str(args.samples)]
+                if dynamic:
+                    command.append('--dynamic')
+                start = time.monotonic()
+                record = dict(name=name, backend=backend, repetition=repetition, command=command)
+                stem = f'{name}-{backend}' + (f'-process{repetition}' if args.process_repetitions > 1 else '')
+                try:
+                    with subprocess.Popen(command, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                        record['pid'] = process.pid
+                        try:
+                            stdout, stderr = process.communicate(timeout=120)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            stdout, stderr = process.communicate()
+                            record['timeout'] = True
+                        record['returncode'] = process.returncode
+                        record['child_returncode'] = process.returncode
+                    (args.output/f'{stem}.csv').write_text(stdout)
+                    (args.output/f'{stem}.log').write_text(stderr)
+                    if record['returncode'] == 0:
+                        data = list(csv.DictReader(io.StringIO(stdout)))
+                        if len(data) != args.samples:
+                            raise ValueError('Unexpected sample count')
+                        latencies = [float(row['call_ms']) for row in data]
+                        if any(not math.isfinite(value) or value < 0 for value in latencies):
+                            raise ValueError('Invalid call timing')
+                        rows.extend(dict(case=name, process_repetition=repetition, **row) for row in data)
+                        processes.append(dict(case=name, backend=backend, repetition=repetition, pid=record['pid'],
+                                              samples=len(data), median_call_ms=statistics.median(latencies),
+                                              reported_backend=data[0].get('backend'),
+                                              evaluator_setup_ms=data[0].get('evaluator_setup_ms')))
+                except (ValueError, KeyError, OSError) as error:
+                    record['parse_error'] = str(error)
+                    record['returncode'] = 1
+                record['elapsed_seconds'] = time.monotonic()-start
+                manifest['cases'].append(record)
+                (args.output/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+                if rows:
+                    with (args.output/'samples.csv').open('w', newline='') as stream:
+                        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+                        writer.writeheader()
+                        writer.writerows(rows)
+                if processes:
+                    with (args.output/'processes.csv').open('w', newline='') as stream:
+                        writer = csv.DictWriter(stream, fieldnames=list(processes[0]))
+                        writer.writeheader()
+                        writer.writerows(processes)
+                    summaries = []
+                    for key in sorted({(p['case'], p['backend']) for p in processes}):
+                        group = [p for p in processes if (p['case'], p['backend']) == key]
+                        medians = [p['median_call_ms'] for p in group]
+                        middle = statistics.median(medians)
+                        summaries.append(dict(case=key[0], backend=key[1], fresh_processes=len(group),
+                            median_call_ms=middle, min_process_median_ms=min(medians), max_process_median_ms=max(medians),
+                            mad_process_median_ms=statistics.median(abs(x-middle) for x in medians)))
+                    with (args.output/'summary.csv').open('w', newline='') as stream:
+                        writer = csv.DictWriter(stream, fieldnames=list(summaries[0]))
+                        writer.writeheader()
+                        writer.writerows(summaries)
+                print(name, backend, record.get('returncode', 'timeout'), flush=True)
+                if record.get('returncode') != 0:
+                    raise SystemExit('Stop cohort on failure; inspect retained logs before retrying')
 
 
 if __name__ == '__main__':
