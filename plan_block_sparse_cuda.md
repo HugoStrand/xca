@@ -15,6 +15,32 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Target Python and split MPI checkpoint
+
+Pinned source7b5d223/runtime85ecb2d now builds the three required Python extensions
+on GH200/Arm GCC14.3/Python3.13.5, with build-tree origin and native capability checks.
+Both target Python CTests pass65.63s, including all12 active block-sparse methods;
+dense-small is intentionally OFF. The two-rank/one-GPU target result is **split method
+coverage**: job3851765 completes nine methods per rank before the420s cap expires;
+job3851926 passes the three unfinished methods per rank in323.619s. Every method has
+target MPI evidence, but no successful single-lifetime twelve-method run or full target
+CTest sweep is claimed. Evidence: gh200_qualification/Arrhenius_GH200/python-01.
+
+The site helper must use the installed OpenMPI .hpcinfo PMIx/fabric profile on a private
+alias of the identical interpreter. Plain srun produced size1 workers; a minimal native
+launcher attempt stalled and was cancelled. Worker size/allreduce/barrier preflight,
+explicit profile selection, build-hash checks and diagnostic stacks prevent false
+qualification and unbounded stalls. All failures/timeout/cancellation retained. No
+production evaluator arithmetic, shared install or interpreter configuration changed.
+Added1199 nominal GPU-seconds, tracked cumulative3027/.84083 GPU-hours including failed
+and build time; shared100 GPU-hour/month ceiling remains in force.
+
+Next perform an evidence-backed requirement-by-requirement completion audit of the
+objective and E0-E9, including conditional experiment decisions and all stated limits.
+Do not equate supported functionality with unqualified physicalN14 accuracy or broader
+performance tuning. Preserve the target split-run limit and existing local full-suite/
+MPI evidence. No further cluster campaign solely to obtain a prettier test summary.
+
 ### Bounded composed N14 capacity checkpoint
 
 The complete production NCA evaluator now has bounded N14 evidence, beyond the earlier

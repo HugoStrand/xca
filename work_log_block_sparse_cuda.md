@@ -1,5 +1,67 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — GH200 Python and split MPI qualification
+
+Previous turn progressed through bounded composedN14 capacity. Inspected Arm stack:
+no CUDA xca install, existing CUDA TRIQS/Python3.13 and c2py58e0586 match dependency
+revision locally. Staged source7b5d223 plus pinned c2py/adapol/pyed/GTest in isolated
+xca-block-sparse-python-7b5d223. No compiled x86 dependencies, binding regeneration,
+install/shared-source mutation. Built only _cppdlr/_triqs_xca/_triqs_xca_cuda against
+GCC14.3/Python3.13.5/NumPy2.3.2. Build-tree origins and Ordered/Mapped/RealNca true
+verified; sparse native ON, dense-small OFF. Both target Python CTests pass65.63s:
+CudaBackends14 methods/3 small skips1.98s; BlockSparseCuda12 active63.62s. No new
+C++ all-target/full-suite claim. Runtime evaluator remains85ecb2d, unchanged this turn.
+
+Added reusable MPI launcher preserving CTest ENVIRONMENT_MODIFICATION and exact command/
+workingdir/paths, worker communicator assertion and identity-checked interpreter alias.
+Local two selected methods pass both ranks16.515/16.533s; wrong size3 with actual2
+rejects before tests. Alias control passes0.357/0.360s; final allreduce/barrier preflight
+plus metadata control0.359s per rank. No repeated local full suite. Evidence00e84b0 in
+production_qualification/thinkstationP620_RTXA4000/mpi-launcher-01.
+
+Target launch diagnosis retained, not waived:3851249 build/import/serial checks pass,
+then mpprun absent from reset compute PATH (168s job). Absolute site helper3851450
+chooses raw srun: workers size1, guard rejects (11s). Private minimal native-OpenMPI
+profile3851572 obtains size2 but no completed method; stopped at249s to bound cost.
+Diagnostic attach did not yield a usable stack before cancellation, so exact cause
+not inferred. Inspected actual site OpenMPI hpcinfo, then reused its PMIx/fabric env
+and launch arguments verbatim on a private alias of identical configured Python.
+No shared interpreter/config changes. Explicit profile selection, communicator size,
+scalar allreduce/barrier with45s preflight exit and later90s diagnostic dumps added.
+Verbose methods distinguish progress. Compiler/helper/recipe commits separate.
+
+Correct PMIx3851765 completes nine methods on both ranks (18 OKs), then420s command
+cap expires in storage_policies_all_observables; parent432s/exit124. Full twelve-method
+single-run target pass NOT claimed. Preserved results and split only unfinished methods,
+no data/rank/tolerance/shape change or cap relaxation. Storage cohort3851926 COMPLETED0:0,
+339s parent, three methods per rank pass323.619s. All16 storage-policy/placement/dynamic/
+partition combinations retained. Combined target method coverage spans all12 methods,
+including observables, self-consistency, preferences/archives, capability controls and
+rank-local count/init/eval/budget errors/recovery. Nine-method proof checked from starts,
+18 OKs, no assertions, and both ranks reaching method10; separate three-method complete
+summaries retained. Timed stack dumps are diagnostic, not assertion failures. All GPU
+verification sequential. One GPU/two-rank stress is costly; no measured attribution or
+performance/speedup claim. No redundant full target suite solely to replace partial log.
+
+Evidence c173bfc under gh200_qualification/Arrhenius_GH200/python-01 includes all five
+job records, exact source/dependency/binary/runner hashes, imports/capabilities, recipes,
+launch profiles, failures, cancellation, timeout, successful raw tests and coverage.json.
+Original hashes preserved before archive-only whitespace normalization. First raw imports
+transcript has a standalone-MPI warning before JSON; not silently rewritten. One GPU
+per job; added168+11+249+432+339=1199 nominal GPU-seconds, cumulative3027/.84083 GPUh.
+Parent elapsed accounting includes builds/failures; raw cleanup/step timings retained,
+not exact site billing. Shared100 GPUh/month includes other user work. Last projinfo3.26h
+is earlier/site-unreliable, not a new available-balance claim. All jobs/handles terminal,
+queue empty. Preserved user files/experiments, no install/push/supervisor changes.
+
+Goal active. Target Python/method-level MPI gate now has bounded evidence, with split
+and single-GPU scope explicit. Next requirement-by-requirement completion audit of actual
+objective and E0-E9: map supported functionality, invariants, experiments/decisions and
+limits to current source plus existing evidence. Distinguish conditional future tuning/
+physicalN14 accuracy/higher-order capacity and untested target scopes from requirements
+for operational supported functionality. Do not invent completion from this milestone;
+do not add target runs without a concrete missing requirement identified by the audit.
+
 ## 2026-10-14 — Complete N14 NCA capacity on GH200
 
 Previous turn progressed through broad CPU/native/library qualification. Added isolated

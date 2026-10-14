@@ -93,3 +93,45 @@ instead of rewriting thousands of shared-filesystem timestamps in GPU time. A
 partial build from the same pinned source/toolchain may be reused after its job is
 terminal; retain the earlier record. This change addresses the observed filesystem
 wait in the first NCA target attempt, not a numerical or compiler failure.
+
+## Python facade and MPI
+
+`python.sbatch` builds only `_cppdlr`, `_triqs_xca` and `_triqs_xca_cuda` in an
+isolated Arm tree. Stage pinned c2py/adapol/pyed/GTest sources as well as xca;
+keep binding regeneration OFF. It checks build-tree module origins and native
+capabilities before serial Python CTests, then runs the block-sparse case on two
+ranks sharing one GPU. Native sparse kernels are ON; dense-small kernels are OFF
+in this recipe. This is the stated qualification scope, not a full target suite.
+
+`run_python_mpi.py` applies the registered CTest environment and records the exact
+launcher/working directory/Python path. Every worker asserts the communicator size
+before importing the test. An optional `--python` alias must resolve to the exact
+CTest interpreter. Do not count two independent serial processes as MPI success.
+Query CTest JSON before running tests, since inventory queries overwrite LastTest.
+
+After the minimal module reset, use the site's absolute mpprun path. Python loads
+MPI dynamically, so automatic executable inspection can select plain srun. These
+recipes create a private interpreter alias with the installed OpenMPI library's
+`.hpcinfo` PMIx/fabric settings and require that profile through the site helper.
+The worker verifies a scalar allreduce/barrier before CUDA setup, with a short
+preflight timeout; later diagnostic stack dumps identify stalled test calls. This changes no shared interpreter,
+module, SSH setting or install. Retain both worker rank assertions and the actual
+underlying launch command in the evidence.
+
+`python_mpi.sbatch` is a bounded MPI-only continuation for an already verified
+build. Update its literal checkpoint paths when staging another run. Extension
+hashes must match the previous serial qualification before launch; it neither
+rebuilds nor repeats successful serial tests. Copy the pinned runner next to the
+job script and record its hash separately from the evaluator snapshot. Stage the
+`.hpcinfo` profile and inspect `mpprun -i --launcher=srun --handler=hpcinfo` before allocating a
+retry when debugging launch selection. The full build job has a fifteen-minute
+cap; the MPI-only job has ten minutes and a 420-second command timeout.
+
+`python_storage.sbatch` selects only the storage-policy/all-observable, archive,
+and topology/admission methods. Use this declared cohort when the complete MPI
+case exceeds its command cap; retain the partial transcript and qualify only the
+methods that actually complete. Do not describe split coverage as a successful
+single-process-lifetime twelve-method run. No shapes, tolerances or scientific
+cases are changed to make a cohort fit. Timed diagnostic stack dumps may appear
+in otherwise successful suites; unittest assertions and final exit status decide
+pass/fail.
