@@ -1,5 +1,54 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Consolidated real NCA Python/MPI policy
+
+Previous turn made progress: guarded C++ dispatch, packed sectors and local complete-
+call performance evidence. The consolidated _triqs_xca_cuda facade now accepts
+nca_backend='reference'|'real_batch' for static/dynamic real/complex atom_diag types.
+Selection validates before sparse export; unavailable native kernels reject explicitly.
+Added block_sparse_real_nca_available and last_nca_batch_paths. Regenerated only the
+consolidated wrapper, retained the optional dense-small guard, and updated explicit
+constructor template instantiations. Default remains reference.
+
+Solver exposes block_sparse_nca_backend, validates it at construction and mutable
+initialization, and forwards it through gpu.py. Archive/deepcopy retains the preference;
+missing old-archive fields reconstruct with reference. CPU can store preferences and
+query capability without importing CUDA. Public API documentation describes the real
+1x1/NCA/resident/range-guard domain and general GPU fallback for other inputs/orders/
+observables, conservative admission and collective failure semantics.
+
+Native Python CTest passes all nine methods in 29.44 s. CPU metadata/archive/default/
+capability control passes .40 s, eight GPU methods skipped. Native-disabled CUDA
+passes eight active methods in 13.08 s; one native-only test skips. Both native flags
+remain OFF. Tests cover real dynamic multi-sets, real-to-complex-to-real input changes,
+mixed/large block fallback, higher orders, SPGF/correlators, host placement, selection
+observer, rank-local invalid initialization/budget failure, recovery and NCA self-
+consistency against the general evaluator. No new full-suite claim.
+
+After serial GPU checks terminate, two MPI ranks pass nine methods each in 134.039 s;
+launcher exit zero. Applied the exact CTest JSON path modifications to the launch,
+OMP/OpenBLAS threads one. X11 startup diagnostics coexist with successful execution;
+not automatic approval rejection. Final committed C++ source builds after whitespace-
+only formatting. Capability imports pass after those builds: CPU all false/no CUDA
+module loaded; native ordered/mapped/real NCA all true; library-only all three false.
+Initial standalone probes replaced rather than prepended the TRIQS Python path and
+failed imports; corrected probes preserve the environment and include build/dependency
+paths. No runtime code changed between feature tests and final whitespace formatting.
+
+Code fbbde67; evidence 016ac31 separate from this plan/log checkpoint. Full records in
+experiments/block_sparse_cuda/production_qualification/thinkstationP620_RTXA4000/
+real-nca-python-01, including raw unittest outputs, MPI log and final module hashes.
+All handles terminal, no GPU stages overlap, no new Arrhenius hours (cumulative .27556
+nominal), install/push/supervisor or unrelated-work changes. Local RTX A4000 remains a
+proxy; GH200 policy/performance qualification is still required. Pending SSH question
+remains unanswered from this process; do not duplicate the earlier completed cluster job.
+
+Goal active. Next refresh all configured CPU/native/library-only builds and production
+suites, then perform a current-source requirements audit and plan the bounded target
+finalist under the 100 GPU-hours/month ceiling. Higher-order numerical promotion and
+large convolution capacity remain open; no fixed cutoff band or narrowed completion.
+Preserve every experiment and baseline.
+
 ## 2026-10-14 — Production NCA dispatch and packed sectors
 
 Previous goal turn made progress by extracting and qualifying the internal primitive.

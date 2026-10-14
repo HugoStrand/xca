@@ -395,6 +395,29 @@ appropriate broad verification and qualify a bounded target finalist. Higher-ord
 DLR/cutoff acceptance and large convolution capacity remain unresolved; this successful
 NCA increment does not shrink the full goal or justify arbitrary replay-band changes.
 
+## 2026-10-14 — Real NCA Python/MPI integration checkpoint
+
+Production opt-in is operational through consolidated bindings and Solver:
+`block_sparse_nca_backend='real_batch'` forwards to the facade `nca_backend` string.
+The build-capability query and last-path observer are exposed. Defaults remain
+reference, CPU preference storage avoids CUDA imports, and archive/deepcopy plus
+old-archive defaults are qualified. Native-disabled CUDA rejects explicit selection.
+
+Code fbbde67 and evidence 016ac31 qualify nine native Python methods, CPU metadata/
+archive checks, eight native-disabled methods, and nine methods on each of two MPI
+ranks with successful launcher exit. Rank-local invalid initialization and admission
+failure are collective and recover on subsequent valid calls. Real dynamic NCA,
+changed complex inputs, larger blocks, higher orders, other observables and host
+placement retain reference agreement. Final committed facade builds and capability
+imports pass; this does not replace a broad current-source suite refresh or GH200
+qualification. No cluster allocation was consumed.
+
+Next refresh CPU/native/library-only builds and production suites, audit remaining
+requirements against current source/evidence, and qualify a bounded GH200 finalist
+when this process has SSH access. Preserve the shared 100 GPU-hours/month allocation
+ceiling. Higher-order numerical batching and large convolution capacity remain open;
+NCA success does not redefine the full objective or promote the disproved cutoff band.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
