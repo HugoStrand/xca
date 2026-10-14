@@ -41,7 +41,7 @@ full diagram was performed.
 
 ## Complete evaluator control
 
-[Clean paired complete-call results](../../../../../benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-02/README.md)
+[Clean paired complete-call results](../../../../benchmarks/block_sparse_common/thinkstationP620_RTXA4000/hoisted-cpu-02/README.md)
 qualify the private generated CPU evaluator on 15 physical workloads with bitwise
 agreement against unchanged CPU. The 8-mode number window favors hoisted CPU
 (131 ms vs 267 ms CUDA); the 10-mode number window favors CUDA (5.04 s vs 1.13 s).
