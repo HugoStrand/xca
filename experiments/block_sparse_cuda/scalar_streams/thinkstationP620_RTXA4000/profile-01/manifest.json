@@ -1,0 +1,57 @@
+{
+  "benchmark_source_revisions": {
+    "xca_base": "af37e0fea8aac376c8f55f77b62e8f7a2a6fdde8",
+    "modified_sha256": {
+      "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "aee8064f5521b598b786bfb6300d0d800a232e5eb86621a7fd5c50ad86b2a4b1",
+      "experiments/block_sparse_cuda/scalar_staging/buffers.inc": "a41e2904401ccc43a6a5359a9f5f1aebb56278361cc12513759c5f30531b168e",
+      "experiments/block_sparse_cuda/scalar_streams/CMakeLists.txt": "e7545a35e77695c14e745ee7ad500fe4a41fb321a468724e3ff95aebdb05c1c6",
+      "experiments/block_sparse_cuda/scalar_streams/lifetimes.cpp": "c642690a3142ae65f2ed832f79900277ff43e26d0b10a75a3efe655c4919b1d7",
+      "experiments/block_sparse_cuda/scalar_sets/density_benchmark.cpp": "03826187a4d6d92b14cce278970348d896950d329d5f488c78a02d8f774586df",
+      "experiments/block_sparse_cuda/gh200_qualification/run_cohort.py": "7d698c7ad2e2c82d912f20c54ad4a2599b867f8ded0985879a6fa4ff66309875"
+    }
+  },
+  "report_sha256": "95c5eb0b677d2098d26eb64a444660d7ac361a3d11618d06e180af4e6b753485",
+  "report_path": "/tmp/xca-density-profile-streams.nsys-rep",
+  "api_calls": {
+    "cuKernelGetFunction": 24,
+    "cuKernelGetName": 231,
+    "cuLaunchKernel": 24,
+    "cuProfilerStart": 1,
+    "cuStreamGetGreenCtx": 49,
+    "cudaDeviceSynchronize_v3020": 4,
+    "cudaEventCreateWithFlags_v3020": 192,
+    "cudaEventDestroy_v3020": 192,
+    "cudaEventRecord_v3020": 261,
+    "cudaEventSynchronize_v3020": 87,
+    "cudaFree_v3020": 71,
+    "cudaLaunchKernel_v7000": 231,
+    "cudaMalloc_v3020": 69,
+    "cudaMemGetInfo_v3020": 6,
+    "cudaMemcpy2D_v3020": 6,
+    "cudaMemcpyAsync_v3020": 153,
+    "cudaMemcpy_v3020": 24,
+    "cudaMemsetAsync_v3020": 16,
+    "cudaMemset_v3020": 35,
+    "cudaStreamGetDevResource_v13010": 1,
+    "cudaStreamSynchronize_v3020": 185,
+    "cudaStreamWaitEvent_v3020": 165
+  },
+  "memcpy_kind_count_bytes": [
+    [
+      1,
+      118,
+      1051188
+    ],
+    [
+      2,
+      16,
+      588848
+    ],
+    [
+      8,
+      49,
+      9067520
+    ]
+  ],
+  "notes": "One warmed N6 OCA call first1/count8; trace/export time excluded. Capture preceded compile-only copy deletion. Profile frontend binary hash not recorded at capture."
+}

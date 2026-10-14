@@ -1,0 +1,4 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cuda_density_streams,4,occupation,1,se,crossing,1,23,16,1,0,2,0,5.0548409999999997,169.10616099999999,1.2696609999999999,1.670804,2.1035505804344155,0,0,378496,37363248,14680064,160,96,64
+cuda_density_streams,4,occupation,1,se,crossing,1,23,16,1,0,2,1,5.0548409999999997,169.10616099999999,1.2696609999999999,1.565536,2.1035505804344155,0,0,378496,37363248,14680064,160,96,64
+cuda_density_streams,4,occupation,1,se,crossing,1,23,16,1,0,2,2,5.0548409999999997,169.10616099999999,1.2696609999999999,1.553223,2.1035505804344155,0,0,378496,37363248,14680064,160,96,64

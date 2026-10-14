@@ -1,0 +1,12 @@
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ScalarStreams.RepeatedSourcesAndUnwindingCompleteReaders
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ScalarStreams
+[ RUN      ] ScalarStreams.RepeatedSourcesAndUnwindingCompleteReaders
+[       OK ] ScalarStreams.RepeatedSourcesAndUnwindingCompleteReaders (232 ms)
+[----------] 1 test from ScalarStreams (232 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (232 ms total)
+[  PASSED  ] 1 test.
