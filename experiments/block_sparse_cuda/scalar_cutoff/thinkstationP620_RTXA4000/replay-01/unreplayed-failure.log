@@ -1,0 +1,142 @@
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137144
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000932e-16 vs 1.0100000000000931e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137144
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137154
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000001602e-16 vs 1.0100000000001601e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137154
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137161
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000143e-16 vs 1.0100000000000142e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137161
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137162
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000892e-16 vs 1.0100000000000893e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137162
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137144
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000932e-16 vs 1.0100000000000931e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137144
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137154
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000001602e-16 vs 1.0100000000001601e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137154
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137161
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000143e-16 vs 1.0100000000000142e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137161
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137162
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000892e-16 vs 1.0100000000000893e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137162
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:247: Failure
+Expected equality of these values:
+  candidate.last_contributing_paths()
+    Which is: 0
+  reference.last_contributing_paths()
+    Which is: 1
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137165
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:250: Failure
+Expected: (error) <= (1e-12 * std::max(norm(actual), norm(expected)) + 1e-30), actual: 1.0000000000000596e-16 vs 1.0100000000000597e-28
+Google Test trace:
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/scalar_paths/qualification.cpp:242: 0.10775810972137165
+
+[  FAILED  ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (1310 ms)
+[----------] 1 test from ScalarPathQualification (1310 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1310 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+
+ 1 FAILED TEST

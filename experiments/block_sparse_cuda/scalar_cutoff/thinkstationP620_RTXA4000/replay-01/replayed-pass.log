@@ -1,0 +1,12 @@
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[       OK ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (1574 ms)
+[----------] 1 test from ScalarPathQualification (1574 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1574 ms total)
+[  PASSED  ] 1 test.

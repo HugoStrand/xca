@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 5: experiments/block_sparse_cuda/scalar_constants
+1/2 Test #5: experiments/block_sparse_cuda/scalar_constants ...   Passed    8.81 sec
+    Start 6: experiments/block_sparse_cuda/scalar_cutoff
+2/2 Test #6: experiments/block_sparse_cuda/scalar_cutoff ......   Passed    9.97 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  18.79 sec

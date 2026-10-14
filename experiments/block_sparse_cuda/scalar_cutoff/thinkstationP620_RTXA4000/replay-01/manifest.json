@@ -1,0 +1,19 @@
+{
+  "code_revision": "fac46e1867b24b5f3973ebf5bc3796221370a26b",
+  "hardware": "ThinkStation P620 / RTX A4000",
+  "scope": "Local cutoff semantics and single ordinary-range overhead screen",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/scalar_cutoff/replay.inc": "400419ec20e8d3742b06f0c91c067c061835ecc12bf9d2a171be1b5408cdc1ff",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "3f89945f730ed607e0f29e55b7b76a49d402daa754653055defc5537a8e37841",
+    "experiments/block_sparse_cuda/scalar_paths/qualification.cpp": "10518ec9eae79a830f7378ae48913b425e3b3f06e211120f186924b82d803eb2"
+  },
+  "samples": 5,
+  "ordinary_range": {
+    "modes": 6,
+    "partition": "occupation",
+    "order": 2,
+    "first": 1,
+    "count": 8
+  },
+  "target_gpu_hours_added": 0
+}
