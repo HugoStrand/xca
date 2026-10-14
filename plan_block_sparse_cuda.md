@@ -944,6 +944,32 @@ all current observables, archive/error behavior and MPI before enabling it publi
 Continue E7 scheduling/admission and higher-order boundary work; full N=14 and GH200
 dispatch remain unqualified. Do not use primitive CPU ratios as whole-solver evidence.
 
+E7 compact-DLR checkpoint (2026-10-14):
+[compact_dlr](experiments/block_sparse_cuda/compact_dlr/README.md) isolates a liveness
+candidate. It releases the completed solve RHS before convolution and uses disjoint
+caller output for the diagonal contribution; aliases retain a separate diagonal.
+Operation/reduction order is unchanged. Checked allocation rejection precedes
+release or output writes. Four DLR controls and eight full-observable controls pass;
+primitive memcheck reports zero errors/leaks. Production operations/defaults remain.
+
+The [primitive comparison](experiments/block_sparse_cuda/compact_dlr/thinkstationP620_RTXA4000/compact-01/README.md)
+requires exact cached/compact outputs across six cases / 36 rows. Square rank18/D256
+retention falls by 36 MiB after convolution, but the next solve brings boundary peak
+saving to only 18 MiB. Retained and phase-peak storage must remain distinct; aliases
+and opaque/caller memory are additional. The private full evaluator reserves five
+instead of six DLR tiles because its convolution outputs are distinct.
+
+The [complete-call screen](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/compact-full-01/README.md)
+passes 35 processes / 175 samples, with identical discovery/norm/error metadata for
+mapped and compact variants. Latency changes are small (-3.9% to +1.4%), not a robust
+speedup claim. NCA uses no convolution, so its reduced reported bound is only reserve
+refinement. The N14/r26 global envelope loses one 4.563 GiB maximum tile, still without
+full-call admission proof. Next separate schedule-specific NCA versus convolution
+working sets, then qualify a production memory policy with actual allocation/lifetime
+and numerical controls. GH200 remains the target; do not promote from retained-byte
+savings alone. Higher-order boundaries, full output/host/opaque peaks and target
+validation remain gates.
+
 ### E8 — Topologies, shared subcomputations and graphs
 
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual

@@ -1812,3 +1812,57 @@ test/python/block_sparse_cuda.py. Temporary logs:
 /tmp/xca-bs-mapped-prod-{cpu,cuda,library}-test.log and associated build/configure
 logs; /tmp/xca-bs-mapped-prod-{memcheck,mpi}.log;
 /tmp/xca-bs-mapped-api-{configure,wrap,build}.log.
+
+## 2026-10-14 — Compact DLR liveness experiment
+
+Previous turn progressed through verified production mapped integration. Inspection
+of actual DlrOps ownership found cached solve RHS and five retained convolution
+buffers. 13ab3b0 [bench] compact DLR scratch adds an isolated source snapshot and
+full evaluator control, preserving production defaults/ABI and all earlier routes.
+Completed RHS is released at convolution entry. Disjoint output stores the diagonal
+term, saving its buffer/final copy; overlapping inputs retain the owned diagonal.
+Overlap/shape/budget checks precede release/output writes. Same LU, products and
+addition order, no inverse/factoring. Actual rectangles and alias-mode cache keys
+are retained. Full evaluator reserves five DLR tiles because its outputs are
+separate; generic alias cases may require six after a later solve.
+
+Four primitive controls pass (0.63 s), including original real-mesh/rectangle/LU,
+reflection, cancellation, rejection/recovery and independent exact production
+comparison/storage/alias switching. Memcheck/full leaks passes all four in 0.64 s:
+zero errors, zero leaked bytes. Eight inherited complete observable/API controls
+pass in 7.30 s with the compact reference policy. These are private fixture changes;
+no full production/Python/MPI suites repeated or installation performed.
+
+After verification handles were terminal, compact-01 runs six isolated composed
+edge cases / 36 rows with two solves, packing/status waits, convolution and allocation/
+release inside timing. Tables/input uploads/caller arrays/download checks outside.
+All warm/replayed outputs agree exactly with cached production in this finite suite.
+At rank18/D256, cached 51.090 ms vs compact 51.346 ms. Cached retained/boundary bytes
+113,272,204; compact retained 75,523,468 (36 MiB saved), boundary peak 94,397,836
+(18 MiB saved). The next RHS coexists with four scratch tensors. This is a method-
+boundary explicit observation, not a continuous allocator/opaque/host/caller peak.
+Small/rectangular case timing changes are also modest; no robust speedup claimed.
+
+The five-route complete-call screen compact-full-01 records 35 processes / 175 rows,
+five repetitions per process, covering ordered reference, two caches, mapped and
+mapped/compact. All pass CPU screening and exact replay; discovery counts, warm
+norms and error metadata match mapped/compact row for row. Changes range -3.9%
+to +1.4%, within local noise/protected-case screen. The N10 declared bound decreases
+473,446,400 to 450,076,928 bytes. NCA does no DLR work, so this is conservative reserve
+refinement, not measured released NCA storage. N14/r26 extrapolated reserve saves
+4.563 GiB; no full fourteen-mode model/evaluation or fitting proof. No tuned/threaded
+CPU or whole Solver/target speedup claim.
+
+b5aad7e [bench] record compact DLR storage preserves primitive/full raw samples,
+commands/source/executable hashes, comparisons and scope. These runs are isolated
+from tests/profilers. Next qualify schedule-specific NCA/convolution admission and
+scratch lifetimes before promoting a memory policy. Retain full output, host/opaque
+and higher-order boundary gates, plus GH200 validation. Goal active, not complete.
+No install/push/supervisor or unrelated user-work changes. Plan/log commit separate
+from code/data; git diff --check passes.
+
+Evidence: experiments/block_sparse_cuda/compact_dlr/README.md and its hardware
+compact-01/README.md; benchmarks/block_sparse_common/thinkstationP620_RTXA4000/
+compact-full-01/README.md. Logs /tmp/xca-bs-compact-{configure,build,test,memcheck,
+campaign}.log; /tmp/xca-bs-compact-eval-{configure,build,test}.log;
+/tmp/xca-bs-compact-full-campaign.log.
