@@ -1,0 +1,161 @@
+{
+  "source_commit": "50bec42",
+  "host": "ThinkStation",
+  "architecture": "x86_64",
+  "triqs_prefix": "/home/hugstr/apps/triqs",
+  "source_hashes": {
+    "benchmarks/block_sparse_cpu/block_sparse_inventory.cpp": "078ae9b580c6e6557a5d29dee1188fadbebe93849fcd6da3a33d7d137d1a2edd",
+    "benchmarks/block_sparse_common/work_inventory.hpp": "a8cd10818b1dce99fa76f60371b5c1f8027a8aefd0d55ce919d85692adbcad88",
+    "benchmarks/block_sparse_cpu/summarize_work.py": "1cd0c6228cd66f685e125136cea9aeb33978fa32d789bc161e8f024fb90539fa",
+    "benchmarks/block_sparse_common/fixture.hpp": "db9c9f8884edca96607064f33e10f94e2ab83d5c3e2af8aaab42e56fb72864a9",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "3f554f740a708d2ec5f2765100c2d0e840bb8b5c1bad783f53400e78f4b46190",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "c4ed6b58cc1835583a4960d9cd4ff3799918e943ced6212511f0bad45c9b987e"
+  },
+  "files": [
+    {
+      "file": "high-rank-runs.json",
+      "sha256": "78ec7d8d39addbf3bbd3d62a689e0e763dda3b9827debfebf11a76c85f2a4c5e"
+    },
+    {
+      "file": "n10-number-nca-r64-shapes.csv",
+      "sha256": "c1f8781572445c536113f50e0857d7b5593abe28cedd9345cb8b7ee46d946c83"
+    },
+    {
+      "file": "n10-number-nca-r64-work.csv",
+      "sha256": "356b69e817a7afbe09f68c840f474d0ef7c6badc53648e9b9977cbb48885a13b"
+    },
+    {
+      "file": "n10-number-nca-r64.csv",
+      "sha256": "4e39aa27252141f1f74c2a008994a7704a4ec1c09dba76a495c3c24fcf680154"
+    },
+    {
+      "file": "n10-number-nca-r64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n10-number-nca-shapes.csv",
+      "sha256": "bcb5fa02f0a557a7c9b17b9f8be6baa1b68ef04d6e0a677804b07e34b824096b"
+    },
+    {
+      "file": "n10-number-nca-work.csv",
+      "sha256": "f8825712570d01dee582e297fd44a860dfeb129a50d5e8e88fdc968d706a43f2"
+    },
+    {
+      "file": "n10-number-nca.csv",
+      "sha256": "f4646caeae0996134100e8b4efbfa909389e1cd159086d3c9272e1e2f19b1698"
+    },
+    {
+      "file": "n10-number-nca.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n4-number-nca-shapes.csv",
+      "sha256": "5be1a26639a6f277c8257a4321f08fd2fed0aad8bd7becbd3162acbc833e056e"
+    },
+    {
+      "file": "n4-number-nca-work.csv",
+      "sha256": "6ea0763efec0f9e814752e4d521d408e91f2fc12778ba311e5e0d47434992a6f"
+    },
+    {
+      "file": "n4-number-nca.csv",
+      "sha256": "de9b2a3050a1c35a23062b9b99f3a3174f326e958e11c875a844ae52ca171b3d"
+    },
+    {
+      "file": "n4-number-nca.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n4-number-oca-r64-shapes.csv",
+      "sha256": "24e49add2cb03852d58cff867ad6c4398dec65698413ce8c0a5f4ace24aa5dff"
+    },
+    {
+      "file": "n4-number-oca-r64-work.csv",
+      "sha256": "8a10556df7a8d1072d8bd2d051095cf038a34acad3270e2656397226102203fd"
+    },
+    {
+      "file": "n4-number-oca-r64.csv",
+      "sha256": "03baa20bbd79dbcb9b1a39523c1e658376785c87ebad4a0c1a44508238fb9525"
+    },
+    {
+      "file": "n4-number-oca-r64.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n4-number-oca-shapes.csv",
+      "sha256": "c4c39453f87b5a9f7aad702c40cc492856d831b0e34a4da3e58a85b880960efd"
+    },
+    {
+      "file": "n4-number-oca-work.csv",
+      "sha256": "178c72b1cc7438b9e72ec10691f71fa1b3068190a9072f8336aff484194646e3"
+    },
+    {
+      "file": "n4-number-oca.csv",
+      "sha256": "54ad82b3f3d441075406321522331f2141f99ab16b045a41927eeced35f5673d"
+    },
+    {
+      "file": "n4-number-oca.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n4-occupation-oca-shapes.csv",
+      "sha256": "84028e797547e8c07a014df9a25f5c50d75be2906d26dab557be89c4d75dab85"
+    },
+    {
+      "file": "n4-occupation-oca-work.csv",
+      "sha256": "50733738f499a5431dc403e615b79f3bfad119b5b18344d5abd432b753e3e99d"
+    },
+    {
+      "file": "n4-occupation-oca.csv",
+      "sha256": "e23df63dd10dc04b24e0b77026e41d9aee96561ebb619a371e4d077dbe0832af"
+    },
+    {
+      "file": "n4-occupation-oca.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n6-mixed-retarded-shapes.csv",
+      "sha256": "106646bfb32f479380f793e85af2e8ff6e188c0cb44632efe274de3125234983"
+    },
+    {
+      "file": "n6-mixed-retarded-work.csv",
+      "sha256": "9c58450060538ea5be3da506f87226e3e8e638b3636801fbe6165fa7142b1a49"
+    },
+    {
+      "file": "n6-mixed-retarded.csv",
+      "sha256": "1b19c1c1c7821b77bb6499ae30912207085190b53287f2e578e1822fd9049c84"
+    },
+    {
+      "file": "n6-mixed-retarded.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "n8-number-nca-shapes.csv",
+      "sha256": "2add81404935196051f3d392d14824b250845c8c62b16eefb452f3d25842d0b5"
+    },
+    {
+      "file": "n8-number-nca-work.csv",
+      "sha256": "bd347b3bc6bf8a8ae6d171fdda75db70b9d6dd93f3c30f3bf3333e35bb70aac0"
+    },
+    {
+      "file": "n8-number-nca.csv",
+      "sha256": "820a3e90293edfb1a14f7dcb5dd6325a3bcd13c00f3e9471c95ad66cc1e9fe79"
+    },
+    {
+      "file": "n8-number-nca.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "runs.json",
+      "sha256": "d9c8c8fbc6a7ded68a494abf3effa3b8e3e31ef0351e68a64718755aaafa2bdf"
+    },
+    {
+      "file": "weighted-final/manifest.json",
+      "sha256": "5e4010969da5255b7ce82cf509ac62aa843edc7e448cf8d33008f8aa189ae71f"
+    },
+    {
+      "file": "weighted-final/weighted.csv",
+      "sha256": "bce17a9ba34a6f978408ac9bf5547fb6c2ae3c86ed3289efa6372780a35aab4b"
+    }
+  ],
+  "scope": "CPU schedule model; no device context, HBM measurement or numerical output-cutoff inference"
+}

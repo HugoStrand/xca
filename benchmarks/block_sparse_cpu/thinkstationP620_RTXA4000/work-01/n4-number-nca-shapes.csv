@@ -1,0 +1,13 @@
+kind,M,N,K,calls,rank
+special_left,1,1,4,4,23
+special_left,4,4,1,4,23
+special_left,4,4,6,4,23
+special_left,6,6,4,4,23
+special_mix,1,4,4,4,23
+special_mix,4,1,4,4,23
+special_mix,4,6,4,4,23
+special_mix,6,4,4,4,23
+special_right,1,4,1,16,23
+special_right,4,1,4,16,23
+special_right,4,6,4,16,23
+special_right,6,4,6,16,23

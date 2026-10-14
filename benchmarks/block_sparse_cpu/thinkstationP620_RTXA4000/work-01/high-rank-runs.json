@@ -1,0 +1,46 @@
+[
+  {
+    "case": "n4-number-oca-r64",
+    "command": [
+      "cbuild/benchmarks/block_sparse_cpu/block_sparse_inventory",
+      "--modes",
+      "4",
+      "--partition",
+      "number",
+      "--order",
+      "2",
+      "--count",
+      "1",
+      "--physical-mask",
+      "--lambda",
+      "4000",
+      "--work",
+      "/tmp/xca-weighted-inventory-physical/n4-number-oca-r64-work.csv",
+      "--shapes",
+      "/tmp/xca-weighted-inventory-physical/n4-number-oca-r64-shapes.csv"
+    ],
+    "returncode": 0
+  },
+  {
+    "case": "n10-number-nca-r64",
+    "command": [
+      "cbuild/benchmarks/block_sparse_cpu/block_sparse_inventory",
+      "--modes",
+      "10",
+      "--partition",
+      "number",
+      "--order",
+      "1",
+      "--count",
+      "1",
+      "--physical-mask",
+      "--lambda",
+      "4000",
+      "--work",
+      "/tmp/xca-weighted-inventory-physical/n10-number-nca-r64-work.csv",
+      "--shapes",
+      "/tmp/xca-weighted-inventory-physical/n10-number-nca-r64-shapes.csv"
+    ],
+    "returncode": 0
+  }
+]

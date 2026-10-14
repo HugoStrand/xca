@@ -1,0 +1,42 @@
+[
+  {
+    "case": "analytic-work",
+    "command": [
+      "cbuild/benchmarks/block_sparse_cpu/block_sparse_inventory",
+      "--analytic",
+      "--modes",
+      "14",
+      "--work",
+      "/tmp/xca-work-guards/analytic.csv"
+    ],
+    "returncode": 1
+  },
+  {
+    "case": "analytic-mask",
+    "command": [
+      "cbuild/benchmarks/block_sparse_cpu/block_sparse_inventory",
+      "--analytic",
+      "--modes",
+      "14",
+      "--physical-mask"
+    ],
+    "returncode": 1
+  },
+  {
+    "case": "row-cap",
+    "command": [
+      "cbuild/benchmarks/block_sparse_cpu/block_sparse_inventory",
+      "--modes",
+      "10",
+      "--partition",
+      "occupation",
+      "--order",
+      "3",
+      "--count",
+      "256",
+      "--work",
+      "/tmp/xca-work-guards/capped.csv"
+    ],
+    "returncode": 1
+  }
+]
