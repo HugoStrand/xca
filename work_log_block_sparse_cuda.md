@@ -1,5 +1,80 @@
 # Block-sparse CUDA work log
 
+## 2026-10-15 — MPI phases, fixed-model covariance and completion audit
+
+Previous turn was progress: weighted work and target fresh-PID gates were published.
+Completed the remaining bounded MPI measurement work, then audited actual source,
+raw results and plan requirements. Audit found one further scientific coverage gap
+and closed it before completion: prior CUDA partition cases changed H, while existing
+same-H dense partition comparisons exercised CPU only. No runtime arithmetic changes.
+
+Code0a55b82 adds a standalone shared Python MPI benchmark and CMake environment,
+independent of examples/tests. Solver supplies physical G0/model initialization.
+Two fixed order-three topologies and declared windows compare per-topology contiguous
+ownership with flat cyclic ownership using per-index calls, canonical one-owner slots
+and identical reduction grouping. Exact output equality across ownership/samples is
+required, plus rank-zero CPU control. Third policy measures actual range/block-reduction
+pattern, allowing existing CPU-screen roundoff. Records include per-rank synchronous
+API, packing, collective coordination/wait, arrival barrier, payload reduction,
+accumulation, individual zero/nonzero jobs, bytes/counts, source/extension hashes and
+PIDs/hosts/affinity. API time includes transfers. Error coordination is allgather
+instead of Solver's scalar allreduce; this instrumentation distinction is explicit.
+
+Local CPU number and four-rank/count1 empty-owner controls pass; native Ordered/Mapped
+number and library dynamic mixed controls pass. Duplicate job ownership is rejected
+before summary creation; deliberate sleeping CPU workers trigger124 at one-second
+cap, launcher reaped and whole process group absent. Separate after-warmup Nsight
+capture records per-rank actual copy/kernel durations/counts/bytes, with report/SQLite
+hashes and correct PID/rank mapping. Capture covers all policies, not per-policy host
+wall components; profiler timings are not compared to uninstrumented latency.
+
+Recipe2713bb0 reuses qualified Arm Python extensions; binary checks match source7b5d223/
+runtime85ecb2d. Scheduling-only3854532 precedes job3854536. Job completes0:0 on n535,
+one GH200/two ranks,28parent seconds, within five-minute cap. PMIx launcher/rank/allreduce
+preflight verified. All three cohorts pass: number first0/count3/samples3, mixed retarded
+first0/count1/samples2, occupation first7/count3/samples2. Samples are within one process
+group each, not fresh-PID repetitions. Moving indexed jobs is exact; Solver range sum
+maxerror9.759e-19. Mixed window is all zero; occupation keeps both zero/nonzero jobs.
+Number split/cyclic/ranges critical medians113.834/166.407/116.192ms. Cyclic reduces
+API-time imbalance1.052→1.003 but is slower; no scheduler change. Shared one-GPU contexts
+supply no multi-GPU/node threshold. No rebuild/install/shared checkout change.
+
+Also recorded a sensible N10/rank23/maxdim252 CPU control: three fresh processes per
+one/four OpenBLAS threads, three samples each, OMP1. Observed worker counts1/4, all
+processes pass. Median process medians3798.876/2834.873ms (1.34x). Exact commands,
+source/binary/BLAS hashes, affinity/setup/RSS and raw data retained. This local CPU-only
+measurement sets no GH200 crossover or universal thread choice. Evidence92bd34f includes
+MPI/profiler/threaded records in common and respective backend hardware folders.
+
+New test61996d8 keeps the physical H, hybridization, endpoint and retarded operators
+identical across8scalar/4number/1dense partitions. Actual Fock state maps reassemble
+full output. Dense CPU reference agrees at1e-13 with full NCA/OCA SE, SPGF and bosonic
+correlators, static/dynamic, for Library/Reference and available Ordered/Mapped routes.
+Native focused CTest9.89s, library-only7.19s, CPU disabled entry .02s; all pass, GPU
+runs sequential. No new full-suite/memcheck/target-partition claim. CMake benchmarks
+also configure with tests OFF and emit the standalone MPI environment; tests restored
+ON. Evidence308dd1c retains source/log hashes and raw configure/build/test logs.
+
+Final audit in the plan checked E0–E9, T0–T4, promotion/repetition, functionality,
+Python/MPI/error/lifetime, memory, numerical/domain, preservation and commit/resource
+invariants against current source and actual raw records. Runtime/Python source remain
+85ecb2d; full production suites and complete local/split target MPI retain their original
+recorded scopes. Frozen snapshot hashes match origin.json; no baseline/experiment or
+unrelated user edits removed. All scoped job/command handles terminal. Cumulative3384
+nominal GPU-seconds/.940000GPUh, including28seconds this turn and prior failed/build
+allocations; site billing and other user work remain separate under shared100GPUh/month.
+
+Implementation goal achieved with original bounded qualification, not a universal
+optimizer: supported existing observables, explicit sparse/optimized/storage choices,
+consolidated mutable Python/MPI integration, bounded N10/N14 and GH200 evidence are
+operational. General crossover/dispatch, higher-order fusion with proven cutoffs,
+production topology/graphs, physical high-window accuracy and full physicalN14 remain
+explicit unqualified research scopes from the plan, not inferred successes. Final read-only projinfo reports3.73project GPUh/30days with the site's unreliability
+warning; filtered budget/audit identities recorded01ba9b5 (no other users' rows).
+No push, install or supervisor change. Code/evidence and this plan/work-log commit separate.
+Supervisor already observes completed goals and exits; goal status set complete only
+after final record/link/worktree checks. Remaining user work preserved.
+
 ## 2026-10-15 — Weighted inventory and fresh GH200 processes
 
 Goal remains active. Closed two measured audit gaps without changing runtime85ecb2d:
