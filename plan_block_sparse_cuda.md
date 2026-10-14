@@ -113,6 +113,17 @@ is clean; preserved singleton and CPU-only recipe controls pass. Evidence is und
 that experiment's `thinkstationP620_RTXA4000/sets-01`. Dedicated multi-set timing,
 GH200 qualification and conservative cutoff policy remain before promotion.
 
+Explicit multi-set timing checkpoint: three dedicated frontends validate scalar
+dimensions and grouped shifted-density fields and share complex retarded coefficients
+with their numerical controls. A bounded local N=4/6/8 campaign passes all 36 samples,
+matching GPU path counts and exact replay. Batched OCA latency is 9.36–10.17x below
+unchanged CPU and 60.12–89.63x below ordered general CUDA; small NCA still favors CPU.
+These are complete calls on an A4000 proxy, not algorithm-matched CPU comparisons
+or whole topology sums. CPU-only/default-fixture compatibility checks pass. Evidence:
+`benchmarks/block_sparse_common/thinkstationP620_RTXA4000/density-sets-01`.
+Next add a matched batched multi-set CPU control before attributing hardware gains,
+then qualify a small GH200 cohort and settle the cutoff/promotion policy.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator

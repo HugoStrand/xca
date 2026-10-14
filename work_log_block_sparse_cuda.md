@@ -1,5 +1,42 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Explicit density-set benchmark
+
+Previous turn was progress: multi-field scalar candidate passed18 controls and
+memory/CPU compatibility checks. Added a dedicated common fixture callback to the
+complete-call runner; default interaction fixture remains unchanged. Explicit CPU,
+ordered general CUDA and batched CUDA density-set frontends share shifted densities
+and complex Hermitian retarded coefficients, validate scalar dimensions/multi-field
+sets, and require dynamic occupation SE workloads. CPU validation export is charged
+to setup, not call latency. Added bounded density cohort selection to the archive-
+aware recorder (four cases, three routes/samples). First make lacked new targets;
+reconfigured before build, preserving caches. No compute retry/campaign duplication.
+
+Local isolated campaign12 processes/36 samples passed all finite/numerical/exact
+replay controls, GPU counts/ranges/rank match, largest absolute error1.570e-16.
+All signals nonzero. Median CPU/generalGPU/batchedGPU ms: N4 NCA1.140/58.444/2.823,
+N4 OCA58.976/378.847/6.302, N6 OCA219.656/1951.371/21.771, N8 OCA127.979/838.929/
+12.584. OCA CPU ratios9.36/10.09/10.17; generalGPU ratios60.12/89.63/66.67. Small
+NCA favors CPU. This is unchanged CPU, not algorithm-matched batched multi-set CPU;
+do not attribute the full gain to GPU hardware or infer full topology/Solver speedup.
+Only three samples/allocation on A4000; GH200 remains target. No profiler/test/build
+competition during timing. Memory counters retain existing limited sampling scope.
+
+CPU-only new/default frontends built. N4 OCA CPU-only signal matches CUDA-environment
+CPU sample; default scalar scheduler still screens exactly (error0). Wrong partition
+is rejected. All handles terminal. Build/run logs /tmp/xca-bs-density-sets-{bench-
+configure,bench-build,campaign,cpu-configure,cpu-build,invalid}.log, cpu/default.csv.
+Raw rows/commands/source/binary/runner hashes, summary and hardware/build settings
+retained in CPU/CUDA/common benchmark folders, machine thinkstationP620_RTXA4000,
+campaign density-sets-01. Manifest records compiled parent plus modified-source hashes;
+qualification JSON identifies subsequent code commit948b878. Results commitd653f04
+and this plan/log commit separate from benchmark code.
+
+Goal active. Next implement matched batched CPU multi-set control, then bounded
+GH200 evidence and conservative cutoff/promotion policy before integration. Broader
+capacity/Python/MPI gates remain. No target hours added (.08361 nominal cumulative),
+install, push or unrelated-work changes.
+
 ## 2026-10-14 — Multi-field scalar special vertices
 
 Previous turn was progress: cutoff replay cohorts/ownership qualified. Addressed
