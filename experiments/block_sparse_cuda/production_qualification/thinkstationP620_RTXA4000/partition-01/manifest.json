@@ -1,0 +1,20 @@
+{
+  "source_commit": "61996d81a12cddf9dd30e46c9281f6bc16c8e031",
+  "runtime_commit": "85ecb2d",
+  "source_sha256": "fb7a4d6c3a1fa2841fb0326d1700c46a0fc068beb2c9084386190418edd67312",
+  "raw_log_sha256": {
+    "xca-partition-library-test.log": "73a8d8bfdc07bccececfc02481b8aad609cd7e12be6f017be8a4ec91b2ebe260",
+    "xca-partition-library-build.log": "77f220e3bcf56e887f3aad97a5f6394901981227fa334fb0dce93241abc55705",
+    "xca-partition-cpu-test.log": "c14a489ee6879dd60686170aea4030ef6df6c7dbc20d9e25fe927e8ab4855d28",
+    "xca-partition-cpu-build.log": "77e114d9a79d450142d99f580001d8c468228257c9091efefdb85fe77dafe5cc",
+    "xca-partition-test.log": "f8e68e8a1d437e8281cf412c546769fab95984c25e5718e0c8dafce8c36771f4",
+    "xca-partition-cpu-configure.log": "9cb262ea71d0c289299c69fe85add5e23559cf32b4d31381b26b99eb41092406",
+    "xca-partition-configure.log": "319e793ed6fa00c18fafa9eb6d6783e4fb70c0c1ba8e167c82344cefbc7756ad",
+    "xca-partition-library-configure.log": "a766128dc92bd8ed6a76faaad2b40dca17fb6425629557a83171de5052b4247f",
+    "xca-partition-build.log": "98dfa12f289d82cd65b7624b1fb0519917681fc8c80de2fc3afc12cfb6673196",
+    "xca-mpi-independent-configure.log": "01ea60055323fe74d351788d19d00e5cd900096764f064e0bdbb5e447c7c1ec6",
+    "xca-mpi-restore-configure.log": "fa48d8b6ecd6a1229f00358d4c55e9cfd5d84fd0062d1cdf6ae7ba3a7a580801"
+  },
+  "archive_normalization": "LF, trailing whitespace removed, single final newline",
+  "gpu_runs_sequential": true
+}

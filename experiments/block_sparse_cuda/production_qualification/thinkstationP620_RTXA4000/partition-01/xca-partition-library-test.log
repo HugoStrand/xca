@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda-library-api
+Test project /home/hugstr/dev/xca/cbuild-cuda-library-api
+    Start 32: block_sparse/cuda_partition_covariance
+1/1 Test #32: block_sparse/cuda_partition_covariance ...   Passed    7.19 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   7.19 sec
