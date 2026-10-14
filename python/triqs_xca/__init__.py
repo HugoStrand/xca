@@ -5,6 +5,9 @@ from .solver import Solver
 
 def __getattr__(name):
     # GPU extensions are optional; importing the CPU package never loads them.
+    if name == 'BlockSparseCudaDiagramEvaluator':
+        from .gpu import block_sparse_evaluator_class
+        return block_sparse_evaluator_class('cuda')
     if name in {'DenseCudaDiagramEvaluator', 'DenseCudaSmallDiagramEvaluator'}:
         from .gpu import dense_evaluator_class
         return dense_evaluator_class('cuda_small' if 'Small' in name else 'cuda')

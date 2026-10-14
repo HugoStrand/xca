@@ -70,6 +70,15 @@ class Solver(object):
     dense_backend : {'cpu', 'cuda', 'cuda_small'}, optional
         Dense evaluator choice; CPU is the default. CUDA choices require
         conserved_operators=[] and are checked when evaluation is initialized.
+    block_sparse_backend : {'cpu', 'cuda'}, optional
+        Evaluator used with automatic or explicit atomic symmetries. CPU is the
+        default; CUDA uses the initial sparse device reference.
+    block_sparse_workspace_budget : int, optional
+        Conservative explicit device-storage budget (default 1 GiB). Includes
+        inputs, outputs and work buffers; opaque libraries and host storage are
+        additional. Large-sector configurations need qualified capacity settings.
+    block_sparse_operator_budget : int, optional
+        One-entry sparse operator plus library workspace limit (default 32 MiB).
     dense_batch_capacity : int, optional
         Maximum indexed batch width for cuda_small (default 128).
     dense_workspace_budget : int, optional
@@ -105,13 +114,27 @@ class Solver(object):
                  timer=None, atom_diag=None, verbose=True,
                  dense_backend='cpu', dense_batch_capacity=128,
                  dense_workspace_budget=512 * 1024 * 1024, gpu_device=None,
-                 dense_device_memory_reserve=64 * 1024 * 1024):
+                 dense_device_memory_reserve=64 * 1024 * 1024,
+                 block_sparse_backend='cpu', block_sparse_workspace_budget=1024 * 1024 * 1024,
+                 block_sparse_operator_budget=32 * 1024 * 1024):
 
         if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
             raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
         if dense_backend != 'cpu' and conserved_operators != []:
             raise ValueError("A CUDA dense backend requires conserved_operators=[]")
+        if block_sparse_backend not in {'cpu', 'cuda'}:
+            raise ValueError("block_sparse_backend must be 'cpu' or 'cuda'")
+        if block_sparse_backend != 'cpu' and conserved_operators == []:
+            raise ValueError("A CUDA block-sparse backend requires atomic symmetries")
         from operator import index
+        if isinstance(block_sparse_workspace_budget, bool) or isinstance(block_sparse_operator_budget, bool):
+            raise ValueError("Block-sparse budgets must be positive integers")
+        block_sparse_workspace_budget, block_sparse_operator_budget = index(block_sparse_workspace_budget), index(block_sparse_operator_budget)
+        if block_sparse_workspace_budget < 1 or block_sparse_operator_budget < 1:
+            raise ValueError("Block-sparse budgets must be positive integers")
+        self.block_sparse_backend = block_sparse_backend
+        self.block_sparse_workspace_budget = block_sparse_workspace_budget
+        self.block_sparse_operator_budget = block_sparse_operator_budget
         if isinstance(dense_batch_capacity, bool) or isinstance(dense_workspace_budget, bool):
             raise ValueError("Dense capacity and workspace budget must be positive integers")
         dense_batch_capacity, dense_workspace_budget = index(dense_batch_capacity), index(dense_workspace_budget)
@@ -386,15 +409,24 @@ class Solver(object):
             else:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
         else:
+            evaluator_class = gpu.block_sparse_evaluator_class(self.block_sparse_backend)
+            budgets = {}
+            if self.block_sparse_backend != 'cpu':
+                gpu.configure_device(self.gpu_device)
+                budgets = dict(device_budget=self.block_sparse_workspace_budget, sparse_budget=self.block_sparse_operator_budget)
             if self.has_dynamic_interactions:
-                self.d = BlockSparseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
+                self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs, **budgets)
             else:
-                self.d = BlockSparseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
+                self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, **budgets)
         if self.use_dense_solver and self.dense_backend == 'cuda_small':
             self.d.set_batch_capacity(self.dense_batch_capacity)
             self.d.set_workspace_budget(self.dense_workspace_budget)
             self.d.set_device_memory_reserve(self.dense_device_memory_reserve)
         #if is_root(): print(f'done.')
+
+    @property
+    def _uses_gpu_evaluator(self):
+        return (self.dense_backend if self.use_dense_solver else self.block_sparse_backend) != 'cpu'
 
 
     def solve(self, max_order, tol=1e-4, maxiter=10, mix=1., hyb_tol=None, hyb_comp=True, normalization='classic', spgf_max_order=None, verbose=True):
@@ -455,8 +487,9 @@ class Solver(object):
         self.fit_hybridization(tol=self.hyb_tol, compression=self.hyb_comp, verbose=verbose)
         # solve() is collective; coordinate GPU setup errors before any rank enters
         # the iterations. Standalone init_diagram_evaluator() remains local.
-        if self.dense_backend != 'cpu':
-            gpu.collective_call(self.init_diagram_evaluator, phase="Dense GPU initialization")
+        if self._uses_gpu_evaluator:
+            phase = "Dense GPU initialization" if self.use_dense_solver else "Block-sparse GPU initialization"
+            gpu.collective_call(self.init_diagram_evaluator, phase=phase)
         else:
             self.init_diagram_evaluator() # FIXME! Evaluator takes hyb poles and coeffs in constructor
 
@@ -810,10 +843,11 @@ class Solver(object):
     def __eval_pseudo_particle_self_energy_topology_loop_by_pairs(self, G, topology, verbose=False):
 
         order = len(topology)
-        n_max = self.d.get_num_self_energy_backbones(topology)
+        operation = lambda: self.d.get_num_self_energy_backbones(topology)
+        n_max = gpu.collective_call(operation, phase="GPU index count") if self._uses_gpu_evaluator else operation()
         first, last = scatter_range_bounds(n_max)
         operation = lambda: self.d.compute_self_energy_by_pairs_range(G, topology, first, last)
-        Sigma = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+        Sigma = gpu.collective_call(operation, phase="GPU evaluation") if self._uses_gpu_evaluator else operation()
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -828,10 +862,11 @@ class Solver(object):
     def __eval_pseudo_particle_self_energy_topology_loop(self, G, topology, verbose=False):
 
         order = len(topology)
-        n_max = self.d.get_num_self_energy_backbones(topology)
+        operation = lambda: self.d.get_num_self_energy_backbones(topology)
+        n_max = gpu.collective_call(operation, phase="GPU index count") if self._uses_gpu_evaluator else operation()
         first, last = scatter_range_bounds(n_max)
         operation = lambda: self.d.compute_self_energy_range(G, topology, first, last)
-        Sigma = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+        Sigma = gpu.collective_call(operation, phase="GPU evaluation") if self._uses_gpu_evaluator else operation()
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -886,11 +921,12 @@ class Solver(object):
 
     def __eval_single_particle_greens_function_topology_loop(self, G, topology):
 
-        n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
+        operation = lambda: self.d.get_num_single_ptcle_gf_backbones(topology)
+        n_max = gpu.collective_call(operation, phase="GPU index count") if self._uses_gpu_evaluator else operation()
         spgf = self.get_zero_single_particle_greens_function()
         first, last = scatter_range_bounds(n_max)
         operation = lambda: self.d.compute_single_ptcle_gf_range(G, topology, first, last)
-        spgf.data[:] = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+        spgf.data[:] = gpu.collective_call(operation, phase="GPU evaluation") if self._uses_gpu_evaluator else operation()
 
         spgf.data[:] = mpi.all_reduce(spgf.data)
 
@@ -932,11 +968,12 @@ class Solver(object):
 
     def __inplace_eval_one_time_correlator_topology_loop(self, corr, G, topology, ops_tau, ops_0, prefactor):
 
-        n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
+        operation = lambda: self.d.get_num_single_ptcle_gf_backbones(topology)
+        n_max = gpu.collective_call(operation, phase="GPU index count") if self._uses_gpu_evaluator else operation()
         first, last = scatter_range_bounds(n_max)
         operation = lambda: self.d.compute_one_time_correlator_range(
             G, ops_tau, ops_0, self.atom_diag, topology, first, last)
-        value = gpu.collective_call(operation) if self.dense_backend != 'cpu' else operation()
+        value = gpu.collective_call(operation, phase="GPU evaluation") if self._uses_gpu_evaluator else operation()
 
         corr_arr = prefactor * value
         corr.data[:] += mpi.all_reduce(corr_arr)
@@ -1407,7 +1444,7 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve', 'block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],

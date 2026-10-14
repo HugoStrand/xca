@@ -8,6 +8,7 @@ endforeach()
 set(all_tests
   cppdlr_imtime_ops
   cuda_backends
+  block_sparse_cuda
   triqs_soehyb/load_module
   triqs_soehyb/spinless_dimer
   triqs_soehyb/spinless_dimer_solver

@@ -9,6 +9,20 @@ from ._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
 _gpu_process_device = None
 
 
+def block_sparse_evaluator_class(backend):
+    if backend == 'cpu':
+        from ._triqs_xca import BlockSparseDiagramEvaluator
+        return BlockSparseDiagramEvaluator
+    if backend != 'cuda':
+        raise ValueError(f"Unknown block-sparse backend {backend!r}")
+    if not CUDA_ENABLED:
+        raise RuntimeError("Requested block-sparse backend 'cuda' is unavailable in this build")
+    try:
+        return getattr(import_module('._triqs_xca_cuda', __package__), 'BlockSparseCudaDiagramEvaluator')
+    except (ImportError, AttributeError) as error:
+        raise RuntimeError(f"Requested block-sparse backend 'cuda' is unavailable: {error}") from error
+
+
 def dense_evaluator_class(backend):
     if backend == 'cpu':
         from ._triqs_xca import DenseDiagramEvaluator

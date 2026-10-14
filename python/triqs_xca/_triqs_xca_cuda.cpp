@@ -3,6 +3,7 @@
 #include <triqs/atom_diag.hpp>
 #include <triqs/operators.hpp>
 #include <triqs_xca/dense/cuda/diagram_evaluator.hpp>
+#include <triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>
 // Generate the complete binding schema even for library-only CUDA builds.
 // guard_cuda_wrappers.py guards the optional class in the generated output.
 #if defined(CLAIR_C2PY_WRAP_GEN) && !defined(XCA_HAVE_CUDA_SMALL)
@@ -69,6 +70,76 @@ namespace xca_python {
 namespace c2py_module {
   using DenseCudaDiagramEvaluator = xca_python::LibraryCudaEvaluator;
 }
+namespace xca_python {
+  class BlockSparseCudaEvaluator {
+    using native = triqs_xca::block_sparse::cuda::DiagramEvaluator;
+    std::unique_ptr<native> evaluator_;
+
+    public:
+    using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
+    using gf_vt = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
+    template <bool C>
+    BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
+                             triqs::atom_diag::atom_diag<C> const &ad, std::size_t device_budget = 1024ULL * 1024 * 1024,
+                             std::size_t sparse_budget = 32ULL * 1024 * 1024)
+       : evaluator_(
+            std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients), poles, mesh, device_budget, sparse_budget)) {}
+    template <bool C>
+    BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
+                             triqs::atom_diag::atom_diag<C> const &ad, std::vector<triqs::operators::many_body_operator_complex> const &operators,
+                             nda::array_const_view<nda::dcomplex, 3> interactions, std::size_t device_budget = 1024ULL * 1024 * 1024,
+                             std::size_t sparse_budget = 32ULL * 1024 * 1024)
+       : evaluator_(std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
+                                             device_budget, sparse_budget)) {}
+    long get_num_self_energy_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_self_energy_backbones(t); }
+    long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_single_ptcle_gf_backbones(t); }
+    gf_t compute_self_energy(gf_vt g, nda::array_const_view<int, 2> t) { return evaluator_->compute_self_energy(g, t); }
+    gf_t compute_self_energy(gf_vt g, nda::array_const_view<int, 2> t, long index) { return evaluator_->compute_self_energy(g, t, index); }
+    gf_t compute_self_energy_range(gf_vt g, nda::array_const_view<int, 2> t, long first, long last) {
+      return evaluator_->compute_self_energy_range(g, t, first, last);
+    }
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> t) {
+      return evaluator_->compute_single_ptcle_gf(g, t);
+    }
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(gf_vt g, nda::array_const_view<int, 2> t, long index) {
+      return evaluator_->compute_single_ptcle_gf(g, t, index);
+    }
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf_range(gf_vt g, nda::array_const_view<int, 2> t, long first, long last) {
+      return evaluator_->compute_single_ptcle_gf_range(g, t, first, last);
+    }
+    template <bool C>
+    nda::array<nda::dcomplex, 3> compute_one_time_correlator_range(gf_vt g, std::vector<triqs::operators::many_body_operator_complex> const &tau,
+                                                                   std::vector<triqs::operators::many_body_operator_complex> const &zero,
+                                                                   triqs::atom_diag::atom_diag<C> const &ad, nda::array_const_view<int, 2> t,
+                                                                   long first, long last) {
+      return evaluator_->compute_one_time_correlator_range(g, tau, zero, ad, t, first, last);
+    }
+    std::size_t self_energy_storage_bound() const { return evaluator_->self_energy_storage_bound(); }
+    std::size_t correlator_storage_bound(long mu, long kap) const { return evaluator_->correlator_storage_bound(mu, kap); }
+  };
+} // namespace xca_python
+namespace c2py_module {
+  using BlockSparseCudaDiagramEvaluator = xca_python::BlockSparseCudaEvaluator;
+}
+using block_evaluator = xca_python::BlockSparseCudaEvaluator;
+#define BLOCK_BIND(C, PREFIX)                                                                                                                        \
+  PREFIX template block_evaluator::BlockSparseCudaEvaluator(nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>,                 \
+                                                            triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &, std::size_t,            \
+                                                            std::size_t);                                                                            \
+  PREFIX template block_evaluator::BlockSparseCudaEvaluator(                                                                                         \
+     nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>, triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,       \
+     std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<nda::dcomplex, 3>, std::size_t, std::size_t);          \
+  PREFIX template nda::array<nda::dcomplex, 3> block_evaluator::compute_one_time_correlator_range(                                                   \
+     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>, std::vector<triqs::operators::many_body_operator_complex> const &,                          \
+     std::vector<triqs::operators::many_body_operator_complex> const &, triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, long, \
+     long);
+BLOCK_BIND(true, extern)
+BLOCK_BIND(false, extern)
+#ifndef CLAIR_C2PY_WRAP_GEN
+BLOCK_BIND(true, )
+BLOCK_BIND(false, )
+#endif
+#undef BLOCK_BIND
 using evaluator     = xca_python::LibraryCudaEvaluator;
 using gf_view       = evaluator::gf_vt;
 using operator_list = std::vector<triqs::operators::many_body_operator_complex>;
