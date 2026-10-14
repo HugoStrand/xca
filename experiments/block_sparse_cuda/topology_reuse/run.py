@@ -11,8 +11,10 @@ import os
 from pathlib import Path
 import platform
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.dont_write_bytecode = True
 
 
 def main():
