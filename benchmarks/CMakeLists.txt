@@ -49,3 +49,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/topology_re
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/topology_reuse)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/output_sectors
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/output_sectors)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/convolution_rows
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/convolution_rows)
