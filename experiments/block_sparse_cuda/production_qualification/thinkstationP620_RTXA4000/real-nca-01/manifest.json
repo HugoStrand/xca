@@ -1,0 +1,22 @@
+{
+  "source_commit": "437629f129f3c58e2d5c12027ba7150939cf487f",
+  "hardware": "ThinkStation P620 / RTX A4000",
+  "target_hardware": "GH200-class (not qualified in this campaign)",
+  "scope": "Focused internal primitive; no dispatcher integration or performance claim",
+  "ctest_regex": "^block_sparse/cuda_real_nca$",
+  "environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "results": {
+    "cpu": "one active metadata/capability test; device case disabled",
+    "native": "three active tests passed",
+    "library_only": "metadata/capability and constructor rejection passed; threshold case skipped",
+    "memcheck": "three active native tests; zero errors and leaks; before latest capability-only assertions"
+  },
+  "binary_sha256": {
+    "cbuild": "d1dfa4233bc94a828502aa5ad0229268f4c15868e71d8aab9ecc915886b8c88d",
+    "cbuild-cuda": "64a8662bd6d097e189b2e84dcba4d59c0d495d99568a551cbcd04c430730eb73",
+    "cbuild-cuda-library-api": "9225f37fd7744b264015a52a7e2ae00d821aadeca4c6394f34b7a4e53b6c331e"
+  }
+}

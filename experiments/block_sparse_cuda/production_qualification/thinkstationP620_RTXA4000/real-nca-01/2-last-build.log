@@ -1,0 +1,7 @@
+[  6%] Built target gtest
+[ 12%] Built target gtest_main
+[ 93%] Built target triqs_xca_c
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_real_nca.dir/block_sparse/cuda_real_nca.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_real_nca
+[100%] Built target block_sparse_cuda_real_nca
