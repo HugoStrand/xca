@@ -7,6 +7,7 @@ int main(int argc, char **argv) {
   std::string label = "cuda_kappa_" + std::to_string(XCA_EXPERIMENT_KAPPA_SLOTS);
   return block_sparse_bench::run<gpu::KappaCacheEvaluator>(
      argc, argv, label.c_str(), [](auto const &ad, auto coeff, auto mesh, auto poles, auto ops, auto dyn) {
+       if (!gpu::ordered_sparse_available()) throw std::runtime_error("Ordered sparse kernels are unavailable");
        return std::make_unique<gpu::KappaCacheEvaluator>(gpu::export_model(ad, coeff, ops, dyn), poles, mesh, 1024ULL * 1024 * 1024,
                                                        32ULL * 1024 * 1024, gpu::SparseBackend::Ordered);
      });

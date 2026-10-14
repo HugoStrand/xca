@@ -26,11 +26,15 @@ peak. Correlator admission inherits this extra conservatism although correlators
 do not use this cache. Increasing the cap may reject workloads that the reference
 accepts. No production fallback or dispatch policy exposes these variants.
 
-Both variant test executables reuse the eight evaluator physics/API tests. Two
+Both variant test executables reuse the eight evaluator physics/API tests. Three
 extra cases compare against the retained GPU reference bit for bit with both sparse
 backends, a four-field number-symmetry set, rectangular paths, changed complex G,
 zero masks and multiple indices; and test exact extra payload accounting, rejection
-before submission, empty ranges and recovery. This experiment changes operator
+before submission, empty ranges and recovery. A shifted-density two-field bosonic
+set with complex off-diagonal dynamic coefficients checks full NCA and changed G
+against the GPU reference bit for bit, including reflected directions. Library-only
+CUDA builds run the library control and omit unavailable native sparse backends;
+benchmark frontends explicitly require the ordered backend. This experiment changes operator
 reuse, not the DLR algorithm. The original CPU evaluator already retains all kappa
 products, so claims of hardware speedup must use a suitable matched DLR CPU control.
 
