@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-268f255/cbuild_cuda
+Test project /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-268f255/cbuild_cuda
+    Start 29: experiments/block_sparse_cuda/capacity_evaluator
+1/1 Test #29: experiments/block_sparse_cuda/capacity_evaluator ...   Passed    1.52 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.54 sec

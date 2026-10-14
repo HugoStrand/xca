@@ -1,0 +1,11 @@
+{
+  "xca": "268f255556974352fd4ad28d58b604f9e2e636aa",
+  "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+  "recipe_commit": "401ebdf",
+  "job_sha256": "279e46b117d6bd3ee2b4e14aae02565b59a5a9fe02a127bbe18ded720cc5394f",
+  "gpu_count": 1,
+  "walltime_cap_seconds": 900,
+  "large_command_timeout_seconds": 480,
+  "allocation_last30days_reported_gpu_hours": 3.26,
+  "allocation_report_caveat": "projinfo warns estimate may be unreliable; shared 100 GPU-hour/month ceiling"
+}

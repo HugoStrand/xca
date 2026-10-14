@@ -1,0 +1,2 @@
+modes,fields,rank,sample,function_bytes,device_bound,host_bound,setup_seconds,evaluate_seconds,verify_seconds,max_error,norm,paths,peak_device_delta
+14,1,64,0,41079398400,84463062276,106818289664,2.3628527269999999,32.234847182000003,8.2387415229999998,0,0.12171436906137988,28,88613584896

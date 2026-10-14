@@ -1,0 +1,21 @@
+Start testing: Oct 14 22:32 CEST
+----------------------------------------------------------
+29/81 Testing: experiments/block_sparse_cuda/capacity_evaluator
+29/81 Test: experiments/block_sparse_cuda/capacity_evaluator
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-268f255/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator/block_sparse_capacity_evaluator" "--modes" "4" "--fields" "4"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-268f255/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/capacity_evaluator
+"experiments/block_sparse_cuda/capacity_evaluator" start time: Oct 14 22:32 CEST
+Output:
+----------------------------------------------------------
+modes=4 fields=4 rank=18 function_bytes=20160 device_bound=33653868 host_bound=536931968 dry_run=0
+modes,fields,rank,sample,function_bytes,device_bound,host_bound,setup_seconds,evaluate_seconds,verify_seconds,max_error,norm,paths,peak_device_delta
+4,4,18,0,20160,33653868,536931968,0.90757654399999999,0.069825728000000004,5.0686999999999998e-05,2.7755575615628914e-17,0.45696589425122192,8,0
+<end of output>
+Test time =   1.52 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/capacity_evaluator" end time: Oct 14 22:32 CEST
+"experiments/block_sparse_cuda/capacity_evaluator" time elapsed: 00:00:01
+----------------------------------------------------------
+
+End testing: Oct 14 22:32 CEST
