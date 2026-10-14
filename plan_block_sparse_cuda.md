@@ -1873,6 +1873,56 @@ extras. Keep endpoint/path/summation order and tiny roots when changing fragment
 Qualify explicit policy combinations and eventually the consolidated C++/Python/MPI facade
 before promoting any input/lifetime policy. No new target allocation was used this turn.
 
+### Streamed correlator fragments (2026-10-14)
+
+A separate [fragment-streaming candidate](experiments/block_sparse_cuda/stream_fragments/README.md)
+(90e04ac) now removes the full resident left/right arrays. Each index/call owns one
+slot per side, keyed by root. Endpoint visitor order and ordered accumulation remain
+unchanged; a miss drains/evicts its old slot before recomputing the original fragment.
+The opposite slot stays resident. Source blocks remain host-backed, all original
+operator/solve/GEMM/cutoff arithmetic and tiny starting-root values are preserved.
+No host fragment cache is created. Self-energy follows the qualified host-input route.
+The experimental observer counts successful builds and verifies reset/reuse behavior.
+
+At a miss, seven phase tensors plus one opposite slot require eight maximum rank
+tensors; endpoint application needs two slots plus three products. New correlator bound
+is eight tensors plus existing fixed/operator/mapped/result/trace reserves, replacing
+two complete fragment functions plus seven tensors. Caller host input/output, atom/model
+construction, opaque workspaces and free-memory headroom remain additional. This bound
+belongs to the new schedule, not unchanged production. RealBatch arena remains explicitly
+unsupported by the host-input class; reference NCA continues to work.
+
+Twelve native/library-only controls pass10.60/10.72 s; four focused controls pass memcheck,
+zero errors/leaks. Exact baseline controls cover dynamic/high-order/correlator/tiny roots,
+changed G/masks, both SE output placements, exact budgets/rejection/recovery and duplicate
+endpoints proving cache reuse. Slots rebuild per index/call; observer resets on empty
+correlator/self-energy. Eighteen adjacent-cutoff probes protect unchanged SE and remain
+exact; correlators have no analogous per-output cutoff. CPU omits experiment; library
+native flags both OFF. Forced ordered/mapped, broader suites, Python/MPI and target
+qualification remain future gates, not inferred from default-policy C++ controls.
+
+Seven cases/three routes/three samples =63 local rows compare unchanged reference,
+host input with resident fragments, and streamed fragments. Every process passes finite/
+CPU-screen/exact replay controls and offline signal/error/structural summaries agree.
+N8 SPGF medians585.811/620.291/858.091 ms; bounds69493792/55741632/48072512 bytes.
+Streaming is46.5% slower than reference and38.3% slower than host-input resident fragments.
+Mixed N6 stream costs49.4% more than host input. This is a capacity tradeoff, not a
+production default/performance improvement. Sampled memory deltas are global/noncontinuous,
+not process-local peaks. Preserve resident execution as the latency control and all
+experiments/counterexamples. [Evidence](experiments/block_sparse_cuda/stream_fragments/thinkstationP620_RTXA4000/stream-01/README.md).
+
+Metadata N14/r64 correlator base falls155.179 to89.895 GiB (rank26:36.538 GiB); endpoint/
+result extras remain. Below observed GH20095.58 GiB total is not proof of actual free-
+memory fit or physical rank/accuracy. Next qualify native ordered/mapped and explicit
+incompatible policies, then build a bounded full-shape phase/map capacity probe with
+independent small-shape oracle, checked budgets/free-memory rejection, sampled/host peaks
+and capped target execution. Avoid full physical N14 construction/CPU reference from
+these formulas. Once qualified, integrate explicit resident/host-input/streamed-fragment
+choices into the existing evaluator and consolidated mutable Python/MPI configuration,
+keeping resident defaults and complete results. No new heuristic cutoff or automatic
+post-submission fallback. New target work must respect shared100 GPU-hours/month and
+reuse staged Arm builds; this turn used no new allocation.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

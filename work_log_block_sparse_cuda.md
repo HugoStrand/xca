@@ -1,5 +1,61 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Two-slot correlator fragment streaming
+
+Previous turn was progress: host-backed inputs qualified and benchmarked, but retained
+correlator fragments still exceeded target capacity. Inspected endpoint traversal and
+fragment arithmetic; added separate StreamFragmentEvaluator layered on host-input/full-
+shape lifetime generation with checked seams. One right and one left slot per index/
+call, root-keyed. Evict/drain old slot before recomputation, retaining opposite side.
+Endpoint/summation order unchanged; original full-shape arithmetic and tiny roots retained.
+No host fragment cache/full device side arrays; SE behavior follows host-input route.
+No production/Python/default changes. RealBatch arena restriction remains explicit.
+
+Derived eight maximum-rank-tensor correlator phase bound: seven construction temporaries
+plus one opposite slot; endpoint phase two slots plus three products. Existing fixed/
+operator/mapped, endpoint/result/trace/headroom reserves unchanged. No all-fragment F
+reserve needed. Caller-owned host input/result and model/opaque costs additional. Added
+last_fragment_builds observer, reset at correlator/SE accounting entry, and duplicate
+endpoint controls showing reuse and rebuilding across index/call/changed G. Empty-range
+observer reset verified. Exact budget/one-byte-below/baseline rejection controls updated
+to the new bound. No arbitrary cutoff band or algebraic reduction change.
+
+Final native twelve controls pass10.60 s; library-only twelve pass10.72 s, both native
+flags OFF. Four focused controls pass memcheck33.378 s, zero errors/leaks. Inherited
+controls include dynamic/high-order/SE/SPGF/correlator/tiny roots; added controls compare
+exact baseline matrices/counts across changed G/masks, output placement, admission and
+invalid-call recovery. Eighteen adjacent-cutoff SE probes remain exact; they protect the
+unchanged SE route, not a correlator-output cutoff. CPU configure/list omits experiment.
+Independent build trees; GPU verification/campaigns sequential. All handles terminal.
+No forced ordered/mapped/broad-suite/Python/MPI or target qualification inferred.
+
+Seven cases/three routes/three samples:63 rows, route order reversed by case, one OMP/
+BLAS thread, rank23 and one OCA topology/index. Number SPGF N4/N6/N8, mixed N6 SPGF,
+dynamic number correlator N4/N6, protected N10 SE. All process statuses zero, finite/
+CPU-screen/exact self-replay controls pass, offline signal/error/structural fields agree.
+N8 SPGF reference/host-input/stream medians585.811/620.291/858.091 ms; explicit bounds
+69493792/55741632/48072512 bytes, sampled deltas27262976/20971520/16777216 bytes.
+Stream46.5% slower vs baseline,38.3% vs host input; mixed N6 stream49.4% slower than
+host input. This is a capacity option, not default improvement. N10 SE unchanged,
+stream1111.57 ms/bound265175200 vs reference1106.47 ms/450012768. No whole-sum/target
+inference from selected indices; sampled global deltas are not continuous/process peaks.
+
+Metadata N14/r64 correlator base now89.895 vs prior host-input155.179 GiB, rank26
+stream36.538 GiB. Endpoint/result extras remain; below observed GH20095.58 GiB total
+is not actual fit/physical rank accuracy. Next forced policy qualification and a bounded
+full-shape phase/map probe, independent small oracle, actual free-memory and host peaks,
+capped target job only after local screens/account checks. Then integrate explicit
+memory choices with resident defaults into production C++/consolidated Python/MPI.
+Do not launch full physical N14 CPU-control/atom construction from these estimates.
+
+Code90e04ac and evidence13771dc separate from plan/log. Evidence under experiments/
+block_sparse_cuda/stream_fragments/thinkstationP620_RTXA4000/stream-01 contains commands,
+binary hashes,63 raw samples/summaries, full controls/build/memcheck logs, protected SE
+cutoff CSV and metadata formulas. Archive-only whitespace normalization records original
+hashes; staged check passes. Goal active, no new Arrhenius GPU time (cumulative .435
+nominal hours), push/install/supervisor changes. Unrelated user work/all baselines and
+failed candidates preserved. GH200-class target; RTX A4000 local mechanism screen.
+
 ## 2026-10-14 — Host-backed input blocks with unchanged arithmetic
 
 Previous turn was progress: exact full-shape lifetime candidate, tighter phase admission
