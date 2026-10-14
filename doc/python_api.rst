@@ -66,12 +66,22 @@ its sparse-library workspace (default 32 MiB). Host and opaque-library storage a
 additional. Larger sectors require capacity qualification and suitable budgets.
 The evaluator exposes ``self_energy_storage_bound(topology)`` for a validated
 schedule-specific estimate; the no-argument form remains an order-independent
-upper bound. NCA omits inactive convolution scratch and releases completed DLR
+upper bound. NCA reserves six maximum rank tensors for its reference special
+vertex fallback, omits inactive convolution scratch and releases completed DLR
 scratch from earlier higher-order calls before checking available memory. Fixed
 rank tables and full input/output reserves remain. Higher orders and correlators
 retain their conservative working-set estimates. A topology-specific budget can
 therefore admit NCA while rejecting OCA; such rejection precedes input upload and
 path arithmetic and leaves later valid calls usable.
+
+C++ callers can use ``reference_memory_plan`` from
+``triqs_xca/block_sparse/cuda/memory.hpp`` before constructing a model or CUDA
+context. Supply rank, sector dimensions, pole count, operator budget, mapped set
+width and output placement. Its explicit payload bounds share the production
+calculation; caller-owned inputs, model construction, allocator/library overhead
+and actual free-device-memory checks remain additional. The host-only
+``block_sparse_memory_plan`` benchmark reports bounded ten/fourteen-mode
+number-sector estimates. Rank is an input assumption, not an accuracy guarantee.
 
 Completed DLR solve storage is released before convolution. A disjoint convolution
 output also stores its diagonal term, reducing retained scratch to four rank tensors
