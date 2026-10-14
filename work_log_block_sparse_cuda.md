@@ -2172,3 +2172,48 @@ many-small batching gates. GH200-class hardware remains the target, with local
 RTX A4000 results only a development proxy. All baselines/experiments and unrelated
 user work preserved. Code/data and plan/log commits separate; no push/install or
 supervisor changes.
+
+## 2026-10-14 — Production compact DLR checkpoint
+
+Previous goal turn was progress: broader cached-topology selections and paired exact
+outputs/counts were committed. This turn returns to the large-block memory path and
+promotes the qualified compact DLR storage policy. It releases completed solve RHS
+before convolution, uses disjoint output for the diagonal term and retains a separate
+diagonal for input/output aliases. Arithmetic order and public signatures remain
+unchanged. Cached square scratch is four tiles; next solve is five. Evaluator reserve
+is five maximum-size tiles instead of six. NCA still omits all inactive scratch;
+its generic-minus-NCA test now expects five, and disjoint budget control uses the
+smaller required allocation. Added production storage/alias/release transition test.
+
+Preserved original DLR as compact_dlr/historical_dlr.{hpp,cpp}; primitive independent
+cached/compact comparisons explicitly use that baseline. Private compact generated
+evaluation accepts the new five-tile reserve. Private NcaDlr retains original cached
+storage; its generated higher-order reserve stays six to preserve prior controls.
+All experiments/baselines remain available. No new timing claim; prior campaign
+hashes continue to describe their earlier versions. Existing N14/rank26 analytic
+variable generic envelope becomes 85.845 GiB from 90.409, saving 4.563 GiB per maximum
+tile. This excludes fixed/operator/host/opaque storage and is not actual N14 runtime.
+
+Initial main/native-disabled builds failed because the retained baseline header
+used a private include; corrected it to the public project device_ops path and
+restarted each only after its actual build handle terminated. Final main and
+native-disabled full builds pass. CPU configure/build/full CTest passes 80/80 in
+50.51 s. Main focused six CTests pass in 25.10 s, including production DLR four
+controls, admission, all-observable evaluator and private compact/NCA controls.
+Production test listing confirms CompactStorageAndAliasTransitions is in the binary.
+
+Verification remains in progress: unified exec session 23832 runs full main CUDA
+CTest (log /tmp/xca-bs-compact-prod-cuda-test.log), then production alias/storage
+memcheck (log /tmp/xca-bs-compact-prod-memcheck.log). Re-poll that exact handle; do not
+restart because observation times out. After it is terminal, run the native-disabled
+full suite sequentially on the GPU; its build session 54715 is already terminal
+and successful. CPU session 8373 and main focused session 13293 are also terminal.
+Do not claim full GPU verification from the focused controls. No other GPU test
+suite or timing campaign is running. Follow up on failures before declaring this
+production change fully qualified. Logs /tmp/xca-bs-compact-prod-{configure,build,
+build-final,focused}.log and associated cpu/library configure/build/test logs.
+
+Goal active. Keep full-function capacity, broader batching/cutoff and target-hardware
+gates open; GH200-class remains the target and the RTX A4000 a development proxy.
+Code verified by focused controls/CPU suite is checkpointed separately from these
+plan/work-log updates. No push/install/supervisor changes; unrelated work preserved.

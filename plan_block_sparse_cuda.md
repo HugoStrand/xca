@@ -1078,6 +1078,19 @@ Next measure the cost of a reuse selection policy against always-on/off executio
 and wider/random index cohorts. These local results do not qualify GH200 performance
 or settle the remaining full-function memory and many-small batching decisions.
 
+Production E7 checkpoint: compact DLR liveness is promoted after the private controls
+and full-call experiments. Completed solve RHS is released before convolution;
+disjoint output holds diagonal scratch, while aliases retain a separate diagonal.
+Retained square convolution scratch is four tiles and next-solve peak five; the
+production evaluator reserve drops from six to five maximum-size tiles. Tables,
+arithmetic order and public signatures are unchanged. Original cached DLR is retained
+as `compact_dlr/historical_dlr.*`; private NCA admission retains its old six-tile
+reserve. For the prior N=14/rank26 analytic inventory, variable generic storage drops
+from 90.409 to 85.845 GiB; this is neither an allocation measurement nor full-system
+qualification and still excludes fixed/operator/host/opaque storage. CPU 80/80 and
+six focused CUDA entries pass; broader GPU regression/lifetime checks are in progress
+and must be recorded before treating the production promotion as fully verified.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
