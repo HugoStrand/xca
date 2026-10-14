@@ -155,7 +155,13 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     double magnitude = 0;
     for (long t = 0; t < r; ++t) magnitude = std::max(magnitude, std::abs(host(t, lane, 0)));
     // Experimental uncertainty band, not a proven error bound for arbitrary paths.
-    if (std::abs(magnitude - 1e-16) <= 1e-26) {
+    bool in_band = std::abs(magnitude - 1e-16) <= 1e-26;
+#ifdef XCA_EXPERIMENT_SCALAR_AUDIT
+    bool evaluate_reference = true;
+#else
+    bool evaluate_reference = in_band;
+#endif
+    if (evaluate_reference) {
       if (reference_input.empty()) {
         reference_input.reserve(G.size());
         for (auto const &block : G) {
@@ -164,10 +170,27 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
         }
       }
       auto value = scalar_reference_value(reference_input, work[lane].first, work[lane].second);
-      ++scalar_replayed_lanes;
       auto reference_host = nda::to_host(value);
-      for (long t = 0; t < r; ++t) host(t, lane, 0) = reference_host(t, 0, 0);
-      replayed = true;
+#ifdef XCA_EXPERIMENT_SCALAR_AUDIT
+      double reference_magnitude = 0, error = 0;
+      bool finite = true;
+      for (long t = 0; t < r; ++t) {
+        auto a = host(t, lane, 0), b = reference_host(t, 0, 0);
+        finite = finite && std::isfinite(a.real()) && std::isfinite(a.imag()) && std::isfinite(b.real()) && std::isfinite(b.imag());
+        reference_magnitude = std::max(reference_magnitude, std::abs(reference_host(t, 0, 0)));
+        error = std::max(error, std::abs(host(t, lane, 0) - reference_host(t, 0, 0)));
+      }
+      scalar_cutoff_audit::observe(magnitude, reference_magnitude, error, in_band, finite);
+#endif
+      bool replace_lane = in_band;
+#ifdef XCA_EXPERIMENT_SCALAR_AUDIT
+      replace_lane = replace_lane || scalar_cutoff_audit::repair_all;
+#endif
+      if (replace_lane) {
+        ++scalar_replayed_lanes;
+        for (long t = 0; t < r; ++t) host(t, lane, 0) = reference_host(t, 0, 0);
+        replayed = true;
+      }
     }
   }
   if (replayed) {

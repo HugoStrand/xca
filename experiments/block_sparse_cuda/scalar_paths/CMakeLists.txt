@@ -20,6 +20,7 @@ string(REPLACE "std::size_t ScalarPathEvaluator::last_contributing_paths() const
 string(REPLACE "x.contributions   = 0;"
   "x.contributions   = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    x.scalar_replayed_lanes = 0;\n#endif" source "${source}")
 set(source "#include <map>\n${source}")
+set(source "#ifdef XCA_EXPERIMENT_SCALAR_AUDIT\n#include \"audit.hpp\"\n#endif\n${source}")
 set(source "#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n#include \"resident_kernels.hpp\"\n#endif\n${source}")
 string(REPLACE "kernel_bytes = checked_multiply(2, tensor_bytes(1, r, poles.size()));"
   "kernel_bytes = checked_multiply(2, tensor_bytes(1, r, poles.size()));\n#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n      if (scalar_eligible()) kernel_bytes = checked_add(kernel_bytes, checked_multiply(2, tensor_bytes(r, model.num_fields(), model.num_fields())));\n#endif" source "${source}")
