@@ -1,0 +1,18 @@
+{
+  "recorded_code_revision": "d20d0f3060179c6b8e4752a35354e8afeba2b5df",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "threads": {
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1
+  },
+  "rebuilt_routes": [
+    "matched_cpu",
+    "batched_cuda"
+  ],
+  "retained_control_binaries": [
+    "original_cpu",
+    "general_cuda"
+  ],
+  "scope": "ordinary full-call algorithm-matched comparison; GPU cutoff replay is separate",
+  "arrhenius_gpu_hours_added": 0
+}

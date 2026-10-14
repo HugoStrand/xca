@@ -1,0 +1,17 @@
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = ScalarSets.*:ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[==========] Running 2 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[       OK ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (1560 ms)
+[----------] 1 test from ScalarPathQualification (1560 ms total)
+
+[----------] 1 test from ScalarSets
+[ RUN      ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission
+[       OK ] ScalarSets.OrderedSpecialSumsChangedInputsAndAdmission (570 ms)
+[----------] 1 test from ScalarSets (570 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 2 test suites ran. (2131 ms total)
+[  PASSED  ] 2 tests.
