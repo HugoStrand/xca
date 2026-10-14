@@ -2087,3 +2087,42 @@ manifest/samples and /tmp/xca-bs-prefix-cache-{configure,build,test,memcheck}.lo
 /tmp/xca-bs-prefix-cache-final-{build,memcheck,campaign}.log and associated CPU/library
 configure/build/test logs. Full-suite verification remains the earlier production
 checkpoint; these are isolated experiment controls.
+
+## 2026-10-14 — Forced prefix-cache limits and tails
+
+Previous goal turn was progress: private device caching, paired complete-call data,
+full observable controls and sanitizer evidence were committed. Added private lower
+byte/entry/snapshot limits with validation before state changes. Default maxima
+remain 8 MiB / 4096 entries / 32 MiB snapshot; admission uses the configured byte
+limit. Added observable entry/skipped-store/snapshot-capacity diagnostics for tests.
+Clear now releases host vector capacity, avoiding retained snapshot storage after
+reconfiguration or bypass. No public evaluator, wrappers or backend defaults change.
+
+Two new qualification controls use Library/Reference and Ordered/Mapped. For each
+number/mixed/occupation fixture they force one-byte rejection, one-entry saturation,
+one-byte snapshot bypass and normal caching. Independent complete outputs match
+exactly for uneven ranges [0,1), [1,3), [3,4), repeated traversal, changed G, periodic
+zero masks and restored G. Actual one-entry number controls require both cache hits
+and skipped stores. Invalid oversized configuration and empty calls preserve state;
+clear leaves zero entries and zero snapshot capacity. Every actual output is finite.
+This widens coverage to four selected indices but is still not a population sample.
+
+Initial Library control plus eight inherited tests passed in 14.31 s. Extending
+capacity assertions initially conflated byte-cache rejection with host-snapshot
+bypass; corrected the assertion to require zero snapshot only for bypass/clear.
+Final native-enabled one-entry CTest passes all ten controls in 17.40 s. Native-
+disabled build retains both native options OFF: nine pass, Ordered/Mapped is explicitly
+skipped, CTest passes in 14.25 s. GPU checks ran sequentially between trees. Optimized
+forced-limit memcheck/full leaks passes the full new control in 22.228 s, zero errors
+and zero bytes leaked. Earlier cache-01 timings remain historical evidence for their
+hashed implementation; no new timing or unchanged performance claim is made here.
+
+Goal active. Forced storage limits and selected range tails are now qualified;
+broader topology/index choices, cache-selection/setup policies, remaining memory/
+batching/cutoff gates and GH200-class qualification remain. Experiments/baselines
+and unrelated user work preserved. Code and plan/log commits separate, no push,
+installation or supervisor changes. Logs /tmp/xca-bs-prefix-limits-{configure,build,
+test}.log, /tmp/xca-bs-prefix-limits-final-{configure,build,test}.log,
+/tmp/xca-bs-prefix-limits-library-{configure,build,test}.log and
+/tmp/xca-bs-prefix-limits-memcheck.log. Full production suites remain the prior
+checkpoint; these focused checks qualify the private cache experiment only.

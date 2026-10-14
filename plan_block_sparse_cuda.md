@@ -1058,6 +1058,14 @@ selection/setup cost of enabling reuse. Keep the private cache separate until th
 gates and target-hardware evidence justify a production policy. CUDA graphs remain
 conditional and are not implemented by this cache experiment.
 
+Cache-limit checkpoint: private configurable lower limits now force byte rejection,
+one-entry saturation and snapshot bypass on all three four-mode partitions.
+Exact per-call controls cover uneven first-four-index ranges, replay, changed G,
+zero masks and restoration for both Library/Reference and Ordered/Mapped routes.
+Oversized settings reject without altering state; explicit clear releases host
+snapshot capacity as well as device entries. This closes forced-limit and selected
+range-tail controls, not broader cohort selection, setup-policy or GH200 gates.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
