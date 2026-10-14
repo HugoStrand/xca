@@ -1,0 +1,2 @@
+pattern,rank,coefficient_jacobian_f,node_jacobian_f,coefficient_jacobian_g,node_jacobian_g,ideal_narrow_norm,ideal_wide_norm,ideal_solve_effect,quadratic_effect,precision_relative_difference,bits
+smooth,23,3.1273032220617663,1.1521687371310627,3.4433025456616813,1.2722288706290619,0.66143464663656815,0.66143464663656792,2.0428397192778489e-16,3.5673179308820414e-31,9.543248089686519e-40,256

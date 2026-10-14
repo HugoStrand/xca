@@ -1,0 +1,15 @@
+{
+  "base_revision": "128853f75d5cc125d042cc7f94fb5056854a6efd",
+  "source_sha256": {
+    "experiments/block_sparse_cuda/scalar_audit/sensitivity.hpp": "e5898a455921d4efecbc035caffea09256a7a8bcc12f072b8bd79c84dc6b72ce",
+    "experiments/block_sparse_cuda/scalar_audit/stages.cpp": "9e46116c1185a983efdadc8c9514cce40a370097a971918be02334049bc5ba7d"
+  },
+  "binary_sha256": "002e9aaf98ab40fb17270d0f515f60f682b3dfcc2b2ce77a4272416bb2722123",
+  "command": [
+    "cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_stage_audit",
+    "--sensitivity",
+    "/tmp/xca-sensitivity-03.csv"
+  ],
+  "returncode": 0,
+  "notes": "224/320-bit convergence and analytic identities pass; all42GPU rows match preceding stage artifact. Initial160-bit partial output failed precision check; no capturehash claim. Not an interval certificate."
+}
