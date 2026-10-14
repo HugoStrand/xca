@@ -27,3 +27,12 @@ with benchmarks/tests and native block-sparse kernels enabled. CTest entry is
 `experiments/block_sparse_cuda/scalar_cutoff`. Compare the benchmark with retained
 constants GPU and matched CPU, including inclusive replay overhead. No Python/MPI
 selector or production default exposes this candidate.
+
+`CutoffReplayAcrossCohortsAndPoleChoices` calibrates an isolated order-two path,
+then probes surrounding cutoff amplitudes in a six-mode eight-index range with
+more than 512 accepted paths and a tail. It covers a zero pole and two nonzero poles,
+compares contributing counts/output against ordered general CUDA, and requires
+exact repeated results. A private `last_scalar_replays()` observer proves actual
+replay crosses the 512-lane boundary for the zero-pole case and resets per call.
+Replay input owners are copied lazily once per cohort, reused across its sensitive
+lanes, and released at cohort completion; there is no cross-call input cache.

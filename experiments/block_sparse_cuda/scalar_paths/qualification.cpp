@@ -204,6 +204,56 @@ TEST(ScalarPathQualification, ActiveOrderSixCutoffAndReallocatedInputs) {
 }
 
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+TEST(ScalarPathQualification, CutoffReplayAcrossCohortsAndPoleChoices) {
+  triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 20., 1e-10, false);
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
+  for (auto poles : {nda::vector<double>{0.}, nda::vector<double>{-1.5, .6}}) {
+    SCOPED_TRACE(poles.size());
+    auto coefficients = [&](int modes) {
+      auto coeff = nda::zeros<nda::dcomplex>(poles.size(), modes, modes);
+      for (long p = 0; p < poles.size(); ++p)
+        for (int i = 0; i < modes; ++i) coeff(p, i, i) = 1.;
+      return coeff;
+    };
+    auto small_ad = block_sparse_bench::atom(2, "occupation");
+    auto small_model = gpu::export_model(small_ad, coefficients(2));
+    auto small_G = block_sparse_bench::propagator(small_ad, mesh);
+    for (long b = 0; b < small_G.size(); ++b) small_G[b].data() = 1.;
+    gpu::DiagramEvaluator calibration(small_model, poles, mesh, 1024ULL * 1024 * 1024,
+                                    32ULL * 1024 * 1024, gpu::SparseBackend::Ordered);
+    auto unit = calibration.compute_self_energy_range(small_G, topology, 1, 2);
+    ASSERT_EQ(calibration.last_contributing_paths(), 1);
+    ASSERT_GT(norm(unit), 1e-16);
+    // Three G factors per order-two lane. Calibration uses one isolated path.
+    double center = std::cbrt(1e-16 / norm(unit));
+    auto ad = block_sparse_bench::atom(6, "occupation");
+    auto model = gpu::export_model(ad, coefficients(6));
+    auto G = block_sparse_bench::propagator(ad, mesh);
+    gpu::DiagramEvaluator reference(model, poles, mesh, 1024ULL * 1024 * 1024,
+                                  32ULL * 1024 * 1024, gpu::SparseBackend::Ordered);
+    gpu::ScalarPathEvaluator candidate(model, poles, mesh);
+    for (double amplitude : {center * (1. - 1e-8), center * (1. - 1e-12), std::nextafter(center, 0.), center,
+                             std::nextafter(center, 1.), center * (1. + 1e-12), center * (1. + 1e-8)}) {
+      SCOPED_TRACE(amplitude);
+      for (long b = 0; b < G.size(); ++b) G[b].data() = amplitude;
+      auto expected = reference.compute_self_energy_range(G, topology, 1, 9);
+      auto actual = candidate.compute_self_energy_range(G, topology, 1, 9);
+      ASSERT_GT(candidate.last_path_counts().accepted, 512);
+      ASSERT_NE(candidate.last_path_counts().accepted % 512, 0);
+      EXPECT_EQ(candidate.last_contributing_paths(), reference.last_contributing_paths());
+      compare(actual, expected);
+      auto replay_count = candidate.last_scalar_replays();
+      if (amplitude == center) {
+        EXPECT_GT(replay_count, 0);
+        if (poles.size() == 1) EXPECT_GT(replay_count, 512);
+      }
+      auto repeated = candidate.compute_self_energy_range(G, topology, 1, 9);
+      EXPECT_EQ(candidate.last_scalar_replays(), replay_count);
+      for (long b = 0; b < G.size(); ++b) EXPECT_EQ(nda::max_element(nda::abs(repeated[b].data() - actual[b].data())), 0.);
+    }
+  }
+}
+
 TEST(ScalarPathQualification, AdjacentOrderSixCutoffMatchesReference) {
   auto ad = block_sparse_bench::atom(2, "occupation");
   auto coeff = nda::zeros<nda::dcomplex>(1, 2, 2);

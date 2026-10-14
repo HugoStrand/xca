@@ -1,13 +1,4 @@
-template <typename Input>
-Tensor scalar_reference_value(std::vector<Input> const &G, Backbone &backbone, SelfEnergyPath const &path) {
-  // Copy to owned tensors because the general edge API takes owning inputs.
-  // This slow diagnostic route runs only for cutoff-sensitive completed lanes.
-  std::vector<Tensor> input;
-  input.reserve(G.size());
-  for (auto const &block : G) {
-    input.emplace_back(block.shape());
-    ops->copy(block, input.back());
-  }
+Tensor scalar_reference_value(std::vector<Tensor> const &input, Backbone &backbone, SelfEnergyPath const &path) {
   Tensor value(input[path.propagator_blocks[0]].shape());
   ops->copy(input[path.propagator_blocks[0]], value);
   for (int v = 1; v < path.special_vertex; ++v) {

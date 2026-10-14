@@ -1,5 +1,6 @@
 using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+std::size_t scalar_replayed_lanes = 0;
 #include "../scalar_cutoff/replay.inc"
 #endif
 bool scalar_eligible() const {
@@ -61,12 +62,21 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   auto host = nda::to_host(T);
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
   bool replayed = false;
+  std::vector<Tensor> reference_input;
   for (long lane = 0; lane < count; ++lane) {
     double magnitude = 0;
     for (long t = 0; t < r; ++t) magnitude = std::max(magnitude, std::abs(host(t, lane, 0)));
     // Experimental uncertainty band, not a proven error bound for arbitrary paths.
     if (std::abs(magnitude - 1e-16) <= 1e-26) {
-      auto value = scalar_reference_value(G, work[lane].first, work[lane].second);
+      if (reference_input.empty()) {
+        reference_input.reserve(G.size());
+        for (auto const &block : G) {
+          reference_input.emplace_back(block.shape());
+          ops->copy(block, reference_input.back());
+        }
+      }
+      auto value = scalar_reference_value(reference_input, work[lane].first, work[lane].second);
+      ++scalar_replayed_lanes;
       auto reference_host = nda::to_host(value);
       for (long t = 0; t < r; ++t) host(t, lane, 0) = reference_host(t, 0, 0);
       replayed = true;

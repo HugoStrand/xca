@@ -13,6 +13,12 @@ string(REPLACE "      if (placement != OutputPlacement::Resident && placement !=
   "      if (placement != OutputPlacement::Resident) throw std::invalid_argument(\"Scalar experiment requires resident output\");\n      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" source "${source}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" header "${header}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" source "${source}")
+string(REPLACE "std::size_t last_contributing_paths() const;"
+  "std::size_t last_contributing_paths() const;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    std::size_t last_scalar_replays() const;\n#endif" header "${header}")
+string(REPLACE "std::size_t ScalarPathEvaluator::last_contributing_paths() const { return impl_->contributions; }"
+  "std::size_t ScalarPathEvaluator::last_contributing_paths() const { return impl_->contributions; }\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n  std::size_t ScalarPathEvaluator::last_scalar_replays() const { return impl_->scalar_replayed_lanes; }\n#endif" source "${source}")
+string(REPLACE "x.contributions   = 0;"
+  "x.contributions   = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    x.scalar_replayed_lanes = 0;\n#endif" source "${source}")
 set(source "#include <map>\n${source}")
 string(REPLACE "\"diagram_evaluator.hpp\"" "\"scalar_evaluator.hpp\"\n#include \"../scalar_edges/scalar_pack.hpp\"" source "${source}")
 string(REPLACE "    void evaluate(std::vector<Tensor>" "#include \"scheduler.inc\"\n    void evaluate(std::vector<Tensor>" source "${source}")
