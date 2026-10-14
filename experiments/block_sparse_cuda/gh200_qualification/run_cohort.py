@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
-    parser.add_argument('--cohort', choices=['initial', 'scalar'], default='initial')
+    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density'], default='initial')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -49,6 +49,19 @@ def main():
             ('scalar-n10', 10, 'occupation', 'se', 2, False, 1, 1, 'crossing'),
             ('scalar-order6', 4, 'occupation', 'se', 6, False, 1, 8, 'chain'),
             ('mixed-fallback', 4, 'mixed', 'correlator', 2, True, 0, 1, 'crossing'),
+        ]
+    if args.cohort == 'density':
+        experiment = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_sets'
+        binaries = {
+            'cpu': experiment/'block_sparse_cpu_density_sets_benchmark',
+            'general': experiment/'block_sparse_general_density_sets_benchmark',
+            'batched': experiment/'block_sparse_scalar_density_sets_benchmark',
+        }
+        cases = [
+            ('density-n4-nca', 4, 'occupation', 'se', 1, True, 0, 2, 'crossing'),
+            ('density-n4-oca', 4, 'occupation', 'se', 2, True, 1, 8, 'crossing'),
+            ('density-n6-oca', 6, 'occupation', 'se', 2, True, 1, 8, 'crossing'),
+            ('density-n8-oca', 8, 'occupation', 'se', 2, True, 1, 1, 'crossing'),
         ]
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
                     cohort=args.cohort,

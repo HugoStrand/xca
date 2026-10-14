@@ -99,7 +99,11 @@ namespace block_sparse_bench {
        output);
     return result;
   }
-  template <typename Evaluator, typename Factory> int run(int argc, char **argv, char const *backend, Factory factory, bool exact_control = false) {
+  struct DefaultInteractionFixture {
+    void operator()(CallOptions const &, std::vector<many_body_operator_complex> &, nda::array<dcomplex, 3> &) const {}
+  };
+  template <typename Evaluator, typename Factory, typename InteractionFixture = DefaultInteractionFixture>
+  int run(int argc, char **argv, char const *backend, Factory factory, bool exact_control = false, InteractionFixture interaction_fixture = {}) {
     try {
       auto o     = options(argc, argv);
       auto start = clock_type::now();
@@ -116,6 +120,7 @@ namespace block_sparse_bench {
       auto dyn = nda::zeros<dcomplex>(2, interactions.size(), interactions.size());
       for (long p = 0; p < 2; ++p)
         for (long i = 0; i < long(interactions.size()); ++i) dyn(p, i, i) = .03 - .01 * p;
+      interaction_fixture(o, interactions, dyn);
       auto atom_ms = milliseconds(start);
       nda::vector<double> poles{-1.5, .6};
       start          = clock_type::now();

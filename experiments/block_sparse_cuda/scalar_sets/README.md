@@ -26,3 +26,27 @@ block connectivity in this fixture; this does not change production symmetry ana
 The generic benchmark frontend does not itself guarantee a multi-field set; inspect
 the fixture before inferring performance for this capability. Dedicated multi-set
 timing and GH200 evidence remain required before promotion.
+
+## Explicit density-set call benchmark
+
+`block_sparse_cpu_density_sets_benchmark`, `block_sparse_general_density_sets_benchmark`
+and `block_sparse_scalar_density_sets_benchmark` use a common explicit fixture:
+up to three shifted density operators, grouped by identical scalar connectivity,
+with complex Hermitian retarded coefficients. Setup validates scalar dimensions
+and a multi-field symmetry set; require `--dynamic --partition occupation --observable se`.
+CPU uses the unchanged evaluator; general CUDA selects ordered sparse operations;
+batched CUDA selects this candidate. The CPU binary also builds without CUDA.
+
+The shared complete-call runner accepts an optional interaction-fixture callback,
+leaving its default workload unchanged. Both the backend and its CPU numerical
+control receive the same substituted fixture. CPU setup additionally exports a
+model for validation; it is charged to setup, not synchronous call latency.
+Timing includes discovery, input packing/transfers, special sums, cutoff/replay
+and output construction. It excludes setup, warm-up and numerical-control calls.
+
+Use `gh200_qualification/run_cohort.py --cohort density` with a build directory,
+output directory and revision JSON to record four bounded N=4/6/8 cases across
+three routes, three samples each. Revisions/source and binary hashes are retained.
+This CPU control is not an algorithm-matched batched multi-set implementation;
+that comparison and GH200 evidence are promotion gates. Ordinary benchmark screens
+do not replace the cutoff-adjacent and ownership tests.
