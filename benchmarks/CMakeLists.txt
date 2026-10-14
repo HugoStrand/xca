@@ -54,3 +54,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/convolution
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/convolution_rows)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/phase_liveness
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/phase_liveness)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/host_inputs
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/host_inputs)
