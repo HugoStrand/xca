@@ -1,0 +1,12 @@
+# The experiment has native kernels but never changes production dispatch.
+if(NOT nda_WITH_CUDA_SUPPORT OR NOT CMAKE_CUDA_COMPILER)
+  return()
+endif()
+enable_language(CUDA)
+find_package(CUDAToolkit REQUIRED)
+add_library(block_sparse_operator_kernels STATIC kernels.cu)
+set_target_properties(block_sparse_operator_kernels PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+target_compile_options(block_sparse_operator_kernels PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>)
+target_link_libraries(block_sparse_operator_kernels PUBLIC CUDA::cudart)
+xca_add_benchmark(block_sparse_operator_apply)
+target_link_libraries(block_sparse_operator_apply PRIVATE block_sparse_operator_kernels)
