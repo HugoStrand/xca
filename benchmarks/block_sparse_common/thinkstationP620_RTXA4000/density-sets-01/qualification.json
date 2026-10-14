@@ -1,0 +1,17 @@
+{
+  "recorded_code_revision": "948b87811d52805e8e4a43726b0b73b3f06c08dd",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "cuda_cache": {
+    "CMAKE_CXX_COMPILER": "/usr/bin/clang++-19",
+    "CMAKE_CUDA_COMPILER": "/usr/local/cuda/bin/nvcc",
+    "CMAKE_BUILD_TYPE": "Release",
+    "XCA_CUDA_BLOCK_SPARSE": "AUTO",
+    "XCA_CUDA_SMALL": "ON"
+  },
+  "gpu": "NVIDIA RTX A4000, 580.178.04, 16376 MiB",
+  "threads": {
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1
+  },
+  "arrhenius_gpu_hours_added": 0
+}
