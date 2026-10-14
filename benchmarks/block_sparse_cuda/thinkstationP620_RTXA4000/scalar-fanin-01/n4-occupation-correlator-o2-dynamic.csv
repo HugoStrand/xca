@@ -1,0 +1,4 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cuda_scalar_fanin,4,occupation,1,correlator,crossing,2,23,16,1,0,1,0,5.0688680000000002,162.597713,1.362195,10.621463,0.069519417663701011,6.9388939039072284e-17,9.9812313409672228e-16,451752,33624096,0,64,7,57
+cuda_scalar_fanin,4,occupation,1,correlator,crossing,2,23,16,1,0,1,1,5.0688680000000002,162.597713,1.362195,10.515233,0.069519417663701011,6.9388939039072284e-17,9.9812313409672228e-16,451944,33624096,0,64,7,57
+cuda_scalar_fanin,4,occupation,1,correlator,crossing,2,23,16,1,0,1,2,5.0688680000000002,162.597713,1.362195,10.51877,0.069519417663701011,6.9388939039072284e-17,9.9812313409672228e-16,451944,33624096,0,64,7,57

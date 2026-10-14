@@ -66,3 +66,7 @@ workspace-bound source had not rebuilt; corrected data is in scalar-path-02.
 [Matched scalar CPU/GPU scheduling](scalar-matched-01/README.md) isolates algorithmic
 batching gains. The previous hoisted CPU comparison is not evidence that scalar
 GPU scheduling beats matched CPU; this full-call screen favors CPU in that regime.
+
+[Output-owned scalar GPU accumulation](scalar-fanin-01/README.md) improves the
+serial candidate while retaining original contribution order. The measured scalar
+GPU still trails matched CPU; no production promotion follows from this screen.
