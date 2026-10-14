@@ -35,6 +35,9 @@ def main():
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.hpp'),
                *ROOT.glob('benchmarks/block_sparse_common/*.[ch]pp'),
                *ROOT.glob('benchmarks/block_sparse_*/*_benchmark.cpp'), Path(__file__)]
+    sources += [*ROOT.glob('experiments/block_sparse_cuda/**/*.cpp'),
+                *ROOT.glob('experiments/block_sparse_cuda/**/*.hpp'),
+                *ROOT.glob('experiments/block_sparse_cuda/**/CMakeLists.txt')]
     sources += [ROOT/'c++/triqs_xca'/p for p in ('backbone.cpp', 'backbone.hpp', 'hyb.cpp', 'hyb.hpp', 'operator_statistics.hpp')]
     manifest = dict(schema='block-sparse-call-v1', host=platform.node(), platform=platform.platform(),
                     cpu_info=Path('/proc/cpuinfo').read_text().split('\n\n')[0],
