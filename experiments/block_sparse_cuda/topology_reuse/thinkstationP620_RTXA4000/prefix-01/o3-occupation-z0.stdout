@@ -1,0 +1,4 @@
+stage,topologies,order,modes,partition,zero_every,visited_paths,truncated,occurrences,unique_keys,cross_topology_keys,distinct_topology_reuses,unique_payload_bytes
+edge,4,3,4,occupation,0,20,0,36,13,6,15,4784
+root,4,3,4,occupation,0,20,0,20,7,3,9,2576
+vertex,4,3,4,occupation,0,20,0,36,13,6,15,4784

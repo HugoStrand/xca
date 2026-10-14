@@ -29,3 +29,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/compact_dlr
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/compact_dlr)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/nca_admission
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/nca_admission)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/topology_reuse
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/topology_reuse)
