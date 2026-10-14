@@ -1,5 +1,38 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Initial matched GH200 baseline
+
+Previous turn was progress: first target C++ smoke qualified 20 GoogleTests and
+committed recipe/evidence separately. Inspected complete-call fixtures/frontends,
+selected seven cases (scalar zero/active windows, mixed retarded correlator, number
+retarded SPGF, order-three SE, N=8/N=10 NCA). Added a bounded recorder with source
+archive revisions, runner/binary hashes, raw samples, 120-second process timeouts and
+immediate failure stop. Reused the pinned 3f462c3 Arm source/build, enabling benchmarks
+and building only unchanged CPU/library CUDA/ordered CUDA frontends. No source-tree,
+shared installation or dependency mutation. Shell syntax/help/diff checks passed;
+sbatch --test-only succeeded before exactly one submission, job 3818907.
+
+Job completed exit 0 in 91 seconds, one GPU, billing TRES 1, nominal 0.02528 GPU-hours.
+No additional CPU/memory request; 72 CPUs provided, builds capped at six. Batch RSS
+1,062,976 KiB. All 21 processes and 63 timed samples passed numerical/repeatability
+screens; maximum absolute error 2.865e-14. Retrieved raw samples/manifests/accounting
+to CPU/CUDA/common benchmark folders, machine Arrhenius_GH200, campaign initial-01.
+Recipe and benchmark evidence commits are separate from this plan/log checkpoint.
+
+Ordered CUDA median N=8/N=10 NCA 67.557/169.533 ms versus CPU 98.369/4827.384 ms:
+1.46x/28.47x. Scalar active 8.511 ms versus CPU .815 ms; mixed retarded correlator
+11.039 versus 1.059 ms. N=6 retarded SPGF 67.671 versus 22.754 ms; N=6 order-three
+SE 26.392 versus 27.965 ms, weak signal. Scalar first=0 has zero signal and rejects
+all 64 paths; first=1 accepts four. This reinforces the many-small batching gate;
+it does not establish dispatch thresholds, algorithm-matched CPU superiority, whole
+topology-sum/Solver speedup or full N=14 qualification. Three samples/allocation and
+single indexed crossing topologies are explicit limitations. No backend policy changed.
+
+Goal active. Next qualify retained scalar-path batching on GH200 with active/rejected
+windows and exact semantic controls, and continue Python/MPI/capacity gates. Total
+target allocation so far 211 seconds, nominal .05861 GPU-hours, within user's shared
+100-hour monthly ceiling. No install/push. Full remote logs/cache retained.
+
 ## 2026-10-14 — First GH200 smoke qualification
 
 Previous goal turn was progress: committed the user's 100 GPU-hours/month constraint.

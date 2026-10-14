@@ -42,6 +42,19 @@ C++ CTests (20 GoogleTests) passed in 10.63 seconds. The one-GPU allocation last
 `experiments/block_sparse_cuda/gh200_qualification/Arrhenius_GH200/smoke-01`.
 Python/MPI, full-suite, target performance and large-system gates remain open.
 
+Initial performance evidence: job 3818907 reused that Arm build and completed
+seven matched CPU/library-CUDA/ordered-CUDA cases (63 samples) in 91 seconds of
+one-GPU allocation, nominally 0.02528 GPU-hours. Numerical screens and exact
+repeatability passed. Ordered CUDA beats the unchanged CPU on sampled N=8/N=10
+number-sector NCA calls (1.46x/28.47x), but loses on scalar/mixed small cases and
+N=6 retarded SPGF. One scalar window rejects every path; retain it as overhead
+evidence, alongside its active neighboring window. Rank 23, one topology/index
+and three samples do not establish a dispatch crossover or full Solver speedup.
+Evidence: `benchmarks/block_sparse_common/Arrhenius_GH200/initial-01`.
+Next target experiment: retained scalar-path batching with semantic gates and
+active/rejected windows. Initial target allocation total is 211 seconds, nominally
+0.05861 GPU-hours. Broader Python/MPI, capacity and target policies remain open.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
