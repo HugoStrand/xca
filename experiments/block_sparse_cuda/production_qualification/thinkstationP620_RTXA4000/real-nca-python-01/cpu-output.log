@@ -1,0 +1,25 @@
+Start testing: Oct 14 18:50 CEST
+----------------------------------------------------------
+55/84 Testing: Py_block_sparse_cuda
+55/84 Test: Py_block_sparse_cuda
+Command: "/usr/bin/python3" "/home/hugstr/dev/xca/test/python//block_sparse_cuda.py"
+Directory: /home/hugstr/dev/xca/cbuild/test/python/
+"Py_block_sparse_cuda" start time: Oct 14 18:50 CEST
+Output:
+----------------------------------------------------------
+Starting serial run at: 2026-10-14 18:50:06.536436
+sss.sssss
+----------------------------------------------------------------------
+Ran 9 tests in 0.155s
+
+OK (skipped=8)
+Warning: could not identify MPI environment!
+<end of output>
+Test time =   0.39 sec
+----------------------------------------------------------
+Test Passed.
+"Py_block_sparse_cuda" end time: Oct 14 18:50 CEST
+"Py_block_sparse_cuda" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 18:50 CEST

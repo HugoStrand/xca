@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda-library-api
+Test project /home/hugstr/dev/xca/cbuild-cuda-library-api
+    Start 63: Py_block_sparse_cuda
+1/1 Test #63: Py_block_sparse_cuda .............   Passed   13.08 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  13.08 sec

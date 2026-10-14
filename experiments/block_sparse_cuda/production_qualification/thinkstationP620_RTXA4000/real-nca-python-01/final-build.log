@@ -1,0 +1,7 @@
+[  8%] Built target triqs_xca_small_kernels
+[ 16%] Built target triqs_xca_sparse_kernels
+[ 33%] Built target c2py
+[ 91%] Built target triqs_xca_c
+[100%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca_cuda.dir/_triqs_xca_cuda.cpp.o
+[100%] Linking CXX shared module _triqs_xca_cuda.so
+[100%] Built target _triqs_xca_cuda

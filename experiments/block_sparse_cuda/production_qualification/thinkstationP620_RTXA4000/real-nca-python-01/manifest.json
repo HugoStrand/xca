@@ -1,0 +1,36 @@
+{
+  "source_commit": "fbbde67",
+  "scope": "Focused consolidated binding/Solver/MPI integration; not a full-suite or GH200 qualification",
+  "tests": {
+    "native": "9 methods, 29.44 s CTest",
+    "cpu": "1 active archive/default/capability method, 8 skipped, .40 s CTest",
+    "library_only": "8 active methods, 1 skipped, 13.08 s CTest",
+    "mpi": "2 ranks each pass 9 methods, 134.039 s; launcher exit 0"
+  },
+  "capabilities": {
+    "cpu": {
+      "real_nca": false,
+      "ordered": false,
+      "mapped": false,
+      "cuda_module_loaded": false
+    },
+    "native": {
+      "real_nca": true,
+      "ordered": true,
+      "mapped": true,
+      "cuda_module_loaded": true
+    },
+    "library": {
+      "real_nca": false,
+      "ordered": false,
+      "mapped": false,
+      "cuda_module_loaded": true
+    }
+  },
+  "binary_sha256": {
+    "cbuild-cuda": "9065151a2e3b557d7f8025d0734646b0e978ef7c9f828fa6420ed2613add8a9f",
+    "cbuild-cuda-library-api": "d58a7ebd32c498e42ce5a02289745368beaa7f0391cf6b6ea9c14b3a94bf49bf"
+  },
+  "provenance_note": "Feature tests preceded whitespace-only C++ formatting; final committed source builds and capability imports pass after formatting. No runtime logic changed between those steps.",
+  "cluster_gpu_hours_added": 0
+}
