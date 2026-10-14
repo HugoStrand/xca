@@ -1,10 +1,19 @@
 using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
+#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+#include "../scalar_cutoff/replay.inc"
+#endif
 bool scalar_eligible() const {
   return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })
      && std::all_of(model.sets().begin(), model.sets().end(), [](auto const &set) { return set.size() == 1; });
 }
 std::size_t scalar_extra_bound() const {
-  return scalar_eligible() ? checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1)) : 0;
+  if (!scalar_eligible()) return 0;
+  auto bound = checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1));
+#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+  // General replay owns an extra copy of G and one returned scalar lane.
+  bound = checked_add(bound, checked_add(tensor_bytes(r, model.dimensions().size(), 1), tensor_bytes(r, 1, 1)));
+#endif
+  return bound;
 }
 template <typename Input, typename Output>
 void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::vector<ScalarWork> &work,
@@ -50,6 +59,24 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   auto copy = [&](auto const &from, auto &to) { ops->copy(from, to); };
 #include "recipe.inc"
   auto host = nda::to_host(T);
+#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+  bool replayed = false;
+  for (long lane = 0; lane < count; ++lane) {
+    double magnitude = 0;
+    for (long t = 0; t < r; ++t) magnitude = std::max(magnitude, std::abs(host(t, lane, 0)));
+    // Experimental uncertainty band, not a proven error bound for arbitrary paths.
+    if (std::abs(magnitude - 1e-16) <= 1e-26) {
+      auto value = scalar_reference_value(G, work[lane].first, work[lane].second);
+      auto reference_host = nda::to_host(value);
+      for (long t = 0; t < r; ++t) host(t, lane, 0) = reference_host(t, 0, 0);
+      replayed = true;
+    }
+  }
+  if (replayed) {
+    T = Tensor(host);
+    ops->wait_for_default_uploads();
+  }
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_FANIN
   std::map<int, std::vector<long>> selected;
 #endif

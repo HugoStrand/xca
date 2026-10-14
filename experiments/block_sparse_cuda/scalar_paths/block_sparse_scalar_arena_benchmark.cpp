@@ -3,7 +3,9 @@
 #include "scalar_evaluator.hpp"
 #include "../../../benchmarks/block_sparse_common/call_runner.hpp"
 int main(int argc, char **argv) {
-#ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS
+#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+  constexpr auto backend = "cuda_scalar_cutoff_replay";
+#elif defined(XCA_EXPERIMENT_SCALAR_CONSTANTS)
   constexpr auto backend = "cuda_scalar_constants";
 #else
   constexpr auto backend = "cuda_scalar_arena";

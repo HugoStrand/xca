@@ -202,3 +202,54 @@ TEST(ScalarPathQualification, ActiveOrderSixCutoffAndReallocatedInputs) {
   std::cout << "Order-six relative error against long-double arithmetic: reference=" << reference_relative
             << " candidate=" << candidate_relative << " active_index=" << first << '\n';
 }
+
+#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+TEST(ScalarPathQualification, AdjacentOrderSixCutoffMatchesReference) {
+  auto ad = block_sparse_bench::atom(2, "occupation");
+  auto coeff = nda::zeros<nda::dcomplex>(1, 2, 2);
+  coeff(0, 0, 0) = 1.;
+  coeff(0, 1, 1) = 1.;
+  auto model = gpu::export_model(ad, coeff);
+  nda::vector<double> poles{0.};
+  block_sparse_bench::CallOptions options;
+  options.order = 6;
+  options.topology = "chain";
+  auto topology = block_sparse_bench::topology(options);
+  triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 10., 1e-10, false);
+  auto G = block_sparse_bench::propagator(ad, mesh);
+  gpu::DiagramEvaluator reference(model, poles, mesh);
+  gpu::ScalarPathEvaluator candidate(model, poles, mesh);
+  constexpr long first = 10; // Active index independently discovered by the prior control.
+  auto prepare = [&](double amplitude) { for (long b = 0; b < G.size(); ++b) G[b].data() = amplitude; };
+  auto contributes = [&](double amplitude) {
+    prepare(amplitude);
+    reference.compute_self_energy_range(G, topology, first, first + 1);
+    return reference.last_contributing_paths();
+  };
+  double low = 1e-4, high = 1.;
+  ASSERT_EQ(contributes(low), 0);
+  ASSERT_GT(contributes(high), 0);
+  for (int step = 0; step < 64; ++step) {
+    double middle = low + (high - low) / 2;
+    if (middle == low || middle == high) break;
+    if (contributes(middle) == 0) low = middle;
+    else high = middle;
+  }
+  ASSERT_EQ(std::nextafter(low, high), high);
+  for (double center : {low, high}) {
+    double amplitude = center;
+    for (int i = 0; i < 8; ++i) amplitude = std::nextafter(amplitude, 0.);
+    for (int i = 0; i < 17; ++i, amplitude = std::nextafter(amplitude, 1.)) {
+      SCOPED_TRACE(amplitude);
+      prepare(amplitude);
+      auto expected = reference.compute_self_energy_range(G, topology, first, first + 1);
+      auto actual = candidate.compute_self_energy_range(G, topology, first, first + 1);
+      ASSERT_GT(reference.last_path_counts().accepted, 0);
+      EXPECT_EQ(candidate.last_contributing_paths(), reference.last_contributing_paths());
+      double error = 0;
+      for (long b = 0; b < G.size(); ++b) error = std::max(error, nda::max_element(nda::abs(actual[b].data() - expected[b].data())));
+      EXPECT_LE(error, 1e-12 * std::max(norm(actual), norm(expected)) + 1e-30);
+    }
+  }
+}
+#endif
