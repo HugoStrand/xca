@@ -78,3 +78,8 @@ remain separate from profiler diagnostics; all prior candidates are retained.
 [Path-constant scalar coefficient preparation](scalar-constants-01/README.md)
 compares matched CPU and broadcast GPU variants, including fresh five-sample scalar
 controls. Local near-parity does not select production or GH200 dispatch.
+
+[Bounded special-vertex kappa retention](kappa-01/README.md) compares two cache caps
+against the ordered GPU reference. Inclusive gains on number-symmetry selections
+come with additional storage; analytic fourteen-mode envelopes motivate streaming
+or direct-mapping fusion instead of an unlimited resident cache.
