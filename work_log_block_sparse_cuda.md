@@ -1,5 +1,40 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Active high-order scalar arithmetic and ownership
+
+Previous turn was progress: GH200 scalar candidate qualified 14 semantic controls
+and matched timing cohort, but order-six window rejected every path. Kept further
+work local to preserve allocation. Added active order-six chain qualification with
+bounded metadata discovery (two modes, one zero pole, selected index 10). Asserts
+structural and arithmetic activity, compares contributing counts, brackets the
+completed-path cutoff with 24 probes and checks both sides at explicit 1e-4 amplitude
+margins. Separately allocated changed propagators keep old owners alive; reusing
+the old owner verifies the evaluator reads current inputs rather than cached pointers.
+
+Initial inherited 1e-13 output comparison failed: high-order differences are tiny
+absolutely but up to several e-13 relative. Counts agreed. Investigated with an
+independent long-double scalar self-energy oracle built from existing qualified
+precision primitives, retaining cached double LU/rank/hybridization constants and
+shared connectivity. Oracle measures reference 4.28209e-13 and candidate 3.89703e-13
+relative error. Both routes accumulate rounding; no arithmetic bug or tolerance
+change to older tests/production is inferred. New order-six control checks each route
+at 1e-12 against the oracle, matching the previously documented high-order diagnostic
+approach. It does not independently qualify traversal or DLR approximation accuracy.
+
+Focused constants test passed .796 s. Built all four scalar variants sequentially
+in the same tree, then their CTests passed 8.78/8.69/8.75/8.71 s, total 34.94 s.
+Constants memcheck of active order-six/changed-address control passed 4.322 s with
+zero errors and zero leaked bytes. All process handles terminal before checkpoint.
+Logs /tmp/xca-bs-scalar-highorder-{build,test,oracle-build,oracle-test,variants-build,
+variants-test,memcheck}.log. Test/helper documentation committed separately from
+this plan/log checkpoint. No new Arrhenius jobs; target allocation remains 301 s,
+nominal .08361 GPU-hours. No install/push or unrelated-work changes.
+
+Goal active. This closes a bounded active high-order case, not ULP-adjacent cutoff
+equivalence for arbitrary paths. Next investigate that stricter boundary behavior
+and broader poles/topologies/irregular scalar sets before production promotion;
+target rerun of new controls and Python/MPI/capacity gates remain outstanding.
+
 ## 2026-10-14 — GH200 scalar batching qualification
 
 Previous turn was progress: committed initial target matched baseline. Inspected the

@@ -68,6 +68,18 @@ experimental while closing those gates; no dispatch policy follows from this coh
 This job used 90 seconds, nominally 0.025 GPU-hours; total target allocation across
 the three jobs is 301 seconds, nominally 0.08361 GPU-hours.
 
+Local active-order-six gate: the scalar experiment now discovers an active chain
+index in a bounded metadata search (index 10 for the two-mode/one-zero-pole fixture).
+Ordinary-amplitude contributions, 24 cutoff-bisection probes, margin-separated
+threshold sides and separately allocated changed-input reuse pass across the four
+scalar variants. Initial 1e-13 comparison failed; independent long-double arithmetic
+finds reference/candidate errors about 4.28e-13/3.90e-13. Only this new order-six
+case uses a 1e-12 oracle bound; older comparisons and production policy are unchanged.
+Focused memcheck reports zero errors/leaks. This shares qualified connectivity and
+cached double constants, so it isolates arithmetic rather than DLR approximation.
+ULP-adjacent high-order cutoff behavior, broader poles/topologies/scalar sets and
+target rerun of the new control remain gates before promotion.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
