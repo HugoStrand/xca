@@ -33,3 +33,12 @@ investigate explicit return ownership separately, prefer resident execution when
 it fits, and retain sector streaming as a candidate capacity route. Large N=14
 systems, target hardware, input/slab streaming and independent peak traces remain
 unqualified.
+
+`outputs-03` rechecks the promoted production return move against an explicitly
+generated CopyOutputEvaluator and streaming. All 147 rows match outputs/counts
+exactly. Changed-G eight-mode medians are 21.375454/18.823287/18.766029 ms copy/
+production/streamed; ten-mode medians are 207.280464/162.649520/173.526853 ms.
+Production reduces local call time 11.94%/21.53% against copying in these selections.
+The device bound and CUDA arithmetic are unchanged by the return move. Source hashes
+record the promotion and copying-control generation. These are local API medians,
+not GH200 predictions or a whole-Solver improvement claim.
