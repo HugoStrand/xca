@@ -92,7 +92,7 @@ retain a separate diagonal buffer and validate the corresponding larger working 
 The C++ evaluator additionally accepts ``OutputPlacement::HostSectors`` and a host
 self-energy output payload budget (default 512 MiB). This keeps one output sector
 on device and the full output on host, preserving GPU accumulation order. Inputs
-remain resident. The device bound replaces one full output function with one maximum
+remain resident with the default storage policy. The device bound replaces one full output function with one maximum
 tile; host payload rejection precedes upload, including empty ranges. The host limit
 excludes caller input, metadata, allocator overhead and a transient sector download.
 Resident output remains the default. SPGF/correlator bounds and behavior are unchanged.
@@ -139,3 +139,29 @@ the latest evaluation. Device admission conservatively includes its
 workspace, even when a subsequent call selects the general route. Native-disabled
 builds reject explicit selection. Local RTX A4000 benchmarks guide development;
 the optimization target is GH200-class accelerators.
+
+Block-sparse CUDA storage policies
+---------------------------------
+
+``block_sparse_storage_policy='resident'`` keeps all device inputs and correlator
+fragments and remains the default. ``'host_inputs'`` uploads blocks when needed,
+releasing completed phase scratch. ``'stream_fragments'`` additionally retains only
+one correlator fragment per side, recomputing on a cache miss. These choices return
+complete observables; transfers and recomputation can cost latency. They are capacity
+options rather than automatic performance choices. The direct consolidated CUDA
+constructor uses ``storage_policy`` with the same values.
+
+Both nonresident choices require ``block_sparse_nca_backend='reference'``. They can
+combine with either existing output placement; ``'host_sectors'`` still requires a
+host output budget large enough for the entire self-energy. Caller host propagators,
+outputs, model construction and optional packing of a strided block are additional
+host costs. Device bounds exclude opaque library allocations and retain free-memory
+headroom. A bound below total device memory is not a guarantee of full solver fit.
+
+The preference is mutable and survives deepcopy/HDF; old archives restore ``'resident'``.
+Reinitialize the evaluator after changing preferences. CPU execution stores/validates
+these preferences without importing CUDA. In MPI initialization/evaluation errors are
+collective; incompatible policies do not silently fall back or override a selection.
+``last_fragment_builds()`` reports successful builds in the latest CUDA evaluator call.
+The optimization target is GH200-class hardware; local RTX A4000 timings are only
+screening evidence.

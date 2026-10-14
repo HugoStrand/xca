@@ -27,7 +27,16 @@ def block_sparse_real_nca_available():
     return import_module('._triqs_xca_cuda', __package__).block_sparse_real_nca_available()
 
 
-def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference', output_placement='resident', nca_backend='reference'):
+def block_sparse_storage_policy(value, nca_backend='reference'):
+    if value not in {'resident', 'host_inputs', 'stream_fragments'}:
+        raise ValueError("Block-sparse storage policy must be 'resident', 'host_inputs' or 'stream_fragments'")
+    if value != 'resident' and nca_backend == 'real_batch':
+        raise ValueError("Real NCA arena requires resident input storage")
+    return value
+
+
+def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference', output_placement='resident', nca_backend='reference', storage_policy='resident'):
+    block_sparse_storage_policy(storage_policy, nca_backend)
     if output_placement not in {'resident', 'host_sectors'}:
         raise ValueError("Block-sparse output placement must be 'resident' or 'host_sectors'")
     if operator_backend not in {'library', 'ordered'}:

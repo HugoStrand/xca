@@ -99,6 +99,16 @@ namespace xca_python {
       return NcaBackend::RealBatch;
     }
 
+    static triqs_xca::block_sparse::cuda::StoragePolicy select_storage(std::string const &name, std::string const &nca) {
+      using namespace triqs_xca::block_sparse::cuda;
+      if (name != "resident" && name != "host_inputs" && name != "stream_fragments")
+        throw std::invalid_argument("storage_policy must be resident, host_inputs or stream_fragments");
+      if (name != "resident" && nca == "real_batch") throw std::invalid_argument("Real NCA arena requires resident input storage");
+      if (name == "host_inputs") return StoragePolicy::HostInputs;
+      if (name == "stream_fragments") return StoragePolicy::StreamFragments;
+      return StoragePolicy::Resident;
+    }
+
     static triqs_xca::block_sparse::cuda::OutputPlacement select_placement(std::string const &name) {
       using namespace triqs_xca::block_sparse::cuda;
       if (name == "resident") return OutputPlacement::Resident;
@@ -114,13 +124,15 @@ namespace xca_python {
                              triqs::atom_diag::atom_diag<C> const &ad, std::size_t device_budget = 1024ULL * 1024 * 1024,
                              std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library",
                              std::string special_backend = "reference", std::string output_placement = "resident",
-                             std::size_t host_output_budget = 512ULL * 1024 * 1024, std::string nca_backend = "reference") {
+                             std::size_t host_output_budget = 512ULL * 1024 * 1024, std::string nca_backend = "reference",
+                             std::string storage_policy = "resident") {
+      auto storage   = select_storage(storage_policy, nca_backend);
       auto selected  = select_backend(operator_backend);
       auto special   = select_special(special_backend);
       auto placement = select_placement(output_placement);
       auto nca       = select_nca(nca_backend);
       evaluator_ = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients), poles, mesh, device_budget, sparse_budget,
-                                            selected, special, placement, host_output_budget, nca);
+                                            selected, special, placement, host_output_budget, nca, storage);
     }
     template <bool C>
     BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
@@ -128,13 +140,15 @@ namespace xca_python {
                              nda::array_const_view<nda::dcomplex, 3> interactions, std::size_t device_budget = 1024ULL * 1024 * 1024,
                              std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library",
                              std::string special_backend = "reference", std::string output_placement = "resident",
-                             std::size_t host_output_budget = 512ULL * 1024 * 1024, std::string nca_backend = "reference") {
+                             std::size_t host_output_budget = 512ULL * 1024 * 1024, std::string nca_backend = "reference",
+                             std::string storage_policy = "resident") {
+      auto storage   = select_storage(storage_policy, nca_backend);
       auto selected  = select_backend(operator_backend);
       auto special   = select_special(special_backend);
       auto placement = select_placement(output_placement);
       auto nca       = select_nca(nca_backend);
       evaluator_     = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
-                                                device_budget, sparse_budget, selected, special, placement, host_output_budget, nca);
+                                                device_budget, sparse_budget, selected, special, placement, host_output_budget, nca, storage);
     }
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_self_energy_backbones(t); }
     long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_single_ptcle_gf_backbones(t); }
@@ -161,6 +175,7 @@ namespace xca_python {
     }
     std::size_t self_energy_storage_bound() const { return evaluator_->self_energy_storage_bound(); }
     std::size_t self_energy_storage_bound(nda::array_const_view<int, 2> topology) const { return evaluator_->self_energy_storage_bound(topology); }
+    std::size_t last_fragment_builds() const { return evaluator_->last_fragment_builds(); }
     std::size_t last_nca_batch_paths() const { return evaluator_->last_nca_batch_paths(); }
     std::size_t correlator_storage_bound(long mu, long kap) const { return evaluator_->correlator_storage_bound(mu, kap); }
   };
@@ -172,19 +187,19 @@ namespace xca_python {
 } // namespace xca_python
 namespace c2py_module {
   using BlockSparseCudaDiagramEvaluator = xca_python::BlockSparseCudaEvaluator;
-  using xca_python::block_sparse_real_nca_available;
   using xca_python::block_sparse_mapped_available;
   using xca_python::block_sparse_ordered_available;
+  using xca_python::block_sparse_real_nca_available;
 } // namespace c2py_module
 using block_evaluator = xca_python::BlockSparseCudaEvaluator;
 #define BLOCK_BIND(C, PREFIX)                                                                                                                        \
-  PREFIX template block_evaluator::BlockSparseCudaEvaluator(nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>,                 \
-                                                            triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &, std::size_t,            \
-                                                            std::size_t, std::string, std::string, std::string, std::size_t, std::string);          \
+  PREFIX template block_evaluator::BlockSparseCudaEvaluator(                                                                                         \
+     nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>, triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,       \
+     std::size_t, std::size_t, std::string, std::string, std::string, std::size_t, std::string, std::string);                                        \
   PREFIX template block_evaluator::BlockSparseCudaEvaluator(                                                                                         \
      nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>, triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,       \
      std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<nda::dcomplex, 3>, std::size_t, std::size_t,           \
-     std::string, std::string, std::string, std::size_t, std::string);                                                                              \
+     std::string, std::string, std::string, std::size_t, std::string, std::string);                                                                  \
   PREFIX template nda::array<nda::dcomplex, 3> block_evaluator::compute_one_time_correlator_range(                                                   \
      triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>, std::vector<triqs::operators::many_body_operator_complex> const &,                          \
      std::vector<triqs::operators::many_body_operator_complex> const &, triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, long, \

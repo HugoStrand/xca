@@ -1,4 +1,5 @@
 import copy
+import sys
 from itertools import product
 import tempfile
 from pathlib import Path
@@ -12,7 +13,7 @@ from triqs_xca import Solver, gpu
 from triqs_xca._backend_config import CUDA_ENABLED
 
 
-def make_solver(backend='cpu', partition='number', dynamic=False, operator_backend='library', special_backend='reference', output_placement='resident', host_output_budget=512*1024*1024, nca_backend='reference'):
+def make_solver(backend='cpu', partition='number', dynamic=False, operator_backend='library', special_backend='reference', output_placement='resident', host_output_budget=512*1024*1024, nca_backend='reference', storage_policy='resident'):
     Q = sum(n('f', i) for i in range(3))
     H = sum((.13+.07*i)*n('f', i) for i in range(3))
     H += sum(.2*n('f', i)*n('f', j) for i in range(3) for j in range(i))
@@ -25,7 +26,7 @@ def make_solver(backend='cpu', partition='number', dynamic=False, operator_backe
     sym = {'occupation': 'automatic', 'number': [Q],
            'mixed': [n('f', 0)+n('f', 1), n('f', 2)]}[partition]
     S = Solver(H, 2., 20., 1e-10, [['f', 3]], conserved_operators=sym,
-               verbose=False, block_sparse_backend=backend, block_sparse_operator_backend=operator_backend, block_sparse_special_backend=special_backend, block_sparse_output_placement=output_placement, block_sparse_host_output_budget=host_output_budget, block_sparse_nca_backend=nca_backend)
+               verbose=False, block_sparse_backend=backend, block_sparse_operator_backend=operator_backend, block_sparse_special_backend=special_backend, block_sparse_output_placement=output_placement, block_sparse_host_output_budget=host_output_budget, block_sparse_nca_backend=nca_backend, block_sparse_storage_policy=storage_policy)
     coeff = np.zeros((2, 3, 3), complex)
     for p in range(2):
         coeff[p] = np.eye(3)*(.3-.1*p)
@@ -45,7 +46,7 @@ class BlockSparseCudaTests(unittest.TestCase):
     def test_preferences_validation_and_archives(self):
         for kwargs in ({'block_sparse_backend': 'typo'},
                        {'block_sparse_backend': 'cuda', 'conserved_operators': []},
-                       {'block_sparse_operator_backend': 'typo'}, {'block_sparse_special_backend': 'typo'}, {'block_sparse_nca_backend': 'typo'}, {'block_sparse_output_placement': 'typo'}, {'block_sparse_host_output_budget': -1}, {'block_sparse_host_output_budget': True}, {'block_sparse_workspace_budget': 0}, {'block_sparse_operator_budget': True}):
+                       {'block_sparse_storage_policy': 'typo'}, {'block_sparse_storage_policy': 'host_inputs', 'block_sparse_nca_backend': 'real_batch'}, {'block_sparse_operator_backend': 'typo'}, {'block_sparse_special_backend': 'typo'}, {'block_sparse_nca_backend': 'typo'}, {'block_sparse_output_placement': 'typo'}, {'block_sparse_host_output_budget': -1}, {'block_sparse_host_output_budget': True}, {'block_sparse_workspace_budget': 0}, {'block_sparse_operator_budget': True}):
             with self.assertRaises(ValueError):
                 Solver(n('f', 0), 2., 10., 1e-10, [['f', 1]], verbose=False, **kwargs)
         S = make_solver('cuda', operator_backend='ordered', special_backend='mapped', output_placement='host_sectors', host_output_budget=123456, nca_backend='real_batch')
@@ -71,18 +72,91 @@ class BlockSparseCudaTests(unittest.TestCase):
             self.assertEqual(restored.block_sparse_workspace_budget, S.block_sparse_workspace_budget)
             self.assertFalse(hasattr(restored, 'd'))
         data = S.__reduce_to_dict__()
-        for key in ('block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend', 'block_sparse_output_placement', 'block_sparse_host_output_budget', 'block_sparse_nca_backend'):
+        for key in ('block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend', 'block_sparse_output_placement', 'block_sparse_host_output_budget', 'block_sparse_nca_backend', 'block_sparse_storage_policy'):
             data.pop(key)
         restored = Solver.__factory_from_dict__('Solver', data)
         self.assertEqual(restored.block_sparse_backend, 'cpu')
         self.assertEqual(restored.block_sparse_operator_backend, 'library')
         self.assertEqual(restored.block_sparse_special_backend, 'reference')
         self.assertEqual(restored.block_sparse_nca_backend, 'reference')
+        self.assertEqual(restored.block_sparse_storage_policy, 'resident')
         self.assertEqual(restored.block_sparse_output_placement, 'resident')
         self.assertEqual(restored.block_sparse_host_output_budget, 512*1024*1024)
         if not CUDA_ENABLED:
             self.assertFalse(gpu.block_sparse_real_nca_available())
             with self.assertRaisesRegex(RuntimeError, 'unavailable'): S.init_diagram_evaluator()
+
+    def test_storage_preferences_serialization(self):
+        for policy in ('resident', 'host_inputs', 'stream_fragments'):
+            S = make_solver(storage_policy=policy)
+            self.assertEqual(copy.deepcopy(S).block_sparse_storage_policy, policy)
+            with tempfile.TemporaryDirectory() as folder:
+                path = str(Path(folder)/'storage.h5')
+                with HDFArchive(path, 'w') as archive: archive['solver'] = S
+                with HDFArchive(path, 'r') as archive: restored = archive['solver']
+                self.assertEqual(restored.block_sparse_storage_policy, policy)
+            S.block_sparse_storage_policy = 'typo'
+            with self.assertRaises(ValueError): S.init_diagram_evaluator()
+        if not CUDA_ENABLED:
+            self.assertNotIn('triqs_xca._triqs_xca_cuda', sys.modules)
+
+    @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
+    def test_storage_policies_all_observables(self):
+        from triqs_xca import _triqs_xca_cuda as module
+        fixture = make_solver('cuda')
+        args = (fixture.hyb.poles, fixture.hyb.coefficients, fixture.mesh_tau, fixture.atom_diag)
+        for kwargs, reason in (({'storage_policy': 'typo'}, 'storage_policy'), ({'storage_policy': 'host_inputs', 'nca_backend': 'real_batch'}, 'resident input storage')):
+            with self.assertRaisesRegex(RuntimeError, reason): module.BlockSparseCudaDiagramEvaluator(*args, **kwargs)
+        for policy, dynamic, partition, placement in product(('host_inputs', 'stream_fragments'), (False, True), ('occupation', 'number'), ('resident', 'host_sectors')):
+            reference = make_solver('cuda', partition, dynamic)
+            candidate = make_solver('cuda', partition, dynamic, output_placement=placement, storage_policy=policy)
+            reference.init_diagram_evaluator(); candidate.init_diagram_evaluator()
+            mu = [sum(n('f', i) for i in range(3)), c_dag('f', 0)*c('f', 1)]
+            kap = [mu[0], c_dag('f', 1)*c('f', 0)]
+            for t in (np.array([[0, 1]], np.int32), np.array([[0, 2], [1, 3]], np.int32)):
+                expected = reference._Solver__eval_pseudo_particle_self_energy_topology_loop(reference.G0, t)
+                actual = candidate._Solver__eval_pseudo_particle_self_energy_topology_loop(candidate.G0, t)
+                for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data, err_msg=f"{policy=} {dynamic=} {partition=} {placement=} top={t.tolist()} block={b} rank={mpi.rank}")
+                expected = reference._Solver__eval_single_particle_greens_function_topology_loop(reference.G0, t)
+                actual = candidate._Solver__eval_single_particle_greens_function_topology_loop(candidate.G0, t)
+                np.testing.assert_array_equal(actual.data, expected.data)
+                expected = Gf(mesh=reference.mesh_tau, target_shape=[2, 2])
+                actual = Gf(mesh=candidate.mesh_tau, target_shape=[2, 2])
+                reference._Solver__inplace_eval_one_time_correlator_topology_loop(expected, reference.G0, t, mu, kap, 1)
+                candidate._Solver__inplace_eval_one_time_correlator_topology_loop(actual, candidate.G0, t, mu, kap, 1)
+                np.testing.assert_array_equal(actual.data, expected.data)
+            if policy == 'stream_fragments': self.assertGreater(candidate.d.last_fragment_builds(), 0)
+
+    @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
+    def test_storage_mutation_collective_recovery(self):
+        S = make_solver('cuda'); S.init_diagram_evaluator()
+        top = np.array([[0, 2], [1, 3]], np.int32)
+        expected = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, top)
+        for policy in ('host_inputs', 'stream_fragments', 'resident'):
+            S.block_sparse_storage_policy = policy
+            if mpi.rank == 0: S.block_sparse_storage_policy = 'typo'
+            with self.assertRaisesRegex(RuntimeError, 'Block-sparse GPU initialization failed'):
+                gpu.collective_call(S.init_diagram_evaluator, phase='Block-sparse GPU initialization')
+            mpi.barrier(); S.block_sparse_storage_policy = policy
+            S.init_diagram_evaluator()
+            actual = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, top)
+            for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data)
+            needed = S.d.self_energy_storage_bound(top)
+            if mpi.rank == 0: S.block_sparse_workspace_budget = needed-1
+            S.init_diagram_evaluator()
+            with self.assertRaisesRegex(RuntimeError, 'GPU evaluation failed'):
+                S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, top)
+            mpi.barrier(); S.block_sparse_workspace_budget = 1024*1024*1024
+            S.init_diagram_evaluator()
+            actual = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, top)
+            for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data)
+        S.block_sparse_storage_policy = 'host_inputs'
+        if mpi.rank == 0: S.block_sparse_nca_backend = 'real_batch'
+        with self.assertRaisesRegex(RuntimeError, 'Block-sparse GPU initialization failed'):
+            gpu.collective_call(S.init_diagram_evaluator, phase='Block-sparse GPU initialization')
+        mpi.barrier(); S.block_sparse_nca_backend = 'reference'; S.init_diagram_evaluator()
+        actual = S._Solver__eval_pseudo_particle_self_energy_topology_loop(S.G0, top)
+        for b in range(len(actual)): np.testing.assert_array_equal(actual[b].data, expected[b].data)
 
     @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
     def test_real_nca_capability_selection_and_collective_recovery(self):
