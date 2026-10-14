@@ -611,6 +611,27 @@ alone handles their semantics. Ready-operation grouping, tails/changed-G and pea
 memory must enter full-call evidence before promotion. GH200 measurements remain
 required for defaults.
 
+Matched scalar control checkpoint (2026-10-14): timed CPU independent and
+packed routes plus GPU pointer-table gather/scatter are now in
+[scalar-cpu-01](experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/scalar-cpu-01/README.md).
+All 17 cases / 408 rows pass per-lane CPU gates and exact replay; maximum relative
+error remains 2.77e-15. CPU packing is essential context: at rank 23 / 127 lanes it
+takes 0.202 ms versus 0.471 ms for GPU kernel packing (the per-lane-copy GPU variant
+takes 1.55 ms). Larger bounded cohorts favor GPU in this local segment: 512 lanes
+0.852 ms CPU versus 0.489 ms GPU; 1024 lanes 1.666 versus 0.763 ms. The 512/1024
+points do not establish a hardware-independent threshold or a feasible ready-work
+population in a diagram. Other ranks/cohort sizes remain in the table.
+
+Pointer tables borrow still-owned input/output buffers; post-timing in-place input
+changes are re-gathered and checked against fresh CPU controls (17/rank32 and
+1024/rank23 checks passed). Memcheck reports no errors/leaks. Setup/table upload
+and changing buffer addresses are not included in timing. Before a scheduler is
+promoted, charge descriptor refresh/discovery and preserve per-path decisions and
+original fan-in order. Build a bounded private full-evaluator candidate next,
+retaining general native/library routes for unsupported operation cohorts. Do not
+read the first GPU-only ratios as CPU speedups; CPU batch comparison corrected that
+interpretation before production changes. GH200 remains the target.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused

@@ -1148,3 +1148,55 @@ Plan/work-log checkpoint separate from code/results. git diff --check passed.
 Logs /tmp/xca-bs-scalar-{configure,build,cpu-configure,invalid,memcheck,campaign}.log,
 /tmp/xca-bs-scalar-smoke.csv. Persistent artifacts under
 experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/scalar-01.
+
+
+### 2026-10-14 — Matched scalar batching and pointer tables
+
+Previous turn made E4/E5 progress (packed scalar GPU segment with per-lane numerical
+and memory evidence). Goal active. Added matched timed CPU controls before deriving
+CPU speedups; their improvement materially changes the GPU-only interpretation.
+
+2091ba8 [bench] compare matched scalar batches: CPU independent uses cached LU and
+hoisted scalar convolution, packed CPU combines RHS/rank transforms and elementwise
+products with inclusive/resident gather-scatter variants. CPU temporary allocations
+are timed, work bytes NA. GPU pointer-table kernels replace per-lane cudaMemcpy2D
+calls with single gather/scatter launches. Tables borrow addresses from buffers
+owned for the whole run, uploaded during setup; no dynamic ownership guarantee is
+claimed. Three CPU/five GPU routes compare identical inputs, single-thread CPU.
+Bound expanded modestly to 1024 lanes to test practical larger ready cohorts.
+
+46acc53 [bench] record matched scalar batches: all 17 isolated cases / 408 raw rows
+passed per-lane CPU screening and exact replay; largest relative error 2.7657e-15.
+Lane/rank/mesh tails, zero and weak lanes retained. CPU versus pointer-table GPU
+rank23 medians: 127 lanes 0.202/0.471 ms (CPU wins), 512 lanes 0.852/0.489 ms,
+1024 lanes 1.666/0.763 ms. Per-lane-copy GPU at 127 is 1.553 ms, showing submission
+cost matters. Original GPU-only scalar-01 results preserved; no full Solver or
+hardware-independent batch threshold follows from these segment ratios.
+
+01a27a6 [bench] check scalar buffer updates adds a post-timing in-place complex
+input scaling and fresh CPU references, followed by descriptor gathering and
+per-lane validation. Existing addresses stay fixed; this checks fresh contents,
+not reallocated pointers. Rank32/17 lanes and rank23/1024 lanes passed. After this
+change, width17/Lambda120 memcheck+leak-check passed with 0 errors / 0 leaked bytes.
+All original timing rows used the same initial inputs; changed-data validation runs
+after measurement. Campaign provenance pins the pre-update benchmark code; the
+later update checks are separate evidence, not silently retrofitted timing data.
+Invalid lane count 1025 rejects. CUDA build passed; production files are unchanged,
+so full solver suites were not repeated. Previous full CPU/CUDA/native-disabled/MPI
+qualification remains the production checkpoint. Generic experiment README rewritten
+to describe current routes/bounds; historical data stays in hardware subfolders.
+
+Next: factor the packed scalar operations into a bounded candidate scheduler using
+copied path metadata and explicit ready-operation ownership. Preserve individual
+completed-path cutoff and original accumulation/fan-in, handle special mu/kappa
+sums and irregular correlator fragments or retain general paths where a cohort is
+unsupported. Charge discovery/descriptor refresh/setup, changed G/address cases and
+peak memory in inclusive full calls before promotion. Do not substitute a large
+uniform segment for evidence of real ready-work density. GH200 target qualification,
+wider matrices/memory and topology sharing remain pending. Goal is not complete.
+No install/push/supervisor changes; unrelated user work preserved. Plan/work-log
+commit separate from code/data; git diff --check passed.
+
+Logs: /tmp/xca-bs-scalar-cpu-control-{build,memcheck,invalid,campaign}.log,
+/tmp/xca-bs-scalar-update-{build,memcheck}.log, /tmp/xca-bs-scalar-update-{test,large-test}.csv.
+Persistent results: experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/scalar-cpu-01.

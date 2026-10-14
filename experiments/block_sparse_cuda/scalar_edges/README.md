@@ -1,35 +1,45 @@
 # Packed scalar DLR edges
 
 Performance target: GH200-class hardware. This E4/E5 experiment groups independent
-scalar edges across RHS columns while keeping all DLR nodes for each lane. The
-production rectangular product already batches across rank; this tests a different
-parallelism level. Production evaluators and their per-path magnitude policy are
-unchanged. No topology/branch scheduler is implemented here.
+scalar edges across RHS columns, retaining every DLR node per lane. Production
+rectangular products already batch across rank; this is a different level of work
+sharing. Production evaluators and per-path magnitude policies are unchanged.
 
-The independent route uses retained DlrOps for two cached-LU solves and convolution
-per edge. Packed routes use the same LU/getrs on a rank-by-lanes RHS, shared rank
-transforms, and ordered complex-double elementwise diagonal/cross products (native
-FMA disabled). Each lane remains independent: no lane-by-lane outer product and no
-sum across paths. The convolution formula and addition order match the hoisted CPU
-control, including beta=2. No custom LU solver or inverse is introduced.
+All routes use the same cached LU/getrs, time-ordered convolution formula and
+beta=2. Packed convolution uses shared rank transforms and elementwise diagonal/
+cross products, avoiding cross-lane outer products. No custom LU or inverse is used.
+CPU controls hoist the Hilbert transforms; CPU packing can improve its arithmetic
+as well as GPU packing, so matched CPU comparisons are required.
 
-`packed_inclusive` gathers inputs from separately owned device edge buffers with
-cudaMemcpy2DAsync, computes the batch and scatters to separate outputs. `packed_resident`
-excludes input gathering but still scatters. `independent` naturally consumes and
-produces separate buffers. Host timing includes stream completion, excludes initial
-upload/context/allocation/CPU control and output downloads used for checking. Rank
-scratch is retained. One call warms each route before three samples. Per-edge latency
-is total segment time divided by lane count; that is throughput within the batch,
-not the latency of one independent Solver evaluation.
+Eight routes on identical owned input buffers:
+
+- CPU independent: two solves and hoisted convolution per scalar edge.
+- CPU packed inclusive/resident: combined RHS solves and rank transforms; inclusive
+  gathers input, both scatter output. Intermediate CPU allocation is timed.
+- GPU independent: retained DlrOps per edge.
+- GPU packed inclusive/resident: gather/scatter with per-lane cudaMemcpy2DAsync.
+- GPU packed kernel inclusive/resident: gather/scatter using device pointer tables,
+  one kernel per gather/scatter. Native arithmetic disables FMA contraction.
+
+Resident routes exclude input gathering but still scatter. GPU pointer tables are
+prepared/uploaded during setup, borrowing addresses from buffers owned throughout
+the experiment. Changing allocation/address/ownership requires table refresh in a
+future scheduler. A post-timing check scales current device input contents in place,
+updates the CPU control, and verifies that stable descriptors gather the changed
+values. No timing rows mix original and updated input epochs.
+
+Host timers include stream completion and output scattering, exclude context,
+initial input upload/descriptor preparation, allocator setup and output downloads
+used for checking. Route scratch is retained; CPU intermediates are allocated inside
+its calls. One warm-up precedes raw repetitions. Per-edge time is segment time / lane
+count, measuring throughput within a cohort, not one independent Solver latency.
 
 Each output lane is compared independently against CPU (1e-12*lane norm+1e-30),
-including exactly zero lanes and 1e-10-scale inputs with much weaker outputs. This
-avoids a batch-wide norm hiding dropped weak lanes. Repeated outputs must match
-exactly. Numerical errors are retained. Explicit work bytes include route tables/
-RHS/scratch, excluding common input/output buffers, opaque library allocations and
-complete process peak. Packed f/g and intermediate arrays are additional route
-workspace. Changing data, errors/pruning and accumulation require separate scheduling
-qualification before use in a diagram evaluator.
+including exactly zero and 1e-10-scale coefficient pairs. A batch norm must not hide
+weak lanes. All repeated outputs must match exactly. Numerical errors are retained.
+CPU work bytes are NA rather than an unmeasured host peak. GPU explicit work bytes
+include route tables/RHS/scratch, excluding common input/output buffers and opaque
+allocations; packed intermediate arrays and pointer tables are additional work.
 
 ```bash
 source ~/env/xca-cuda.sh
@@ -40,27 +50,18 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
  --lanes 127 --lambda 40 --samples 3
 python3 experiments/block_sparse_cuda/scalar_edges/run.py \
  --binary cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_edges/block_sparse_scalar_edges \
- --machine thinkstationP620_RTXA4000 --campaign scalar-01
+ --machine thinkstationP620_RTXA4000 --campaign scalar-cpu-01
 ```
 
 The CUDA-compiler experiment is omitted in CPU-only builds. Lane count is bounded
-1–256, Lambda 1–120, samples 1–5, nonsymmetric epsilon=1e-10 mesh. The recorder sweeps
-1/2/4/8/17/32/64/127/256 lanes at Lambda=40, plus 1/17/127 at 10 and 120. It retains
-source/binary/header hashes, exact commands, errors and timeouts (120 s); existing
-campaigns are refused. System results belong under hardware subdirectories.
+1–1024, Lambda 1–120, samples 1–5, nonsymmetric epsilon=1e-10 mesh. The recorder sweeps
+1/2/4/8/17/32/64/127/256/512/1024 at Lambda40, plus 1/17/127 at 10 and 120 (17 cases,
+eight routes, three samples). It stores source/binary/header hashes, exact commands,
+errors and timeouts (120 s), and refuses existing campaigns. System results belong
+under hardware subdirectories. Original experiments/results remain available.
 
-The extended matched screen adds timed CPU independent/packed routes using the same
-cached LU and hoisted transform formula. CPU inclusive packing/scattering is charged;
-CPU intermediate allocations are inside timing and CPU work bytes are `NA` (not a
-measured host peak). It also adds GPU pointer-table gather/scatter routes: one kernel
-per pack/scatter instead of per-lane copies. Tables are uploaded during setup and
-borrow addresses from edge buffers that remain owned/alive throughout the run.
-If buffers move, a future scheduler must refresh those tables; this is not an
-ownership guarantee from the descriptors themselves.
-
-The extended bound is 1–1024 lanes, adding 512/1024 at Lambda40. The new default
-campaign is `scalar-cpu-01`, 17 cases and eight routes per case, three samples each.
-The original GPU-only `scalar-01` results remain intact. CPU packing also improves
-its arithmetic; compare matched CPU rather than only GPU independent/packed ratios.
-Pointer-table setup, changed input/allocator costs and full diagram scheduling are
-still outside this segment screen and require later qualification.
+No topology/path scheduler or cutoff is implemented here. Promotion requires copied
+borrowed metadata, bounded ready-work memory, individual completed-path decisions,
+original accumulation order, changing-input/descriptor lifecycle and full-observable
+coverage. Special-vertex sums and irregular correlator fragments need explicit
+handling; this segment does not establish complete Solver speedup or target dispatch.
