@@ -226,15 +226,17 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, unsigned long, unsigned long>(
-      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024),
+                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, unsigned long, unsigned long, std::string>(
+      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+      "operator_backend"_a = "library"),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, unsigned long, unsigned long>(
-      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024),
+                                          triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, unsigned long, unsigned long, std::string>(
+      "poles", "coefficients", "mesh", "ad", "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+      "operator_backend"_a = "library"),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
@@ -243,8 +245,9 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, const std::vector<triqs::operators::many_body_operator_complex> &,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          unsigned long, unsigned long>("poles", "coefficients", "mesh", "ad", "operators", "interactions", "device_budget"_a = 1024ULL * 1024 * 1024,
-                                                                        "sparse_budget"_a = 32ULL * 1024 * 1024),
+                                          unsigned long, unsigned long, std::string>("poles", "coefficients", "mesh", "ad", "operators", "interactions",
+                                                                                     "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+                                                                                     "operator_backend"_a = "library"),
    c2py::c_constructor<
                                           _c2py_cls_1,
                                           nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
@@ -253,8 +256,9 @@ static auto _c2py_init_1                                     = c2py::dispatcher_
                                           triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, const std::vector<triqs::operators::many_body_operator_complex> &,
                                           nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                                 nda::borrowed<nda::mem::AddressSpace::Host>>,
-                                          unsigned long, unsigned long>("poles", "coefficients", "mesh", "ad", "operators", "interactions", "device_budget"_a = 1024ULL * 1024 * 1024,
-                                                                        "sparse_budget"_a = 32ULL * 1024 * 1024)};
+                                          unsigned long, unsigned long, std::string>("poles", "coefficients", "mesh", "ad", "operators", "interactions",
+                                                                                     "device_budget"_a = 1024ULL * 1024 * 1024, "sparse_budget"_a = 32ULL * 1024 * 1024,
+                                                                                     "operator_backend"_a = "library")};
 template <> constexpr initproc c2py::tp_init<_c2py_cls_1>    = c2py::pyfkw_constructor<_c2py_init_1>;
 template <> const std::string c2py::tp_ctor_doc<_c2py_cls_1> = _c2py_init_1.doc(R"DOC()DOC");
 // compute_one_time_correlator_range
@@ -654,24 +658,29 @@ template <> const std::string c2py::tp_doc<_c2py_cls_2> = R"DOC()DOC" + c2py::tp
 
 // ==================== module functions ====================
 
+// block_sparse_ordered_available
+static auto const _c2py_fun_45 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::block_sparse_ordered_available(); })};
+
 // cuda_current_device
-static auto const _c2py_fun_45 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_current_device(); })};
+static auto const _c2py_fun_46 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_current_device(); })};
 
 // cuda_device_count
-static auto const _c2py_fun_46 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_device_count(); })};
+static auto const _c2py_fun_47 = c2py::dispatcher_f_kw_t{c2py::cfun([]() { return xca_python::cuda_device_count(); })};
 
 // cuda_select_device
-static auto const _c2py_fun_47 = c2py::dispatcher_f_kw_t{c2py::cfun([](int device) { return xca_python::cuda_select_device(device); }, "device")};
+static auto const _c2py_fun_48 = c2py::dispatcher_f_kw_t{c2py::cfun([](int device) { return xca_python::cuda_select_device(device); }, "device")};
 
 static const auto _c2py_doc_45 = _c2py_fun_45.doc(R"DOC()DOC");
 static const auto _c2py_doc_46 = _c2py_fun_46.doc(R"DOC()DOC");
 static const auto _c2py_doc_47 = _c2py_fun_47.doc(R"DOC()DOC");
+static const auto _c2py_doc_48 = _c2py_fun_48.doc(R"DOC()DOC");
 //--------------------- module function table  -----------------------------
 
 static PyMethodDef module_methods[] = {
-   {"cuda_current_device", (PyCFunction)c2py::pyfkw<_c2py_fun_45>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_45.c_str()},
-   {"cuda_device_count", (PyCFunction)c2py::pyfkw<_c2py_fun_46>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_46.c_str()},
-   {"cuda_select_device", (PyCFunction)c2py::pyfkw<_c2py_fun_47>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_47.c_str()},
+   {"block_sparse_ordered_available", (PyCFunction)c2py::pyfkw<_c2py_fun_45>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_45.c_str()},
+   {"cuda_current_device", (PyCFunction)c2py::pyfkw<_c2py_fun_46>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_46.c_str()},
+   {"cuda_device_count", (PyCFunction)c2py::pyfkw<_c2py_fun_47>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_47.c_str()},
+   {"cuda_select_device", (PyCFunction)c2py::pyfkw<_c2py_fun_48>, METH_VARARGS | METH_KEYWORDS, _c2py_doc_48.c_str()},
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 

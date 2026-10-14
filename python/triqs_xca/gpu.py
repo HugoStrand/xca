@@ -9,7 +9,15 @@ from ._backend_config import CUDA_ENABLED, CUDA_SMALL_ENABLED
 _gpu_process_device = None
 
 
-def block_sparse_evaluator_class(backend):
+def block_sparse_ordered_available():
+    if not CUDA_ENABLED:
+        return False
+    return import_module('._triqs_xca_cuda', __package__).block_sparse_ordered_available()
+
+
+def block_sparse_evaluator_class(backend, operator_backend='library'):
+    if operator_backend not in {'library', 'ordered'}:
+        raise ValueError("Block-sparse operator backend must be 'library' or 'ordered'")
     if backend == 'cpu':
         from ._triqs_xca import BlockSparseDiagramEvaluator
         return BlockSparseDiagramEvaluator
@@ -18,7 +26,10 @@ def block_sparse_evaluator_class(backend):
     if not CUDA_ENABLED:
         raise RuntimeError("Requested block-sparse backend 'cuda' is unavailable in this build")
     try:
-        return getattr(import_module('._triqs_xca_cuda', __package__), 'BlockSparseCudaDiagramEvaluator')
+        module = import_module('._triqs_xca_cuda', __package__)
+        if operator_backend == 'ordered' and not module.block_sparse_ordered_available():
+            raise RuntimeError("Ordered block-sparse CUDA kernels are unavailable in this build")
+        return module.BlockSparseCudaDiagramEvaluator
     except (ImportError, AttributeError) as error:
         raise RuntimeError(f"Requested block-sparse backend 'cuda' is unavailable: {error}") from error
 

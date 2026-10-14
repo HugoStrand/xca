@@ -74,6 +74,13 @@ namespace xca_python {
   class BlockSparseCudaEvaluator {
     using native = triqs_xca::block_sparse::cuda::DiagramEvaluator;
     std::unique_ptr<native> evaluator_;
+    static triqs_xca::block_sparse::cuda::SparseBackend select_backend(std::string const &name) {
+      using namespace triqs_xca::block_sparse::cuda;
+      if (name == "library") return SparseBackend::Library;
+      if (name != "ordered") throw std::invalid_argument("operator_backend must be library or ordered");
+      if (!ordered_sparse_available()) throw std::runtime_error("Ordered block-sparse CUDA kernels are unavailable in this build");
+      return SparseBackend::Ordered;
+    }
 
     public:
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
@@ -81,16 +88,20 @@ namespace xca_python {
     template <bool C>
     BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
                              triqs::atom_diag::atom_diag<C> const &ad, std::size_t device_budget = 1024ULL * 1024 * 1024,
-                             std::size_t sparse_budget = 32ULL * 1024 * 1024)
-       : evaluator_(
-            std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients), poles, mesh, device_budget, sparse_budget)) {}
+                             std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library") {
+      auto selected = select_backend(operator_backend);
+      evaluator_ =
+         std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients), poles, mesh, device_budget, sparse_budget, selected);
+    }
     template <bool C>
     BlockSparseCudaEvaluator(nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coefficients, triqs::mesh::dlr_imtime mesh,
                              triqs::atom_diag::atom_diag<C> const &ad, std::vector<triqs::operators::many_body_operator_complex> const &operators,
                              nda::array_const_view<nda::dcomplex, 3> interactions, std::size_t device_budget = 1024ULL * 1024 * 1024,
-                             std::size_t sparse_budget = 32ULL * 1024 * 1024)
-       : evaluator_(std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
-                                             device_budget, sparse_budget)) {}
+                             std::size_t sparse_budget = 32ULL * 1024 * 1024, std::string operator_backend = "library") {
+      auto selected = select_backend(operator_backend);
+      evaluator_    = std::make_unique<native>(triqs_xca::block_sparse::cuda::export_model(ad, coefficients, operators, interactions), poles, mesh,
+                                               device_budget, sparse_budget, selected);
+    }
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_self_energy_backbones(t); }
     long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> t) { return evaluator_->get_num_single_ptcle_gf_backbones(t); }
     gf_t compute_self_energy(gf_vt g, nda::array_const_view<int, 2> t) { return evaluator_->compute_self_energy(g, t); }
@@ -118,17 +129,22 @@ namespace xca_python {
     std::size_t correlator_storage_bound(long mu, long kap) const { return evaluator_->correlator_storage_bound(mu, kap); }
   };
 } // namespace xca_python
+namespace xca_python {
+  inline bool block_sparse_ordered_available() { return triqs_xca::block_sparse::cuda::ordered_sparse_available(); }
+}
 namespace c2py_module {
   using BlockSparseCudaDiagramEvaluator = xca_python::BlockSparseCudaEvaluator;
-}
+  using xca_python::block_sparse_ordered_available;
+} // namespace c2py_module
 using block_evaluator = xca_python::BlockSparseCudaEvaluator;
 #define BLOCK_BIND(C, PREFIX)                                                                                                                        \
   PREFIX template block_evaluator::BlockSparseCudaEvaluator(nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>,                 \
                                                             triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &, std::size_t,            \
-                                                            std::size_t);                                                                            \
-  PREFIX template block_evaluator::BlockSparseCudaEvaluator(                                                                                         \
-     nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>, triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,       \
-     std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<nda::dcomplex, 3>, std::size_t, std::size_t);          \
+                                                            std::size_t, std::string);                                                               \
+  PREFIX template block_evaluator::BlockSparseCudaEvaluator(nda::vector_const_view<double>, nda::array_const_view<nda::dcomplex, 3>,                 \
+                                                            triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<C> const &,                         \
+                                                            std::vector<triqs::operators::many_body_operator_complex> const &,                       \
+                                                            nda::array_const_view<nda::dcomplex, 3>, std::size_t, std::size_t, std::string);         \
   PREFIX template nda::array<nda::dcomplex, 3> block_evaluator::compute_one_time_correlator_range(                                                   \
      triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>, std::vector<triqs::operators::many_body_operator_complex> const &,                          \
      std::vector<triqs::operators::many_body_operator_complex> const &, triqs::atom_diag::atom_diag<C> const &, nda::array_const_view<int, 2>, long, \
