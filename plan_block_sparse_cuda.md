@@ -452,6 +452,35 @@ complete calls before promotion. Width/degree/reuse-dependent dispatch, wider RH
 compact maps, implicit sums, COO alternatives and target hardware remain pending;
 no production dispatch threshold is selected from these primitive measurements.
 
+E3 complete-call candidate checkpoint (2026-10-14): a private generated
+`OrderedDiagramEvaluator` changes only the sparse snapshot type in the current
+reference source. Its bounded snapshot owns CSR/plain transpose and the device
+owner, checks payload before upload, rejects aliases/layout/device errors and
+finishes applications before caller temporaries expire. The reference remains
+unchanged. The candidate passed all eight inherited evaluator tests plus two
+snapshot budget/ownership/zero-entry tests. Four focused memcheck cases reported
+zero errors and zero bytes leaked; local one-device execution does not qualify
+cross-device switching.
+
+[Ordered full calls](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-evaluator-01/README.md)
+passed all 30 processes / 82 samples with unchanged discovery counts, CPU screening
+and exact replay. All original observables and ordinary/retarded fixture regimes
+are included. Eight-mode number sectors take 85.7 ms candidate / 266.8 ms retained
+GPU (prior clean run) / 135.2 ms matched CPU. Ten-mode number sectors take
+690.8 / 1130.5 / 5064.8 ms, with only one repetition there. Ten-mode scalar sectors
+still favor CPU (2.71 s candidate versus 0.788 s CPU), so E4/E5 amortization remains
+necessary. The zero-survival window is retained. The candidate's highest screening
+relative error is 3.65e-13 in a higher-order weak contribution; strict inherited
+numerical test gates were unchanged.
+
+The complete-call evidence supports qualifying an optional native operator route
+in production next, retaining the library path for control/no-native-compiler
+builds. Before promotion, wire explicit capability/backend selection through the
+consolidated bindings and Solver, and run full CPU/CUDA/library-only/MPI tests.
+Do not select a target default or claim all-small-block speedup from these local
+selected-index results. Wider RHS, changed-operator costs, peak capacity, batching
+and GH200 measurements remain open.
+
 ### E4 — Where to batch and where to fuse
 
 Compare one path at a time with bounded batches across output sectors, flat indices

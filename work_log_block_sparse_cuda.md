@@ -880,3 +880,74 @@ Temporary logs: /tmp/xca-bs-operator-{configure,build,cpu-configure,cpu-targets,
 memcheck,campaign}.log and /tmp/xca-bs-operator-{smoke,tail-smoke,large-smoke}.csv.
 Persistent artifacts: experiments/block_sparse_cuda/operator_apply/thinkstationP620_RTXA4000.
 Git diff --check passed; unrelated .gitignore/untracked user work is preserved.
+
+
+### 2026-10-14 — Ordered sparse evaluator candidate
+
+Previous turn made verified E3 progress (432 primitive timing rows, native/library
+numerics, memory check and committed checkpoint). This turn tests whether that
+operator gain survives the actual evaluator. Goal remains active.
+
+Code 1cc785c [bench] test ordered sparse evaluator; results 3a876e9 [bench] record
+ordered evaluator timings. The private generated class reuses current reference
+CPP/HPP, renames its class and replaces exactly three DeviceSparseBlock type
+references. CMake checks that pattern and regenerates on reference source changes.
+All traversal/mask/cutoff, DLR, special-vertex, endpoint invalidation and ordered
+accumulation code remains unchanged. Installed headers, core implementations and
+Python bindings are untouched; reference/control tests and classes remain available.
+
+OrderedSparseBlock owns forward/plain-transpose CSR and its shared DeviceOps owner.
+It checks exact explicit payload against budget before allocation/upload, validates
+C-layout/shapes/nonoverlap/pointer span/grid bounds/device ownership, and finishes
+each apply before caller temporaries may be destroyed. This synchronization is
+necessary even though the primitive launch API is asynchronous. Cleanup selects the
+construction device, destroys arrays/shared owner, then restores the caller. The
+local machine has one GPU: this does not establish the switch-device branch. General
+CSR is retained (not yet a compact map/implicit-sum representation), with no library
+workspace. Zero-entry snapshots write zeros on both left/right products.
+
+The isolated executable runs all eight existing CUDA evaluator tests against the
+private class, plus two focused snapshot tests. Cases include exact-input SE/SPGF,
+bosonic/fermionic endpoints, retarded/mixed/scalar partitions, manual NCA, changed
+masks, weak starting values, arithmetic controls, range additivity, budget/errors,
+input metadata ownership, alias/shape rejection and shared-owner lifetime. Snapshot
+budget 199 bytes rejects before upload where 200 bytes is the exact payload.
+Candidate construction/application throws are not replayed on CPU/library backend.
+Full 10/10 GoogleTests passed (CTest entry 1/1, 3.84 s). Existing strict test gates
+were unchanged. Focused memcheck rerun after span/zero-right improvements passed
+four tests with 0 errors and 0 bytes leaked in 0 allocations. CUDA frontends built;
+CPU-only configure and target listing confirm the candidate is omitted there.
+No full solver suite was rerun because production code/bindings are unchanged.
+
+Recorder now also hashes native .cu source, covering candidate kernel provenance.
+After all build/test/sanitizer processes terminated, the sequential paired
+ordered-evaluator-01 campaign completed 30 processes / 82 rows. All 15 original
+physical workloads include ordinary/retarded SE/SPGF/correlators and the zero-survival
+window. CPU screening and exact GPU replays passed; matched CPU still agrees bitwise
+with unchanged CPU. Proposed/accepted/pruned counts exactly match retained reference
+for each case. Maximum candidate screening relative error is 3.645e-13 in a weak
+higher-order contribution, not a universal 1e-13 claim. Source/native kernel/binary/
+header hashes, commands and machine metadata are persisted. Counts/latencies include
+complete calls; packing/transfer/temporary costs remain present in candidate timing.
+
+Candidate versus prior clean library reference medians: eight-mode number sectors
+85.67 versus 266.79 ms; paired matched CPU is 135.24 ms. Ten-mode number sectors
+690.85 versus 1130.46 ms, paired CPU 5064.84 ms. Ten-mode scalar sectors improve
+from 5614.41 to 2710.87 ms but still trail paired CPU 788.10 ms. Modes 10 have one
+repetition and cannot satisfy a noise-qualified promotion gate. Most small cases
+have three samples and show substantial complete-call gains; the zero-survival
+window retains overhead. Library values are from a separate clean run, disclosed
+in summaries. No full-topology-sum or Solver throughput is claimed.
+
+Next: qualify an optional production native operator route, retaining library path
+and no-native-compiler support. Wire explicit capability/selection through consolidated
+bindings and MPI Solver; run complete CPU/CUDA/library-only/MPI checks before promotion.
+Then address scalar batching/DLR amortization, changed-G/operator reuse and wider
+RHS/memory bounds, and revisit topology sharing based on launch evidence. GH200
+remains the target. No target run, N=14 full model, install, push or supervisor
+change. Unrelated user work is preserved. Plan/work-log commit stays separate from
+candidate code/results; git diff --check passed.
+
+Logs: /tmp/xca-bs-ordered-{configure,build,test,memcheck,cpu-configure,cpu-targets,
+campaign}.log. Persistent evidence: benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-evaluator-01
+and experiments/block_sparse_cuda/operator_apply. Temporary logs may disappear.
