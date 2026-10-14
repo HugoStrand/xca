@@ -29,3 +29,15 @@ when preparing another snapshot; do not overwrite an existing snapshot's sources
 The source revision and dependency hashes belong in `source-revisions.json` beside
 the submitted script. Git source archives omit `.git`, so CMake's empty Git hash
 is expected; the recorded archive revision is authoritative.
+
+`cohort.sbatch` reuses that snapshot/build, enables benchmarks, and builds only the
+CPU, library CUDA and ordered CUDA frontends. It caps allocation at fifteen minutes
+on one GPU. `run_cohort.py` records seven explicitly bounded workloads and three
+samples per backend, with per-process timeouts and immediate failure stop. The cases
+cover scalar rejected/active windows, retarded mixed correlators and number-sector
+SPGF/SE through N=10. Each CUDA frontend checks its own rotated CPU control and exact
+repeatability. Backend processes run sequentially with single-thread BLAS/OpenMP.
+Runner and binary hashes are recorded alongside pinned source revisions. This is
+an initial cohort, not a statistically established dispatch crossover or a full
+topology sum. Raw CPU/GPU and combined results belong in the respective benchmark
+folders under `Arrhenius_GH200/initial-01`.
