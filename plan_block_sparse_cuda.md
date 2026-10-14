@@ -632,6 +632,34 @@ retaining general native/library routes for unsupported operation cohorts. Do no
 read the first GPU-only ratios as CPU speedups; CPU batch comparison corrected that
 interpretation before production changes. GH200 remains the target.
 
+Scalar scheduler checkpoint (2026-10-14):
+[scalar_paths](experiments/block_sparse_cuda/scalar_paths/README.md) is a private
+complete-API candidate with a bounded self-energy specialization for all-1x1 blocks
+and singleton symmetry sets. It copies owned Backbones/path descriptors into at
+most 512 lanes, separates special-vertex positions, uses packed scalar edges, and
+retains the original per-lane magnitude decision and ordered fan-in. Other sets,
+block geometries and correlators execute the unchanged general evaluator path.
+The API is fully retained; correlator/irregular-set batching itself is not qualified.
+
+Eight inherited tests pass, plus complete-call/memory checks on 640 paths across
+cohorts/tails and 2304 paths at ten modes. The corrected
+[scalar-path-02 campaign](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-path-02/README.md)
+passes 30 processes / 82 rows with exact replay and matching discovery counts.
+Ten-mode scalar SE takes 90.7 ms versus prior production native 2846 ms and paired
+hoisted CPU 798 ms. A separate three-repetition check measured 89.2 ms median.
+Those compare the existing CPU evaluator, not a full batched scalar CPU scheduler;
+matched batch-CPU full-call control is still required before attributing all gains
+to GPU hardware. The campaign's ten-mode point has one timed repetition.
+
+A failed final workspace-bound rebuild initially left the old executable in a
+started campaign; scalar-path-01 is excluded with explicit source/binary mismatch
+notes. The corrected build/suite and multi-cohort memcheck pass, and both admission
+and the public storage diagnostic include extra batch workspace. This remains a
+conservative explicit bound, not complete host/opaque peak qualification. Before
+promotion: threshold-adjacent contribution tests, larger symmetry-set sums,
+correlator batching, lifecycle/budget/changed-address gates, matched CPU full calls
+and GH200 evidence. Retain all general/reference/experimental paths.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused

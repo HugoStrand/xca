@@ -1200,3 +1200,72 @@ commit separate from code/data; git diff --check passed.
 Logs: /tmp/xca-bs-scalar-cpu-control-{build,memcheck,invalid,campaign}.log,
 /tmp/xca-bs-scalar-update-{build,memcheck}.log, /tmp/xca-bs-scalar-update-{test,large-test}.csv.
 Persistent results: experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/scalar-cpu-01.
+
+
+### 2026-10-14 — Bounded scalar self-energy scheduler
+
+Previous turn made progress through matched scalar CPU/GPU controls and pointer-table
+packing evidence. Goal remains active. This turn builds a private complete-evaluator
+candidate rather than substituting edge rates for actual diagram timings.
+
+fd740bd [bench] schedule scalar diagram paths factors qualified ScalarPack from the
+edge executable into a shared experimental header and adds scalar_paths. Generated
+CPP/HPP reuses the current reference, inserting a scalar worker and replacing the
+SE visitor (CMake checks the expected visitor). At most 512 owned Backbone/path
+copies persist; NDA regular arrays/vectors and vertices are copied so borrowed
+visitor metadata can be reused. Cohorts separate special positions and retain
+original discovery order. Batch allocation is lazy for zero-survival windows.
+
+Eligibility is all blocks dimension1 and every symmetry set singleton. This limits
+the optimization cohort, not functionality: other scalar sets/rectangular models
+and all correlators retain general execution. No Python/MPI candidate selector is
+exposed. Scalar vertices, separate kernel multiplications, packed convolutions,
+special kappa/hybridization/mu, prefactor and parity follow original order. Per-lane
+completed max magnitude >1e-16 gates contributions, followed by original sequential
+fan-in. Inactive tail lanes gather zeros and never accumulate. G/weights/descriptors
+are rebuilt/read each current call; no stale propagator cache is introduced. All
+preparation/transfers/cutoff/fan-in costs are in complete-call timing.
+
+Qualification initially passed all eight unchanged evaluator tests, plus six-mode
+640 accepted paths (eight indexed evaluations) spanning cohorts/tail and ten-mode
+2304 accepted paths. The latter separately used three repetitions at about 89.25 ms
+median, relative error 4.93e-15 vs CPU screening. Multi-cohort memcheck+leak-check
+reported zero errors and zero leaked allocations. Generic CPU configuration passed;
+production code unchanged, so full production suites were not repeated.
+
+629d086 [bench] fix scalar workspace bound corrects a failed final diagnostic edit:
+clang-format had changed indentation and the scripted helper insertion did not
+match, so public bound/preflight referenced a missing member. I started a campaign
+before noticing that rebuild's nonzero exit, using the prior executable; this was
+an avoidable verification mistake. The campaign had already completed when termination
+was attempted. scalar-path-01 is retained but every row is explicitly excluded from
+revised-source qualification. Corrected helper builds, inherited tests pass again
+(6.57 s), shared edge component checks pass, and corrected multi-cohort memcheck has
+0 errors/leaks. Extra conservative batch storage is included consistently in both
+admission before input upload and public self-energy storage bounds. Host metadata,
+opaque library/granularity effects remain outside complete peak proof. Source
+provenance now hashes .inc scheduling code. No unresolved broken build remains.
+
+After corrected verification handles were terminal, scalar-path-02 ran all 30
+processes / 82 rows successfully. 86380de [bench] record scalar path scheduling
+stores corrected and excluded campaigns with explicit explanations. CPU screening,
+exact replay and proposed/accepted/pruned parity with production native pass.
+Maximum screening relative error remains 3.645e-13 on the preexisting weak higher-order
+non-scalar control; scalar ten-mode error is 4.926e-15. Ten-mode scalar SE is 90.75 ms
+versus prior native 2845.91 ms and paired hoisted CPU 798.37 ms; number-sector fallback
+704.24 vs 698.03 ms prior native. Ten-mode campaign points have one repetition; the
+separate scalar three-sample check is not silently merged into summary. This is
+selected-index throughput, not full Solver or matched batched-CPU scheduler evidence.
+All old implementations/experiments remain. GH200 stays the target.
+
+Next: full batched scalar CPU control and explicit threshold-adjacent/tail/changed-G/
+lifecycle/budget qualification, then larger-set and correlator ready-operation
+scheduling or general-route retention with measured dispatch. Integrate/promote only
+with complete CPU/CUDA/no-native/Python/MPI checks; continue wider RHS/memory/topology
+and target qualification. Goal not complete. No install/push/supervisor/user work
+changes. Plan/work-log commit separate from code/results; git diff --check passed.
+
+Logs: /tmp/xca-bs-scalar-path-{configure,build,test,cpu-configure,memcheck,campaign,
+clean-campaign}.log; /tmp/xca-bs-scalar-path-{tail-smoke,large-smoke,component-test}.csv.
+Persistent code experiments/block_sparse_cuda/scalar_paths; corrected paired data
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-path-02.
