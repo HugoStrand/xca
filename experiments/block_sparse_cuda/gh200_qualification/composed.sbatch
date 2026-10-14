@@ -48,9 +48,24 @@ mkdir -p "$record"
 cp source-revisions.json "$record/"
 trap 'status=$?; printf "%s\n" "$status" > "$record/exit-code.txt"' EXIT
 # Check the existing one-GPU memory entitlement; do not request extra memory.
-case "${SLURM_MEM_PER_NODE:-}" in ''|*[!0-9]*) echo 'Missing numeric Slurm host limit' >&2; exit 2 ;; esac
-if ((SLURM_MEM_PER_NODE < 102400)); then echo 'Host entitlement below declared probe cap' >&2; exit 2; fi
-printf '%s\n' "$SLURM_MEM_PER_NODE" > "$record/slurm-host-mib.txt"
+# This partition exports memory per CPU, not SLURM_MEM_PER_NODE. Read the
+# actual granted AllocTRES rather than multiplying a requested task count.
+scontrol show job "$SLURM_JOB_ID" -o > "$record/job.txt"
+host_mib=$(python3 - "$record/job.txt" <<'PYMEM'
+import re, sys
+text = open(sys.argv[1]).read()
+allocation = re.search(r"\bAllocTRES=([^\s]+)", text)
+if not allocation:
+    raise SystemExit("Missing allocated TRES")
+value = next((v[4:] for v in allocation[1].split(',') if v.startswith('mem=')), '')
+match = re.fullmatch(r"([0-9]+)([MG])", value)
+if not match:
+    raise SystemExit("Unrecognized granted host memory")
+print(int(match[1]) * (1024 if match[2] == 'G' else 1))
+PYMEM
+)
+if ((host_mib < 102400)); then echo 'Host entitlement below declared probe cap' >&2; exit 2; fi
+printf '%s\n' "$host_mib" > "$record/slurm-host-mib.txt"
 cat /proc/meminfo > "$record/host-memory.txt"
 if test -r /sys/fs/cgroup/memory.max; then cat /sys/fs/cgroup/memory.max > "$record/cgroup-memory-max.txt"; fi
 uname -a > "$record/architecture.txt"
