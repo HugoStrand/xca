@@ -152,3 +152,45 @@ TEST(StreamFragmentEvaluator, CacheReuseAndPerCallInvalidation) {
   candidate.compute_self_energy_range(G, nca, 0, 1);
   EXPECT_EQ(candidate.last_fragment_builds(), 0);
 }
+TEST(StreamFragmentEvaluator, RejectsResidentArenaPolicy) {
+  auto ad = block_sparse_bench::atom(4, "number");
+  triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 20., 1e-10, false);
+  nda::vector<double> poles{-1.5, .6};
+  auto model = gpu::export_model(ad, block_sparse_bench::coefficients(ad));
+  EXPECT_THROW((gpu::StreamFragmentEvaluator(model, poles, mesh, GiB, sparse, gpu::SparseBackend::Library, gpu::SpecialBackend::Reference,
+                                             gpu::OutputPlacement::Resident, GiB, gpu::NcaBackend::RealBatch)),
+               std::invalid_argument);
+}
+TEST(StreamFragmentEvaluator, NativePolicyCombinations) {
+  if (!gpu::ordered_sparse_available() || !gpu::mapped_special_available()) GTEST_SKIP() << "Native policies unavailable";
+  auto ad = block_sparse_bench::atom(4, "number");
+  triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 20., 1e-10, false);
+  auto G = block_sparse_bench::propagator(ad, mesh);
+  nda::vector<double> poles{-1.5, .6};
+  using namespace triqs::operators;
+  std::vector<many_body_operator_complex> interactions{n("f", 0) + n("f", 1) + n("f", 2) + n("f", 3), c_dag("f", 0) * c("f", 1)};
+  auto dyn     = nda::zeros<nda::dcomplex>(2, 2, 2);
+  dyn(0, 0, 0) = .03;
+  dyn(1, 1, 1) = .02;
+  auto model   = gpu::export_model(ad, block_sparse_bench::coefficients(ad), interactions, dyn);
+  for (auto sparse_backend : {gpu::SparseBackend::Library, gpu::SparseBackend::Ordered})
+    for (auto special : {gpu::SpecialBackend::Reference, gpu::SpecialBackend::Mapped}) {
+      gpu::StreamFragmentEvaluator candidate(model, poles, mesh, GiB, sparse, sparse_backend, special);
+      gpu::DiagramEvaluator reference(model, poles, mesh, GiB, sparse, sparse_backend, special);
+      for (auto top : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
+        auto se_total = reference.get_num_self_energy_backbones(top);
+        auto gf_total = reference.get_num_single_ptcle_gf_backbones(top);
+        for (long index : {0L, se_total / 2, se_total - 1}) {
+          auto expected = reference.compute_self_energy_range(G, top, index, index + 1);
+          auto actual   = candidate.compute_self_energy_range(G, top, index, index + 1);
+          for (long b = 0; b < G.size(); ++b) compare(actual[b].data(), expected[b].data());
+          counts(candidate, reference);
+        }
+        for (long index : {0L, gf_total / 2, gf_total - 1}) {
+          compare(candidate.compute_single_ptcle_gf_range(G, top, index, index + 1),
+                  reference.compute_single_ptcle_gf_range(G, top, index, index + 1));
+          counts(candidate, reference);
+        }
+      }
+    }
+}

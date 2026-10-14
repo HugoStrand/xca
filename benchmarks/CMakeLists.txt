@@ -58,3 +58,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/host_inputs
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/host_inputs)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/stream_fragments
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/stream_fragments)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/capacity_phase
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/capacity_phase)

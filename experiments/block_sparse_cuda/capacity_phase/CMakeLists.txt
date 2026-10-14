@@ -1,0 +1,8 @@
+if(NOT nda_WITH_CUDA_SUPPORT)
+  return()
+endif()
+add_executable(block_sparse_capacity_phase probe.cpp)
+target_link_libraries(block_sparse_capacity_phase PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c)
+if(Build_Tests)
+  add_test(NAME "experiments/block_sparse_cuda/capacity_phase" COMMAND block_sparse_capacity_phase --m 7 --k 5 --n 9 --samples 2)
+endif()
