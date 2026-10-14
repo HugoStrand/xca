@@ -2397,3 +2397,41 @@ commits separate, no push/install/supervisor changes. Logs /tmp/xca-bs-placement
 library-configure,library-build,library-final-configure,library-final-build,library-test,
 memcheck,recovery-configure,recovery-build,recovery-test,library-recovery-build,
 library-recovery-test}.log. No timing experiment ran during this qualification.
+
+## 2026-10-14 — Python and MPI output placement
+
+Previous turn was progress: production C++ HostSectors policy was qualified and
+committed. Consolidated facade static/dynamic constructors now accept output_placement
+and host_output_budget, validating placement before export. Updated explicit real/
+complex template instantiations, regenerated only _triqs_xca_cuda bindings and applied
+the CUDA guard. Solver adds block_sparse_output_placement and block_sparse_host_output_
+budget, resident/512 MiB defaults. GPU helper validates placement before module load
+and host budget as nonnegative integer (bool rejected); CPU stores preferences without
+CUDA import. Both attributes survive deepcopy/HDF and old-archive reconstruction.
+Runtime mutation validation follows existing collective initialization handling.
+
+Added Python static/dynamic HostSectors equivalence, smaller bound, rank-local zero
+budget collective evaluation failure, invalid placement initialization failure and
+recovery controls. Updated archive/default/validation checks. Initial wrapper generation
+failed until explicit template-instantiation signatures included the new arguments.
+First tests found inconsistent bool exception and a recovery fixture calling solve,
+which changed physical inputs; standardized ValueError and used the collective init
+entry point without changing inputs. Build-tree Python files are copies: one stale
+rerun was discarded, then all three trees were reconfigured before final checks.
+
+Final main Python CTest passes seven methods in 26.44 s; native-disabled seven pass
+13.06 s, both native flags remain OFF. CPU-only metadata/archive control passes .40 s,
+six GPU methods skipped. After these processes terminate, two-rank run passes seven
+methods each in 118.970/118.966 s, using CTest JSON environment and OMP/BLAS threads one.
+Failures/recovery are collective and no rank falls back to CPU evaluation. Known X11
+startup messages are not tool approval rejection. All handles terminal. No performance
+claim, new full-suite claim or target-hardware inference from these focused tests.
+
+Goal active. Placement is now operational through C++/Python/MPI with complete outputs;
+inputs remain resident. Next qualify larger placement capacity/host peaks and audit
+remaining batching/cutoff/target gates. GH200-class is target; A4000 a development proxy.
+All baselines/experiments/user work preserved. Code/bindings/tests and plan/log commits
+separate; no install/push/supervisor changes. Logs /tmp/xca-bs-placement-wrap.log,
+/tmp/xca-bs-placement-python-{build,test,refresh,cpu-configure,cpu-test,library-build,
+library-configure,library-test,mpi}.log. API details in doc/python_api.rst and Solver
+docstring; generated constructors include the two new keywords.

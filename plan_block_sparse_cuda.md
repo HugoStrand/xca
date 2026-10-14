@@ -1138,6 +1138,17 @@ the consolidated Python facade and Solver/MPI configuration, then complete broad
 capacity/host/target qualification. This is explicit placement, not automatic fallback
 after CUDA submission or a solution to input/contraction tiling.
 
+Python/MPI placement checkpoint: consolidated static/dynamic constructors expose
+`output_placement='resident'|'host_sectors'` and `host_output_budget`. Solver stores
+`block_sparse_output_placement`/`block_sparse_host_output_budget`, forwards them to
+CUDA, validates them without importing CUDA for CPU configurations, and retains them
+in deepcopy/HDF archives. Old archives default to Resident/512 MiB. Seven Python
+methods pass on both CUDA configurations; CPU metadata/archive control passes with
+six GPU skips. Two ranks pass seven methods each, including rank-local invalid
+placement, zero host budget, collective rejection and reusable later evaluations.
+Existing module/error orchestration remains consolidated. Target/host peak and
+larger capacity, many-small batching and cutoff qualification remain open.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical
