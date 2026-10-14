@@ -222,6 +222,9 @@ namespace triqs_xca::block_sparse::cuda {
           source = packed.data();
         }
         try {
+          // NDA initializes complex allocations on the default stream. Complete
+          // that initialization before this owned-stream copy can overwrite it.
+          ops->wait_for_default_uploads();
           auto status = cudaMemcpyAsync(out.data(), source, checked_multiply(data.size(), sizeof(Complex)), cudaMemcpyHostToDevice, ops->stream());
           if (status != cudaSuccess) throw std::runtime_error(cudaGetErrorString(status));
           ops->finish(); // Includes last read of optional noncontiguous host packing.
