@@ -36,6 +36,7 @@ def main():
                *ROOT.glob('benchmarks/block_sparse_common/*.[ch]pp'),
                *ROOT.glob('benchmarks/block_sparse_*/*_benchmark.cpp'), Path(__file__)]
     sources += [*ROOT.glob('experiments/block_sparse_cuda/**/*.cpp'),
+                *ROOT.glob('experiments/block_sparse_cuda/**/*.cu'),
                 *ROOT.glob('experiments/block_sparse_cuda/**/*.hpp'),
                 *ROOT.glob('experiments/block_sparse_cuda/**/CMakeLists.txt')]
     sources += [ROOT/'c++/triqs_xca'/p for p in ('backbone.cpp', 'backbone.hpp', 'hyb.cpp', 'hyb.hpp', 'operator_statistics.hpp')]

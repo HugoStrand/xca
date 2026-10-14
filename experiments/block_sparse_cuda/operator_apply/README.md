@@ -68,3 +68,48 @@ binary/NDA-library hashes and machine/toolchain metadata, with 120 s subprocess
 limits and no overwriting. Failures and partial output are preserved. N=14 uses
 bounded RHS slabs rather than complete sector-sized rank functions. Sparse nnz,
 maximum row degrees (forward/plain transpose), payload and workspace are reported.
+
+## Private complete evaluator candidate
+
+`block_sparse_ordered_evaluator_benchmark` uses a generated private copy of the
+current CUDA reference evaluator. Generation renames the class and replaces only
+the three sparse-snapshot type references with `OrderedSparseBlock`; it fails if
+that pattern changes. Path traversal, masks/cutoffs, DLR solves/convolution,
+special vertices, endpoint-cache invalidation and accumulation remain unchanged.
+Production headers/sources and consolidated Python bindings are not edited.
+
+The snapshot owns both CSR orientations and its shared device owner. It validates
+shapes/contiguous layout/nonoverlap/device ownership, checks its exact explicit
+payload against the operator budget before upload, and synchronizes each apply so
+caller temporaries can expire safely. Destruction selects the construction device
+and restores the caller after storage is released. This candidate is not a claim
+of asynchronous lifetime support or complete opaque allocation admission.
+
+With tests enabled, `block_sparse_ordered_evaluator_tests` runs the unchanged CUDA
+evaluator test source against the private class, plus snapshot budget/alias/shape,
+all-zero left/right, metadata ownership and shared-owner lifetime tests. It is a
+separate CTest entry; it does not replace the reference tests. Single-device local
+runs cannot establish behavior across a device switch on a multi-GPU machine.
+
+```bash
+cmake --build cbuild-cuda --target block_sparse_ordered_evaluator_tests \
+ block_sparse_ordered_evaluator_benchmark --parallel 6
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ctest --test-dir cbuild-cuda \
+ -R '^experiments/block_sparse_cuda/ordered_evaluator$' --output-on-failure
+```
+
+For paired complete calls, use the common recorder with the matched CPU executable
+and this candidate as the CUDA executable, campaign `ordered-evaluator-01`:
+
+```bash
+python3 benchmarks/block_sparse_common/run_calls.py \
+ --cpu-binary cbuild-cuda/benchmarks/experiments/block_sparse_cuda/dlr_hoisted/block_sparse_cpu_hoisted_benchmark \
+ --cuda-binary cbuild-cuda/benchmarks/experiments/block_sparse_cuda/operator_apply/block_sparse_ordered_evaluator_benchmark \
+ --machine thinkstationP620_RTXA4000 --campaign ordered-evaluator-01
+```
+
+Physical fixtures and complete-call scope are shared with the original/matched
+baselines. Raw rows are grouped under benchmark hardware/campaign directories;
+private candidate code stays here. Compare the retained library reference using
+its clean prior campaign and disclose the different run. No Python/MPI selector
+exposes this private candidate; production promotion requires those checks later.
