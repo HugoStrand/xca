@@ -1,0 +1,138 @@
+{
+  "binary_sha256": "0b71571e40b3580dd420393ff2c38329b9ef1b2faa099b1559690155ff19a6a6",
+  "cases": [
+    {
+      "name": "smooth-r23-band",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "2",
+        "--pattern",
+        "smooth"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "smooth-r23-repair",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "2",
+        "--pattern",
+        "smooth",
+        "--repair"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "oscillating-band",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "60",
+        "--eps",
+        "1e-12",
+        "--order",
+        "2",
+        "--pattern",
+        "oscillating"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "oscillating-repair",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "60",
+        "--eps",
+        "1e-12",
+        "--order",
+        "2",
+        "--pattern",
+        "oscillating",
+        "--repair"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "complex-band",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "100",
+        "--eps",
+        "1e-14",
+        "--order",
+        "2",
+        "--pattern",
+        "complex"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "complex-repair",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "100",
+        "--eps",
+        "1e-14",
+        "--order",
+        "2",
+        "--pattern",
+        "complex",
+        "--repair"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "order6-band",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "6",
+        "--pattern",
+        "smooth"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "order6-repair",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "6",
+        "--pattern",
+        "smooth",
+        "--repair"
+      ],
+      "returncode": 0
+    }
+  ],
+  "timeout_seconds": 120,
+  "backend_notes": "both Ordered; matched counterexamples and exact repair",
+  "source_sha256": {
+    "experiments/block_sparse_cuda/scalar_audit/audit.cpp": "734f15f3eeee129c630b2f50db46dadf41a050b41e9b1c9622a74ab53e7bf067",
+    "experiments/block_sparse_cuda/scalar_audit/audit.hpp": "7d945f57404e4abbfac9a3e528fefd81445f34d65850e47713c6f93a269feeee",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "d8d72971eebea7b213efca170f28fd01cd88435530d4c86bf4a12423931af922",
+    "experiments/block_sparse_cuda/scalar_paths/CMakeLists.txt": "e4fc4064fb4fe6e1785aaab7a86e15a41f99e675f59393193483892dfdd9836d",
+    "experiments/block_sparse_cuda/scalar_audit/CMakeLists.txt": "dca412a38746a483df2eba1d27344e7d2a56d9009e468c98c89f49f7a3b26d75"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "base_revision": "53d2df0f3281fe955e9fb96f9e986286b566b9e5",
+  "binary_sha256": "c2d52a3c57f67c82e462a14d19d8123d1f2b8fd8fcc313faa1e30e7b059bbf55",
+  "cases": [
+    {
+      "name": "smooth-r23",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "2",
+        "--pattern",
+        "smooth"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "oscillating",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "60",
+        "--eps",
+        "1e-12",
+        "--order",
+        "2",
+        "--pattern",
+        "oscillating"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "complex",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "100",
+        "--eps",
+        "1e-14",
+        "--order",
+        "2",
+        "--pattern",
+        "complex"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "order6",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_audit/block_sparse_scalar_cutoff_audit",
+        "--lambda",
+        "20",
+        "--eps",
+        "1e-10",
+        "--order",
+        "6",
+        "--pattern",
+        "smooth"
+      ],
+      "returncode": 0
+    }
+  ],
+  "backend_notes": "candidate Library, independent calibration Ordered; initial exploration"
+}

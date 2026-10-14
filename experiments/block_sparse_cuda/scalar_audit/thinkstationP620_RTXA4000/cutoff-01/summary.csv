@@ -1,0 +1,9 @@
+case,rank,rows,raw_disagreements,outside_band,post_policy_count_failures,nonfinite,max_value_error
+complex-band,47,59,27,27,27,0,4.2327935322486e-15
+complex-repair,47,59,27,27,0,0,4.2327935322486e-15
+order6-band,23,59,6,0,0,0,2.908056841006738e-26
+order6-repair,23,59,6,0,0,0,2.908056841006738e-26
+oscillating-band,36,59,19,19,19,0,1.2928026704717155e-15
+oscillating-repair,36,59,19,19,0,0,1.2928026704717155e-15
+smooth-r23-band,23,59,3,0,0,0,8.38164711797325e-31
+smooth-r23-repair,23,59,3,0,0,0,8.38164711797325e-31
