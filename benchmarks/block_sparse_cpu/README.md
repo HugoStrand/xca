@@ -1,5 +1,12 @@
 # Block-sparse CPU workload inventory
 
+`block_sparse_cpu_benchmark` also records bounded complete SE/SPGF/correlator calls
+using the unchanged CPU evaluator. Its shared runner/fixtures are in
+[block_sparse_common](../block_sparse_common/README.md); it imports no CUDA backend
+benchmark headers. Build it with `Build_Benchmarks=ON` and run with the same CLI
+workload options as `block_sparse_cuda_benchmark`. CPU-only and CUDA-environment
+CPU controls are both supported; record which TRIQS prefix was used.
+
 Build with `Build_Benchmarks=ON`, independently of examples/tests:
 
 ```bash
