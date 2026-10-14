@@ -2217,3 +2217,54 @@ Goal active. Keep full-function capacity, broader batching/cutoff and target-har
 gates open; GH200-class remains the target and the RTX A4000 a development proxy.
 Code verified by focused controls/CPU suite is checkpointed separately from these
 plan/work-log updates. No push/install/supervisor changes; unrelated work preserved.
+
+## 2026-10-14 — Compact regression and complete-output streaming
+
+Previous goal turn was progress: production compact DLR was committed with focused
+and CPU verification; full GPU checks remained live. Re-polled exact session 23832
+without restarting. Full main CUDA suite passes 101/101 in 565.48 s; queued production
+CompactStorageAndAliasTransitions memcheck passes, zero errors/bytes leaked. Native-
+disabled full suite then passes 86/86 in 269.69 s with both native flags OFF. These
+complete the broader compact regression gates; full CPU remains 80/80 in 50.51 s.
+
+Prepared an isolated OutputSectorEvaluator generated from production, preserving
+all observables and the existing SE visitor/arithmetic/cutoff. SE inputs remain fully
+resident, but only one output sector resides on GPU. Sector switches finish the owner,
+download the completed sector, release its device storage and resume the next sector
+from host values. All additions stay on GPU in original order. Complete host output
+includes zero/unvisited sectors. Return moves the vector into block_gf; the installed
+TRIQS owning constructor takes/moves its vector, avoiding a second whole-output copy.
+
+Self-energy device bound substitutes one maximum tile for one full function, retaining
+existing correlator/SPGF implementation and bounds. Private host output payload budget
+(default 512 MiB) is checked before allocations/uploads even for empty ranges. It
+excludes caller G, GF metadata/allocator overhead and a transient maximum-sector
+download; no RSS cap claim. Errors propagate, with no CPU summation or evaluator replay.
+Prior N14/rank26 analytic variable envelope is 74.867 GiB versus compact resident
+85.845 GiB, saving 10.979 GiB. This excludes fixed/operator/host/opaque memory and is
+not actual N14 atom_diag or production qualification.
+
+Generator seams and CPU-only configure pass. Main private target's nine controls
+pass in 8.01 s; native-disabled nine pass in 8.27 s. Eight inherited tests cover all
+observables/API behavior; added complete-output control checks three partitions,
+exact outputs/counts, changed G/masks, empty output, host budget rejection/recovery
+and a tight device budget: resident evaluation rejects, streamed complete output
+matches the independent resident evaluator exactly. Focused complete-output memcheck
+passes in 7.263 s with zero errors/leaks. All GPU stages run sequentially. No timing
+or measured peak claim is made; full 101/86 suites preceded addition of this new CTest,
+which is qualified separately rather than falsely reported as full 102/87 suites.
+
+Session 60685 completes the production two-rank Python integration after the
+native-disabled streaming check: six methods per rank pass in 98.016/98.020 s.
+The CTest environment is derived from JSON properties, with OMP/BLAS threads one.
+Log /tmp/xca-bs-compact-prod-mpi.log includes the known X11 startup diagnostics;
+these are not tool approval rejection. All verification handles are terminal at
+this checkpoint; no build/test/profiler remains running.
+
+Next measure full-call sector transfer/setup overhead and explicit/measured peak
+storage before deciding on promotion; input residency and spatial/K slabs remain
+separate capacity gates. Goal active, GH200-class target, local RTX A4000 only a
+development proxy. All baselines/experiments/user work retained; code/plan/log commits
+separate; no install/push/supervisor changes. Logs /tmp/xca-bs-compact-prod-{cuda-test,
+memcheck,library-test}.log and /tmp/xca-bs-output-sector-{configure,build,test,memcheck,
+cpu-configure,library-configure,library-build,library-test}.log.

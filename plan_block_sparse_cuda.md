@@ -1087,9 +1087,22 @@ arithmetic order and public signatures are unchanged. Original cached DLR is ret
 as `compact_dlr/historical_dlr.*`; private NCA admission retains its old six-tile
 reserve. For the prior N=14/rank26 analytic inventory, variable generic storage drops
 from 90.409 to 85.845 GiB; this is neither an allocation measurement nor full-system
-qualification and still excludes fixed/operator/host/opaque storage. CPU 80/80 and
-six focused CUDA entries pass; broader GPU regression/lifetime checks are in progress
-and must be recorded before treating the production promotion as fully verified.
+qualification and still excludes fixed/operator/host/opaque storage. CPU 80/80,
+main CUDA 101/101 and native-disabled 86/86 suites pass. Production alias/storage
+memcheck reports zero errors/leaks. Two-rank integration passes six methods per rank.
+
+Private E7 complete-output checkpoint: `experiments/block_sparse_cuda/output_sectors`
+keeps one self-energy output sector on device and the complete output on host,
+preserving path order and performing every accumulation on GPU. Full propagator
+inputs remain resident. The device estimate replaces one full function with one
+maximum tile; the prior N14/rank26 variable estimate falls another 10.979 GiB to
+74.867 GiB, excluding fixed/operator/host/opaque storage. Full output host payload
+has a configurable budget checked before allocations/uploads, including empty ranges.
+Nine controls pass in main and native-disabled configurations, with exact full-sector
+outputs, changed masks, recovery and a device budget rejected by resident evaluation
+but accepted by streaming. Focused memcheck reports zero errors/leaks. This is not
+promotion or actual N14 qualification: transfer/setup cost, measured peak storage,
+input/slab streaming and target-hardware capacity remain open.
 
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
