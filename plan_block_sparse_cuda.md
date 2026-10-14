@@ -197,6 +197,22 @@ Cutoff band proof/promotion, broader capacity/Python/MPI and integration remain 
 Evidence: common/CPU/CUDA hardware folders density-staging-01 (local) and
  density-resident-01 (GH200); all older variants retained.
 
+### 2026-10-14 — Upload events and next production gates
+
+Separate scalar_streams preserves staging while allowing queued kernels to proceed
+after uploads. Host-source reuse waits on the prior copy event; device reads/writes
+share one stream. Explicit recipe copy-back and destructor completion remain. Full20
+local controls, three focused memchecks and36samples pass. Local complete-call gains
+4–7% over staging with unchanged admitted array storage. Scoped trace streamSync
+278→185 plus87eventSync; transfers/kernel count unchanged. Both remain experimental.
+
+Keep the fixed cutoff replay band's unproven envelope explicit. Next prioritize
+bounded capacity qualification and production numerical/promotion decisions; avoid
+endless micro-variants given modest local gains and matchedCPU target results. Reuse
+these candidates for one bounded GH200 finalist comparison only when it resolves a
+production decision. Target usage remains .27556GPU-hours; no new allocation this step.
+Evidence: local density-streams-01 and staging/streams profile-01. All baselines kept.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device

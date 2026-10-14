@@ -1,5 +1,48 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Upload-event scalar experiment
+
+Previous goal turn was progress: restored SSH, completed GH200 resident qualification
+and committed staging. Added separate scalar_streams candidate, retaining all variants.
+Host descriptors/constants/pointers wait for their previous upload-completion event
+before source rewrite. Following kernel reads and device-buffer writes are ordered
+on the same owned stream; do not wait for each kernel immediately. Lazily reuse three
+events per cohort. Complete before NDA host copy-back; existing copy/BLAS/DLR/default
+upload and fan-in barriers retained. Destructor drains readers before buffers/events
+released. No device array payload or admission change from staging.
+
+Initial copied CMake guard accidentally tested candidate's own target and skipped
+it; corrected before compilation. Fixed missing benchmark label declaration. Existing
+19controls pass46.95s. Added32-round source-rewrite/gather stress with queued-reader
+exception/unwind; initial EXPECT_THROW macro required parenthesized lambda to protect
+initializer commas. Full20controls pass46.92s. Focused stress/multi-set/adjacent-cutoff
+memcheck three controls16.988s, zero errors/leaks. Rebuilt CPU/staging controls then
+isolated12-process/36sample campaign passes finite values, CPU screening/exact replay,
+GPU summary fields and unchanged bound. CPU/staging/events medianms:
+N4NCA1.171/1.680/1.566, N4OCA4.006/3.127/2.984, N6OCA13.963/8.018/7.721,
+N8OCA5.949/5.427/5.117. Local gains4–7%, smallNCA still favors CPU; three samples
+are not robust crossover or target qualification. No elementwise bitwise claim.
+
+After timing, scoped Nsight2026.3.2 warmedN6 OCA first1/count8 captures both candidates,
+passing numerical screen/replay. StreamSync278→185, added87eventSync, eventRecord
+165→261, alloc/free69/71 unchanged. Comparing resident trace, staging reduced alloc
+156→69/free158→71 and default upload eventRecord258→165. HtoD1,051,188bytes/118,
+DtoH588,848/16, DtoD9,067,520/49 and kernel count unchanged between new traces.
+Tracing/export times excluded from speed claims. Compactstats/report hashes and source
+snapshot retained; capture frontend binary hash not recorded, documented limitation.
+Binary /tmp reports may disappear. Compile-only deletion of copying prevents duplicate
+event ownership; rebuilt all candidate targets and stresscontrolpassed.232s afterward.
+Benchmark hashes explicitly retain runtime-identical predeletion source/binary version.
+
+Codecd90e5d/evidence6d546f7 separate from this plan/log. Logs /tmp/xca-bs-streams-*,
+evidence common/CPU/CUDA local density-streams-01 and staging/streams localprofile-01.
+No target hours (cumulative .27556GPU-hours unchanged), install/push or unrelated edits.
+All processes terminal. Persistent goal active. Diminishing local gains justify closing
+broader capacity and numerical promotion gates next rather than more small barrier
+variants. Do not promote fixed cutoff band without adequate policy evidence. Revisit
+GH200 only for a bounded finalist cohort that informs integration/dispatch decisions.
+Broader production capacity, optimized integration and Python/MPI gates remain open.
+
 ## 2026-10-14 — Restored target qualification and reusable staging
 
 User restored Arrhenius SSH authentication. Bounded probe succeeded; queue empty.
