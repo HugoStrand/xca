@@ -41,3 +41,12 @@ Runner and binary hashes are recorded alongside pinned source revisions. This is
 an initial cohort, not a statistically established dispatch crossover or a full
 topology sum. Raw CPU/GPU and combined results belong in the respective benchmark
 folders under `Arrhenius_GH200/initial-01`.
+
+`scalar.sbatch` reuses the same pinned tree, builds the constants/arena/fan-in
+candidate and its matched CPU control, and first runs all 14 scalar semantic tests.
+It then invokes `run_cohort.py --cohort scalar`: six cases, four backends, three
+samples. The unchanged CPU and ordered GPU remain controls. Work includes scalar
+zero/active windows, an eight-index range, N=10 scalar blocks, an order-six chain
+window and a mixed retarded correlator fallback. Inspect actual survival before
+claiming high-order arithmetic coverage. Allocation is capped at fifteen minutes
+on one GPU; failures stop the campaign. Results use `Arrhenius_GH200/scalar-01`.

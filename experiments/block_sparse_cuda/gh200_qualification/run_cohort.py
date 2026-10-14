@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record a bounded three-backend GH200 cohort without requiring a Git checkout."""
+"""Record bounded GH200 cohorts without requiring a Git checkout."""
 import argparse
 import csv
 import hashlib
@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
+    parser.add_argument('--cohort', choices=['initial', 'scalar'], default='initial')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -33,7 +34,24 @@ def main():
         ('number-n8', 8, 'number', 'se', 1, False, 0),
         ('number-n10', 10, 'number', 'se', 1, False, 0),
     ]
+    cases = [(*case, 1, 'crossing') for case in cases]
+    if args.cohort == 'scalar':
+        experiment = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_paths'
+        binaries = {
+            'cpu': binaries['cpu'], 'ordered': binaries['ordered'],
+            'cpu_constants': experiment/'block_sparse_cpu_scalar_constants_benchmark',
+            'cuda_constants': experiment/'block_sparse_scalar_constants_benchmark',
+        }
+        cases = [
+            ('scalar-zero', 4, 'occupation', 'se', 3, False, 0, 1, 'crossing'),
+            ('scalar-active', 4, 'occupation', 'se', 3, False, 1, 1, 'crossing'),
+            ('scalar-range', 6, 'occupation', 'se', 2, False, 1, 8, 'crossing'),
+            ('scalar-n10', 10, 'occupation', 'se', 2, False, 1, 1, 'crossing'),
+            ('scalar-order6', 4, 'occupation', 'se', 6, False, 1, 8, 'chain'),
+            ('mixed-fallback', 4, 'mixed', 'correlator', 2, True, 0, 1, 'crossing'),
+        ]
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
+                    cohort=args.cohort,
                     host=platform.node(), platform=platform.platform(),
                     job_id=os.environ.get('SLURM_JOB_ID'), samples_per_case=3,
                     timeout_per_process_seconds=120, cases=[],
@@ -44,11 +62,11 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     rows = []
     env = dict(os.environ, OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
-    for name, modes, partition, observable, order, dynamic, first in cases:
+    for name, modes, partition, observable, order, dynamic, first, count, topology in cases:
         for backend, binary in binaries.items():
             command = [str(binary.resolve()), '--modes', str(modes), '--partition', partition,
                        '--observable', observable, '--order', str(order), '--first', str(first),
-                       '--count', '1', '--samples', '3']
+                       '--count', str(count), '--topology', topology, '--samples', '3']
             if dynamic:
                 command.append('--dynamic')
             start = time.monotonic()
