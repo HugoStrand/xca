@@ -1,0 +1,136 @@
+{
+  "git_commit": "13ab3b0f136b6f7b3eeb6109a1798a686b44459a",
+  "host": "ThinkStation",
+  "gpu_info": "NVIDIA RTX A4000, 16376 MiB, 580.178.04",
+  "compiler": "Ubuntu clang version 19.1.1 (1ubuntu1~24.04.2)",
+  "binary_sha256": "b5fa6f99eb28663723b1c03895e308c374032bff061d50952c61d5b7e3b357e2",
+  "sources": {
+    "experiments/block_sparse_cuda/compact_dlr/tests.cpp": "68d6b6340c76dede13c9da4fc8c474e749b654eccc82be1b084dfecb7263c49b",
+    "experiments/block_sparse_cuda/compact_dlr/benchmark.cpp": "98aaedeb0ad7adf67b6448ce9f2b41353b5bd57a585785fcd6e59c594e4b3a26",
+    "experiments/block_sparse_cuda/compact_dlr/compact_dlr.hpp": "68e35348a017de8f716fb0145bdced955ea32d3d9c0746e4afacbd01d05d37a0",
+    "experiments/block_sparse_cuda/compact_dlr/evaluator_benchmark.cpp": "2eb924e72ee222511eef5777d0be1ddb1d29b38a431290d9c010f06ab231dacc",
+    "experiments/block_sparse_cuda/compact_dlr/compact_dlr.cpp": "420b7084a64b332b6a4fb6cc616c668c1e5dd051c6b82c1a8e3e5f9f66f1ba58",
+    "experiments/block_sparse_cuda/compact_dlr/README.md": "c3fb0b53601e3823b28a3b36d3ad9fa0a160cbbdee7bf4f2a8edf0b7772cd004",
+    "experiments/block_sparse_cuda/compact_dlr/CMakeLists.txt": "237f7e5e11d3d868e80b005f622b60725b7099a3e30d12ca64d2ecf594fe9cea",
+    "experiments/block_sparse_cuda/compact_dlr/run.py": "079324092479fe0fc77bf3030f24f3712543692183141fbc48695a0a8529b405",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "02620e99ed5315b4e17ff379f8c25a1b653adccdde2c649d3665e387a1bbc4f4",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.hpp": "b6da2955c22f969229b2188d70020064726c60bcb7c0b09d225f03a3f068c892",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.hpp": "fac3897b5b23b3aa56bbd1edf1f8d7ee6009eb4f065c3395adf36996131e274c",
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "9fb95c4ff1aed7f9c1e30ba7e95113b2c09845b6b6a9784577fb283d6233a9b6"
+  },
+  "cases": [
+    {
+      "name": "1-1-1-lambda20",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "1",
+        "--k",
+        "1",
+        "--n",
+        "1",
+        "--lambda",
+        "20",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.5741729709552601
+    },
+    {
+      "name": "3-5-2-lambda20",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "3",
+        "--k",
+        "5",
+        "--n",
+        "2",
+        "--lambda",
+        "20",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.49788104090839624
+    },
+    {
+      "name": "16-16-16-lambda20",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "16",
+        "--k",
+        "16",
+        "--n",
+        "16",
+        "--lambda",
+        "20",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.49386903503909707
+    },
+    {
+      "name": "64-96-48-lambda20",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "64",
+        "--k",
+        "96",
+        "--n",
+        "48",
+        "--lambda",
+        "20",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.5261819739826024
+    },
+    {
+      "name": "256-256-256-lambda20",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "256",
+        "--k",
+        "256",
+        "--n",
+        "256",
+        "--lambda",
+        "20",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.1137202139943838
+    },
+    {
+      "name": "3-5-2-lambda120",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_dlr_benchmark",
+        "--m",
+        "3",
+        "--k",
+        "5",
+        "--n",
+        "2",
+        "--lambda",
+        "120",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.5077254460193217
+    }
+  ],
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  }
+}
