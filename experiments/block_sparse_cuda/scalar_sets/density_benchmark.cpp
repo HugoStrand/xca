@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   };
 #if defined(XCA_DENSITY_SETS_CPU_BATCHED)
   using Evaluator = scalar_path_experiment::CpuScalarPathEvaluator;
-#ifdef XCA_EXPERIMENT_SCALAR_SIGN_HOIST
+#if defined(XCA_EXPERIMENT_SCALAR_SIGN_HOIST)
   constexpr auto backend = "cpu_density_signs";
 #else
   constexpr auto backend = "cpu_batched_density_sets";
@@ -67,7 +67,9 @@ int main(int argc, char **argv) {
   constexpr auto backend = "profile_batched_density_sets";
 #else
   using Evaluator = gpu::ScalarPathEvaluator;
-#ifdef XCA_EXPERIMENT_SCALAR_SIGN_HOIST
+#if defined(XCA_EXPERIMENT_SCALAR_RESIDENT)
+  constexpr auto backend = "cuda_density_resident";
+#elif defined(XCA_EXPERIMENT_SCALAR_SIGN_HOIST)
   constexpr auto backend = "cuda_density_signs";
 #else
   constexpr auto backend = "cuda_batched_density_sets";

@@ -20,6 +20,11 @@ string(REPLACE "std::size_t ScalarPathEvaluator::last_contributing_paths() const
 string(REPLACE "x.contributions   = 0;"
   "x.contributions   = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    x.scalar_replayed_lanes = 0;\n#endif" source "${source}")
 set(source "#include <map>\n${source}")
+set(source "#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n#include \"resident_kernels.hpp\"\n#endif\n${source}")
+string(REPLACE "kernel_bytes = checked_multiply(2, tensor_bytes(1, r, poles.size()));"
+  "kernel_bytes = checked_multiply(2, tensor_bytes(1, r, poles.size()));\n#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n      if (scalar_eligible()) kernel_bytes = checked_add(kernel_bytes, checked_multiply(2, tensor_bytes(r, model.num_fields(), model.num_fields())));\n#endif" source "${source}")
+string(REPLACE "negative.emplace_back(minus);\n      }\n      ops->wait_for_default_uploads();"
+  "negative.emplace_back(minus);\n      }\n#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n      if (scalar_eligible()) prepare_resident_weights();\n#endif\n      ops->wait_for_default_uploads();" source "${source}")
 string(REPLACE "\"diagram_evaluator.hpp\"" "\"scalar_evaluator.hpp\"\n#include \"../scalar_edges/scalar_pack.hpp\"" source "${source}")
 string(REPLACE "    void evaluate(std::vector<Tensor>" "#include \"scheduler.inc\"\n    void evaluate(std::vector<Tensor>" source "${source}")
 string(REPLACE "if (first != last) x.prepare_self_energy(topology);" "if (first != last) x.prepare_self_energy(topology,x.scalar_extra_bound());" source "${source}")

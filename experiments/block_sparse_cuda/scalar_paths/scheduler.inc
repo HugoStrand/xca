@@ -1,4 +1,7 @@
 using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+#include "../scalar_resident/resident.inc"
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
 std::size_t scalar_replayed_lanes = 0;
 #include "../scalar_cutoff/replay.inc"
@@ -14,6 +17,9 @@ bool scalar_eligible() const {
 std::size_t scalar_extra_bound() const {
   if (!scalar_eligible()) return 0;
   auto bound = checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1));
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+  bound = checked_add(bound, checked_multiply(512, sizeof(scalar_resident_experiment::Weight)));
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_SETS
   bound = checked_add(bound, tensor_bytes(r, 3 * 512, 1));
 #endif
@@ -30,19 +36,38 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   long lanes = packed.f.extent(1), count = work.size();
   Tensor T(r, lanes, 1), zero(r, 1, 1), weights(r, lanes, 1), lane_result(r, 1, 1);
   ops->zero(zero);
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+  prepare_resident_weights();
+#endif
   auto apply_weights = [&](Tensor &target, auto get) {
+    auto weight_at = [&](long lane, long t) {
+      if constexpr (requires { get(work[lane].first, work[lane].second, t, lane); })
+        return get(work[lane].first, work[lane].second, t, lane);
+      else return get(work[lane].first, work[lane].second, t);
+    };
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+    if constexpr (std::is_same_v<decltype(weight_at(0, 0)), scalar_resident_experiment::Weight>) {
+      nda::vector<scalar_resident_experiment::Weight> descriptors(lanes);
+      descriptors() = scalar_resident_experiment::Weight{};
+      for (long lane = 0; lane < count; ++lane) descriptors(lane) = weight_at(lane, 0);
+      nda::cuvector<scalar_resident_experiment::Weight> device(descriptors);
+      ops->wait_for_default_uploads();
+      scalar_edge_experiment::check(scalar_resident_experiment::apply(target.data(), device.data(), r, lanes, ops->stream()));
+      ops->finish();
+    } else
+#endif
+    {
     nda::array<Complex, 3> values(r, lanes, 1);
     values() = 1.;
     for (long lane = 0; lane < count; ++lane)
       for (long t = 0; t < r; ++t) {
-        if constexpr (requires { get(work[lane].first, work[lane].second, t, lane); })
-          values(t, lane, 0) = get(work[lane].first, work[lane].second, t, lane);
-        else values(t, lane, 0) = get(work[lane].first, work[lane].second, t);
+        values(t, lane, 0) = weight_at(lane, t);
       }
     weights = Tensor(values);
     ops->wait_for_default_uploads();
     scalar_edge_experiment::check(scalar_edge_experiment::multiply(target.data(), weights.data(), target.data(), target.size(), ops->stream()));
     ops->finish();
+    }
   };
   auto apply_constants = [&](Tensor &target, auto get) {
 #ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS

@@ -27,6 +27,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_sets
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_sets)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_signs
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_signs)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_resident
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_resident)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/special_vertex
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/special_vertex)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/mapped_special

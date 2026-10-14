@@ -8,7 +8,11 @@
     });
     apply_weights(T, [&](Backbone &backbone, SelfEnergyPath const &, long t) {
       int sign = backbone.get_vertex_Ksign(v), p = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v));
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+      return resident_pole_weight(sign, p);
+#else
       return sign == 0 ? Complex{1.} : Complex{sign > 0 ? hyb->k_it_p(t, p) : hyb->k_it_m(t, p)};
+#endif
     });
   };
   auto edge_batch = [&](int e) {
@@ -16,7 +20,11 @@
     for (int x = 0; x < work.front().first.m - 1; ++x)
       apply_weights(packed.f, [&](Backbone &backbone, SelfEnergyPath const &, long t) {
         int sign = backbone.get_edge(e, x), p = backbone.get_pole_ind(x);
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+        return resident_pole_weight(sign, p);
+#else
         return sign == 0 ? Complex{1.} : Complex{sign > 0 ? hyb->k_it_p(t, p) : hyb->k_it_m(t, p)};
+#endif
       });
     copy(T, packed.g);
     packed.compute(beta);
@@ -49,7 +57,11 @@
     int field    = model.sets()[path.zero_set][0];
     bool forward = !backbone.has_vertex_dag(0);
     int sign     = backbone.get_parity() * (forward ? 1 : -1);
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+    return resident_special_weight(field, field, forward, sign);
+#else
     return Complex{static_cast<double>(sign)} * (forward ? hyb->values(t, field, field) : hyb->values_reflect(t, field, field));
+#endif
   });
   apply_constants(T, [&](Backbone &backbone, SelfEnergyPath const &path, long) {
     int field         = model.sets()[path.zero_set][0];

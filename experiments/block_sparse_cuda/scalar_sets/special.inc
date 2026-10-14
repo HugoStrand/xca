@@ -26,7 +26,11 @@
 #endif
           apply_weights(kap, [&](Backbone &backbone, SelfEnergyPath const &path, long t, long lane) {
             auto const &set = model.sets()[path.zero_set];
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+            if (i >= set.size() || j >= set.size()) return scalar_resident_experiment::Weight{0, 1, 0};
+#else
             if (i >= set.size() || j >= set.size()) return Complex{0.};
+#endif
             bool forward = !backbone.has_vertex_dag(0);
 #ifdef XCA_EXPERIMENT_SCALAR_SIGN_HOIST
             int sign = signs[lane];
@@ -35,7 +39,11 @@
             backbone.set_orb_inds_of_0_and_vct0(set[j], set[i]);
             int sign = backbone.get_parity() * (forward ? 1 : -1);
 #endif
+#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
+            return resident_special_weight(set[i], set[j], forward, sign);
+#else
             return Complex{static_cast<double>(sign)} * (forward ? hyb->values(t, set[i], set[j]) : hyb->values_reflect(t, set[j], set[i]));
+#endif
           });
           add_batch(kap, mu);
         }
