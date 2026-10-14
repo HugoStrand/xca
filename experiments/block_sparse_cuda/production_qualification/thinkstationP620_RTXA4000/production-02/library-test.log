@@ -1,0 +1,174 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda-library-api
+Test project /home/hugstr/dev/xca/cbuild-cuda-library-api
+      Start  1: block_sparse/cuda_host_output
+ 1/84 Test  #1: block_sparse/cuda_host_output ...........   Passed    7.49 sec
+      Start  2: atom_diag_utils
+ 2/84 Test  #2: atom_diag_utils .........................   Passed    0.13 sec
+      Start  3: backbone_indexing
+ 3/84 Test  #3: backbone_indexing .......................   Passed    0.15 sec
+      Start  4: backbone_parity
+ 4/84 Test  #4: backbone_parity .........................   Passed    0.13 sec
+      Start  5: block_diag_op_fun
+ 5/84 Test  #5: block_diag_op_fun .......................   Passed    0.17 sec
+      Start  6: block_sparse/atom_prop
+ 6/84 Test  #6: block_sparse/atom_prop ..................   Passed    0.42 sec
+      Start  7: block_sparse/correlator_path
+ 7/84 Test  #7: block_sparse/correlator_path ............   Passed    0.14 sec
+      Start  8: block_sparse/cuda_admission
+ 8/84 Test  #8: block_sparse/cuda_admission .............   Passed    2.19 sec
+      Start  9: block_sparse/cuda_device_ops
+ 9/84 Test  #9: block_sparse/cuda_device_ops ............   Passed    0.50 sec
+      Start 10: block_sparse/cuda_diagram_evaluator
+10/84 Test #10: block_sparse/cuda_diagram_evaluator .....   Passed    7.34 sec
+      Start 11: block_sparse/cuda_dlr_ops
+11/84 Test #11: block_sparse/cuda_dlr_ops ...............   Passed    0.58 sec
+      Start 12: block_sparse/cuda_mapped_special
+12/84 Test #12: block_sparse/cuda_mapped_special ........   Passed    0.25 sec
+      Start 13: block_sparse/cuda_memory_plan
+13/84 Test #13: block_sparse/cuda_memory_plan ...........   Passed    0.44 sec
+      Start 14: block_sparse/cuda_nca_dispatch
+14/84 Test #14: block_sparse/cuda_nca_dispatch ..........   Passed    0.25 sec
+      Start 15: block_sparse/cuda_nca_liveness
+15/84 Test #15: block_sparse/cuda_nca_liveness ..........   Passed    9.56 sec
+      Start 16: block_sparse/cuda_real_nca
+16/84 Test #16: block_sparse/cuda_real_nca ..............   Passed    0.39 sec
+      Start 17: block_sparse/cuda_sparse_backend
+17/84 Test #17: block_sparse/cuda_sparse_backend ........   Passed    0.45 sec
+      Start 18: block_sparse/dynint_evaluator
+18/84 Test #18: block_sparse/dynint_evaluator ...........   Passed    2.50 sec
+      Start 19: block_sparse/dynint_sets
+19/84 Test #19: block_sparse/dynint_sets ................   Passed    0.14 sec
+      Start 20: block_sparse/dynint_spin_flip
+20/84 Test #20: block_sparse/dynint_spin_flip ...........   Passed    0.70 sec
+      Start 21: block_sparse/evaluator_api
+21/84 Test #21: block_sparse/evaluator_api ..............   Passed    0.98 sec
+      Start 22: block_sparse/operator_model
+22/84 Test #22: block_sparse/operator_model .............   Passed    0.13 sec
+      Start 23: block_sparse/path
+23/84 Test #23: block_sparse/path .......................   Passed    0.18 sec
+      Start 24: block_sparse/sparse_operator
+24/84 Test #24: block_sparse/sparse_operator ............   Passed    0.57 sec
+      Start 25: block_sparse/sparsity_invariance
+25/84 Test #25: block_sparse/sparsity_invariance ........   Passed    5.30 sec
+      Start 26: block_sparse/sym_set_mask
+26/84 Test #26: block_sparse/sym_set_mask ...............   Passed    0.56 sec
+      Start 27: block_sparse/sym_sets
+27/84 Test #27: block_sparse/sym_sets ...................   Passed    0.13 sec
+      Start 28: dense/benchmark_validation
+28/84 Test #28: dense/benchmark_validation ..............   Passed    0.12 sec
+      Start 29: dense/correlator_statistics
+29/84 Test #29: dense/correlator_statistics .............   Passed    1.11 sec
+      Start 30: dense/cuda/device_ops
+30/84 Test #30: dense/cuda/device_ops ...................   Passed    0.50 sec
+      Start 31: dense/cuda/dlr_ops
+31/84 Test #31: dense/cuda/dlr_ops ......................   Passed    0.53 sec
+      Start 32: dense/cuda_small/batch_api
+32/84 Test #32: dense/cuda_small/batch_api ..............   Passed    0.13 sec
+      Start 33: dense/dynint_parity
+33/84 Test #33: dense/dynint_parity .....................   Passed    0.63 sec
+      Start 34: dense_cuda_benchmark_contract
+34/84 Test #34: dense_cuda_benchmark_contract ...........   Passed    0.13 sec
+      Start 35: dynint_spin_rotation
+35/84 Test #35: dynint_spin_rotation ....................   Passed    3.49 sec
+      Start 36: evaluator_ranges
+36/84 Test #36: evaluator_ranges ........................   Passed    1.08 sec
+      Start 37: flat_index_range
+37/84 Test #37: flat_index_range ........................   Passed    1.60 sec
+      Start 38: hyb
+38/84 Test #38: hyb .....................................   Passed    0.13 sec
+      Start 39: manual_routines
+39/84 Test #39: manual_routines .........................   Passed    5.08 sec
+      Start 40: one_fermion_se_spgf_all_evals
+40/84 Test #40: one_fermion_se_spgf_all_evals ...........   Passed    2.04 sec
+      Start 41: propagator_layout
+41/84 Test #41: propagator_layout .......................   Passed    0.55 sec
+      Start 42: test_nda_cuda_smoke
+42/84 Test #42: test_nda_cuda_smoke .....................   Passed    0.49 sec
+      Start 43: topology
+43/84 Test #43: topology ................................   Passed    0.12 sec
+      Start 44: triqs_soehyb/test_convolve
+44/84 Test #44: triqs_soehyb/test_convolve ..............   Passed    0.12 sec
+      Start 45: triqs_soehyb/test_dimer
+45/84 Test #45: triqs_soehyb/test_dimer .................   Passed    0.30 sec
+      Start 46: triqs_soehyb/test_dlr
+46/84 Test #46: triqs_soehyb/test_dlr ...................   Passed    0.57 sec
+      Start 47: triqs_soehyb/test_fastdiagram
+47/84 Test #47: triqs_soehyb/test_fastdiagram ...........   Passed    1.57 sec
+      Start 48: triqs_soehyb/test_oca
+48/84 Test #48: triqs_soehyb/test_oca ...................   Passed    0.13 sec
+      Start 49: triqs_soehyb/test_oca_equi
+49/84 Test #49: triqs_soehyb/test_oca_equi ..............   Passed    0.18 sec
+      Start 50: triqs_soehyb/test_tca
+50/84 Test #50: triqs_soehyb/test_tca ...................   Passed    6.01 sec
+      Start 51: two_fermions_se_spgf_all_evals
+51/84 Test #51: two_fermions_se_spgf_all_evals ..........   Passed    1.55 sec
+      Start 52: unitary_invariance_all_evals
+52/84 Test #52: unitary_invariance_all_evals ............   Passed    3.16 sec
+      Start 53: Py_cppdlr_imtime_ops
+53/84 Test #53: Py_cppdlr_imtime_ops ....................   Passed    0.25 sec
+      Start 54: Py_cuda_backends
+54/84 Test #54: Py_cuda_backends ........................   Passed    0.90 sec
+      Start 55: Py_block_sparse_cuda
+55/84 Test #55: Py_block_sparse_cuda ....................   Passed   12.81 sec
+      Start 56: Py_triqs_soehyb/load_module
+56/84 Test #56: Py_triqs_soehyb/load_module .............   Passed    0.87 sec
+      Start 57: Py_triqs_soehyb/spinless_dimer
+57/84 Test #57: Py_triqs_soehyb/spinless_dimer ..........   Passed    8.47 sec
+      Start 58: Py_triqs_soehyb/spinless_dimer_solver
+58/84 Test #58: Py_triqs_soehyb/spinless_dimer_solver ...   Passed    7.16 sec
+      Start 59: Py_triqs_soehyb/offdiagonal_nca
+59/84 Test #59: Py_triqs_soehyb/offdiagonal_nca .........   Passed    0.96 sec
+      Start 60: Py_diag
+60/84 Test #60: Py_diag .................................   Passed    3.68 sec
+      Start 61: Py_triqs_soehyb/unitary_invariance
+61/84 Test #61: Py_triqs_soehyb/unitary_invariance ......   Passed    1.60 sec
+      Start 62: Py_unitary_invariance
+62/84 Test #62: Py_unitary_invariance ...................   Passed    2.91 sec
+      Start 63: Py_triqs_soehyb/h5_io
+63/84 Test #63: Py_triqs_soehyb/h5_io ...................   Passed    0.97 sec
+      Start 64: Py_h5_io
+64/84 Test #64: Py_h5_io ................................   Passed    0.49 sec
+      Start 65: Py_dynint
+65/84 Test #65: Py_dynint ...............................   Passed    5.67 sec
+      Start 66: Py_dynint_spin_flip
+66/84 Test #66: Py_dynint_spin_flip .....................   Passed    0.86 sec
+      Start 67: Py_dynint_transverse
+67/84 Test #67: Py_dynint_transverse ....................   Passed    0.89 sec
+      Start 68: Py_topology
+68/84 Test #68: Py_topology .............................   Passed    0.36 sec
+      Start 69: Py_triqs_soehyb/triqs_solver
+69/84 Test #69: Py_triqs_soehyb/triqs_solver ............   Passed    1.23 sec
+      Start 70: Py_triqs_soehyb/one_spinful_fermion
+70/84 Test #70: Py_triqs_soehyb/one_spinful_fermion .....   Passed    1.34 sec
+      Start 71: Py_triqs_soehyb/analytic_diagrams
+71/84 Test #71: Py_triqs_soehyb/analytic_diagrams .......   Passed    1.43 sec
+      Start 72: Py_solver_copy
+72/84 Test #72: Py_solver_copy ..........................   Passed    0.35 sec
+      Start 73: Py_api
+73/84 Test #73: Py_api ..................................   Passed    4.17 sec
+      Start 74: Py_api_one_fermion
+74/84 Test #74: Py_api_one_fermion ......................   Passed    1.89 sec
+      Start 75: Py_api_two_fermions
+75/84 Test #75: Py_api_two_fermions .....................   Passed   12.10 sec
+      Start 76: Py_bethe_self_cons
+76/84 Test #76: Py_bethe_self_cons ......................   Passed    4.49 sec
+      Start 77: Py_dense_manual_NCA_OCA
+77/84 Test #77: Py_dense_manual_NCA_OCA .................   Passed    0.89 sec
+      Start 78: Py_normalization
+78/84 Test #78: Py_normalization ........................   Passed    4.43 sec
+      Start 79: Py_spgf_ordering
+79/84 Test #79: Py_spgf_ordering ........................   Passed    0.43 sec
+      Start 80: Py_bug_bs_one_fermion
+80/84 Test #80: Py_bug_bs_one_fermion ...................   Passed    0.35 sec
+      Start 81: Py_volterra_integral
+81/84 Test #81: Py_volterra_integral ....................   Passed    1.75 sec
+      Start 82: Py_one_time_correlator
+82/84 Test #82: Py_one_time_correlator ..................   Passed    0.36 sec
+      Start 83: Py_expectation_value
+83/84 Test #83: Py_expectation_value ....................   Passed    0.36 sec
+      Start 84: Py_order_conv
+84/84 Test #84: Py_order_conv ...........................   Passed    2.03 sec
+
+100% tests passed, 0 tests failed out of 84
+
+Total Test time (real) = 159.61 sec

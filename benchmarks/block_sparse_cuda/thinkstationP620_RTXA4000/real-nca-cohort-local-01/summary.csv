@@ -1,0 +1,5 @@
+case,cpu_scalar_constants,cuda_ordered_production,cuda_real_nca,cuda_real_nca_batch
+n4-nca,0.446287,9.483939,1.122776,0.216125
+n8-nca,4.156847,292.37245,2.101803,1.326198
+n4-oca-fallback,2.636826,15.23711,14.924273,15.010485
+n4-number-fallback,0.275015,8.549567,8.658119,8.533867

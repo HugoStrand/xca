@@ -1,0 +1,72 @@
+{
+  "source_commit": "b5a131c",
+  "runtime_code_commit": "fbbde67",
+  "recipe_commit": "a6ae6ef",
+  "test_filter": "-E '^experiments/'",
+  "results": {
+    "cpu": {
+      "tests": 83,
+      "seconds": 52.38,
+      "parallel": 2
+    },
+    "native": {
+      "tests": 93,
+      "seconds": 302.13,
+      "parallel": 1
+    },
+    "library": {
+      "tests": 84,
+      "seconds": 159.61,
+      "parallel": 1
+    }
+  },
+  "environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "python_tests_per_tree": 32,
+  "scope": "All configured targets built; production CTests only, excluding retained experiments",
+  "remaining_limits": [
+    "New NCA policy not GH200 qualified",
+    "Higher-order optimized scalar numerical policy unresolved",
+    "Larger convolution capacity/full fourteen-mode production execution unqualified"
+  ],
+  "dependencies": {
+    "cbuild": {
+      "adapol": "d3c4ab78f83922dbaae4d78c5c9d91e22fb974ce",
+      "pyed": "248bd34aa1ba974dc77dad4d8004631fc83d5515",
+      "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+      "c2py": "58e0586a32cd3e4bc197b2ca753b51f128db39d2"
+    },
+    "cbuild-cuda": {
+      "adapol": "d3c4ab78f83922dbaae4d78c5c9d91e22fb974ce",
+      "pyed": "248bd34aa1ba974dc77dad4d8004631fc83d5515",
+      "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+      "c2py": "58e0586a32cd3e4bc197b2ca753b51f128db39d2"
+    },
+    "cbuild-cuda-library-api": {
+      "adapol": "d3c4ab78f83922dbaae4d78c5c9d91e22fb974ce",
+      "pyed": "248bd34aa1ba974dc77dad4d8004631fc83d5515",
+      "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+      "c2py": "58e0586a32cd3e4bc197b2ca753b51f128db39d2"
+    }
+  },
+  "cluster_gpu_hours_added": 0,
+  "modules_sha256": {
+    "cbuild": "7e63e6a64a95f50c49b7b0b216b8548346c486703079206bd554d77785a2b92c",
+    "cbuild-cuda": "8ec27daf25448fbd5134f2878f1c837900da4a987e06e4e8d84c4ae746a0116a",
+    "cbuild-cuda-library-api": "aa21e0a0e50f7761f3c45ed9f5af98314f30bb00b73422074d2073535daf0127"
+  },
+  "artifact_normalization": "Archive-only LF/trailing-whitespace normalization; JSON payload preserved. Source runner output unchanged.",
+  "original_artifact_sha256": {
+    "cpu-build.log": "b51615913b5feee115854d32a5deb60d4f4a8f3a06c709ac749eb0a294fd535a",
+    "cpu-test-list.json": "9a331654558c01d342114f2ca47ce45c2f3fb2133a55a7b8d6c91c187896bc67",
+    "library-test-list.json": "dd2971949850ebbdd1b297e615c839b53f2ff8ae65bfab565ff595730a311dc5",
+    "library-configure.log": "621acad04ec89c584fecf2131762fb034539c78591e8d5132fe0d2f660d478e3",
+    "native-test-list.json": "e880ad78fc79331aad14ae84990958508c0cfbf2050b50a2b58c99b0fa8f4a30",
+    "cpu-configure.log": "12c0b39b84a0ef9c386a2a97a3f9cad9d574f0501107c241d0a1be6ef50e1231",
+    "library-output.log": "e491e02c0f35c84c33683fd2011e70b9b70cf63cb564e3cc2d72af10ca191acd",
+    "native-configure.log": "82f1c5e9fa54c56812f6a4e57c410be58ee0b58989e8076446c00ab9de9314c3",
+    "native-output.log": "053f4bf5ad2720d8ef24ce3ed2a6e20c08f2b4feb84301b9166408eab36af47c"
+  }
+}

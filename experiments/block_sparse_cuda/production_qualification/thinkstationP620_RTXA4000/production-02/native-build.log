@@ -1,0 +1,729 @@
+[  1%] Built target triqs_xca_small_kernels
+[  1%] Built target gtest
+[  2%] Built target triqs_xca_sparse_kernels
+[  2%] Built target block_sparse_operator_kernels
+[  2%] Built target block_sparse_scalar_edge_kernels
+[  3%] Building CXX object c++/triqs_soehyb/CMakeFiles/triqs_soehyb_c.dir/fastdiagram.cpp.o
+[  3%] Building CXX object c++/triqs_soehyb/CMakeFiles/triqs_soehyb_c.dir/strong_cpl.cpp.o
+[  4%] Built target block_sparse_resident_weight_kernels
+[  5%] Built target block_sparse_mapped_special_kernels
+[  7%] Built target c2py
+[  8%] Built target gtest_main
+[  8%] Building CXX object python/cppdlr/CMakeFiles/_cppdlr.dir/_cppdlr.cpp.o
+[  9%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[  9%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[  9%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:72:57: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+   72 | nda::array<dcomplex, 3> fastdiagram::free_greens(double beta, nda::array<dcomplex, 2> H_S, double mu, bool time_order) {
+      |                                                         ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:76:62: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+   76 | nda::array<dcomplex, 3> fastdiagram::free_greens_ppsc(double beta, nda::array<dcomplex, 2> H_S) { return free_gf_ppsc(beta, itops, H_S); }
+      |                                                              ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:137:8: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  137 |   auto N                  = Gt.shape(1);
+      |        ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:118:7: note: previous declaration is here
+  118 |   int N; // size of local Hilbert space
+      |       ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:200:8: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  200 |   auto N                  = Gt.shape(1);
+      |        ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:118:7: note: previous declaration is here
+  118 |   int N; // size of local Hilbert space
+      |       ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:256:64: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  256 | nda::array<dcomplex, 3> fastdiagram::time_ordered_dyson(double beta, nda::array<dcomplex, 2> H_S, double eta_0,
+      |                                                                ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:24:107: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve<nda::basic_array_view<std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+   24 | template nda::array<nda::dcomplex, 3> cppdlr::dyson_it_ppsc<nda::array<nda::dcomplex, 2>, nda::dcomplex>::solve<nda::array_view<nda::dcomplex, 3>>(
+      |                                                                                                           ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:198:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  198 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:27:107: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve_with_op<nda::basic_array_view<std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+   27 | template nda::array<nda::dcomplex, 3> cppdlr::dyson_it_ppsc<nda::array<nda::dcomplex, 2>, nda::dcomplex>::solve_with_op<
+      |                                                                                                           ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:198:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  198 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:259:14: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+  259 |   return dys.solve(Sigma_t, eta_0);
+      |              ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs-cuda/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+[  9%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+/home/hugstr/dev/xca/c++/triqs_soehyb/strong_cpl.cpp:665:35: warning: unused parameter 'Rv' [-Wunused-parameter]
+  665 | void cut_hybridization(int v, int Rv, nda::array_const_view<int, 2> D, double &constant, nda::array_const_view<dcomplex, 3> U_tilde_here,
+      |                                   ^
+9 warnings generated.
+[  9%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+1 warning generated.
+[ 10%] Linking CXX static library libtriqs_soehyb_c.a
+[ 10%] Built target triqs_soehyb_c
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+6 warnings generated.
+[ 10%] Linking CXX shared module _cppdlr.so
+[ 10%] Built target _cppdlr
+[ 10%] Building CXX object python/triqs_soehyb/CMakeFiles/fastdiagram.dir/fastdiagram.cpp.o
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+In file included from /home/hugstr/dev/xca/python/triqs_soehyb/fastdiagram.cpp:7:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+[ 11%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 11%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+2 warnings generated.
+[ 12%] Linking CXX shared module fastdiagram.so
+[ 12%] Built target fastdiagram
+[ 12%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 12%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 14%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 14%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 14%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 14%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 15%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 15%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 15%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 15%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:571:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  571 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:619:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  619 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+2 warnings generated.
+[ 16%] Linking CXX static library libtriqs_xca_c.a
+[ 16%] Built target triqs_xca_c
+[ 16%] Building CXX object benchmarks/dense_cpu/CMakeFiles/dense_cpu_benchmark.dir/dense_cpu_benchmark.cpp.o
+[ 17%] Building CXX object benchmarks/dense_cuda/CMakeFiles/dense_cuda_fixture_benchmark.dir/dense_cuda_fixture_benchmark.cpp.o
+[ 18%] Building CXX object benchmarks/dense_cuda/CMakeFiles/dense_cuda_benchmark.dir/dense_cuda_benchmark.cpp.o
+[ 18%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_cpu_benchmark.dir/block_sparse_cpu_benchmark.cpp.o
+[ 18%] Building CXX object benchmarks/dense_cuda_small/CMakeFiles/dense_cuda_small_native_benchmark.dir/dense_cuda_small_native_benchmark.cpp.o
+[ 19%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_inventory.dir/block_sparse_inventory.cpp.o
+[ 19%] Linking CXX executable dense_cuda_fixture_benchmark
+[ 19%] Linking CXX executable dense_cpu_benchmark
+[ 19%] Built target dense_cuda_fixture_benchmark
+[ 19%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_memory_plan.dir/block_sparse_memory_plan.cpp.o
+[ 19%] Built target dense_cpu_benchmark
+[ 19%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_benchmark.dir/block_sparse_cuda_benchmark.cpp.o
+[ 19%] Linking CXX executable dense_cuda_benchmark
+[ 19%] Built target dense_cuda_benchmark
+[ 19%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_ordered_benchmark.dir/block_sparse_cuda_ordered_benchmark.cpp.o
+[ 20%] Linking CXX executable dense_cuda_small_native_benchmark
+[ 21%] Linking CXX executable block_sparse_cpu_benchmark
+[ 21%] Built target dense_cuda_small_native_benchmark
+[ 21%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_real_nca_benchmark.dir/block_sparse_cuda_real_nca_benchmark.cpp.o
+[ 21%] Linking CXX executable block_sparse_inventory
+[ 21%] Built target block_sparse_cpu_benchmark
+[ 21%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_dlr_hoisted.dir/block_sparse_dlr_hoisted.cpp.o
+[ 21%] Built target block_sparse_inventory
+[ 22%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/block_sparse_cpu_hoisted_benchmark.cpp.o
+[ 22%] Linking CXX executable block_sparse_memory_plan
+[ 22%] Built target block_sparse_memory_plan
+[ 22%] Building CXX object benchmarks/experiments/block_sparse_cuda/operator_apply/CMakeFiles/block_sparse_operator_apply.dir/block_sparse_operator_apply.cpp.o
+[ 23%] Linking CXX executable block_sparse_dlr_hoisted
+[ 23%] Linking CXX executable block_sparse_cuda_benchmark
+[ 23%] Built target block_sparse_dlr_hoisted
+[ 24%] Building CXX object benchmarks/experiments/block_sparse_cuda/operator_apply/CMakeFiles/block_sparse_ordered_evaluator.dir/ordered_evaluator.cpp.o
+[ 24%] Built target block_sparse_cuda_benchmark
+[ 24%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 24%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/hoisted_evaluator.cpp.o
+[ 25%] Linking CXX executable block_sparse_cuda_real_nca_benchmark
+[ 25%] Built target block_sparse_cuda_real_nca_benchmark
+[ 26%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_edges/CMakeFiles/block_sparse_scalar_edges.dir/block_sparse_scalar_edges.cpp.o
+[ 27%] Linking CXX executable block_sparse_cuda_ordered_benchmark
+[ 27%] Built target block_sparse_cuda_ordered_benchmark
+[ 27%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_cpu_scalar_path_benchmark.dir/block_sparse_cpu_scalar_path_benchmark.cpp.o
+[ 28%] Linking CXX executable block_sparse_operator_apply
+[ 28%] Built target block_sparse_operator_apply
+[ 28%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_cpu_scalar_constants_benchmark.dir/block_sparse_cpu_scalar_path_benchmark.cpp.o
+[ 28%] Linking CXX static library libblock_sparse_ordered_evaluator.a
+[ 28%] Built target block_sparse_ordered_evaluator
+[ 28%] Linking CXX executable block_sparse_scalar_edges
+[ 28%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_path_evaluator.dir/scalar_evaluator.cpp.o
+[ 28%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 28%] Built target block_sparse_scalar_edges
+[ 29%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_fanin_evaluator.dir/scalar_evaluator.cpp.o
+[ 29%] Linking CXX executable block_sparse_cpu_hoisted_benchmark
+[ 29%] Built target block_sparse_cpu_hoisted_benchmark
+[ 29%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_arena_evaluator.dir/scalar_evaluator.cpp.o
+[ 29%] Linking CXX executable block_sparse_cpu_scalar_path_benchmark
+[ 29%] Built target block_sparse_cpu_scalar_path_benchmark
+[ 30%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_evaluator.dir/scalar_evaluator.cpp.o
+[ 31%] Linking CXX static library libtriqs_xca_test_utils.a
+[ 31%] Built target triqs_xca_test_utils
+[ 31%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 32%] Linking CXX executable block_sparse_cpu_scalar_constants_benchmark
+[ 32%] Built target block_sparse_cpu_scalar_constants_benchmark
+[ 32%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_cpu_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 33%] Linking CXX static library libblock_sparse_scalar_path_evaluator.a
+[ 33%] Built target block_sparse_scalar_path_evaluator
+[ 33%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_cpu_batched_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 33%] Linking CXX static library libblock_sparse_scalar_fanin_evaluator.a
+[ 34%] Linking CXX static library libblock_sparse_scalar_arena_evaluator.a
+[ 34%] Built target block_sparse_scalar_fanin_evaluator
+[ 34%] Built target block_sparse_scalar_arena_evaluator
+[ 35%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 36%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_general_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 36%] Linking CXX static library libblock_sparse_scalar_constants_evaluator.a
+[ 36%] Built target block_sparse_scalar_constants_evaluator
+[ 36%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_cpu_density_signs_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 36%] Linking CXX executable block_sparse_cpu_density_sets_benchmark
+[ 36%] Built target block_sparse_cpu_density_sets_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Linking CXX static library libblock_sparse_scalar_cutoff_evaluator.a
+[ 37%] Built target block_sparse_scalar_cutoff_evaluator
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Linking CXX executable block_sparse_cpu_batched_density_sets_benchmark
+[ 37%] Built target block_sparse_cpu_batched_density_sets_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Linking CXX static library libblock_sparse_scalar_sets_evaluator.a
+[ 37%] Built target block_sparse_scalar_sets_evaluator
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Linking CXX executable block_sparse_general_density_sets_benchmark
+[ 37%] Built target block_sparse_general_density_sets_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Linking CXX executable block_sparse_cpu_density_signs_benchmark
+[ 37%] Linking CXX static library libblock_sparse_scalar_signs_evaluator.a
+[ 37%] Built target block_sparse_scalar_signs_evaluator
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_audit/CMakeFiles/block_sparse_scalar_audit_evaluator.dir/__/scalar_paths/scalar_evaluator.cpp.o
+[ 37%] Built target block_sparse_cpu_density_signs_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_audit/CMakeFiles/block_sparse_scalar_stage_audit.dir/stages.cpp.o
+[ 37%] Linking CXX static library libblock_sparse_scalar_resident_evaluator.a
+[ 37%] Built target block_sparse_scalar_resident_evaluator
+[ 38%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_2.dir/kappa_evaluator.cpp.o
+[ 38%] Linking CXX static library libblock_sparse_scalar_staging_evaluator.a
+[ 38%] Built target block_sparse_scalar_staging_evaluator
+[ 38%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_16.dir/kappa_evaluator.cpp.o
+[ 38%] Linking CXX static library libblock_sparse_scalar_streams_evaluator.a
+[ 38%] Built target block_sparse_scalar_streams_evaluator
+[ 38%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_column_maps_tests.dir/column_maps_tests.cpp.o
+[ 38%] Linking CXX static library libblock_sparse_scalar_real_nca_evaluator.a
+[ 38%] Built target block_sparse_scalar_real_nca_evaluator
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_mapped_special.dir/mapped_evaluator.cpp.o
+[ 39%] Linking CXX static library libblock_sparse_scalar_audit_evaluator.a
+[ 39%] Built target block_sparse_scalar_audit_evaluator
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_mapped_slab_benchmark.dir/slab_benchmark.cpp.o
+[ 39%] Linking CXX static library libblock_sparse_kappa_2.a
+[ 39%] Built target block_sparse_kappa_2
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_dlr.dir/compact_dlr.cpp.o
+[ 39%] Linking CXX static library libblock_sparse_kappa_16.a
+[ 39%] Built target block_sparse_kappa_16
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/nca_admission/CMakeFiles/block_sparse_nca_dlr.dir/nca_dlr.cpp.o
+[ 39%] Linking CXX executable block_sparse_column_maps_tests
+[ 39%] Built target block_sparse_column_maps_tests
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_topology_reuse_probe.dir/probe.cpp.o
+[ 39%] Linking CXX static library libblock_sparse_mapped_special.a
+[ 40%] Linking CXX executable block_sparse_scalar_stage_audit
+[ 40%] Built target block_sparse_mapped_special
+[ 40%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_prefix_evaluator.dir/prefix_evaluator.cpp.o
+[ 40%] Built target block_sparse_scalar_stage_audit
+[ 40%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sectors.dir/output_evaluator.cpp.o
+[ 41%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_dlr.dir/historical_dlr.cpp.o
+[ 41%] Linking CXX executable block_sparse_mapped_slab_benchmark
+[ 41%] Built target block_sparse_mapped_slab_benchmark
+[ 41%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_host_output_tests.dir/host_tests.cpp.o
+[ 42%] Linking CXX static library libblock_sparse_nca_dlr.a
+[ 42%] Built target block_sparse_nca_dlr
+[ 43%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sectors.dir/move_evaluator.cpp.o
+[ 43%] Linking CXX executable block_sparse_topology_reuse_probe
+[ 43%] Built target block_sparse_topology_reuse_probe
+[ 43%] Building CXX object test/c++/CMakeFiles/atom_diag_utils.dir/atom_diag_utils.cpp.o
+[ 43%] Linking CXX static library libblock_sparse_compact_dlr.a
+[ 43%] Built target block_sparse_compact_dlr
+[ 44%] Building CXX object test/c++/CMakeFiles/backbone_indexing.dir/backbone_indexing.cpp.o
+[ 44%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sectors.dir/copy_evaluator.cpp.o
+[ 45%] Linking CXX static library libblock_sparse_prefix_evaluator.a
+[ 45%] Built target block_sparse_prefix_evaluator
+[ 45%] Building CXX object test/c++/CMakeFiles/backbone_parity.dir/backbone_parity.cpp.o
+[ 46%] Building CXX object test/c++/CMakeFiles/block_diag_op_fun.dir/block_diag_op_fun.cpp.o
+[ 46%] Linking CXX executable backbone_parity
+[ 46%] Built target backbone_parity
+[ 46%] Building CXX object test/c++/CMakeFiles/block_sparse_atom_prop.dir/block_sparse/atom_prop.cpp.o
+[ 46%] Linking CXX executable backbone_indexing
+[ 46%] Built target backbone_indexing
+[ 46%] Building CXX object test/c++/CMakeFiles/block_sparse_correlator_path.dir/block_sparse/correlator_path.cpp.o
+[ 46%] Linking CXX executable block_sparse_host_output_tests
+[ 46%] Built target block_sparse_host_output_tests
+[ 46%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_admission.dir/block_sparse/cuda_admission.cpp.o
+[ 46%] Linking CXX static library libblock_sparse_output_sectors.a
+[ 46%] Built target block_sparse_output_sectors
+[ 46%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_device_ops.dir/block_sparse/cuda_device_ops.cpp.o
+[ 46%] Linking CXX executable atom_diag_utils
+[ 46%] Built target atom_diag_utils
+[ 47%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_diagram_evaluator.dir/block_sparse/cuda_diagram_evaluator.cpp.o
+[ 47%] Linking CXX executable block_diag_op_fun
+[ 47%] Built target block_diag_op_fun
+[ 47%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_dlr_ops.dir/block_sparse/cuda_dlr_ops.cpp.o
+[ 48%] Linking CXX executable block_sparse/correlator_path
+[ 48%] Built target block_sparse_correlator_path
+[ 49%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_mapped_special.dir/block_sparse/cuda_mapped_special.cpp.o
+[ 49%] Linking CXX executable block_sparse/atom_prop
+[ 49%] Built target block_sparse_atom_prop
+[ 49%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_memory_plan.dir/block_sparse/cuda_memory_plan.cpp.o
+[ 49%] Linking CXX executable block_sparse/cuda_device_ops
+[ 49%] Built target block_sparse_cuda_device_ops
+[ 50%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_dispatch.dir/block_sparse/cuda_nca_dispatch.cpp.o
+[ 51%] Linking CXX executable block_sparse/cuda_admission
+[ 51%] Built target block_sparse_cuda_admission
+[ 51%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_liveness.dir/block_sparse/cuda_nca_liveness.cpp.o
+[ 51%] Linking CXX executable block_sparse/cuda_dlr_ops
+[ 51%] Built target block_sparse_cuda_dlr_ops
+[ 51%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_real_nca.dir/block_sparse/cuda_real_nca.cpp.o
+[ 51%] Linking CXX executable block_sparse/cuda_memory_plan
+[ 51%] Linking CXX executable block_sparse/cuda_diagram_evaluator
+[ 51%] Built target block_sparse_cuda_memory_plan
+[ 51%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_sparse_backend.dir/block_sparse/cuda_sparse_backend.cpp.o
+[ 51%] Built target block_sparse_cuda_diagram_evaluator
+[ 51%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_evaluator.dir/block_sparse/dynint_evaluator.cpp.o
+[ 51%] Linking CXX executable block_sparse/cuda_mapped_special
+[ 51%] Built target block_sparse_cuda_mapped_special
+[ 51%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_sets.dir/block_sparse/dynint_sets.cpp.o
+[ 51%] Linking CXX executable block_sparse/cuda_nca_dispatch
+[ 51%] Built target block_sparse_cuda_nca_dispatch
+[ 52%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_spin_flip.dir/block_sparse/dynint_spin_flip.cpp.o
+[ 52%] Linking CXX executable block_sparse/cuda_real_nca
+[ 52%] Built target block_sparse_cuda_real_nca
+[ 52%] Building CXX object test/c++/CMakeFiles/block_sparse_evaluator_api.dir/block_sparse/evaluator_api.cpp.o
+[ 52%] Linking CXX executable block_sparse/cuda_nca_liveness
+[ 52%] Linking CXX executable block_sparse/cuda_sparse_backend
+[ 52%] Built target block_sparse_cuda_nca_liveness
+[ 52%] Built target block_sparse_cuda_sparse_backend
+[ 52%] Building CXX object test/c++/CMakeFiles/block_sparse_operator_model.dir/block_sparse/operator_model.cpp.o
+[ 52%] Building CXX object test/c++/CMakeFiles/block_sparse_path.dir/block_sparse/path.cpp.o
+[ 52%] Linking CXX executable block_sparse/dynint_sets
+[ 52%] Linking CXX executable block_sparse/dynint_evaluator
+[ 52%] Built target block_sparse_dynint_sets
+[ 52%] Building CXX object test/c++/CMakeFiles/block_sparse_sparse_operator.dir/block_sparse/sparse_operator.cpp.o
+[ 52%] Built target block_sparse_dynint_evaluator
+[ 53%] Building CXX object test/c++/CMakeFiles/block_sparse_sparsity_invariance.dir/block_sparse/sparsity_invariance.cpp.o
+[ 53%] Linking CXX executable block_sparse/dynint_spin_flip
+[ 53%] Built target block_sparse_dynint_spin_flip
+[ 53%] Building CXX object test/c++/CMakeFiles/block_sparse_sym_set_mask.dir/block_sparse/sym_set_mask.cpp.o
+[ 54%] Linking CXX executable block_sparse/path
+[ 54%] Linking CXX executable block_sparse/evaluator_api
+[ 54%] Built target block_sparse_path
+[ 55%] Building CXX object test/c++/CMakeFiles/block_sparse_sym_sets.dir/block_sparse/sym_sets.cpp.o
+[ 55%] Linking CXX executable block_sparse/operator_model
+[ 55%] Built target block_sparse_evaluator_api
+[ 55%] Built target block_sparse_operator_model
+[ 55%] Building CXX object test/c++/CMakeFiles/dense_benchmark_validation.dir/dense/benchmark_validation.cpp.o
+[ 55%] Building CXX object test/c++/CMakeFiles/dense_correlator_statistics.dir/dense/correlator_statistics.cpp.o
+[ 55%] Linking CXX executable block_sparse/sym_set_mask
+[ 55%] Built target block_sparse_sym_set_mask
+[ 56%] Building CXX object test/c++/CMakeFiles/dense_cuda_device_ops.dir/dense/cuda/device_ops.cpp.o
+[ 56%] Linking CXX executable block_sparse/sym_sets
+[ 56%] Built target block_sparse_sym_sets
+[ 56%] Building CXX object test/c++/CMakeFiles/dense_cuda_dlr_ops.dir/dense/cuda/dlr_ops.cpp.o
+[ 56%] Linking CXX executable block_sparse/sparse_operator
+[ 56%] Linking CXX executable block_sparse/sparsity_invariance
+[ 56%] Built target block_sparse_sparse_operator
+[ 56%] Building CXX object test/c++/CMakeFiles/dense_cuda_small_batch_api.dir/dense/cuda_small/batch_api.cpp.o
+[ 56%] Built target block_sparse_sparsity_invariance
+[ 56%] Building CXX object test/c++/CMakeFiles/dense_dynint_parity.dir/dense/dynint_parity.cpp.o
+[ 56%] Linking CXX executable dense/correlator_statistics
+[ 56%] Built target dense_correlator_statistics
+[ 56%] Building CXX object test/c++/CMakeFiles/dense_cuda_benchmark_contract.dir/dense_cuda_benchmark_contract.cpp.o
+[ 56%] Linking CXX executable dense/cuda/device_ops
+[ 57%] Linking CXX executable dense/benchmark_validation
+[ 57%] Built target dense_cuda_device_ops
+[ 57%] Building CXX object test/c++/CMakeFiles/dynint_spin_rotation.dir/dynint_spin_rotation.cpp.o
+[ 57%] Built target dense_benchmark_validation
+[ 57%] Building CXX object test/c++/CMakeFiles/evaluator_ranges.dir/evaluator_ranges.cpp.o
+[ 57%] Linking CXX executable dense/cuda/dlr_ops
+[ 57%] Built target dense_cuda_dlr_ops
+[ 57%] Building CXX object test/c++/CMakeFiles/flat_index_range.dir/flat_index_range.cpp.o
+[ 57%] Linking CXX executable dense_cuda_benchmark_contract
+[ 57%] Built target dense_cuda_benchmark_contract
+[ 57%] Building CXX object test/c++/CMakeFiles/hyb.dir/hyb.cpp.o
+[ 57%] Linking CXX executable dense/dynint_parity
+[ 57%] Built target dense_dynint_parity
+[ 58%] Building CXX object test/c++/CMakeFiles/manual_routines.dir/manual_routines.cpp.o
+[ 59%] Linking CXX executable dynint_spin_rotation
+[ 59%] Built target dynint_spin_rotation
+[ 59%] Building CXX object test/c++/CMakeFiles/one_fermion_se_spgf_all_evals.dir/one_fermion_se_spgf_all_evals.cpp.o
+[ 59%] Linking CXX executable evaluator_ranges
+[ 59%] Built target evaluator_ranges
+[ 59%] Building CXX object test/c++/CMakeFiles/propagator_layout.dir/propagator_layout.cpp.o
+[ 59%] Linking CXX executable dense/cuda_small/batch_api
+[ 59%] Linking CXX executable hyb
+[ 59%] Built target dense_cuda_small_batch_api
+[ 60%] Building CXX object test/c++/CMakeFiles/test_nda_cuda_smoke.dir/test_nda_cuda_smoke.cpp.o
+[ 60%] Built target hyb
+[ 60%] Building CXX object test/c++/CMakeFiles/topology.dir/topology.cpp.o
+[ 60%] Linking CXX executable flat_index_range
+[ 60%] Built target flat_index_range
+[ 60%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_convolve.dir/triqs_soehyb/test_convolve.cpp.o
+[ 60%] Linking CXX executable manual_routines
+[ 60%] Built target manual_routines
+[ 60%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_dimer.dir/triqs_soehyb/test_dimer.cpp.o
+[ 60%] Linking CXX executable topology
+[ 60%] Built target topology
+[ 60%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_dlr.dir/triqs_soehyb/test_dlr.cpp.o
+[ 60%] Linking CXX executable test_nda_cuda_smoke
+[ 60%] Built target test_nda_cuda_smoke
+[ 61%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_fastdiagram.dir/triqs_soehyb/test_fastdiagram.cpp.o
+[ 62%] Linking CXX executable triqs_soehyb/test_convolve
+[ 62%] Built target triqs_soehyb_test_convolve
+[ 62%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_oca.dir/triqs_soehyb/test_oca.cpp.o
+[ 62%] Linking CXX executable propagator_layout
+[ 62%] Built target propagator_layout
+[ 63%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_oca_equi.dir/triqs_soehyb/test_oca_equi.cpp.o
+[ 63%] Linking CXX executable triqs_soehyb/test_dlr
+[ 63%] Linking CXX executable one_fermion_se_spgf_all_evals
+[ 63%] Built target triqs_soehyb_test_dlr
+[ 63%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_tca.dir/triqs_soehyb/test_tca.cpp.o
+[ 63%] Built target one_fermion_se_spgf_all_evals
+[ 63%] Building CXX object test/c++/CMakeFiles/two_fermions_se_spgf_all_evals.dir/two_fermions_se_spgf_all_evals.cpp.o
+[ 63%] Linking CXX executable triqs_soehyb/test_fastdiagram
+[ 63%] Linking CXX executable triqs_soehyb/test_oca
+[ 63%] Built target triqs_soehyb_test_fastdiagram
+[ 63%] Building CXX object test/c++/CMakeFiles/unitary_invariance_all_evals.dir/unitary_invariance_all_evals.cpp.o
+[ 63%] Built target triqs_soehyb_test_oca
+[ 63%] Building CXX object test/c++/CMakeFiles/cuda_small_one_fermion_se_spgf_all_evals.dir/cuda_small_one_fermion_se_spgf_all_evals.cpp.o
+[ 63%] Linking CXX executable triqs_soehyb/test_dimer
+[ 63%] Built target triqs_soehyb_test_dimer
+[ 63%] Building CXX object test/c++/CMakeFiles/cuda_small_two_fermions_se_spgf_all_evals.dir/cuda_small_two_fermions_se_spgf_all_evals.cpp.o
+[ 63%] Linking CXX executable triqs_soehyb/test_oca_equi
+[ 63%] Built target triqs_soehyb_test_oca_equi
+[ 63%] Building CXX object test/c++/CMakeFiles/cuda_small_unitary_invariance_all_evals.dir/cuda_small_unitary_invariance_all_evals.cpp.o
+[ 63%] Linking CXX executable triqs_soehyb/test_tca
+[ 63%] Built target triqs_soehyb_test_tca
+[ 63%] Building CXX object test/c++/CMakeFiles/cuda_small_dynint_spin_rotation.dir/cuda_small_dynint_spin_rotation.cpp.o
+[ 63%] Linking CXX executable two_fermions_se_spgf_all_evals
+[ 63%] Built target two_fermions_se_spgf_all_evals
+[ 64%] Building CXX object test/c++/CMakeFiles/cuda_small_flat_index_range.dir/cuda_small_flat_index_range.cpp.o
+[ 65%] Linking CXX executable unitary_invariance_all_evals
+[ 65%] Built target unitary_invariance_all_evals
+[ 65%] Building CXX object test/c++/CMakeFiles/cuda_small_propagator_layout.dir/cuda_small_propagator_layout.cpp.o
+[ 65%] Linking CXX executable cuda_small_two_fermions_se_spgf_all_evals
+[ 65%] Built target cuda_small_two_fermions_se_spgf_all_evals
+[ 66%] Building CXX object test/c++/CMakeFiles/cuda_small_dense_dynint_parity.dir/cuda_small_dense_dynint_parity.cpp.o
+[ 66%] Linking CXX executable cuda_small_one_fermion_se_spgf_all_evals
+[ 67%] Linking CXX executable cuda_small_unitary_invariance_all_evals
+[ 67%] Built target cuda_small_one_fermion_se_spgf_all_evals
+[ 67%] Building CXX object test/c++/CMakeFiles/cuda_small_dense_correlator_statistics.dir/cuda_small_dense_correlator_statistics.cpp.o
+[ 67%] Built target cuda_small_unitary_invariance_all_evals
+[ 67%] Building CXX object test/c++/CMakeFiles/block_sparse_native_evaluator.dir/block_sparse_ordered_evaluator.cpp.o
+[ 67%] Linking CXX executable cuda_small_dynint_spin_rotation
+[ 67%] Built target cuda_small_dynint_spin_rotation
+[ 67%] Building CXX object examples/CMakeFiles/dense_backbone_third_order.dir/dense_backbone_third_order.cpp.o
+[ 67%] Linking CXX executable cuda_small_flat_index_range
+[ 67%] Built target cuda_small_flat_index_range
+[ 67%] Building CXX object examples/CMakeFiles/block_sparse_backbone_third_order.dir/block_sparse_backbone_third_order.cpp.o
+[ 68%] Linking CXX executable cuda_small_propagator_layout
+[ 68%] Built target cuda_small_propagator_layout
+[ 68%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca.dir/_triqs_xca.cpp.o
+[ 68%] Linking CXX executable cuda_small_dense_dynint_parity
+[ 68%] Built target cuda_small_dense_dynint_parity
+[ 69%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca_cuda.dir/_triqs_xca_cuda.cpp.o
+[ 69%] Linking CXX executable dense_backbone_third_order
+[ 69%] Built target dense_backbone_third_order
+[ 69%] Building CXX object benchmarks/experiments/block_sparse_cuda/operator_apply/CMakeFiles/block_sparse_ordered_evaluator_benchmark.dir/block_sparse_ordered_evaluator_benchmark.cpp.o
+[ 69%] Linking CXX executable cuda_small_dense_correlator_statistics
+[ 69%] Built target cuda_small_dense_correlator_statistics
+[ 70%] Building CXX object benchmarks/experiments/block_sparse_cuda/operator_apply/CMakeFiles/block_sparse_ordered_evaluator_tests.dir/ordered_evaluator_tests.cpp.o
+In file included from /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.cpp:12:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+[ 70%] Linking CXX executable block_sparse_native_evaluator
+[ 70%] Built target block_sparse_native_evaluator
+[ 70%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_path_benchmark.dir/block_sparse_scalar_path_benchmark.cpp.o
+[ 71%] Linking CXX executable block_sparse_backbone_third_order
+[ 71%] Built target block_sparse_backbone_third_order
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_path_tests.dir/scalar_path_tests.cpp.o
+[ 71%] Linking CXX executable block_sparse_ordered_evaluator_benchmark
+[ 71%] Built target block_sparse_ordered_evaluator_benchmark
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_fanin_benchmark.dir/block_sparse_scalar_fanin_benchmark.cpp.o
+2 warnings generated.
+[ 71%] Linking CXX shared module _triqs_xca.so
+[ 71%] Built target _triqs_xca
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_fanin_tests.dir/scalar_path_tests.cpp.o
+[ 71%] Linking CXX executable block_sparse_scalar_path_benchmark
+[ 71%] Built target block_sparse_scalar_path_benchmark
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/profile_fanin.dir/profile_fanin.cpp.o
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/operator_apply/CMakeFiles/block_sparse_ordered_evaluator_tests.dir/ordered_block_tests.cpp.o
+[ 71%] Linking CXX shared module _triqs_xca_cuda.so
+[ 71%] Built target _triqs_xca_cuda
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_arena_benchmark.dir/block_sparse_scalar_arena_benchmark.cpp.o
+[ 71%] Linking CXX executable block_sparse_scalar_fanin_benchmark
+[ 71%] Built target block_sparse_scalar_fanin_benchmark
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_arena_tests.dir/scalar_path_tests.cpp.o
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_path_tests.dir/qualification.cpp.o
+[ 71%] Linking CXX executable block_sparse_ordered_evaluator_tests
+[ 71%] Built target block_sparse_ordered_evaluator_tests
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/profile_arena.dir/profile_fanin.cpp.o
+[ 71%] Linking CXX executable profile_fanin
+[ 71%] Built target profile_fanin
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_benchmark.dir/block_sparse_scalar_arena_benchmark.cpp.o
+[ 71%] Linking CXX executable block_sparse_scalar_arena_benchmark
+[ 71%] Built target block_sparse_scalar_arena_benchmark
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_tests.dir/scalar_path_tests.cpp.o
+[ 71%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_fanin_tests.dir/qualification.cpp.o
+[ 72%] Linking CXX executable profile_arena
+[ 72%] Linking CXX executable block_sparse_scalar_path_tests
+[ 72%] Built target profile_arena
+[ 72%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_fanin_tests.dir/fanin_order.cpp.o
+[ 72%] Built target block_sparse_scalar_path_tests
+[ 72%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_benchmark.dir/__/scalar_paths/block_sparse_scalar_arena_benchmark.cpp.o
+[ 72%] Linking CXX executable block_sparse_scalar_constants_benchmark
+[ 72%] Built target block_sparse_scalar_constants_benchmark
+[ 73%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 73%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_arena_tests.dir/qualification.cpp.o
+[ 73%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 73%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_tests.dir/qualification.cpp.o
+[ 74%] Linking CXX executable block_sparse_scalar_fanin_tests
+[ 74%] Built target block_sparse_scalar_fanin_tests
+[ 74%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_benchmark.dir/__/scalar_paths/block_sparse_scalar_arena_benchmark.cpp.o
+[ 74%] Linking CXX executable block_sparse_scalar_cutoff_benchmark
+[ 74%] Built target block_sparse_scalar_cutoff_benchmark
+[ 74%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_arena_tests.dir/fanin_order.cpp.o
+[ 74%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 74%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_cutoff/CMakeFiles/block_sparse_scalar_cutoff_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 75%] Linking CXX executable block_sparse_scalar_arena_tests
+[ 75%] Linking CXX executable block_sparse_scalar_sets_benchmark
+[ 75%] Built target block_sparse_scalar_arena_tests
+[ 75%] Built target block_sparse_scalar_sets_benchmark
+[ 75%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 75%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/profile_density_sets.dir/density_benchmark.cpp.o
+[ 75%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 76%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_tests.dir/fanin_order.cpp.o
+[ 76%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_density_signs_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 77%] Linking CXX executable block_sparse_scalar_cutoff_tests
+[ 77%] Built target block_sparse_scalar_cutoff_tests
+[ 77%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 77%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_scalar_constants_tests.dir/constants_layout.cpp.o
+[ 78%] Linking CXX executable block_sparse_scalar_density_sets_benchmark
+[ 79%] Linking CXX executable profile_density_sets
+[ 79%] Built target block_sparse_scalar_density_sets_benchmark
+[ 79%] Built target profile_density_sets
+[ 79%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_density_resident_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 79%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 79%] Linking CXX executable block_sparse_scalar_density_signs_benchmark
+[ 79%] Built target block_sparse_scalar_density_signs_benchmark
+[ 79%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/profile_density_resident.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 79%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 79%] Linking CXX executable block_sparse_scalar_constants_tests
+[ 79%] Built target block_sparse_scalar_constants_tests
+[ 80%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 80%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 80%] Linking CXX executable block_sparse_scalar_density_resident_benchmark
+[ 80%] Built target block_sparse_scalar_density_resident_benchmark
+[ 81%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 82%] Linking CXX executable profile_density_resident
+[ 82%] Built target profile_density_resident
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_density_staging_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_scalar_signs_tests.dir/__/scalar_sets/qualification.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_scalar_sets_tests.dir/qualification.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 82%] Linking CXX executable block_sparse_scalar_density_staging_benchmark
+[ 82%] Built target block_sparse_scalar_density_staging_benchmark
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/profile_density_staging.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 82%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 82%] Linking CXX executable block_sparse_scalar_signs_tests
+[ 82%] Built target block_sparse_scalar_signs_tests
+[ 83%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_density_streams_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 84%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/__/scalar_sets/qualification.cpp.o
+[ 84%] Linking CXX executable block_sparse_scalar_sets_tests
+[ 84%] Built target block_sparse_scalar_sets_tests
+[ 84%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/profile_density_streams.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 84%] Linking CXX executable profile_density_staging
+[ 84%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_resident/CMakeFiles/block_sparse_scalar_resident_tests.dir/selectors.cpp.o
+[ 84%] Built target profile_density_staging
+[ 84%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 84%] Linking CXX executable block_sparse_scalar_density_streams_benchmark
+[ 84%] Built target block_sparse_scalar_density_streams_benchmark
+[ 84%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_tests.dir/__/scalar_paths/scalar_path_tests.cpp.o
+[ 85%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_tests.dir/qualification.cpp.o
+[ 86%] Linking CXX executable profile_density_streams
+[ 87%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 87%] Built target profile_density_streams
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_real_nca/CMakeFiles/block_sparse_scalar_real_nca_benchmark.dir/benchmark.cpp.o
+[ 88%] Linking CXX executable block_sparse_scalar_resident_tests
+[ 88%] Built target block_sparse_scalar_resident_tests
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_audit/CMakeFiles/block_sparse_scalar_cutoff_audit.dir/audit.cpp.o
+[ 89%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_paths/qualification.cpp.o
+[ 89%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 89%] Linking CXX executable block_sparse_scalar_real_nca_benchmark
+[ 89%] Built target block_sparse_scalar_real_nca_benchmark
+[ 89%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_2_benchmark.dir/benchmark.cpp.o
+[ 90%] Linking CXX executable block_sparse_scalar_cutoff_audit
+[ 90%] Built target block_sparse_scalar_cutoff_audit
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_2_tests.dir/kappa_tests.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_paths/fanin_order.cpp.o
+[ 91%] Linking CXX executable block_sparse_scalar_real_nca_tests
+[ 91%] Built target block_sparse_scalar_real_nca_tests
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_paths/constants_layout.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_sets/qualification.cpp.o
+[ 91%] Linking CXX executable block_sparse_kappa_2_benchmark
+[ 91%] Built target block_sparse_kappa_2_benchmark
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_16_benchmark.dir/benchmark.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_staging/CMakeFiles/block_sparse_scalar_staging_tests.dir/__/scalar_resident/selectors.cpp.o
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_sets/qualification.cpp.o
+[ 92%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/__/scalar_resident/selectors.cpp.o
+[ 92%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_2_tests.dir/qualification.cpp.o
+[ 92%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_streams/CMakeFiles/block_sparse_scalar_streams_tests.dir/lifetimes.cpp.o
+[ 93%] Linking CXX executable block_sparse_scalar_staging_tests
+[ 93%] Built target block_sparse_scalar_staging_tests
+[ 93%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_16_tests.dir/kappa_tests.cpp.o
+[ 94%] Linking CXX executable block_sparse_kappa_16_benchmark
+[ 94%] Built target block_sparse_kappa_16_benchmark
+[ 94%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_mapped_special_benchmark.dir/benchmark.cpp.o
+[ 94%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_mapped_special_tests.dir/mapped_tests.cpp.o
+[ 94%] Building CXX object benchmarks/experiments/block_sparse_cuda/special_vertex/CMakeFiles/block_sparse_kappa_16_tests.dir/qualification.cpp.o
+[ 94%] Linking CXX executable block_sparse_scalar_streams_tests
+[ 94%] Built target block_sparse_scalar_streams_tests
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_dlr_tests.dir/tests.cpp.o
+[ 95%] Linking CXX executable block_sparse_kappa_2_tests
+[ 95%] Built target block_sparse_kappa_2_tests
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_dlr_benchmark.dir/benchmark.cpp.o
+[ 95%] Linking CXX executable block_sparse_mapped_special_benchmark
+[ 95%] Built target block_sparse_mapped_special_benchmark
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_evaluator.dir/compact_evaluator.cpp.o
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_mapped_special_tests.dir/qualification.cpp.o
+[ 95%] Linking CXX executable block_sparse_compact_dlr_benchmark
+[ 95%] Built target block_sparse_compact_dlr_benchmark
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/nca_admission/CMakeFiles/block_sparse_nca_evaluator.dir/nca_evaluator.cpp.o
+[ 95%] Linking CXX executable block_sparse_kappa_16_tests
+[ 95%] Linking CXX executable block_sparse_compact_dlr_tests
+[ 95%] Built target block_sparse_kappa_16_tests
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_prefix_benchmark.dir/cache_benchmark.cpp.o
+[ 95%] Built target block_sparse_compact_dlr_tests
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_prefix_tests.dir/prefix_tests.cpp.o
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sector_benchmark.dir/benchmark.cpp.o
+[ 95%] Linking CXX static library libblock_sparse_compact_evaluator.a
+[ 95%] Built target block_sparse_compact_evaluator
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sector_tests.dir/inherited_tests.cpp.o
+[ 95%] Linking CXX static library libblock_sparse_nca_evaluator.a
+[ 95%] Built target block_sparse_nca_evaluator
+[ 95%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_prefix_tests.dir/cache_tests.cpp.o
+[ 96%] Linking CXX executable block_sparse_mapped_special_tests
+[ 96%] Built target block_sparse_mapped_special_tests
+[ 96%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_evaluator_benchmark.dir/evaluator_benchmark.cpp.o
+[ 96%] Linking CXX executable block_sparse_prefix_benchmark
+[ 96%] Built target block_sparse_prefix_benchmark
+[ 96%] Building CXX object benchmarks/experiments/block_sparse_cuda/compact_dlr/CMakeFiles/block_sparse_compact_evaluator_tests.dir/compact_evaluator_tests.cpp.o
+[ 97%] Linking CXX executable block_sparse_output_sector_benchmark
+[ 97%] Built target block_sparse_output_sector_benchmark
+[ 98%] Building CXX object benchmarks/experiments/block_sparse_cuda/nca_admission/CMakeFiles/block_sparse_nca_admission_tests.dir/tests.cpp.o
+[ 98%] Building CXX object benchmarks/experiments/block_sparse_cuda/output_sectors/CMakeFiles/block_sparse_output_sector_tests.dir/tests.cpp.o
+[ 98%] Linking CXX executable block_sparse_prefix_tests
+[ 98%] Built target block_sparse_prefix_tests
+[ 98%] Building CXX object benchmarks/experiments/block_sparse_cuda/nca_admission/CMakeFiles/block_sparse_nca_admission_tests.dir/inherited_tests.cpp.o
+[100%] Linking CXX executable block_sparse_compact_evaluator_benchmark
+[100%] Built target block_sparse_compact_evaluator_benchmark
+[100%] Linking CXX executable block_sparse_compact_evaluator_tests
+[100%] Built target block_sparse_compact_evaluator_tests
+[100%] Linking CXX executable block_sparse_output_sector_tests
+[100%] Built target block_sparse_output_sector_tests
+[100%] Linking CXX executable block_sparse_nca_admission_tests
+[100%] Built target block_sparse_nca_admission_tests

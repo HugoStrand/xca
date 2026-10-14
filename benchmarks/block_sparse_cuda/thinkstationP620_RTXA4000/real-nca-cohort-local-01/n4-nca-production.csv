@@ -1,0 +1,4 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cuda_real_nca_batch,4,occupation,0,se,crossing,1,23,16,1,0,1,0,5.3765850000000004,164.03571099999999,0.345167,0.26241199999999998,1.3273511225940642,0,0,376940,33760040,0,64,32,32
+cuda_real_nca_batch,4,occupation,0,se,crossing,1,23,16,1,0,1,1,5.3765850000000004,164.03571099999999,0.345167,0.21612500000000001,1.3273511225940642,0,0,377156,33760040,0,64,32,32
+cuda_real_nca_batch,4,occupation,0,se,crossing,1,23,16,1,0,1,2,5.3765850000000004,164.03571099999999,0.345167,0.209393,1.3273511225940642,0,0,377156,33760040,0,64,32,32

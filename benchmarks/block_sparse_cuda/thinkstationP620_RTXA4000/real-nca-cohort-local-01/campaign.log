@@ -1,0 +1,16 @@
+n4-nca cpu_constants 0
+n4-nca ordered 0
+n4-nca prototype 0
+n4-nca production 0
+n8-nca cpu_constants 0
+n8-nca ordered 0
+n8-nca prototype 0
+n8-nca production 0
+n4-oca-fallback cpu_constants 0
+n4-oca-fallback ordered 0
+n4-oca-fallback prototype 0
+n4-oca-fallback production 0
+n4-number-fallback cpu_constants 0
+n4-number-fallback ordered 0
+n4-number-fallback prototype 0
+n4-number-fallback production 0

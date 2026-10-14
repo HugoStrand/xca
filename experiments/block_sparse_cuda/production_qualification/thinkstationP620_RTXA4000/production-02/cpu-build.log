@@ -1,0 +1,547 @@
+[  0%] Built target wrap_gen__cppdlr
+[  1%] Built target gtest
+[  2%] Building CXX object c++/triqs_soehyb/CMakeFiles/triqs_soehyb_c.dir/fastdiagram.cpp.o
+[  3%] Built target wrap_gen_fastdiagram
+[  7%] Built target c2py
+[  7%] Building CXX object c++/triqs_soehyb/CMakeFiles/triqs_soehyb_c.dir/strong_cpl.cpp.o
+[  8%] Generating /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.wrap.cxx, _triqs_xca.cpp.d
+[  8%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:72:57: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+   72 | nda::array<dcomplex, 3> fastdiagram::free_greens(double beta, nda::array<dcomplex, 2> H_S, double mu, bool time_order) {
+      |                                                         ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:76:62: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+   76 | nda::array<dcomplex, 3> fastdiagram::free_greens_ppsc(double beta, nda::array<dcomplex, 2> H_S) { return free_gf_ppsc(beta, itops, H_S); }
+      |                                                              ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:137:8: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  137 |   auto N                  = Gt.shape(1);
+      |        ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:118:7: note: previous declaration is here
+  118 |   int N; // size of local Hilbert space
+      |       ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:200:8: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  200 |   auto N                  = Gt.shape(1);
+      |        ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:118:7: note: previous declaration is here
+  118 |   int N; // size of local Hilbert space
+      |       ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:256:64: warning: declaration shadows a field of 'triqs_soehyb::fastdiagram' [-Wshadow]
+  256 | nda::array<dcomplex, 3> fastdiagram::time_ordered_dyson(double beta, nda::array<dcomplex, 2> H_S, double eta_0,
+      |                                                                ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.hpp:108:10: note: previous declaration is here
+  108 |   double beta;   // inverse temperature
+      |          ^
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:259:14: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+  259 |   return dys.solve(Sigma_t, eta_0);
+      |              ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/c++/triqs_soehyb/fastdiagram.cpp:25:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+/home/hugstr/dev/xca/c++/triqs_soehyb/strong_cpl.cpp:665:35: warning: unused parameter 'Rv' [-Wunused-parameter]
+  665 | void cut_hybridization(int v, int Rv, nda::array_const_view<int, 2> D, double &constant, nda::array_const_view<dcomplex, 3> U_tilde_here,
+      |                                   ^
+In file included from /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.cpp:12:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+9 warnings generated.
+[  9%] Built target gtest_main
+[  9%] Building CXX object python/cppdlr/CMakeFiles/_cppdlr.dir/_cppdlr.cpp.o
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+-- [1;32mNote:  [0mFound Flatiron/h5 Storable concept. Will generate h5 code for all wrapped classes satisfying this concept.
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::hyb [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::Fset [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_self_energy [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_self_energy_fixed_indices [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_self_energy_fixed_index_pair [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_self_energy_by_pairs [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::get_num_self_energy_backbones [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy_by_pairs [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::compute_single_ptcle_gf [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::dense::DiagramEvaluator::DiagramEvaluator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::hyb [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::inspect_self_energy_paths [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::eval_correlator [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf [[C2PY_IGNORE]]
+-- [1;33mRejecting: [0mtriqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator [[C2PY_IGNORE]]
+-- [1;32mModule: [0mtriqs_xca._triqs_xca
+-- [1;32mClass: [0mtriqs_xca::dense::DiagramEvaluator [Python: DenseDiagramEvaluator]
+-- [1;32m  Method: [0m__init__
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<1>& ad)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<0>& ad)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<1>& ad,const std::vector<triqs::operators::many_body_operator_complex>& dynint_ops,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> dynint_coeffs)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<0>& ad,const std::vector<triqs::operators::many_body_operator_complex>& dynint_ops,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> dynint_coeffs)
+-- [1;32m  Method: [0mcompute_one_time_correlator_range
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_one_time_correlator_range(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_0,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_one_time_correlator_range(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_0,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy_by_pairs(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy_by_pairs(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mcompute_self_energy_by_pairs_range
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy_by_pairs_range(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy_range
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_self_energy_range(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_single_ptcle_gf(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_single_ptcle_gf(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf_range
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::compute_single_ptcle_gf_range(triqs_xca::dense::DiagramEvaluator::gf_vt G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mget_num_self_energy_backbones
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::get_num_self_energy_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mget_num_single_ptcle_gf_backbones
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mreset
+-- [1;32m        . [0mtriqs_xca::dense::DiagramEvaluator::reset()
+-- [1;31mDoc warning: [0mUnsupported BlockCommandComment class at </home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:20:8, col:31>
+-- [1;32mClass: [0mtriqs_xca::block_sparse::DiagramEvaluator [Python: BlockSparseDiagramEvaluator]
+-- [1;32m  Method: [0m__init__
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<1>& ad)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<0>& ad)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<1>& ad,const std::vector<triqs::operators::many_body_operator_complex>& dynint_ops,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> dynint_coeffs)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator(nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,triqs::mesh::dlr_imtime tau_mesh,const triqs::atom_diag::atom_diag<0>& ad,const std::vector<triqs::operators::many_body_operator_complex>& dynint_ops,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> dynint_coeffs)
+-- [1;31mDoc warning: [0mMultiple parameter descriptions given for parameter hyb_poles in overloaded function triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator
+-- [1;31mDoc warning: [0mMultiple parameter descriptions given for parameter hyb_coeffs in overloaded function triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator
+-- [1;31mDoc warning: [0mMultiple parameter descriptions given for parameter hyb_poles in overloaded function triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator
+-- [1;31mDoc warning: [0mMultiple parameter descriptions given for parameter hyb_coeffs in overloaded function triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter beta which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter beta which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter Lambda which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter Lambda which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter eps which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter eps which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter G_ppsc which is not an argument
+-- [1;31mDoc warning: [0mFunction triqs_xca::block_sparse::DiagramEvaluator::DiagramEvaluator contains a doc string for parameter G_ppsc which is not an argument
+-- [1;32m  Method: [0mcompute_one_time_correlator_range
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_one_time_correlator_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_0,const triqs::atom_diag::atom_diag<1>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_one_time_correlator_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,const std::vector<triqs::operators::many_body_operator_complex>& ops_tau,const std::vector<triqs::operators::many_body_operator_complex>& ops_0,const triqs::atom_diag::atom_diag<0>& ad,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_self_energy
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mcompute_self_energy_range
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_self_energy_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mcompute_single_ptcle_gf_range
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::compute_single_ptcle_gf_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long first,long last)
+-- [1;32m  Method: [0mget_num_self_energy_backbones
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::get_num_self_energy_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mget_num_single_ptcle_gf_backbones
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+-- [1;32m  Method: [0mprint_self_energy_backbone
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::print_self_energy_backbone(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mprint_single_ptcle_gf_backbone
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::print_single_ptcle_gf_backbone(nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology,long f_ix)
+-- [1;32m  Method: [0mreset
+-- [1;32m        . [0mtriqs_xca::block_sparse::DiagramEvaluator::reset()
+-- [1;31mDoc warning: [0mUnsupported BlockCommandComment class at </home/hugstr/dev/xca/c++/triqs_xca/block_sparse/diagram_evaluator.hpp:18:4, col:27>
+-- [1;32mFunction: [0mconvolve_ppsc
+-- [1;32m        . [0mtriqs_xca::block_sparse::convolve_ppsc(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G1,triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G2)
+-- [1;32mFunction: [0mexpectation_value
+-- [1;32m        . [0mtriqs_xca::block_sparse::expectation_value(const triqs::operators::many_body_operator_complex& op,const triqs::atom_diag::atom_diag<0>& ad,triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc)
+-- [1;32m        . [0mtriqs_xca::block_sparse::expectation_value(const triqs::operators::many_body_operator_complex& op,const triqs::atom_diag::atom_diag<1>& ad,triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc)
+-- [1;32mFunction: [0msigma_nca
+-- [1;32m        . [0mtriqs_xca::dense::manual::sigma_nca(nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_refl,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Gt,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Fs,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> F_dags)
+-- [1;32mFunction: [0msigma_oca
+-- [1;32m        . [0mtriqs_xca::dense::manual::sigma_oca(nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb,cppdlr::imtime_ops itops,double beta,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 1 warning generated.
+[ 11%] Linking CXX static library libtriqs_soehyb_c.a
+[ 11%] Built target triqs_soehyb_c
+[ 11%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+2 warnings generated.
+'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Gt,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Fs,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> F_dags)
+-- [1;32m        . [0mtriqs_xca::dense::manual::sigma_oca(nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_coeffs,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_refl,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_refl_coeffs,nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> hyb_poles,cppdlr::imtime_ops& itops,double beta,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Gt,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> Fs,nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> F_dags)
+-- [1;32mFunction: [0mtrace
+-- [1;32m        . [0mtriqs_xca::block_sparse::trace(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G)
+-- [1;31mDoc warning: [0mUnsupported BlockCommandComment returns at </home/hugstr/dev/xca/c++/triqs_xca/block_sparse/block_op.hpp:408:6, col:32>
+-- [1;34m[Success] [0m
+--    Generated Python bindings: /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.wrap.cxx [included in /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.cpp]
+--              headers        : /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.wrap.hxx [to be used with other modules, cf doc]
+-- Running clang-format ...
+-- Done.
+--    Generated the depfile /home/hugstr/dev/xca/cbuild/python/triqs_xca/_triqs_xca.cpp.d
+
+[ 11%] Built target wrap_gen__triqs_xca
+[ 12%] Building CXX object python/triqs_soehyb/CMakeFiles/fastdiagram.dir/fastdiagram.cpp.o
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:24:107: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve<nda::basic_array_view<std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+   24 | template nda::array<nda::dcomplex, 3> cppdlr::dyson_it_ppsc<nda::array<nda::dcomplex, 2>, nda::dcomplex>::solve<nda::array_view<nda::dcomplex, 3>>(
+      |                                                                                                           ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:149:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  149 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:198:18: warning: 'convmat_inplace' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  198 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:27:107: note: in instantiation of function template specialization 'cppdlr::dyson_it_ppsc<nda::basic_array<std::complex<double>, 2, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>::solve_with_op<nda::basic_array_view<std::complex<double>, 3, nda::C_stride_layout>, nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>>' requested here
+   27 | template nda::array<nda::dcomplex, 3> cppdlr::dyson_it_ppsc<nda::array<nda::dcomplex, 2>, nda::dcomplex>::solve_with_op<
+      |                                                                                                           ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:666:5: note: 'convmat_inplace' has been explicitly marked deprecated here
+  666 |     convmat_inplace(nda::matrix_view<S, nda::C_layout> fconv, double beta, statistic_t statistic, T const &fc, bool time_order = false) const {
+      |     ^
+In file included from /home/hugstr/dev/xca/python/cppdlr/_cppdlr.cpp:6:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:198:18: warning: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' is deprecated: Use convmat_inplace(fconv, beta, fc, time_order) instead. [-Wdeprecated-declarations]
+  198 |       itops_ptr->convmat_inplace(nda::matrix_view<Sh, nda::C_layout>(sysmat), beta, Fermion, itops_ptr->vals2coefs(ggs), time_order);
+      |                  ^
+/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp:665:7: note: 'convmat_inplace<nda::basic_array<std::complex<double>, 3, nda::C_layout, 'A', nda::heap_basic<nda::mem::mallocator<>>>, std::complex<double>>' has been explicitly marked deprecated here
+  665 |     [[deprecated("Use convmat_inplace(fconv, beta, fc, time_order) instead.")]] void
+      |       ^
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+In file included from /home/hugstr/dev/xca/python/triqs_soehyb/fastdiagram.cpp:7:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+2 warnings generated.
+[ 13%] Linking CXX shared module fastdiagram.so
+[ 13%] Built target fastdiagram
+[ 13%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 14%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+6 warnings generated.
+[ 15%] Linking CXX shared module _cppdlr.so
+[ 15%] Built target _cppdlr
+[ 15%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 16%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 17%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 17%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 18%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 18%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+[ 19%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 19%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 20%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 20%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 21%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 21%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 22%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 22%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 23%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 23%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 24%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 24%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:571:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  571 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:619:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  619 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+[ 26%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 26%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+2 warnings generated.
+[ 27%] Linking CXX static library libtriqs_xca_c.a
+[ 27%] Built target triqs_xca_c
+[ 28%] Building CXX object benchmarks/dense_cuda/CMakeFiles/dense_cuda_benchmark.dir/dense_cuda_benchmark.cpp.o
+[ 28%] Building CXX object benchmarks/dense_cpu/CMakeFiles/dense_cpu_benchmark.dir/dense_cpu_benchmark.cpp.o
+[ 29%] Building CXX object benchmarks/dense_cuda/CMakeFiles/dense_cuda_fixture_benchmark.dir/dense_cuda_fixture_benchmark.cpp.o
+[ 30%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_inventory.dir/block_sparse_inventory.cpp.o
+[ 31%] Linking CXX executable dense_cpu_benchmark
+[ 31%] Linking CXX executable dense_cuda_benchmark
+[ 31%] Linking CXX executable dense_cuda_fixture_benchmark
+[ 31%] Built target dense_cpu_benchmark
+[ 31%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_cpu_benchmark.dir/block_sparse_cpu_benchmark.cpp.o
+[ 31%] Built target dense_cuda_benchmark
+[ 31%] Built target dense_cuda_fixture_benchmark
+[ 32%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_memory_plan.dir/block_sparse_memory_plan.cpp.o
+[ 33%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_dlr_hoisted.dir/block_sparse_dlr_hoisted.cpp.o
+[ 33%] Linking CXX executable block_sparse_inventory
+[ 33%] Built target block_sparse_inventory
+[ 33%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/block_sparse_cpu_hoisted_benchmark.cpp.o
+[ 33%] Linking CXX executable block_sparse_memory_plan
+[ 33%] Built target block_sparse_memory_plan
+[ 34%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_cpu_scalar_path_benchmark.dir/block_sparse_cpu_scalar_path_benchmark.cpp.o
+[ 34%] Linking CXX executable block_sparse_dlr_hoisted
+[ 34%] Built target block_sparse_dlr_hoisted
+[ 35%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_cpu_scalar_constants_benchmark.dir/block_sparse_cpu_scalar_path_benchmark.cpp.o
+[ 36%] Linking CXX executable block_sparse_cpu_benchmark
+[ 36%] Built target block_sparse_cpu_benchmark
+[ 36%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_cpu_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/hoisted_evaluator.cpp.o
+[ 37%] Linking CXX executable block_sparse_cpu_scalar_constants_benchmark
+[ 37%] Built target block_sparse_cpu_scalar_constants_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_sets/CMakeFiles/block_sparse_cpu_batched_density_sets_benchmark.dir/density_benchmark.cpp.o
+[ 37%] Linking CXX executable block_sparse_cpu_scalar_path_benchmark
+[ 37%] Built target block_sparse_cpu_scalar_path_benchmark
+[ 37%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_signs/CMakeFiles/block_sparse_cpu_density_signs_benchmark.dir/__/scalar_sets/density_benchmark.cpp.o
+[ 38%] Linking CXX executable block_sparse_cpu_density_sets_benchmark
+[ 38%] Built target block_sparse_cpu_density_sets_benchmark
+[ 38%] Building CXX object benchmarks/experiments/block_sparse_cuda/mapped_special/CMakeFiles/block_sparse_column_maps_tests.dir/column_maps_tests.cpp.o
+[ 38%] Linking CXX executable block_sparse_cpu_hoisted_benchmark
+[ 38%] Built target block_sparse_cpu_hoisted_benchmark
+[ 39%] Building CXX object benchmarks/experiments/block_sparse_cuda/topology_reuse/CMakeFiles/block_sparse_topology_reuse_probe.dir/probe.cpp.o
+[ 40%] Linking CXX executable block_sparse_cpu_batched_density_sets_benchmark
+[ 40%] Built target block_sparse_cpu_batched_density_sets_benchmark
+[ 41%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 42%] Linking CXX executable block_sparse_cpu_density_signs_benchmark
+[ 42%] Built target block_sparse_cpu_density_signs_benchmark
+[ 42%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_convolve.dir/triqs_soehyb/test_convolve.cpp.o
+[ 43%] Linking CXX executable block_sparse_column_maps_tests
+[ 43%] Built target block_sparse_column_maps_tests
+[ 43%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 43%] Linking CXX executable block_sparse_topology_reuse_probe
+[ 43%] Built target block_sparse_topology_reuse_probe
+[ 43%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_dimer.dir/triqs_soehyb/test_dimer.cpp.o
+[ 44%] Linking CXX executable triqs_soehyb/test_convolve
+[ 44%] Built target triqs_soehyb_test_convolve
+[ 44%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_dlr.dir/triqs_soehyb/test_dlr.cpp.o
+[ 44%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_fastdiagram.dir/triqs_soehyb/test_fastdiagram.cpp.o
+[ 45%] Linking CXX executable triqs_soehyb/test_dlr
+[ 45%] Built target triqs_soehyb_test_dlr
+[ 45%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_oca.dir/triqs_soehyb/test_oca.cpp.o
+[ 46%] Linking CXX static library libtriqs_xca_test_utils.a
+[ 47%] Linking CXX executable triqs_soehyb/test_dimer
+[ 47%] Built target triqs_xca_test_utils
+[ 47%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_oca_equi.dir/triqs_soehyb/test_oca_equi.cpp.o
+[ 47%] Built target triqs_soehyb_test_dimer
+[ 47%] Building CXX object test/c++/CMakeFiles/triqs_soehyb_test_tca.dir/triqs_soehyb/test_tca.cpp.o
+[ 48%] Linking CXX executable triqs_soehyb/test_fastdiagram
+[ 48%] Built target triqs_soehyb_test_fastdiagram
+[ 48%] Building CXX object test/c++/CMakeFiles/two_fermions_se_spgf_all_evals.dir/two_fermions_se_spgf_all_evals.cpp.o
+[ 50%] Linking CXX executable triqs_soehyb/test_oca_equi
+[ 50%] Built target triqs_soehyb_test_oca_equi
+[ 50%] Building CXX object test/c++/CMakeFiles/unitary_invariance_all_evals.dir/unitary_invariance_all_evals.cpp.o
+[ 51%] Linking CXX executable triqs_soehyb/test_oca
+[ 51%] Built target triqs_soehyb_test_oca
+[ 51%] Building CXX object examples/CMakeFiles/dense_backbone_third_order.dir/dense_backbone_third_order.cpp.o
+[ 52%] Linking CXX executable triqs_soehyb/test_tca
+[ 52%] Built target triqs_soehyb_test_tca
+[ 52%] Building CXX object examples/CMakeFiles/block_sparse_backbone_third_order.dir/block_sparse_backbone_third_order.cpp.o
+[ 53%] Linking CXX executable two_fermions_se_spgf_all_evals
+[ 54%] Linking CXX executable dense_backbone_third_order
+[ 54%] Built target two_fermions_se_spgf_all_evals
+[ 54%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca.dir/_triqs_xca.cpp.o
+[ 55%] Linking CXX executable block_sparse_backbone_third_order
+[ 55%] Built target dense_backbone_third_order
+[ 55%] Building CXX object test/c++/CMakeFiles/atom_diag_utils.dir/atom_diag_utils.cpp.o
+[ 55%] Built target block_sparse_backbone_third_order
+[ 55%] Building CXX object test/c++/CMakeFiles/backbone_indexing.dir/backbone_indexing.cpp.o
+[ 56%] Linking CXX executable unitary_invariance_all_evals
+[ 56%] Built target unitary_invariance_all_evals
+[ 56%] Building CXX object test/c++/CMakeFiles/backbone_parity.dir/backbone_parity.cpp.o
+[ 57%] Linking CXX executable backbone_parity
+[ 57%] Built target backbone_parity
+[ 57%] Building CXX object test/c++/CMakeFiles/block_diag_op_fun.dir/block_diag_op_fun.cpp.o
+[ 58%] Linking CXX executable backbone_indexing
+In file included from /home/hugstr/dev/xca/python/triqs_xca/_triqs_xca.cpp:12:
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:137:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  137 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:190:11: warning: declaration shadows a field of 'dyson_it_ppsc<Ht, Sh>' [-Wshadow]
+  190 |       int r     = itops_ptr->rank();          // DLR rank
+      |           ^
+/home/hugstr/dev/xca/c++/cppdlr/dyson_it_ppsc.hpp:222:9: note: previous declaration is here
+  222 |     int r;                                 ///< DLR rank
+      |         ^
+[ 58%] Built target backbone_indexing
+[ 58%] Building CXX object test/c++/CMakeFiles/block_sparse_atom_prop.dir/block_sparse/atom_prop.cpp.o
+2 warnings generated.
+[ 59%] Linking CXX shared module _triqs_xca.so
+[ 59%] Built target _triqs_xca
+[ 59%] Building CXX object test/c++/CMakeFiles/block_sparse_correlator_path.dir/block_sparse/correlator_path.cpp.o
+[ 60%] Linking CXX executable atom_diag_utils
+[ 61%] Linking CXX executable block_diag_op_fun
+[ 61%] Built target atom_diag_utils
+[ 62%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_admission.dir/block_sparse/cuda_admission.cpp.o
+[ 62%] Built target block_diag_op_fun
+[ 63%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_device_ops.dir/block_sparse/cuda_device_ops.cpp.o
+[ 64%] Linking CXX executable block_sparse/atom_prop
+[ 64%] Built target block_sparse_atom_prop
+[ 65%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_diagram_evaluator.dir/block_sparse/cuda_diagram_evaluator.cpp.o
+[ 65%] Linking CXX executable block_sparse/cuda_admission
+[ 65%] Built target block_sparse_cuda_admission
+[ 66%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_dlr_ops.dir/block_sparse/cuda_dlr_ops.cpp.o
+[ 67%] Linking CXX executable block_sparse/correlator_path
+[ 67%] Linking CXX executable block_sparse/cuda_device_ops
+[ 67%] Built target block_sparse_cuda_device_ops
+[ 68%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_mapped_special.dir/block_sparse/cuda_mapped_special.cpp.o
+[ 68%] Built target block_sparse_correlator_path
+[ 69%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_memory_plan.dir/block_sparse/cuda_memory_plan.cpp.o
+[ 69%] Linking CXX executable block_sparse/cuda_diagram_evaluator
+[ 69%] Built target block_sparse_cuda_diagram_evaluator
+[ 70%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_dispatch.dir/block_sparse/cuda_nca_dispatch.cpp.o
+[ 70%] Linking CXX executable block_sparse/cuda_nca_dispatch
+[ 70%] Built target block_sparse_cuda_nca_dispatch
+[ 71%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_liveness.dir/block_sparse/cuda_nca_liveness.cpp.o
+[ 71%] Linking CXX executable block_sparse/cuda_dlr_ops
+[ 71%] Built target block_sparse_cuda_dlr_ops
+[ 72%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_real_nca.dir/block_sparse/cuda_real_nca.cpp.o
+[ 72%] Linking CXX executable block_sparse/cuda_nca_liveness
+[ 72%] Built target block_sparse_cuda_nca_liveness
+[ 73%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_sparse_backend.dir/block_sparse/cuda_sparse_backend.cpp.o
+[ 73%] Linking CXX executable block_sparse/cuda_mapped_special
+[ 73%] Built target block_sparse_cuda_mapped_special
+[ 74%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_evaluator.dir/block_sparse/dynint_evaluator.cpp.o
+[ 74%] Linking CXX executable block_sparse/cuda_memory_plan
+[ 74%] Linking CXX executable block_sparse/cuda_real_nca
+[ 74%] Built target block_sparse_cuda_memory_plan
+[ 74%] Built target block_sparse_cuda_real_nca
+[ 75%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_sets.dir/block_sparse/dynint_sets.cpp.o
+[ 76%] Building CXX object test/c++/CMakeFiles/block_sparse_dynint_spin_flip.dir/block_sparse/dynint_spin_flip.cpp.o
+[ 76%] Linking CXX executable block_sparse/cuda_sparse_backend
+[ 76%] Built target block_sparse_cuda_sparse_backend
+[ 77%] Building CXX object test/c++/CMakeFiles/block_sparse_evaluator_api.dir/block_sparse/evaluator_api.cpp.o
+[ 77%] Linking CXX executable block_sparse/dynint_evaluator
+[ 77%] Built target block_sparse_dynint_evaluator
+[ 78%] Building CXX object test/c++/CMakeFiles/block_sparse_operator_model.dir/block_sparse/operator_model.cpp.o
+[ 78%] Linking CXX executable block_sparse/dynint_spin_flip
+[ 78%] Built target block_sparse_dynint_spin_flip
+[ 79%] Building CXX object test/c++/CMakeFiles/block_sparse_path.dir/block_sparse/path.cpp.o
+[ 79%] Linking CXX executable block_sparse/dynint_sets
+[ 79%] Built target block_sparse_dynint_sets
+[ 80%] Building CXX object test/c++/CMakeFiles/block_sparse_sparse_operator.dir/block_sparse/sparse_operator.cpp.o
+[ 80%] Linking CXX executable block_sparse/evaluator_api
+[ 80%] Built target block_sparse_evaluator_api
+[ 81%] Building CXX object test/c++/CMakeFiles/block_sparse_sparsity_invariance.dir/block_sparse/sparsity_invariance.cpp.o
+[ 81%] Linking CXX executable block_sparse/operator_model
+[ 81%] Built target block_sparse_operator_model
+[ 82%] Building CXX object test/c++/CMakeFiles/block_sparse_sym_set_mask.dir/block_sparse/sym_set_mask.cpp.o
+[ 82%] Linking CXX executable block_sparse/path
+[ 82%] Built target block_sparse_path
+[ 83%] Building CXX object test/c++/CMakeFiles/block_sparse_sym_sets.dir/block_sparse/sym_sets.cpp.o
+[ 83%] Linking CXX executable block_sparse/sparse_operator
+[ 83%] Built target block_sparse_sparse_operator
+[ 83%] Building CXX object test/c++/CMakeFiles/dense_benchmark_validation.dir/dense/benchmark_validation.cpp.o
+[ 83%] Linking CXX executable block_sparse/sparsity_invariance
+[ 83%] Built target block_sparse_sparsity_invariance
+[ 83%] Building CXX object test/c++/CMakeFiles/dense_correlator_statistics.dir/dense/correlator_statistics.cpp.o
+[ 83%] Linking CXX executable block_sparse/sym_set_mask
+[ 83%] Built target block_sparse_sym_set_mask
+[ 84%] Building CXX object test/c++/CMakeFiles/dense_cuda_device_ops.dir/dense/cuda/device_ops.cpp.o
+[ 84%] Linking CXX executable dense/cuda/device_ops
+[ 84%] Built target dense_cuda_device_ops
+[ 85%] Building CXX object test/c++/CMakeFiles/dense_cuda_dlr_ops.dir/dense/cuda/dlr_ops.cpp.o
+[ 85%] Linking CXX executable block_sparse/sym_sets
+[ 85%] Built target block_sparse_sym_sets
+[ 86%] Building CXX object test/c++/CMakeFiles/dense_cuda_small_batch_api.dir/dense/cuda_small/batch_api.cpp.o
+[ 86%] Linking CXX executable dense/cuda/dlr_ops
+[ 86%] Linking CXX executable dense/cuda_small/batch_api
+[ 86%] Built target dense_cuda_dlr_ops
+[ 87%] Building CXX object test/c++/CMakeFiles/dense_dynint_parity.dir/dense/dynint_parity.cpp.o
+[ 87%] Built target dense_cuda_small_batch_api
+[ 88%] Building CXX object test/c++/CMakeFiles/dense_cuda_benchmark_contract.dir/dense_cuda_benchmark_contract.cpp.o
+[ 89%] Linking CXX executable dense/benchmark_validation
+[ 89%] Built target dense_benchmark_validation
+[ 90%] Building CXX object test/c++/CMakeFiles/dynint_spin_rotation.dir/dynint_spin_rotation.cpp.o
+[ 91%] Linking CXX executable dense/correlator_statistics
+[ 91%] Built target dense_correlator_statistics
+[ 92%] Building CXX object test/c++/CMakeFiles/evaluator_ranges.dir/evaluator_ranges.cpp.o
+[ 92%] Linking CXX executable dense_cuda_benchmark_contract
+[ 92%] Built target dense_cuda_benchmark_contract
+[ 93%] Building CXX object test/c++/CMakeFiles/flat_index_range.dir/flat_index_range.cpp.o
+[ 93%] Linking CXX executable dense/dynint_parity
+[ 93%] Built target dense_dynint_parity
+[ 94%] Building CXX object test/c++/CMakeFiles/hyb.dir/hyb.cpp.o
+[ 94%] Linking CXX executable dynint_spin_rotation
+[ 94%] Built target dynint_spin_rotation
+[ 95%] Building CXX object test/c++/CMakeFiles/manual_routines.dir/manual_routines.cpp.o
+[ 95%] Linking CXX executable evaluator_ranges
+[ 95%] Built target evaluator_ranges
+[ 96%] Building CXX object test/c++/CMakeFiles/one_fermion_se_spgf_all_evals.dir/one_fermion_se_spgf_all_evals.cpp.o
+[ 96%] Linking CXX executable hyb
+[ 96%] Built target hyb
+[ 97%] Building CXX object test/c++/CMakeFiles/propagator_layout.dir/propagator_layout.cpp.o
+[ 97%] Linking CXX executable flat_index_range
+[ 97%] Built target flat_index_range
+[ 98%] Building CXX object test/c++/CMakeFiles/test_nda_cuda_smoke.dir/test_nda_cuda_smoke.cpp.o
+[ 98%] Linking CXX executable manual_routines
+[ 98%] Built target manual_routines
+[100%] Building CXX object test/c++/CMakeFiles/topology.dir/topology.cpp.o
+[100%] Linking CXX executable test_nda_cuda_smoke
+[100%] Built target test_nda_cuda_smoke
+[100%] Linking CXX executable topology
+[100%] Built target topology
+[100%] Linking CXX executable propagator_layout
+[100%] Built target propagator_layout
+[100%] Linking CXX executable one_fermion_se_spgf_all_evals
+[100%] Built target one_fermion_se_spgf_all_evals
