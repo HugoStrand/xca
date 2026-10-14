@@ -32,3 +32,8 @@ all-sector function and has a 4,899,907,584-byte largest rank buffer. Legacy scr
 and initial correlator-side capacities are 88,198,336,512 and 146,997,227,520 bytes;
 these are incomplete peak diagnostics, not measured allocations. No N=14 atomic
 diagonalization or GPU arithmetic was run.
+
+## Complete reference calls
+
+`reference-01/` contains raw bounded complete-call samples. Paired timings and
+provenance are in [block_sparse_common](../../block_sparse_common/thinkstationP620_RTXA4000/README.md).
