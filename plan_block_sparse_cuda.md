@@ -1125,6 +1125,19 @@ against copying. Device arithmetic, bounds and public API remain unchanged. Full
 production suites/MPI remain the preceding compact checkpoint; no new full-suite or
 target-hardware claim is inferred from this ownership qualification.
 
+Production C++ placement checkpoint: explicit `OutputPlacement::HostSectors` selects
+the qualified single-output-sector route; Resident stays default. Host output payload
+budget is checked before upload even for empty ranges, and the SE device estimate
+substitutes one maximum tile for the full output function. All required sectors are
+returned; GPU arithmetic and per-sector accumulation order are unchanged. Inputs
+remain resident and other observables retain their bounds. Eight reusable controls
+run with HostSectors forced; production admission tests cover tight accepted/rejected
+budgets, masks, empty ranges and invalid enums. The experiments use a pre-placement
+source/header snapshot to preserve their baselines. Next expose placement/budget in
+the consolidated Python facade and Solver/MPI configuration, then complete broader
+capacity/host/target qualification. This is explicit placement, not automatic fallback
+after CUDA submission or a solution to input/contraction tiling.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical

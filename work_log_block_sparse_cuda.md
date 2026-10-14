@@ -2351,3 +2351,49 @@ open. All handles terminal. Code, measurement and plan/log commits stay separate
 no install/push/supervisor changes; unrelated work preserved. Logs /tmp/xca-bs-return-
 move-{configure,build,test,cpu-configure,cpu-build,library-configure,library-build,
 library-test,memcheck,campaign}.log; output_sectors/thinkstationP620_RTXA4000/outputs-03.
+
+## 2026-10-14 — Production C++ output placement
+
+Previous goal turn was progress: explicit return ownership was promoted and measured.
+Added OutputPlacement::{Resident,HostSectors} as a C++ constructor option, followed
+by host output payload budget (512 MiB default). Resident remains default. HostSectors
+keeps exactly one output sector on GPU and returns every host sector, with unchanged
+GPU accumulation/path/cutoff order. Inputs remain resident. SE estimates substitute
+one maximum tile for one full output function; NCA still removes inactive DLR scratch.
+SPGF/correlator estimates/implementation remain unchanged. Host payload admission is
+before upload/allocation, including empty ranges, and excludes caller G, metadata,
+allocator overhead and a transient sector download. Invalid placement rejects.
+
+Preserved pre-placement resident source/header snapshots inside output_sectors so
+private copy/move/stream baselines remain intact. Updated scalar visitor/accessor and
+prefix getter transformations for production placement; scalar experiments explicitly
+require Resident rather than silently ignoring HostSectors in arena shortcuts.
+New HostOutputControl runs all eight reusable observable/API controls with the actual
+production HostSectors option, including dynamics, both correlator statistics and
+range/cutoff behavior. New production admission control checks three partitions,
+Library/Reference and available Ordered/Mapped, NCA/higher-order bounds, exact full
+outputs, tight accept/reject, changed G/masks, empty outputs and invalid enum.
+
+Main initial six focused CTests pass in 65.15 s. Binary listing showed the newly
+added admission control was absent because its source changed after that target's
+compilation; those results were not treated as new-policy evidence. Rebuilt admission
+and HostOutputControl: three admission tests plus eight forced-policy controls pass
+in two CTests / 9.44 s. Added recovery proof that host-output rejection does not poison
+a subsequent SPGF call, then rebuilt admission and scalar guard: two CTests pass
+10.61 s. Native-disabled four focused CTests pass 25.77 s; final updated admission
+rerun passes 2.23 s. Both native flags remain OFF. CPU configure/library build passes.
+Production CompleteHostOutputPlacement memcheck passes in 11.757 s, zero errors/leaks.
+GPU verification stages sequential. Full suites/MPI remain prior compact checkpoints;
+these are focused C++ placement controls, not newly claimed full suites.
+
+C++ policy is qualified and explicit; Python facade and Solver/MPI selection are
+still pending and documented. No new Python arguments or automatic post-submission
+fallback are claimed. Next integrate placement and host budget through the consolidated
+facade/configuration, archives/deepcopy and collective error handling. Capacity still
+needs input/slab work and GH200-class validation; local RTX A4000 is a proxy. Goal
+active. All handles terminal, all experiments/user work retained, code and plan/log
+commits separate, no push/install/supervisor changes. Logs /tmp/xca-bs-placement-
+{configure,build,list,test,final-configure,final-build,final-test,cpu-configure,cpu-build,
+library-configure,library-build,library-final-configure,library-final-build,library-test,
+memcheck,recovery-configure,recovery-build,recovery-test,library-recovery-build,
+library-recovery-test}.log. No timing experiment ran during this qualification.
