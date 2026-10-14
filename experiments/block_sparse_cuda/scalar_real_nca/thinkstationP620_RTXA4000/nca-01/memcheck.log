@@ -1,0 +1,17 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = RealNca.AdjacentCutoffWithoutReplay:RealNca.UnsafeRangeAndComplexModelFallback
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from RealNca
+[ RUN      ] RealNca.AdjacentCutoffWithoutReplay
+[       OK ] RealNca.AdjacentCutoffWithoutReplay (386 ms)
+[ RUN      ] RealNca.UnsafeRangeAndComplexModelFallback
+[       OK ] RealNca.UnsafeRangeAndComplexModelFallback (264 ms)
+[----------] 2 tests from RealNca (651 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (651 ms total)
+[  PASSED  ] 2 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

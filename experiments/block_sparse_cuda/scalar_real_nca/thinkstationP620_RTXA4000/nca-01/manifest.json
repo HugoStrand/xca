@@ -1,0 +1,281 @@
+{
+  "base_revision": "176fab35b59017b02875b971f372643f859fa4b0",
+  "binary_sha256": {
+    "cpu_constants": "77c6ef6d3381746f1918c21b2eee55d7512a25881cb07f8a305f261ad0926d6b",
+    "general_ordered": "c07366fa000e815a6990e0e4415a1feaedb04e0d88370935a942d7afb2744f80",
+    "real_nca": "2e53edf2e01e46af59cc89eb3ac29c4bbdb4e7972c906c7402cff4e16c05eb76"
+  },
+  "cases": [
+    {
+      "name": "n4-nca",
+      "backend": "cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-nca",
+      "backend": "general_ordered",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-nca",
+      "backend": "real_nca",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-nca",
+      "backend": "cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-nca",
+      "backend": "general_ordered",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-nca",
+      "backend": "real_nca",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-oca-fallback",
+      "backend": "cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-oca-fallback",
+      "backend": "general_ordered",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-oca-fallback",
+      "backend": "real_nca",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "1",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-fallback",
+      "backend": "cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-fallback",
+      "backend": "general_ordered",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-fallback",
+      "backend": "real_nca",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_real_nca/block_sparse_scalar_real_nca_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    }
+  ],
+  "code_revision": "660950202c49f80364389842a315dbf7cb9a5d6e",
+  "source_sha256": {
+    "experiments/block_sparse_cuda/scalar_real_nca/guard.inc": "3c68f785c3a4008a34c84b156bba013f11eafb7e9f3f750b922a441a993af0d3",
+    "experiments/block_sparse_cuda/scalar_real_nca/qualification.cpp": "ebb97a3f59604d9388f2407bd56141cbf61503dd09e414fed6a2e47dbba735bc",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "9157aeb2eb30bd250c4c71ecabbea2975ec9da3855bc98cd3d82a14fb742e807",
+    "experiments/block_sparse_cuda/scalar_paths/CMakeLists.txt": "0389986b3ec7398a148458af71fb6c848209f9aa6b309aa7a680a8a47abd55cb"
+  }
+}
