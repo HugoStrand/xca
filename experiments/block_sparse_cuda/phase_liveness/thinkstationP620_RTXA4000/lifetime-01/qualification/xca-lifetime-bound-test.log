@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 25: experiments/block_sparse_cuda/phase_liveness
+1/1 Test #25: experiments/block_sparse_cuda/phase_liveness ...   Passed    9.79 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   9.80 sec

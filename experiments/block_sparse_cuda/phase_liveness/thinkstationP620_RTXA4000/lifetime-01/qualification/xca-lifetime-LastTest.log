@@ -1,0 +1,50 @@
+Start testing: Oct 14 20:21 CEST
+----------------------------------------------------------
+25/117 Testing: experiments/block_sparse_cuda/phase_liveness
+25/117 Test: experiments/block_sparse_cuda/phase_liveness
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness
+"experiments/block_sparse_cuda/phase_liveness" start time: Oct 14 20:21 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 10 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2197 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (673 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (30 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3400 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (792 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (7102 ms total)
+
+[----------] 2 tests from LifetimeEvaluator
+[ RUN      ] LifetimeEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] LifetimeEvaluator.CompleteCallsChangedInputAndPlacement (1802 ms)
+[ RUN      ] LifetimeEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] LifetimeEvaluator.CompleteBudgetRejectionAndRecovery (281 ms)
+[----------] 2 tests from LifetimeEvaluator (2084 ms total)
+
+[----------] Global test environment tear-down
+[==========] 10 tests from 2 test suites ran. (9186 ms total)
+[  PASSED  ] 10 tests.
+<end of output>
+Test time =   9.44 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/phase_liveness" end time: Oct 14 20:21 CEST
+"experiments/block_sparse_cuda/phase_liveness" time elapsed: 00:00:09
+----------------------------------------------------------
+
+End testing: Oct 14 20:21 CEST

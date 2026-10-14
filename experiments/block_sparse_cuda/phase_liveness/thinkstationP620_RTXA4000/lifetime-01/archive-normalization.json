@@ -1,0 +1,25 @@
+{
+  "policy": "Archive-only LF/trailing-whitespace normalization, numeric values unchanged.",
+  "files": {
+    "qualification/xca-lifetime-bound-configure.log": {
+      "original_sha256": "bf394e6d94c64e9230c52ccb252e9b0493de147330726c6dae8260160e3d88e5",
+      "archived_sha256": "86e213867be4bf36eebdfdb1ec49f30a099fbbb1481bab5fedc386e064ab4d41"
+    },
+    "qualification/xca-lifetime-bound-library-configure.log": {
+      "original_sha256": "7ac09c58189ade7d165cc952f7f6d7675af6f103e9e8688e201d84b5cc44ad12",
+      "archived_sha256": "f009b26dfb7b36bc5fc6fea627ba0873d81d42b0e86595877409d51631d042ab"
+    },
+    "qualification/xca-lifetime-configure.log": {
+      "original_sha256": "4a03cd905b3da37a65fcc17771a724f9d234d6f444261fa38b5c32823f558cf3",
+      "archived_sha256": "8dad5a1b473658a2a98281f8416bb209f53c3485885bea72c8d7828a5ffa156f"
+    },
+    "qualification/xca-lifetime-cpu-configure.log": {
+      "original_sha256": "21132ef83d9f7a3f8e92430278cc585fdd89043ca20c7d2c533e3df3f2e26162",
+      "archived_sha256": "a18c0be1700061760122dd41f3e061ea4bba6e8c071d9daa5925ab6614b34d82"
+    },
+    "qualification/xca-lifetime-library-configure.log": {
+      "original_sha256": "1d744224ad8973984648cbba51f5b7a1b22b011fa7b33d27f696dd03c703e6f5",
+      "archived_sha256": "984d6d035259a9a53becb33023edbb1569dd0ca0a7af8bf7310ab37b36bf4779"
+    }
+  }
+}

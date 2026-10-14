@@ -1,0 +1,24 @@
+{
+  "source": "b549256216764bba61d4364437ff515a869f5817",
+  "initial_timing_source": "0580dfb",
+  "native_tests": 11,
+  "native_ctest_seconds": 9.8,
+  "library_tests": 11,
+  "library_ctest_seconds": 9.85,
+  "focused_memcheck_tests": 3,
+  "focused_memcheck_seconds": 29.307,
+  "cutoff_probes": 18,
+  "exact_cutoff_matrices_and_counts": true,
+  "notes": "Timing campaign predates tightened admission bound. Phase bounds are metadata estimates; exact-budget runtime controls use N4 physical fixtures. No full target/Python/MPI qualification.",
+  "binaries": {
+    "cbuild-cuda/block_sparse_lifetime_tests": {
+      "sha256": "b96c08e16eeb1d42e585583bc40a086cee16060e8bcfeb60fdef1cb07d239309"
+    },
+    "cbuild-cuda-library-api/block_sparse_lifetime_tests": {
+      "sha256": "41b716ac084c370f8676cc475d1274216a063003320a0a64a343abef80c69fca"
+    },
+    "cbuild-cuda/block_sparse_lifetime_cutoff_audit": {
+      "sha256": "bc627a80e3d428db11dd387078e8b322c3cbe604de79b9bce47beee6e8b4c7ab"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = LifetimeEvaluator.*
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from LifetimeEvaluator
+[ RUN      ] LifetimeEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] LifetimeEvaluator.CompleteCallsChangedInputAndPlacement (20063 ms)
+[ RUN      ] LifetimeEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] LifetimeEvaluator.CompleteBudgetRejectionAndRecovery (3266 ms)
+[ RUN      ] LifetimeEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] LifetimeEvaluator.CorrelatorBudgetAndEndpointRecovery (5977 ms)
+[----------] 3 tests from LifetimeEvaluator (29307 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (29307 ms total)
+[  PASSED  ] 3 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors
