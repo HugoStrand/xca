@@ -1,5 +1,51 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Resident weight tables and device selectors
+
+Previous turn was progress: parity hoisting measured/qualified. Added separate
+scalar_resident candidate. Existing device pole vectors reused; forward/reflected
+hybridization tables uploaded once per scalar-eligible immutable evaluator. Owned
+tables charged to fixed storage before allocations and every observable bound,
+including fallback correlators. Bounded pointer/stride/sign lane descriptors select
+weights in a CUDA kernel (--fmad=false), avoiding host per-node weight materialization.
+No G cache or model mutation. Descriptor payload charged to scalar admission.
+
+Initial configure missed CUDA language variables in sibling directory; enabled CUDA
+locally and retried. Initial lazy ownership design reviewed before qualification:
+moved allocation to constructor/fixed-kernel accounting so fallback observable
+bounds and free-memory existing-storage subtraction remain correct. Fixed benchmark
+route label before timing. Full18 inherited controls passed46.29s. Added direct
+selector test: strided/sign/identity/zero/updates match expanded GPU weights with
+zero numerical difference (.272s). Focused selector/multi-set/adjacent-cutoff memcheck
+passed three controls17.240s, zero errors/leaked bytes. All handles terminal before
+timing. Device model/context owns tables through cleanup; coefficients immutable.
+
+Rebuilt parity GPU/matchedCPU controls, isolated12 processes/36 samples pass finite,
+CPU numerical and exact per-route replay; GPU norm/error/count/range summaries match
+old/new, not a cross-route bitwise assertion. Median CPU/parityGPU/residentGPU ms:
+N4NCA1.183/2.233/1.792, N4OCA4.095/4.050/3.350, N6OCA13.809/11.608/8.775,
+N8OCA6.011/7.437/5.825. Resident speedups1.25/1.21/1.32/1.28; OCA GPU wins over
+matchedCPU in this small local cohort, smallNCA loses and N8 margin3% is not robust.
+Explicit bound increments48,352/71,904/101,344 bytes reflect tables+descriptors.
+
+After unprofiled timing, scoped warmed N6 trace passed numeric controls. HtoD events
+still115, bytes7,883,316→1,014,324 (7.77x). DtoH588,848/16 and DtoD9,067,520/49
+unchanged. Runtime span12.098ms/API sum8.101ms/kernel sum2.486ms; interval sums can
+overlap. Compared baseline includes pre-hoisting metadata work, so span gain is not
+residency-only. Counts alloc/free156/158, streamSync272, eventRecord/wait258/258
+remain. Export-affected wrapper duration excluded. This identifies the next reusable
+staging/descriptor-buffer and synchronization candidate rather than claiming calls
+were eliminated. Source/binary/report hashes/text stats retained; binary /tmp reports
+may disappear. No competing GPU work during tests/timing/profiling.
+
+Code ce97eaa and evidencef8eb6b5 separate from this plan/log checkpoint. Logs /tmp/
+xca-bs-resident-{configure,build,test,select-build,select-test,memcheck,controls-build,
+campaign,profile-configure,profile-build,profile-run,profile-stats}.log. Benchmark
+evidence in common/CPU/CUDA local density-resident-01, trace in resident local
+profile-01. Goal active; target new-variant qualification, numerical promotion,
+integration and capacity/Python/MPI remain. No target hours (.2075 cumulative),
+install/push or unrelated-work changes. All local processes terminal.
+
 ## 2026-10-14 — Lane-invariant parity preparation
 
 Previous turn was progress: scoped trace identified repeated field/parity work and

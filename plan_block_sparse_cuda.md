@@ -180,6 +180,22 @@ numerical controls. GH200 qualification and conservative promotion remain requir
 
 ## 1. Questions to resolve
 
+Resident weight checkpoint: separate scalar_resident candidate reuses pole device
+vectors and constructor-owned forward/reflected hybridization tables. Bounded lane
+descriptors replace rank-sized weight uploads, retaining multiplication/sum order.
+Persistent payload enters fixed bounds for every observable; descriptors enter
+scalar admission. 18 inherited controls plus an exact expanded-weight selector
+test pass, and three focused memcheck controls report zero errors/leaks. All36 local
+matched samples pass. GPU speedups over parity baseline are1.21–1.32x; sampled OCA
+beats matchedCPU, but small NCA does not and N8's3% margin is weak evidence. Added
+explicit bytes48,352/71,904/101,344 at N4/N6/N8. Common local density-resident-01
+retains numerical/storage/timing evidence. Scoped trace shows host-to-device bytes
+7,883,316→1,014,324 (7.77x), still115 copies,156/158 alloc/free and272 stream syncs.
+Earlier trace predates parity hoisting, so total span reduction is not residency-only.
+Next owned reusable staging/descriptor buffers and fewer barriers, with source
+lifetimes/stream ordering qualified before target timing or promotion. The fixed
+cutoff replay band and broader integration/capacity gates remain.
+
 The likely useful decomposition is sparse operator application, dense propagator
 convolution, and bounded scheduling of independent block paths. Test that hypothesis
 before choosing a backend. A single maximum-block-size switch cannot represent all
