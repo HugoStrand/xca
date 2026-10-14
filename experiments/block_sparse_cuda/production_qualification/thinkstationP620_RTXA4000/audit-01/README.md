@@ -14,9 +14,11 @@ subsequent poisoned-context rejection; it does not inject a fault mid-topology o
 claim recovery of a poisoned CUDA context. The intentional trap is labeled
 cuda_fault_injection and excluded from sanitizer-clean cohorts by design.
 
-The former insertion-shuffled consecutive-label test did not guarantee labels
-could not encode bit positions. It now uses nonconsecutive/negative integer labels
-across three block names, retaining independent bit-map/CAR and dense comparisons.
+TRIQS preserves fundamental-operator insertion order, so the existing shuffled
+consecutive-label test already exercised mode reordering. It now additionally uses
+nonconsecutive/negative integer labels across three block names, retaining
+independent bit-map/CAR and dense comparisons. This is strengthened label coverage,
+not evidence that the earlier reordering test was invalid.
 Full native sparse-operator entry passes six controls0.56s; CPU host entry passes
 0.45s, with CUDA fault case disabled (zero active GPU tests on CPU).
 
