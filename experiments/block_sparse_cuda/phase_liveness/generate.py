@@ -39,7 +39,21 @@ for start,end in [('    void edge(', '    double kernel_prefactor('),('    void 
       dlr->release_scratch();
       T = std::move(out);''')
     source=source[:a]+body+source[b:]
-# Existing public bounds intentionally remain conservative until measured and audited.
+# At most seven temporary rank tensors overlap: three coefficient/output caller
+# tensors plus four disjoint convolution scratch tensors. Solves need <= four;
+# special fallback <= six; vertices/reflection <= two. RHS and convolution scratch
+# cannot overlap. Stored correlator fragments stay in their existing 2*function
+# reserve; endpoints and result buffers retain their existing additional reserves.
+once('return reference_storage_bound(r, model.dimensions(), dlr_bound, operator_budget, kernel_bytes, mapped_storage_bound());',
+     'auto tables = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(checked_add(r, 1), sizeof(int)));\n'
+     '      return reference_storage_bound(r, model.dimensions(), tables, operator_budget, kernel_bytes, mapped_storage_bound());')
+once('return generic - (dlr_bound - tables) - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;',
+     'return generic - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;')
+# A failed call can leave scratch. Drain it before reserving caller tensors for
+# every new admitted call, including correlators. Reject explicit budgets first.
+once('      if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");\n      std::size_t free',
+     '      if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");\n'
+     '      dlr->release_scratch();\n      std::size_t free')
 header=header.replace('DiagramEvaluator','LifetimeDiagramEvaluator')
 source=source.replace('DiagramEvaluator','LifetimeDiagramEvaluator').replace('"diagram_evaluator.hpp"','"lifetime_evaluator.hpp"')
 (out/'lifetime_evaluator.hpp').write_text(header);(out/'lifetime_evaluator.cpp').write_text(source)
