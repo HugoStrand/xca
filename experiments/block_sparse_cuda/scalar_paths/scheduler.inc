@@ -6,7 +6,8 @@ bool scalar_eligible() const {
 std::size_t scalar_extra_bound() const {
   return scalar_eligible() ? checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1)) : 0;
 }
-void scalar_flush(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma, std::vector<ScalarWork> &work,
+template <typename Input, typename Output>
+void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::vector<ScalarWork> &work,
                   scalar_edge_experiment::ScalarPack &packed) {
   if (work.empty()) return;
   long lanes = packed.f.extent(1), count = work.size();
@@ -76,3 +77,7 @@ void scalar_flush(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma, std:
   sample_memory();
   work.clear();
 }
+
+#ifdef XCA_EXPERIMENT_SCALAR_ARENA
+#include "arena.inc"
+#endif

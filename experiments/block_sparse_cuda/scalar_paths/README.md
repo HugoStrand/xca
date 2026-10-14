@@ -86,3 +86,21 @@ Use the fan-in binary as the CUDA recorder argument, campaign `scalar-fanin-01`,
 with the matched CPU scheduler. A lower latency versus serial GPU does not imply a
 win over matched CPU or select a production/GH200 default. No bindings expose this
 experimental variant.
+
+## Contiguous scalar storage and scoped profiling
+
+`block_sparse_scalar_arena_benchmark/tests` retains ordered accumulation and places
+all scalar input/output blocks in two owned contiguous tensors, with nonowning block
+views used only while their owners remain alive. Live-mask handling is unchanged;
+input packing, single upload/download, CPU result construction and every scheduler
+cost enter full-call timing. General shapes/correlators retain the original route.
+The underlying payload admission is unchanged; this removes allocator/transfer call
+multiplicity rather than claiming complete opaque/host peak qualification.
+
+`profile_fanin` and `profile_arena` capture only the common runner's second self-energy
+call with cudaProfilerStart/Stop. Use Nsight `--capture-range=cudaProfilerApi`,
+`--capture-range-end=stop`, `--trace=cuda`, `--sample=none`, `--cpuctxsw=none`.
+Profiler wrapper durations include capture/export effects and are excluded from
+benchmark comparisons. Source frontends, report hashes and API-count summaries
+belong in hardware folders. Timing uses the ordinary arena binary in a separate
+isolated paired campaign, with matched CPU and prior controls retained.
