@@ -15,9 +15,17 @@ def block_sparse_ordered_available():
     return import_module('._triqs_xca_cuda', __package__).block_sparse_ordered_available()
 
 
-def block_sparse_evaluator_class(backend, operator_backend='library'):
+def block_sparse_mapped_available():
+    if not CUDA_ENABLED:
+        return False
+    return import_module('._triqs_xca_cuda', __package__).block_sparse_mapped_available()
+
+
+def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference'):
     if operator_backend not in {'library', 'ordered'}:
         raise ValueError("Block-sparse operator backend must be 'library' or 'ordered'")
+    if special_backend not in {'reference', 'mapped'}:
+        raise ValueError("Block-sparse special backend must be 'reference' or 'mapped'")
     if backend == 'cpu':
         from ._triqs_xca import BlockSparseDiagramEvaluator
         return BlockSparseDiagramEvaluator
@@ -29,6 +37,8 @@ def block_sparse_evaluator_class(backend, operator_backend='library'):
         module = import_module('._triqs_xca_cuda', __package__)
         if operator_backend == 'ordered' and not module.block_sparse_ordered_available():
             raise RuntimeError("Ordered block-sparse CUDA kernels are unavailable in this build")
+        if special_backend == 'mapped' and not module.block_sparse_mapped_available():
+            raise RuntimeError("Mapped special-vertex CUDA kernels are unavailable in this build")
         return module.BlockSparseCudaDiagramEvaluator
     except (ImportError, AttributeError) as error:
         raise RuntimeError(f"Requested block-sparse backend 'cuda' is unavailable: {error}") from error

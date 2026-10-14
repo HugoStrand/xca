@@ -43,6 +43,23 @@ raise before model export/device setup, including collectively during solver set
 The consolidated C++ facade also accepts ``operator_backend='ordered'``.
 
 
+Set ``block_sparse_special_backend='mapped'`` to fuse eligible special-vertex
+right products, weights and ordered field additions. The reference policy remains
+``'reference'`` by default. Mapping requires the same native build option and can
+be selected independently of the sparse operator backend. Query support with
+``triqs_xca.gpu.block_sparse_mapped_available()``. The consolidated facade accepts
+``special_backend='mapped'``; C++ uses ``SpecialBackend::Mapped``.
+
+Eligibility uses the actual sparse structure: at most one nonzero per kappa column.
+Other operators and singleton sets retain the reference special vertex. Column
+maps and weights add a conservative metadata allowance to the device budget;
+no cache of padded kappa matrices is retained. These structural choices occur
+before mapped device work, and errors never trigger CPU replay. Numerical field
+order is preserved, though fused/library rounding need not be bitwise identical.
+SPGF and correlators retain their existing device path. The opt-in setting and
+its archive default are independent of any unqualified GH200 crossover policy.
+
+
 ``block_sparse_workspace_budget`` limits conservative explicit device storage
 (default 1 GiB); ``block_sparse_operator_budget`` limits the cached operator and
 its sparse-library workspace (default 32 MiB). Host and opaque-library storage are

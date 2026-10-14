@@ -12,7 +12,7 @@ from triqs_xca import Solver, gpu
 from triqs_xca._backend_config import CUDA_ENABLED
 
 
-def make_solver(backend='cpu', partition='number', dynamic=False, operator_backend='library'):
+def make_solver(backend='cpu', partition='number', dynamic=False, operator_backend='library', special_backend='reference'):
     Q = sum(n('f', i) for i in range(3))
     H = sum((.13+.07*i)*n('f', i) for i in range(3))
     H += sum(.2*n('f', i)*n('f', j) for i in range(3) for j in range(i))
@@ -25,7 +25,7 @@ def make_solver(backend='cpu', partition='number', dynamic=False, operator_backe
     sym = {'occupation': 'automatic', 'number': [Q],
            'mixed': [n('f', 0)+n('f', 1), n('f', 2)]}[partition]
     S = Solver(H, 2., 20., 1e-10, [['f', 3]], conserved_operators=sym,
-               verbose=False, block_sparse_backend=backend, block_sparse_operator_backend=operator_backend)
+               verbose=False, block_sparse_backend=backend, block_sparse_operator_backend=operator_backend, block_sparse_special_backend=special_backend)
     coeff = np.zeros((2, 3, 3), complex)
     for p in range(2):
         coeff[p] = np.eye(3)*(.3-.1*p)
@@ -45,14 +45,15 @@ class BlockSparseCudaTests(unittest.TestCase):
     def test_preferences_validation_and_archives(self):
         for kwargs in ({'block_sparse_backend': 'typo'},
                        {'block_sparse_backend': 'cuda', 'conserved_operators': []},
-                       {'block_sparse_operator_backend': 'typo'}, {'block_sparse_workspace_budget': 0}, {'block_sparse_operator_budget': True}):
+                       {'block_sparse_operator_backend': 'typo'}, {'block_sparse_special_backend': 'typo'}, {'block_sparse_workspace_budget': 0}, {'block_sparse_operator_budget': True}):
             with self.assertRaises(ValueError):
                 Solver(n('f', 0), 2., 10., 1e-10, [['f', 1]], verbose=False, **kwargs)
-        S = make_solver('cuda', operator_backend='ordered')
+        S = make_solver('cuda', operator_backend='ordered', special_backend='mapped')
         S.block_sparse_operator_budget = 64*1024*1024
         clone = copy.deepcopy(S)
         self.assertEqual(clone.block_sparse_backend, 'cuda')
         self.assertEqual(clone.block_sparse_operator_backend, 'ordered')
+        self.assertEqual(clone.block_sparse_special_backend, 'mapped')
         self.assertEqual(clone.block_sparse_operator_budget, S.block_sparse_operator_budget)
         with tempfile.TemporaryDirectory() as folder:
             path = str(Path(folder)/'solver.h5')
@@ -60,14 +61,16 @@ class BlockSparseCudaTests(unittest.TestCase):
             with HDFArchive(path, 'r') as archive: restored = archive['solver']
             self.assertEqual(restored.block_sparse_backend, 'cuda')
             self.assertEqual(restored.block_sparse_operator_backend, 'ordered')
+            self.assertEqual(restored.block_sparse_special_backend, 'mapped')
             self.assertEqual(restored.block_sparse_workspace_budget, S.block_sparse_workspace_budget)
             self.assertFalse(hasattr(restored, 'd'))
         data = S.__reduce_to_dict__()
-        for key in ('block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend'):
+        for key in ('block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend'):
             data.pop(key)
         restored = Solver.__factory_from_dict__('Solver', data)
         self.assertEqual(restored.block_sparse_backend, 'cpu')
         self.assertEqual(restored.block_sparse_operator_backend, 'library')
+        self.assertEqual(restored.block_sparse_special_backend, 'reference')
         if not CUDA_ENABLED:
             with self.assertRaisesRegex(RuntimeError, 'unavailable'): S.init_diagram_evaluator()
 
@@ -78,9 +81,10 @@ class BlockSparseCudaTests(unittest.TestCase):
         self.assertIs(triqs_xca.BlockSparseCudaDiagramEvaluator, module.BlockSparseCudaDiagramEvaluator)
         self.assertEqual(module.BlockSparseCudaDiagramEvaluator.__module__, 'triqs_xca._triqs_xca_cuda')
         backends = ('library', 'ordered') if gpu.block_sparse_ordered_available() else ('library',)
-        for operator_backend, partition, dynamic in product(backends, ('occupation', 'number', 'mixed'), (False, True)):
-            with self.subTest(operator_backend=operator_backend, partition=partition, dynamic=dynamic):
-                expected, actual = make_solver('cpu', partition, dynamic), make_solver('cuda', partition, dynamic, operator_backend)
+        specials = ('reference', 'mapped') if gpu.block_sparse_mapped_available() else ('reference',)
+        for operator_backend, special_backend, partition, dynamic in product(backends, specials, ('occupation', 'number', 'mixed'), (False, True)):
+            with self.subTest(operator_backend=operator_backend, special_backend=special_backend, partition=partition, dynamic=dynamic):
+                expected, actual = make_solver('cpu', partition, dynamic), make_solver('cuda', partition, dynamic, operator_backend, special_backend)
                 expected.init_diagram_evaluator(); actual.init_diagram_evaluator()
                 self.assertTrue(actual._uses_gpu_evaluator)
                 self.assertFalse(actual.use_dense_solver)
@@ -103,7 +107,7 @@ class BlockSparseCudaTests(unittest.TestCase):
 
     @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
     def test_collective_count_and_compute_failures(self):
-        S = make_solver('cuda', operator_backend=getattr(self, 'operator_backend', 'library')); S.init_diagram_evaluator(); original = S.d
+        S = make_solver('cuda', operator_backend=getattr(self, 'operator_backend', 'library'), special_backend=getattr(self, 'special_backend', 'reference')); S.init_diagram_evaluator(); original = S.d
         class BadCount:
             def get_num_self_energy_backbones(self, t):
                 if mpi.rank == 0: raise ValueError('injected index failure')
@@ -124,7 +128,7 @@ class BlockSparseCudaTests(unittest.TestCase):
     @unittest.skipUnless(CUDA_ENABLED, 'requires CUDA TRIQS')
     def test_self_consistency_and_initialization_failure(self):
         from triqs_xca import _triqs_xca_cuda as runtime
-        actual, expected = make_solver('cuda', operator_backend=getattr(self, 'operator_backend', 'library')), make_solver()
+        actual, expected = make_solver('cuda', operator_backend=getattr(self, 'operator_backend', 'library'), special_backend=getattr(self, 'special_backend', 'reference')), make_solver()
         if mpi.rank == 0: actual.gpu_device = runtime.cuda_device_count()
         with self.assertRaisesRegex(RuntimeError, 'Block-sparse GPU initialization failed'):
             actual.solve(max_order=1, maxiter=1, hyb_comp=False, verbose=False)
@@ -153,6 +157,23 @@ class BlockSparseCudaTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'unavailable'):
                 runtime.BlockSparseCudaDiagramEvaluator(S.hyb.poles, S.hyb.coefficients, S.mesh_tau,
                                                        S.atom_diag, operator_backend='ordered')
+        self.assertEqual(gpu.block_sparse_mapped_available(), runtime.block_sparse_mapped_available())
+        if gpu.block_sparse_mapped_available():
+            self.special_backend = 'mapped'
+            self.test_collective_count_and_compute_failures()
+            self.test_self_consistency_and_initialization_failure()
+        else:
+            S = make_solver('cuda', special_backend='mapped')
+            with self.assertRaisesRegex(RuntimeError, 'unavailable'): S.init_diagram_evaluator()
+            with self.assertRaisesRegex(RuntimeError, 'unavailable'):
+                runtime.BlockSparseCudaDiagramEvaluator(S.hyb.poles, S.hyb.coefficients, S.mesh_tau,
+                                                       S.atom_diag, special_backend='mapped')
+        S = make_solver('cuda')
+        if mpi.rank == 0: S.block_sparse_special_backend = 'typo'
+        with self.assertRaisesRegex(RuntimeError, 'initialization failed'):
+            S.solve(max_order=1, maxiter=1, hyb_comp=False, verbose=False)
+        mpi.barrier(); S.block_sparse_special_backend = 'reference'
+        S.solve(max_order=1, maxiter=1, hyb_comp=False, verbose=False)
         S = make_solver('cuda')
         if mpi.rank == 0:
             S.block_sparse_operator_backend = 'typo'

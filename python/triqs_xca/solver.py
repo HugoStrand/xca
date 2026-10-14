@@ -80,6 +80,9 @@ class Solver(object):
     block_sparse_operator_backend : {'library', 'ordered'}, optional
         Sparse CUDA operator implementation. Ordered requires native kernels;
         library is the default. CPU evaluation retains this preference unused.
+    block_sparse_special_backend : {'reference', 'mapped'}, optional
+        CUDA special-vertex policy. 'mapped' fuses eligible sparse column maps;
+        requires native CUDA kernels. The reference policy remains the default.
     block_sparse_operator_budget : int, optional
         One-entry sparse operator plus library workspace limit (default 32 MiB).
     dense_batch_capacity : int, optional
@@ -119,7 +122,7 @@ class Solver(object):
                  dense_workspace_budget=512 * 1024 * 1024, gpu_device=None,
                  dense_device_memory_reserve=64 * 1024 * 1024,
                  block_sparse_backend='cpu', block_sparse_workspace_budget=1024 * 1024 * 1024,
-                 block_sparse_operator_budget=32 * 1024 * 1024, block_sparse_operator_backend='library'):
+                 block_sparse_operator_budget=32 * 1024 * 1024, block_sparse_operator_backend='library', block_sparse_special_backend='reference'):
 
         if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
             raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
@@ -137,6 +140,9 @@ class Solver(object):
             raise ValueError("Block-sparse budgets must be positive integers")
         if block_sparse_operator_backend not in {'library', 'ordered'}:
             raise ValueError("block_sparse_operator_backend must be 'library' or 'ordered'")
+        if block_sparse_special_backend not in {'reference', 'mapped'}:
+            raise ValueError("block_sparse_special_backend must be 'reference' or 'mapped'")
+        self.block_sparse_special_backend = block_sparse_special_backend
         self.block_sparse_operator_backend = block_sparse_operator_backend
         self.block_sparse_backend = block_sparse_backend
         self.block_sparse_workspace_budget = block_sparse_workspace_budget
@@ -415,11 +421,11 @@ class Solver(object):
             else:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
         else:
-            evaluator_class = gpu.block_sparse_evaluator_class(self.block_sparse_backend, self.block_sparse_operator_backend)
+            evaluator_class = gpu.block_sparse_evaluator_class(self.block_sparse_backend, self.block_sparse_operator_backend, self.block_sparse_special_backend)
             budgets = {}
             if self.block_sparse_backend != 'cpu':
                 gpu.configure_device(self.gpu_device)
-                budgets = dict(device_budget=self.block_sparse_workspace_budget, sparse_budget=self.block_sparse_operator_budget, operator_backend=self.block_sparse_operator_backend)
+                budgets = dict(device_budget=self.block_sparse_workspace_budget, sparse_budget=self.block_sparse_operator_budget, operator_backend=self.block_sparse_operator_backend, special_backend=self.block_sparse_special_backend)
             if self.has_dynamic_interactions:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs, **budgets)
             else:
@@ -1450,7 +1456,7 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve', 'block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve', 'block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],
