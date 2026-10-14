@@ -1,0 +1,31 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from RowConvolution
+[ RUN      ] RowConvolution.RectangularTailsAndScratchRelease
+[       OK ] RowConvolution.RectangularTailsAndScratchRelease (747 ms)
+[ RUN      ] RowConvolution.AdmissionAliasesAndRecovery
+[       OK ] RowConvolution.AdmissionAliasesAndRecovery (13 ms)
+[ RUN      ] RowConvolution.CutoffNeighborhoodAudit
+cutoff_audit,rows,scale,reference_max,row_max,reference_keep,row_keep,max_error
+cutoff_audit,1,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,2.4843749786905898e-32
+cutoff_audit,3,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,1.9296826979375575e-32
+cutoff_audit,8,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,0
+cutoff_audit,32,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,0
+cutoff_audit,1,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,3.7009939844936939e-32
+cutoff_audit,3,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,1.8488931384431553e-32
+cutoff_audit,8,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,0
+cutoff_audit,32,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,0
+cutoff_audit,1,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,2.4878091613335026e-32
+cutoff_audit,3,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,1.8675711403444166e-32
+cutoff_audit,8,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,0
+cutoff_audit,32,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,0
+[       OK ] RowConvolution.CutoffNeighborhoodAudit (113 ms)
+[----------] 3 tests from RowConvolution (874 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (874 ms total)
+[  PASSED  ] 3 tests.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

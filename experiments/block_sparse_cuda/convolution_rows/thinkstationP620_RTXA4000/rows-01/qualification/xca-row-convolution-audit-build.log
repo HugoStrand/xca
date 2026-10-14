@@ -1,0 +1,16 @@
+[  0%] Built target triqs_xca_small_kernels
+[  8%] Built target triqs_xca_sparse_kernels
+[ 16%] Built target gtest
+[ 16%] Built target gtest_main
+[ 83%] Built target triqs_xca_c
+[ 91%] Built target block_sparse_row_dlr
+[ 91%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_dlr_tests.dir/tests.cpp.o
+[100%] Linking CXX executable block_sparse_row_dlr_tests
+[100%] Built target block_sparse_row_dlr_tests
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 10%] Built target triqs_xca_small_kernels
+[ 90%] Built target triqs_xca_c
+[100%] Built target block_sparse_row_dlr
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_dlr_benchmark.dir/benchmark.cpp.o
+[100%] Linking CXX executable block_sparse_row_dlr_benchmark
+[100%] Built target block_sparse_row_dlr_benchmark

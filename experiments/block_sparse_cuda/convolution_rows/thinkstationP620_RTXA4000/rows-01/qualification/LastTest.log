@@ -1,0 +1,46 @@
+Start testing: Oct 14 19:30 CEST
+----------------------------------------------------------
+23/115 Testing: experiments/block_sparse_cuda/convolution_rows
+23/115 Test: experiments/block_sparse_cuda/convolution_rows
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows
+"experiments/block_sparse_cuda/convolution_rows" start time: Oct 14 19:30 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from RowConvolution
+[ RUN      ] RowConvolution.RectangularTailsAndScratchRelease
+[       OK ] RowConvolution.RectangularTailsAndScratchRelease (359 ms)
+[ RUN      ] RowConvolution.AdmissionAliasesAndRecovery
+[       OK ] RowConvolution.AdmissionAliasesAndRecovery (5 ms)
+[ RUN      ] RowConvolution.CutoffNeighborhoodAudit
+cutoff_audit,rows,scale,reference_max,row_max,reference_keep,row_keep,max_error
+cutoff_audit,1,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,2.4843749786905898e-32
+cutoff_audit,3,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,1.9296826979375575e-32
+cutoff_audit,8,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,0
+cutoff_audit,32,1.1884484046799585e-13,9.9999999999999961e-17,9.9999999999999961e-17,0,0,0
+cutoff_audit,1,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,3.7009939844936939e-32
+cutoff_audit,3,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,1.8488931384431553e-32
+cutoff_audit,8,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,0
+cutoff_audit,32,1.1884484046799587e-13,9.9999999999999986e-17,9.9999999999999986e-17,0,0,0
+cutoff_audit,1,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,2.4878091613335026e-32
+cutoff_audit,3,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,1.8675711403444166e-32
+cutoff_audit,8,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,0
+cutoff_audit,32,1.188448404679959e-13,1.0000000000000001e-16,1.0000000000000001e-16,1,1,0
+[       OK ] RowConvolution.CutoffNeighborhoodAudit (24 ms)
+[----------] 3 tests from RowConvolution (389 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (389 ms total)
+[  PASSED  ] 3 tests.
+<end of output>
+Test time =   0.64 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/convolution_rows" end time: Oct 14 19:30 CEST
+"experiments/block_sparse_cuda/convolution_rows" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 19:30 CEST

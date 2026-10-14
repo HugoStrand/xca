@@ -1,0 +1,88 @@
+-- Found Boost Headers: /usr/include
+-- Found Cpp2PyConfig.cmake with version 3.3.0, hash = 4721d6484237ba0e402648cd963ff036b2557c67, root = /home/hugstr/apps/triqs-cuda
+-- Found itertools-config.cmake with version 2.0.0, hash = d32d2b20a1beda709a43bd56ac85ea6d41efcdef, root = /home/hugstr/apps/triqs-cuda
+-- Found mpi-config.cmake with version 2.0.0, hash = 27e1c9353320b3ed80a6e7e3bf0414bf405039d6, root = /home/hugstr/apps/triqs-cuda
+-- Found h5-config.cmake with version 2.0.0, hash = bdbb040157088e156032edb33714a915d7782f3b, root = /home/hugstr/apps/triqs-cuda
+-- Found nda-config.cmake with version 2.0.0, hash = 4e590772784c2ca855dd9b6218300047dea5abcb, root = /home/hugstr/apps/triqs-cuda
+-- Found cppdlr-config.cmake with version 1.3.0, hash = 7a0f60cba2da69d64361971613b6859bb8c078ce, root = /home/hugstr/apps/triqs-cuda
+-- Found TRIQSConfig.cmake with version 4.0.0, hash = 29301201c26de3b2c9d824718a406f981d3adea7, root = /home/hugstr/apps/triqs-cuda
+-- triqs_xca version : 0.1.0
+-- triqs_xca Git hash: 59d7cda61e8611ded20d498c3360e93823fcbb3a
+-- -------- CMAKE_INSTALL_PREFIX: /home/hugstr/apps/xca-cuda --------
+-- -------- BUILD-TYPE: Release --------
+--  =============== Configuring Dependency c2py ===============
+-- -------- c2py version and git hash detection -------------
+-- c2py version : 1.0.0
+-- c2py Git hash: 58e0586a32cd3e4bc197b2ca753b51f128db39d2
+-- -------- Python detection -------------
+--  =============== End c2py Configuration ===============
+--  =============== Configuring Dependency adapol ===============
+--  =============== End adapol Configuration ===============
+--  =============== Configuring Dependency pyed ===============
+--  =============== End pyed Configuration ===============
+--  =============== Configuring Dependency GTest ===============
+--  =============== End GTest Configuration ===============
+-- CUDA-small enabled; architectures=86
+-- *********************************************************************************
+-- * Custom install Location. Use:
+-- *
+-- *   source /home/hugstr/apps/xca-cuda/share/triqs_xca/triqs_xcavars.sh
+-- *
+-- * to set up the environment variables
+-- *********************************************************************************
+-- Configuring done (1.1s)
+-- Generating done (0.6s)
+-- Build files have been written to: /home/hugstr/dev/xca/cbuild-cuda
+[  0%] Built target triqs_xca_small_kernels
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 10%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[ 20%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[ 20%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+[ 30%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 30%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+[ 30%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 30%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+[ 30%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 70%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 70%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 70%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 70%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:571:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  571 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:619:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  619 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+2 warnings generated.
+[ 90%] Linking CXX static library libtriqs_xca_c.a
+[ 90%] Built target triqs_xca_c
+[ 90%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_dlr.dir/row_dlr.cpp.o
+[100%] Linking CXX static library libblock_sparse_row_dlr.a
+[100%] Built target block_sparse_row_dlr
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_dlr_benchmark.dir/benchmark.cpp.o
+[100%] Linking CXX executable block_sparse_row_dlr_benchmark
+[100%] Built target block_sparse_row_dlr_benchmark

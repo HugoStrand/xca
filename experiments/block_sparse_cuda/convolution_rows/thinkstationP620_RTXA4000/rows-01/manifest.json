@@ -1,0 +1,143 @@
+{
+  "source_commit": "59d7cda",
+  "binary_sha256": "698fa52b17fcc8c070d2c34ca0fe993e47bdfd1253a26dd4643172de8b64f4be",
+  "target": "GH200-class; local RTX A4000 proxy",
+  "cases": [
+    {
+      "case": "m65-k64-n63-b8",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "65",
+        "--k",
+        "64",
+        "--n",
+        "63",
+        "--rows",
+        "8",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m65-k64-n63-b32",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "65",
+        "--k",
+        "64",
+        "--n",
+        "63",
+        "--rows",
+        "32",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m129-k128-n127-b16",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "129",
+        "--k",
+        "128",
+        "--n",
+        "127",
+        "--rows",
+        "16",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m129-k128-n127-b64",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "129",
+        "--k",
+        "128",
+        "--n",
+        "127",
+        "--rows",
+        "64",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m210-k210-n252-b16",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "210",
+        "--k",
+        "210",
+        "--n",
+        "252",
+        "--rows",
+        "16",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m210-k210-n252-b64",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "210",
+        "--k",
+        "210",
+        "--n",
+        "252",
+        "--rows",
+        "64",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m252-k210-n210-b16",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "252",
+        "--k",
+        "210",
+        "--n",
+        "210",
+        "--rows",
+        "16",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "case": "m252-k210-n210-b64",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_dlr_benchmark",
+        "--m",
+        "252",
+        "--k",
+        "210",
+        "--n",
+        "210",
+        "--rows",
+        "64",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    }
+  ]
+}

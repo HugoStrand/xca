@@ -1,0 +1,21 @@
+{
+  "policy": "Archive-only LF and trailing-whitespace normalization; numeric values unchanged.",
+  "files": {
+    "qualification/xca-row-convolution-bench-build.log": {
+      "original_sha256": "77f7a887487e05d10b5b0d8f7dfab2693b8cad606c33be6e8cf09b4c3b2e401e",
+      "archived_sha256": "6978fd37d2b6219ad187aa0c3b44cde684498aaa44d9f34312858fd512d6f66f"
+    },
+    "qualification/xca-row-convolution-configure.log": {
+      "original_sha256": "9116971647d6f936a5ae2a6ea870de8666ce4037555a9610b36781ac1644dc24",
+      "archived_sha256": "869b082a95a2355fb79cd27541a84b54c5b02155fa551fa706e807d0c187975b"
+    },
+    "qualification/xca-row-convolution-cpu-configure.log": {
+      "original_sha256": "10187d817fd9e8e1910836272dec15b37c0b829fe31636aa1a6076f2cc3f7f47",
+      "archived_sha256": "dec65bdbcb748d13fc9faa9209b629cf95cd78f4a59a55a7077e5e0e2ecaefc9"
+    },
+    "qualification/xca-row-convolution-library-configure.log": {
+      "original_sha256": "505e682f4d4857d49fa20b18ac73f64412e6cc0f0923046931b4495482b19b2e",
+      "archived_sha256": "b73980e7f35fbdc12db088d347c2f1450c0ab0086420228424b92e17d83adb51"
+    }
+  }
+}
