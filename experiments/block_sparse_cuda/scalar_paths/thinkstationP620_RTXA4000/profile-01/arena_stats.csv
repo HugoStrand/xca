@@ -1,0 +1,47 @@
+Generating SQLite file /tmp/xca-scalar-arena-profile.sqlite from /tmp/xca-scalar-arena-profile.nsys-rep
+Processing [/tmp/xca-scalar-arena-profile.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_api_sum.py]... 
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+23.4,2340864,45,52019.2,6883.0,5821,110617,51534.7,cudaMemcpyAsync
+19.7,1976036,230,8591.5,3847.5,852,75893,11000.8,cudaStreamSynchronize
+15.0,1498387,139,10779.8,2945.0,742,260890,26617.0,cudaFree
+11.3,1130961,99,11423.8,12383.0,3527,53791,8308.0,cudaMemcpy
+10.5,1055547,235,4491.7,4288.0,3697,11902,814.4,cudaLaunchKernel
+7.3,732274,137,5345.1,2585.0,1453,188503,18222.1,cudaMalloc
+2.3,227889,208,1095.6,1042.0,831,5230,352.5,cudaEventRecord
+1.7,166100,40,4152.5,4097.5,3848,5401,292.2,cuLaunchKernel
+1.6,164450,208,790.6,761.0,641,3326,207.5,cudaStreamWaitEvent
+1.5,152935,31,4933.4,4047.0,2765,20809,3341.4,cudaMemset
+1.5,147628,8,18453.5,18004.0,12905,29856,5056.4,cudaMemGetInfo
+1.4,138001,226,610.6,581.0,391,2775,176.3,cudaEventCreateWithFlags
+1.0,105102,226,465.1,445.5,351,1313,83.1,cudaEventDestroy
+0.5,51347,8,6418.4,6392.0,4368,7805,1067.5,cudaMemcpy2D
+0.5,47394,235,201.7,180.0,150,481,49.9,cuKernelGetName
+0.2,22804,6,3800.7,3141.0,3036,6993,1569.7,cudaMemsetAsync
+0.2,18386,81,227.0,200.0,170,451,58.1,cuStreamGetGreenCtx
+0.2,16916,40,422.9,431.0,320,1193,140.8,cuKernelGetFunction
+0.1,14107,4,3526.8,3086.0,1252,6683,2289.0,cudaDeviceSynchronize
+0.1,9969,1,9969.0,9969.0,9969,9969,0.0,cuProfilerStart
+0.0,3967,1,3967.0,3967.0,3967,3967,0.0,cudaStreamGetDevResource
+
+Processing [/tmp/xca-scalar-arena-profile.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+37.6,1402995,20,70149.8,70143.0,70111,70271,43.5,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+29.8,1114292,40,27857.3,27871.0,27743,28287,104.7,void cutlass::Kernel2<cutlass_80_tensorop_z884gemm_32x16_16x3_nn_align1>(T1::Params)
+11.4,425116,20,21255.8,21248.0,21215,21280,17.7,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)0, (bool)1>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+9.2,345086,20,17254.3,17248.0,17184,17440,53.6,"void laswp_kernel2_reverse<double2, (bool)0, int>(int, T1 *, unsigned long, int, int, const T3 *, int)"
+4.2,157408,40,3935.2,3936.0,3744,4128,176.5,"void transpose_readWrite_alignment_kernel<double2, double2, (int)1, (bool)0, (int)5, (int)4, (int)4>(cublasTransposeParams<T2>, const T1 *, T1 *, const T2 *)"
+3.7,136447,65,2099.2,2112.0,2048,2144,23.9,"scalar_edge_experiment::multiply_kernel(const double2 *, const double2 *, double2 *, long)"
+0.9,34207,15,2280.5,2304.0,1952,3071,291.7,"scalar_edge_experiment::gather_kernel(const unsigned long *, const unsigned long *, double2 *, double2 *, long, long)"
+0.8,30144,10,3014.4,3008.0,2976,3040,20.2,"scalar_edge_experiment::cross_kernel(const double2 *, const double2 *, const double2 *, const double2 *, double2 *, long)"
+0.6,23360,10,2336.0,2336.0,2304,2400,30.2,"void axpy_kernel_val<double2, double2>(cublasAxpyParamsVal<T1, T1, T2>)"
+0.6,23199,20,1160.0,1152.0,1152,1184,14.1,"copy_info_kernel(int, int *)"
+0.6,20896,5,4179.2,3968.0,3584,5472,742.8,"scalar_edge_experiment::fanin_kernel(const double2 *, const unsigned long *, const long *, const long *, long, long, long)"
+0.5,20288,10,2028.8,2016.0,2016,2080,22.4,"void scal_kernel_val<double2, double2>(cublasScalParamsVal<T1, T2>)"
+
+Processing [/tmp/xca-scalar-arena-profile.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_mem_time_sum.py]... 
+Time (%),Total Time (ns),Count,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Operation
+79.1,673822,95,7092.9,11296.0,448,21536,5502.7,[CUDA memcpy Host-to-Device]
+10.8,91903,26,3534.7,1216.0,1120,19360,4664.8,[CUDA memcpy Device-to-Host]
+5.5,47168,31,1521.5,1504.0,1472,2016,93.1,[CUDA memcpy Device-to-Device]
+4.5,38688,37,1045.6,1344.0,480,1792,477.2,[CUDA memset]
+

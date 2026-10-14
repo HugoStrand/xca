@@ -1,0 +1,37 @@
+{
+  "scope": "one warmed selected-index ten-mode scalar SE call, CUDA profiler API range; all profile durations excluded from benchmark comparisons",
+  "nsys_version": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0",
+  "options": [
+    "--trace=cuda",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop"
+  ],
+  "arguments": [
+    "--modes",
+    "10",
+    "--partition",
+    "occupation",
+    "--observable",
+    "se",
+    "--order",
+    "2",
+    "--samples",
+    "1"
+  ],
+  "binary_sha256": {
+    "fanin": "2ec884c681a75b75ec710e2dcc20517fe660766e9d1a62176de96e7d5503a6af",
+    "arena": "a3e53876e18038904aabb3b1bde2358c7758dac685846927c177de76dd9529a6"
+  },
+  "raw_reports": {
+    "fanin": {
+      "path": "/tmp/xca-scalar-fanin-profile.nsys-rep",
+      "sha256": "128e91c6c2a544f34ff27f53ecf3cdafc2a5dcff7c53c95c110230cb19618861"
+    },
+    "arena": {
+      "path": "/tmp/xca-scalar-arena-profile.nsys-rep",
+      "sha256": "0377b330203470239f5d73f5d9b62d42b1182a29e4e9b2db5d62fbd3197f5d60"
+    }
+  }
+}
