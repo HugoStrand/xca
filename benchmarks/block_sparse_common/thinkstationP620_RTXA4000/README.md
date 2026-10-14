@@ -83,3 +83,8 @@ controls. Local near-parity does not select production or GH200 dispatch.
 against the ordered GPU reference. Inclusive gains on number-symmetry selections
 come with additional storage; analytic fourteen-mode envelopes motivate streaming
 or direct-mapping fusion instead of an unlimited resident cache.
+
+[Mapped kappa weighting](kappa-mapped-01/README.md) avoids materialized kappa
+products where each sparse column has at most one entry. Local complete-call gains
+and compact metadata allowances are qualified separately from full fourteen-mode
+memory scheduling, production/MPI promotion and GH200 validation.

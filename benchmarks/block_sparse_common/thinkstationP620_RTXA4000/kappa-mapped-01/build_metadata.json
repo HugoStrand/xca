@@ -1,0 +1,16 @@
+{
+  "collected_after_campaign": true,
+  "time_utc": "2026-10-14T05:15:42.677894+00:00",
+  "cmake_cache_sha256": "b2757ead91b85516875e9d974cfdc42a2e6c618f041e82f626e714646afd17c2",
+  "configuration": {
+    "CMAKE_BUILD_TYPE": "Release",
+    "CMAKE_CUDA_ARCHITECTURES": "86",
+    "CMAKE_CUDA_COMPILER": "/usr/local/cuda/bin/nvcc",
+    "CMAKE_CUDA_FLAGS": "",
+    "CMAKE_CUDA_FLAGS_RELEASE": "-O3 -DNDEBUG",
+    "CMAKE_CXX_COMPILER": "/usr/bin/clang++-19",
+    "XCA_CUDA_BLOCK_SPARSE": "AUTO",
+    "XCA_CUDA_SMALL": "ON"
+  },
+  "nvcc_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0\n"
+}
