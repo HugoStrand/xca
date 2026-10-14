@@ -109,12 +109,7 @@ namespace triqs_xca::block_sparse::cuda {
         } catch (...) {}
     }
     std::size_t bound() const {
-      auto tile = inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
-      if (tile / sizeof(Complex) > std::size_t(std::numeric_limits<int>::max()))
-        throw std::length_error("CUDA reference rank buffer exceeds BLAS vector limit");
-      return checked_add(
-         checked_add(checked_multiply(2, function_bytes(r, model.dimensions())), checked_multiply(7, tile)),
-         checked_add(dlr_bound, checked_add(operator_budget, checked_add(checked_add(kernel_bytes, mapped_storage_bound()), tensor_bytes(1, r, 1)))));
+      return reference_storage_bound(r, model.dimensions(), dlr_bound, operator_budget, kernel_bytes, mapped_storage_bound());
     }
     std::size_t self_energy_bound(bool nca) const {
       auto generic = bound();
