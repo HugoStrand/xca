@@ -1485,3 +1485,61 @@ Logs /tmp/xca-bs-{profile,arena,arena-profile}-{configure,build,run,stats,test,m
 and /tmp/xca-bs-arena-large-smoke.csv. Persistent trace evidence under
 experiments/block_sparse_cuda/scalar_paths/thinkstationP620_RTXA4000/profile-01,
 paired results benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-arena-01.
+
+## 2026-10-14 — Path-constant coefficient preparation
+
+Previous goal turn only restated active status; this turn implements and qualifies
+the next measured scalar optimization. 6068a8b [bench] broadcast scalar path
+coefficients adds an isolated variant of the arena scheduler, preserving existing
+variants. Shared recipe distinguishes node-independent coefficients from pole and
+hybridization weights. Vertex and special endpoint coefficients, prefactor powers
+and signs are computed once per lane on both CPU and GPU. GPU broadcasts a compact
+lane vector using the existing explicit complex product formula, retaining operation
+order and in-place semantics. No value caching, inverse, atomics, arithmetic
+reassociation or production dispatch change. Temporary coefficients remain owned
+through synchronization; the unchanged conservative workspace bound covers them.
+
+Retained arena suite (13 tests) and constant variant (14 tests) pass both CTest
+entries in 16.91 s. The extra kernel test compares broadcast products bit for bit
+against expanded device weights for rank/lane shapes (3,17) and (23,512), changed
+coefficients, zero lanes and in-place repeated multiplication. Six focused scalar
+qualification/order/layout tests pass memcheck with full leak checking in 17.36 s:
+zero errors, zero leaked bytes. CPU-only frontend builds; six-mode occupation SE,
+order two, eight-index multi-cohort/tail run matches the original CPU exactly. Its
+latency overlapped verification work and is not benchmark evidence. The new CPU
+frontend explicitly requires bitwise control agreement. Existing production full
+suite results remain applicable; this change only affects private benchmark fixtures.
+
+All build/test/sanitizer handles were terminal before paired timing. 71bfca1 [bench]
+record scalar coefficient timings preserves scalar-constants-01: 30 isolated
+processes, 82 raw rows, hashes/commands, exact replay, and unchanged GPU discovery
+counts relative to the arena campaign. All fifteen CPU cases have zero error against
+original CPU. Maximum GPU screening relative error is 3.645e-13 in the same weak
+higher-order non-scalar case; scalar ten-mode error is 4.926e-15. Campaign ten-mode
+rows have one sample, other rows three. New GPU campaign ten-mode scalar latency
+21.944 ms and matched CPU 20.744 ms; these are not merged with supplemental repeats.
+
+After the campaign completed and retained CPU frontend rebuilt, a separate fresh
+scalar comparison measured both old/new CPU and GPU variants, five timed samples
+per case in one process after one warm-up. Ten-mode medians are CPU baseline 22.398
+ms, CPU constants 20.993 ms, GPU arena 24.898 ms, GPU constants 21.179 ms. Four-mode
+medians are 2.707, 2.687, 2.817, 2.636 ms respectively. Binary hashes, commands,
+raw samples and min/median/max summaries are recorded in repeated-scalar. An initial
+recorder syntax error occurred before execution; the corrected recorder produced
+all eight successful cases / 40 samples. Prior controls and historical timings remain.
+
+GPU improvement over fresh arena is about 14.9%, while matched CPU also improves
+about 6.3%. Local CPU/GPU are at parity; this falls short of a robust promotion gate
+and proves no GH200 dispatch, complete Solver/topology speedup or full N=14 workload.
+GH200 remains the optimization target. Next separate residual synchronization/host
+metadata costs and investigate multi-field special-vertex streaming (E6); current
+singleton scalar batching does not optimize other shapes or correlators. Higher-order
+cutoff-adjacent paths and complete host/opaque peak admission remain unqualified.
+Goal remains active. No install, push, supervisor or unrelated user-work changes.
+Plan/log checkpoint is separate from experiment/data commits; git diff --check passes.
+
+Evidence: experiments/block_sparse_cuda/scalar_paths/README.md;
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-constants-01/README.md.
+Temporary logs: /tmp/xca-bs-constants-{configure,build,test,memcheck,campaign}.log,
+/tmp/xca-bs-constants-cpu-{configure,build,qualification}.log or .csv,
+/tmp/xca-bs-constants-{cpu-cuda-build,baseline-build}.log.

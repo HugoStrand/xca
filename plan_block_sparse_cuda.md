@@ -738,6 +738,32 @@ complete model/mesh/topology/propagator invalidation and bounded ownership/admis
 No production/Python/MPI scalar selector, target default or full N=14 execution is
 claimed; GH200 remains the target.
 
+Path-constant preparation checkpoint (2026-10-14): the private scalar scheduler
+now has an isolated constant-coefficient variant and an algorithm-matched CPU
+control. Vertex/endpoint coefficients, prefactors and signs are computed once per
+lane. GPU uploads one coefficient per lane and broadcasts it across DLR nodes;
+node-dependent pole/hybridization weights retain their full representation. Each
+complex multiplication and its position in the recipe are preserved; no numerical
+cache or product reassociation is introduced. Prior variants remain available.
+
+Fourteen variant tests and thirteen retained arena tests pass. Six focused memcheck
+cases report zero errors/leaks, including exact broadcast-versus-expanded device
+products, tails and changed coefficients. CPU-only multi-cohort qualification and
+all fifteen paired CPU cases match the original CPU evaluator bit for bit. The
+[paired campaign](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-constants-01/README.md)
+retains 30 processes / 82 rows and a separate fresh five-sample scalar comparison.
+Ten-mode medians: retained GPU arena 24.898 ms, new GPU 21.179 ms, retained CPU
+22.398 ms, matched new CPU 20.993 ms. GPU improvement is about 14.9%; matched CPU
+also improves, and local GPU/CPU remain essentially at parity. Do not promote or
+claim a target crossover from this result. GH200 remains the target.
+
+Remaining scalar gates include higher-order cutoff-adjacent paths, optimized
+non-singleton special sets/correlators, broader memory admission and target-hardware
+validation. Next distinguish residual rank-operation synchronization from host
+path work, and investigate E6 multi-field streaming rather than inferring broad
+block-sparse gains from one scalar selection. Production/library defaults and
+Python/MPI interfaces are unchanged.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused
