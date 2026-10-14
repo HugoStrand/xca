@@ -777,6 +777,50 @@ memory demand. Validate it separately from launch fusion. Decision: a bounded al
 whose measured traffic/time improves the complete special-vertex segment, without
 N simultaneous maximum-sized intermediates.
 
+E6 bounded-retention checkpoint (2026-10-14):
+[special_vertex](experiments/block_sparse_cuda/special_vertex/README.md) retains
+private two-slot and sixteen-slot kappa caches. For a q-field symmetry set and c
+cached products, right applications drop from q*q to c+q*(q-c), while all weighted
+additions and left applications retain their original order. Products are owned
+within one special vertex; no cross-call numerical cache or reassociation occurs.
+Singleton sets allocate no cache. Admission adds a checked, capped worst-case
+rank-buffer envelope before input upload, including the conservative extra
+correlator allowance even though correlators do not use the cache.
+
+Both eleven-test suites pass in ordinary and native-disabled library-only CUDA.
+Exact-input reference comparisons cover rectangular four-field paths, both sparse
+backends, changed G/masks and non-singleton bosonic mixing with complex off-diagonal
+coefficients and reflected line directions. Pre-submission rejection, empty ranges
+and recovery are checked. Four initial focused cases and the added bosonic case
+pass memcheck with zero errors/leaks. CPU-only configuration excludes the fixtures.
+Production C++/bindings/MPI execution is unchanged.
+
+The [isolated GPU campaign](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/kappa-01/README.md)
+records 21 processes / 105 rows, five samples per process, with unchanged discovery
+counts, norms and control-error metadata. Full-set retention reduces selected
+number-symmetry latencies by 16–37%; partial retention generally gives smaller gains.
+The singleton control regresses about 1%. These are GPU-route comparisons; the CPU
+reference already retains kappas, and its control timing is not a matched benchmark.
+Timing preceded separate additional bosonic/library qualification without overlap.
+
+Memory limits rule out unlimited retention as a universal policy. Analytic binomial
+N=14/r=26 envelopes, without atom_diag/evaluation, add 9.127 GiB for two slots or
+63.888 GiB for the full fourteen-field set to the reference's 90.409 GiB variable
+envelope. Fixed tables/operator reserve and host/opaque allocations are additional.
+These are conservative maximum-square allowances, not observed live peaks. No
+N=14 production capability or GH200 dispatch follows from this A4000 evidence.
+
+Next compare a mapped-kappa route against these controls: when each kappa column
+has at most one nonzero entry, use an owned source-index/value map to form each
+weighted mu buffer directly, then retain the original left sparse application and
+mu accumulation order. This can remove materialized q kappa products while charging
+bounded maps/weights against admission. Capability checks must inspect actual CSR
+structure, including empty columns and complex values; general non-mapping operators
+keep a qualified CSR route. Preserve coefficient/reflection/parity placement and
+prove numerical behavior before any promotion, including cutoff-sensitive cases.
+Continue E7 streaming/admission work and target-hardware qualification; GH200-class
+hardware remains the optimization target.
+
 ### E7 — Large-sector memory and placement
 
 Test liveness-based reuse, output spatial slabs, streamed special-vertex buffers and

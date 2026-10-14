@@ -1543,3 +1543,80 @@ benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-constants-01/REA
 Temporary logs: /tmp/xca-bs-constants-{configure,build,test,memcheck,campaign}.log,
 /tmp/xca-bs-constants-cpu-{configure,build,qualification}.log or .csv,
 /tmp/xca-bs-constants-{cpu-cuda-build,baseline-build}.log.
+
+## 2026-10-14 — Bounded multi-field kappa retention
+
+Previous goal turn made progress: 6068a8b/71bfca1/0fbf860 qualified scalar path
+constants. This turn moves to E6 multi-field special vertices instead of extending
+singleton-only microbenchmarks. Inspection confirms GPU reference recomputes every
+kappa inside each mu loop, whereas original CPU retains all Tkaps. f3a66d8 [bench]
+retain bounded kappa products adds private two-slot and sixteen-slot full evaluators
+through a checked CMake source seam. Products use actual rectangular dimensions and
+remain owned only while incoming T is unchanged. Mu/kappa traversal, reflected
+coefficient indices, parity, weights and sequential additions are unchanged. No
+sum factoring, CPU replay or production dispatch change. Global conservative extra
+storage is capped by the largest nonsingleton set and admitted before input upload;
+correlators inherit the extra allowance but do not allocate these cached products.
+Singleton paths allocate no cache. Increasing the cap can reject previously fitting
+workloads, so this is an experiment rather than a universal default.
+
+Initial ten-test suites pass for both variants (15.11 s combined), including
+bitwise comparisons against retained CUDA on four-field rectangular number-sector
+paths, both sparse backends, complex G changes and zero masks. Extra payload math,
+budget-minus-one rejection before path work, empty ranges and recovery pass. Two
+focused tests per variant pass memcheck/full leaks: 8.00/6.99 s, zero errors/bytes
+leaked. CPU-only configure passes and excludes these CUDA targets. Initial build
+found const-view reassignment and generated-header include propagation mistakes;
+both were corrected, regeneration/build/tests completed before timings.
+
+After all verification handles were terminal, kappa-01 recorded 21 isolated
+processes / 105 samples. Five timed calls per process after warm-up; not five
+independent process repetitions. All passed CPU screening and exact device replay.
+Discovery counts, warm norms and original-CPU control error metadata match the
+ordered reference row for row. Raw GPU rows are in the CUDA benchmark hardware
+folder; shared comparisons/manifests/hashes/analytic envelopes are in common.
+
+Full-set medians versus GPU reference: N4 number NCA 11.506 vs 16.836 ms (31.7%),
+N4 number OCA 8.854 vs 10.955 ms (19.2%), N6 number OCA 21.770 vs 30.828 ms (29.4%),
+N8 number NCA 86.314 vs 136.789 ms (36.9%), N10 number selected NCA 296.941 vs
+352.720 ms (15.8%). Two-slot retention gives smaller gains (3.5–15.1% on these
+number cases). Mixed gains are modest; singleton occupation regresses about 1%.
+N4/N8 NCA ranges include both directions; larger/higher-order calls select bounded
+indices. These compare GPU routes, not hardware speedup against a matched CPU.
+Original CPU control latency includes flattening and unchanged convolution; CPU
+already caches kappas. No full Solver/topology-sum claim.
+
+ce8c920 [bench] check bosonic kappa reuse adds a two-field shifted-density set
+with complex off-diagonal dynamic coefficients, full NCA/reflection and changed G,
+compared against retained GPU bit for bit. Final eleven-test suites pass twice:
+ordinary CUDA 15.27 s combined, native-disabled library-only CUDA 15.10 s. Native
+checks are conditional on actual capability; library controls run without native
+kernels. Extra bosonic memcheck passes in 1.51 s with zero errors/leaks. The retained
+library-only tree required Build_Benchmarks=ON for fixtures (previously OFF); both
+XCA_CUDA_SMALL and XCA_CUDA_BLOCK_SPARSE remain OFF. This post-timing verification
+did not overlap measurements. Final qualification/benchmark capability guard changes
+leave the timed cache algorithm unchanged. Full production suites were not repeated
+for isolated experiment changes; prior full production/MPI verification remains.
+
+f19b5e1 [bench] record kappa retention timings preserves source/binary/header hashes,
+commands, raw rows, medians and analytic memory envelopes. Binomial inventory avoids
+N=14 atom_diag construction: N10/r23 extra two/full slots 0.044/0.218 GiB; N14/r26
+extra 9.127/63.888 GiB beyond 90.409 GiB variable reference envelope. Fixed tables,
+operator reserve and host/opaque storage are excluded from those analytic totals.
+Actual cached rectangles may be smaller; no complete allocator peak proof. This
+supports further streaming/map fusion rather than unlimited resident caching.
+
+Next qualify direct sparse-column maps for kappa operators with at most one nonzero
+per column, forming mu directly with original weighted-addition order and original
+left application. Keep general CSR fallback, changed-input ownership, coefficient/
+parity/reflection semantics and resource rejection explicit. Continue E7 memory and
+GH200 target gates; no target/default promotion or N=14 production claim. All controls
+and experiments retained. Goal active, not complete. No install/push/supervisor or
+unrelated user-work changes. Plan/work-log commit remains separate; diff check passed.
+
+Evidence: experiments/block_sparse_cuda/special_vertex/README.md;
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/kappa-01/README.md.
+Logs: /tmp/xca-bs-kappa-{configure,build,test,campaign}.log,
+/tmp/xca-bs-kappa-{2,16}-memcheck.log,
+/tmp/xca-bs-kappa-{boson,final,library}-{build,test}.log,
+/tmp/xca-bs-kappa-boson-memcheck.log and cpu/library configure logs.
