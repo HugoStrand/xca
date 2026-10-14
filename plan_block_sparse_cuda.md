@@ -993,6 +993,31 @@ against the actual schedule, preserve private scalar extra reserves and requalif
 consolidated wrappers/MPI. Keep the generic upper estimate available. GH200 remains
 the target and full-call/target/higher-order boundary gates remain.
 
+E7 production NCA-admission checkpoint (2026-10-14): the evaluator and consolidated
+facade now expose ``self_energy_storage_bound(topology)`` while retaining the generic
+no-argument estimate. Validated NCA uses the lower explicit envelope, checks the
+budget before state changes, releases completed DLR scratch and then queries free
+memory/headroom before input upload. DlrOps release preserves tables/handles and is
+idempotent; higher orders/correlators keep their conservative policies. Scalar
+experiment generation explicitly adds its extra workspace to admission and both
+bound forms. Retained kappa/mapped budget tests now use the actual topology estimate.
+
+CPU 80/80 and library-only CUDA 85/85 full suites pass. CUDA covers all 100 entries:
+98 passed in the full run, two stale generic-bound rejection tests were corrected
+and passed their focused rerun. Production admission memcheck passes both controls
+with zero errors/leaks; six Python methods pass on each of two MPI ranks. Tests
+check lower-budget acceptance, higher-order rejection/recovery and OCA/NCA/OCA
+transitions for reference/mapped policies. No arithmetic/default change or benchmark
+speedup claim. The discarded overlapping build attempt was restarted serially;
+all evidence comes from completed final-source verification.
+
+This makes the NCA reservation usable through public C++/Python APIs. Full-function
+input/output requirements and host/opaque peak qualification remain. Next inspect
+remaining E4/E7 batching and scratch-policy selection against actual supported calls,
+and audit conditional E8 graph/sharing evidence before declaring implementation
+complete. Higher-order cutoff boundaries and GH200/full fourteen-mode qualification
+remain explicit limits; preserve baselines and generic estimates.
+
 ### E8 — Topologies, shared subcomputations and graphs
 
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual

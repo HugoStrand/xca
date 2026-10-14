@@ -1913,3 +1913,59 @@ git diff --check passes.
 Evidence: experiments/block_sparse_cuda/nca_admission/README.md and
 thinkstationP620_RTXA4000/{README.md,analytic_envelopes.csv}. Logs
 /tmp/xca-bs-nca-{configure,build,test,memcheck}.log.
+
+## 2026-10-14 — Production NCA admission
+
+Previous turn qualified private NCA reservations. 30685cf [bs] scope NCA storage
+admission promotes the topology-aware estimate and DlrOps release into production.
+Generic no-argument upper estimate remains. Validated one-line SE calls subtract
+the configured DLR scratch reserve, keeping tables and all input/output/caller/
+operator/weight/mapped metadata reserves. Explicit-budget rejection precedes state
+changes; eligible NCA releases completed retained scratch before free-memory query
+and input upload. Empty ranges remain valid. Release synchronizes only when storage
+exists, resets RHS/convolution shapes and preserves tables, solver/shared handles.
+Arithmetic and default backend policies are unchanged.
+
+Compatibility work keeps all experiments: scalar generated admission and topology
+accessors add scalar_extra_bound; compact DLR implements release; private NCA now
+uses the production admission seam. Budget-minus-one tests in mapped/scalar/kappa
+controls use the actual topology estimate. Production C++ controls independently
+check reference/mapped tight acceptance, rejection/no-work, empty/higher-order
+recovery, OCA/NCA/OCA transitions, exact comparisons and table-only release/rebuild.
+1c18718 [solv] expose topology storage bounds adds the consolidated overload,
+regenerated/guarded only CUDA wrappers, public documentation and Python/MPI tests
+for estimates, lower-budget acceptance, OCA rejection and reusable later calls.
+
+Two CUDA builds were accidentally started concurrently while final tests were being
+added. Only their identified cmake/descendant processes were explicitly stopped;
+both handles terminated. One final serial build then completed. No measurements
+or checks from discarded builds count as verification. CPU and library-only builds
+use separate trees; GPU suites ran sequentially between trees.
+
+CPU full suite 80/80 passes in 50.36 s. Main CUDA full run: 98/100 passed in 518.35 s;
+kappa_2 and kappa_16 still had stale generic-bound-minus-one rejection assumptions.
+The new NCA call correctly fit that budget. After changing both controls to the
+actual topology estimate, focused two-entry rerun passes in 15.33 s. The other 98
+entries remained valid (only retained test fixture changed); all 100 final covered
+entries pass. Full native-disabled library-only suite 85/85 passes in 249.05 s.
+Both native options stay OFF in that tree. These are correctness wall times, not
+performance data; small GPU tests contend within CTest parallelism.
+
+After suites were terminal, production admission memcheck/full leaks passes both
+controls in 7.81 s: zero errors/bytes leaked. Two-rank Python then passes six methods
+per rank in 99.341/99.345 s using CTest build-tree/dependency environment and OMP/
+BLAS threads one. Coverage includes actual topology-bound calls, budget failure
+collectives and recovery across NCA/OCA for both special policies. Existing harmless
+X11 authorization diagnostics precede MPI; no tool approval rejection occurred.
+
+Goal active, not complete. NCA bound is now public, without changing arithmetic or
+claiming a whole-solver speedup. Full output, broader batching/compact scheduling,
+higher-order cutoff boundaries, host/opaque peak and GH200/full N=14 qualification
+remain. Next audit supported-call E4/E7 selection and conditional E8 evidence. All
+baselines/experiments retained. No install/push/supervisor or unrelated user-work
+changes. Code, integration and plan/log commits remain separate; diff check passes.
+
+Evidence: doc/python_api.rst; test/c++/block_sparse/cuda_admission.cpp;
+test/python/block_sparse_cuda.py. Logs /tmp/xca-bs-nca-prod-{configure,wrap,build,
+cpu-test,cuda-test,library-test,memcheck,mpi}.log and associated build/configure logs;
+/tmp/xca-bs-nca-{kappa,library-kappa}-build.log; /tmp/xca-bs-nca-kappa-test.log.
