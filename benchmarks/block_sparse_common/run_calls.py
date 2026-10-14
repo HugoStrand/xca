@@ -35,6 +35,7 @@ def main():
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.hpp'),
                *ROOT.glob('benchmarks/block_sparse_common/*.[ch]pp'),
                *ROOT.glob('benchmarks/block_sparse_*/*_benchmark.cpp'), Path(__file__)]
+    sources += [*ROOT.glob('c++/triqs_xca/block_sparse/cuda/kernels/*')]
     sources += [*ROOT.glob('experiments/block_sparse_cuda/**/*.cpp'),
                 *ROOT.glob('experiments/block_sparse_cuda/**/*.cu'),
                 *ROOT.glob('experiments/block_sparse_cuda/**/*.hpp'),
