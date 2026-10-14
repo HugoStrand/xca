@@ -1,0 +1,17 @@
+{
+  "policy": "Archive-only LF/trailing whitespace normalization; numeric values unchanged.",
+  "files": {
+    "qualification/xca-host-input-configure.log": {
+      "original_sha256": "572250a216caa7751a764daabe976f96e7e290b9acbe943204eb1013bd43ce72",
+      "archived_sha256": "45fa60b3ed478dbd123cac2bb9499756784ddfe1f8765ff0de40cff974746c8b"
+    },
+    "qualification/xca-host-input-cpu-configure.log": {
+      "original_sha256": "bec4de8bed02c3dbf0f3e050869142c2c446dd3dcc8284f23590945904f27838",
+      "archived_sha256": "e63bf1991899c806df47f694ff19e80cfab62a7e3c96bb2157ae973015f325fe"
+    },
+    "qualification/xca-host-input-library-configure.log": {
+      "original_sha256": "2b12a50bcb426d9c049b3c286d2bce55e9e115680978076e9a8b57663e176b49",
+      "archived_sha256": "715fc692a1d735ce970f0642ce77fb37b72b6001107504a8353c47932747f2c7"
+    }
+  }
+}

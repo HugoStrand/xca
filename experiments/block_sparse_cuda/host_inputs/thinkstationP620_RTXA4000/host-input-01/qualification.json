@@ -1,0 +1,30 @@
+{
+  "source": "a0ae481",
+  "native_controls": 11,
+  "native_ctest_seconds": 9.79,
+  "library_controls": 11,
+  "library_ctest_seconds": 9.76,
+  "focused_memcheck_controls": 3,
+  "memcheck_seconds": 27.998,
+  "memcheck_errors": 0,
+  "memcheck_leaks": 0,
+  "adjacent_cutoff_probes": 18,
+  "exact_cutoff_output_and_counts": true,
+  "library_native_flags": {
+    "XCA_CUDA_SMALL": "OFF",
+    "XCA_CUDA_BLOCK_SPARSE": "OFF"
+  },
+  "CPU_experiment_entries": 0,
+  "limitations": "Private C++ Reference-NCA experiment; no Python/MPI/broad-suite/target-hardware qualification, no full N14 physical call.",
+  "binaries": {
+    "cbuild-cuda/block_sparse_host_input_tests": {
+      "sha256": "952154c4a5c79ccda0445070315c92ee30bd8229882bbfa6a0731f4fa4305487"
+    },
+    "cbuild-cuda-library-api/block_sparse_host_input_tests": {
+      "sha256": "b737d0ffa09fe96fd9c62ebefd2e85013094e7889d40f686f725405771dc4a42"
+    },
+    "cbuild-cuda/block_sparse_host_input_cutoff_audit": {
+      "sha256": "9548f9bb20d5f981cf2c0ee056bc282da66d22461f9e3aee31507e66357114f7"
+    }
+  }
+}

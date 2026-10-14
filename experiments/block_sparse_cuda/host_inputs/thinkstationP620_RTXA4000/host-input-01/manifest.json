@@ -1,0 +1,420 @@
+{
+  "source": "a0ae48111bff7aaa84f47f86638f47eb1d2939fc",
+  "binaries": {
+    "reference": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+      "sha256": "fe435f8c4d8b96c5e3095dd9b29e3ff128ae0ed408edbe00864cf2ca6094007e"
+    },
+    "lifetime": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+      "sha256": "fdb6c204589f7d9a67b344392ccd12ecbd999c1b8bd7aeb58cfb5a60a0367f85"
+    },
+    "host_input": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+      "sha256": "98ece87c5b48b74b9ffbbb4c881dabba7a5e27ac8d86f590ce6dcbc7f6f02499"
+    }
+  },
+  "samples_per_route": 3,
+  "policy": "sequential runs; one OMP/BLAS thread; route order alternates by case; shared warm complete-call fixture",
+  "cases": [
+    {
+      "name": "n4-number-oca",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-oca",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-oca",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-dynamic-correlator",
+      "route": "host_input",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "correlator",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3",
+        "--dynamic"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-dynamic-correlator",
+      "route": "lifetime",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/phase_liveness/block_sparse_lifetime_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "correlator",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3",
+        "--dynamic"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-dynamic-correlator",
+      "route": "reference",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "correlator",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3",
+        "--dynamic"
+      ],
+      "returncode": 0
+    }
+  ]
+}

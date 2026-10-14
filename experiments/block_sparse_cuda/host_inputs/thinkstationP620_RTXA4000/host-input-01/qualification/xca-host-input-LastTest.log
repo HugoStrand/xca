@@ -1,0 +1,52 @@
+Start testing: Oct 14 20:30 CEST
+----------------------------------------------------------
+26/118 Testing: experiments/block_sparse_cuda/host_inputs
+26/118 Test: experiments/block_sparse_cuda/host_inputs
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs/block_sparse_host_input_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/host_inputs
+"experiments/block_sparse_cuda/host_inputs" start time: Oct 14 20:30 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 11 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2159 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (663 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3344 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (790 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6995 ms total)
+
+[----------] 3 tests from HostInputEvaluator
+[ RUN      ] HostInputEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] HostInputEvaluator.CompleteCallsChangedInputAndPlacement (1791 ms)
+[ RUN      ] HostInputEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] HostInputEvaluator.CompleteBudgetRejectionAndRecovery (280 ms)
+[ RUN      ] HostInputEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] HostInputEvaluator.CorrelatorBudgetAndEndpointRecovery (461 ms)
+[----------] 3 tests from HostInputEvaluator (2533 ms total)
+
+[----------] Global test environment tear-down
+[==========] 11 tests from 2 test suites ran. (9529 ms total)
+[  PASSED  ] 11 tests.
+<end of output>
+Test time =   9.79 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/host_inputs" end time: Oct 14 20:30 CEST
+"experiments/block_sparse_cuda/host_inputs" time elapsed: 00:00:09
+----------------------------------------------------------
+
+End testing: Oct 14 20:30 CEST
