@@ -15,6 +15,19 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Broad regression checkpoint
+
+After storage integration, all configured CPU/native/library-only targets build.
+CPU 85/85 CTests pass (58.90 s); native CUDA production 94/94 (389.90 s);
+library-only CUDA production 85/85 (239.64 s). CUDA suites exclude experimental
+tests and run sequentially. Local two-rank MPI remains qualified by the preceding
+12-method-per-rank run. Exact test names, flags and log limitations are retained in
+production_qualification/thinkstationP620_RTXA4000/storage-full-01. Current local
+functional/regression gates pass; bounded composed large-sector admission/host peaks,
+physical accuracy at large rank, and target Python/MPI still need separate evidence.
+Use a pinned, isolated and capped target job only for a concrete unresolved question.
+No new Arrhenius allocation; tracked usage remains 0.47333 nominal GPU-hours.
+
 ### Production storage facade checkpoint
 
 The C++ storage policies are now available through the consolidated Python facade

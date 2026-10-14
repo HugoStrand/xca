@@ -1,5 +1,32 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Broad production suite refresh
+
+Built all configured targets in CPU, native CUDA and library-only CUDA trees, including
+retained experiments. No code changed. CPU full85 CTests pass58.90 s with parallel2.
+Native production94 pass389.90 s; library-only production85 pass239.64 s, native
+CUDA flags both OFF. CUDA suites sequential, parallel1, experiments excluded by
+^experiments/. All use single-thread OMP/BLAS. CPU run includes the host column-map
+experiment; disabled device/native-only cases are not claimed as active qualification.
+Prior two-rank12-method MPI results remain current, not rerun in this checkpoint.
+
+Evidence bcf0889 under production_qualification/thinkstationP620_RTXA4000/storage-full-01
+records exact test inventory/flags, builds, CTest summaries and original/normalized hashes.
+CPU/native full raw LastTest retained. An inventory query with ctest --show-only during
+the library suite overwrote its LastTest with a three-line inventory transcript; this
+file is explicitly labeled non-evidence. Complete85-entry summary and successful launcher
+remain valid. Do not repeat concurrent inventory queries in active build trees. No tests
+rerun solely to recreate raw logs; focused library transcript is retained separately.
+
+All process handles terminal, no new Arrhenius use, total tracked1704 GPU-seconds/.47333h.
+SSH restored and last capped job completed; no duplicate submission. GH200-class target,
+A4000 local validation. User work preserved, evidence and plan/log commits separate,
+no push/install/supervisor changes. Goal active: current functional/API/regression gates
+pass locally. Next investigate bounded composed large-sector evaluator admission/host
+peaks and target integration using isolated pinned source and a justified capped job.
+Full physicalN14/rank accuracy and target Python/MPI remain unqualified. No performance
+claim or inferred completion of the broader implementation goal.
+
 ## 2026-10-14 — Python storage policies and stream ordering
 
 Exposed Resident(default), HostInputs and StreamFragments through all four consolidated
