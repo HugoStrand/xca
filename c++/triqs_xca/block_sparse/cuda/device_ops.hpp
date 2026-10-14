@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace triqs_xca::block_sparse::cuda {
+  enum class SpecialBackend { Reference, Mapped };
   enum class SparseBackend { Library, Ordered };
   bool ordered_sparse_available() noexcept;
 

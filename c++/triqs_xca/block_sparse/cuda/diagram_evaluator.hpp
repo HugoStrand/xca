@@ -9,7 +9,9 @@
 #include <triqs_xca/operator_statistics.hpp>
 
 namespace triqs_xca::block_sparse::cuda {
-  // Initial synchronous device reference. Inputs/outputs are Fock-basis blocks.
+  bool mapped_special_available() noexcept;
+
+  // Synchronous device evaluator. Inputs/outputs are Fock-basis blocks.
   // Sparse operators are immutable model snapshots. The one-entry device cache
   // and streamed special vertex bound storage independently of symmetry-set width.
   // No CPU replay/fallback after device submission; not thread-safe.
@@ -20,7 +22,7 @@ namespace triqs_xca::block_sparse::cuda {
     public:
     DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh,
                      std::size_t device_budget = 1024ULL * 1024 * 1024, std::size_t sparse_budget = 32ULL * 1024 * 1024,
-                     SparseBackend operator_backend = SparseBackend::Library);
+                     SparseBackend operator_backend = SparseBackend::Library, SpecialBackend special_backend = SpecialBackend::Reference);
     ~DiagramEvaluator();
     DiagramEvaluator(DiagramEvaluator const &)            = delete;
     DiagramEvaluator &operator=(DiagramEvaluator const &) = delete;

@@ -3,6 +3,10 @@
 #include "diagram_evaluator.hpp"
 #ifdef NDA_HAVE_CUDA
 #include "memory.hpp"
+#include "operator_column_maps.hpp"
+#ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
+#include "kernels/kernels.hpp"
+#endif
 #include <triqs_xca/hyb.hpp>
 #include <triqs_xca/index_range.hpp>
 #include <algorithm>
@@ -41,6 +45,7 @@ namespace triqs_xca::block_sparse::cuda {
     double beta;
     std::size_t budget, kernel_bytes, dlr_bound, operator_budget;
     SparseBackend operator_backend;
+    SpecialBackend special_backend;
     PathCounts counts{};
     std::size_t contributions = 0;
     std::size_t baseline_free = 0, peak_delta = 0;
@@ -50,14 +55,19 @@ namespace triqs_xca::block_sparse::cuda {
       if (free < baseline_free) peak_delta = std::max(peak_delta, baseline_free - free);
     }
     Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit,
-         SparseBackend selected)
+         SparseBackend selected, SpecialBackend special_selected)
        : model(std::move(input)),
          mesh(std::move(tau)),
          r(mesh.dlr_it().rank()),
          beta(mesh.beta()),
          budget(limit),
          operator_budget(operator_limit),
-         operator_backend(selected) {
+         operator_backend(selected),
+         special_backend(special_selected) {
+      if (special_selected != SpecialBackend::Reference && special_selected != SpecialBackend::Mapped)
+        throw std::invalid_argument("Invalid special backend");
+      if (special_selected == SpecialBackend::Mapped && !mapped_special_available())
+        throw std::runtime_error("Mapped special-vertex CUDA kernels were not built");
       if (selected != SparseBackend::Library && selected != SparseBackend::Ordered) throw std::invalid_argument("Invalid sparse backend");
       if (selected == SparseBackend::Ordered && !ordered_sparse_available())
         throw std::runtime_error("Ordered block-sparse CUDA kernels were not built");
@@ -96,8 +106,9 @@ namespace triqs_xca::block_sparse::cuda {
       auto tile = inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;
       if (tile / sizeof(Complex) > std::size_t(std::numeric_limits<int>::max()))
         throw std::length_error("CUDA reference rank buffer exceeds BLAS vector limit");
-      return checked_add(checked_add(checked_multiply(2, function_bytes(r, model.dimensions())), checked_multiply(7, tile)),
-                         checked_add(dlr_bound, checked_add(operator_budget, checked_add(kernel_bytes, tensor_bytes(1, r, 1)))));
+      return checked_add(
+         checked_add(checked_multiply(2, function_bytes(r, model.dimensions())), checked_multiply(7, tile)),
+         checked_add(dlr_bound, checked_add(operator_budget, checked_add(checked_add(kernel_bytes, mapped_storage_bound()), tensor_bytes(1, r, 1)))));
     }
     void admit(std::size_t needed) const {
       ops->require_current();
@@ -312,7 +323,58 @@ namespace triqs_xca::block_sparse::cuda {
       }
       return nda::to_host(answer);
     }
+    std::size_t mapped_storage_bound() const {
+      if (special_backend == SpecialBackend::Reference) return 0;
+      std::size_t q = 0;
+      for (auto const &set : model.sets())
+        if (set.size() > 1) q = std::max(q, set.size());
+      auto maximum = *std::max_element(model.dimensions().begin(), model.dimensions().end());
+      return checked_multiply(q, checked_add(checked_multiply(maximum, sizeof(long) + sizeof(Complex)), checked_multiply(r, sizeof(Complex))));
+    }
+    bool apply_mapped_special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
+#ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
+      int s = path.special_vertex, source = path.propagator_blocks[s - 1];
+      bool forward    = !backbone.has_vertex_dag(0);
+      auto const &set = model.sets()[path.zero_set];
+      if (set.size() <= 1) return false;
+      std::vector<SparseBlock const *> blocks;
+      for (int field : set) blocks.push_back(&model.field(field, !forward).blocks[path.output_block]);
+      auto maps = make_operator_column_maps(blocks);
+      if (!maps) return false;
+      if (T.shape() != std::array<long, 3>{r, path.dimensions[s], blocks.front()->rows} || maps->sources.extent(1) != path.dimensions[0])
+        throw std::invalid_argument("Mapped kappa shape mismatch");
+      nda::cuarray<long, 2> indices(maps->sources);
+      nda::cuarray<Complex, 2> values(maps->values);
+      Tensor out(r, path.dimensions[s + 1], path.dimensions[0]), mu(r, path.dimensions[s], path.dimensions[0]), term(out.shape());
+      ops->zero(out);
+      for (int i : set) {
+        nda::array<Complex, 2> weights(r, set.size());
+        for (std::size_t k = 0; k < set.size(); ++k) {
+          int j = set[k];
+          backbone.set_orb_inds_of_0_and_vct0(j, i);
+          int sign = backbone.get_parity() * (forward ? 1 : -1);
+          for (long t = 0; t < r; ++t) weights(t, k) = sign * (forward ? hyb->values(t, i, j) : hyb->values_reflect(t, j, i));
+        }
+        nda::cuarray<Complex, 2> device_weights(weights);
+        ops->wait_for_default_uploads();
+        if (native::mapped_weighted_mu(T.data(), indices.data(), values.data(), device_weights.data(), mu.data(), r, T.extent(1), T.extent(2),
+                                       mu.extent(2), set.size(), ops->stream())
+            != cudaSuccess)
+          throw std::runtime_error("Mapped kappa kernel launch failed");
+        ops->finish();
+        device_operator(model.field(i, forward).blocks[source]).apply_left(mu, term);
+        ops->axpy(1., term, out);
+        sample_memory();
+      }
+      T = std::move(out);
+      return true;
+#else
+      return false;
+#endif
+    }
+
     void special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
+      if (special_backend == SpecialBackend::Mapped && apply_mapped_special(T, backbone, path)) return;
       int s = path.special_vertex, source = path.propagator_blocks[s - 1];
       bool forward    = !backbone.has_vertex_dag(0);
       auto const &set = model.sets()[path.zero_set];
@@ -374,8 +436,8 @@ namespace triqs_xca::block_sparse::cuda {
     }
   };
   DiagramEvaluator::DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh, std::size_t budget,
-                                     std::size_t sparse_budget, SparseBackend operator_backend)
-     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend)) {}
+                                     std::size_t sparse_budget, SparseBackend operator_backend, SpecialBackend special_backend)
+     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend, special_backend)) {}
   DiagramEvaluator::~DiagramEvaluator() = default;
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();

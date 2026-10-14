@@ -296,6 +296,7 @@ namespace triqs_xca::block_sparse::cuda {
     finish();
   }
 
+  bool mapped_special_available() noexcept { return ordered_sparse_available(); }
   bool ordered_sparse_available() noexcept {
 #ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
     return true;
