@@ -1,0 +1,209 @@
+Start testing: Oct 14 15:03 CEST
+----------------------------------------------------------
+12/110 Testing: experiments/block_sparse_cuda/kappa_2
+12/110 Test: experiments/block_sparse_cuda/kappa_2
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex/block_sparse_kappa_2_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/special_vertex
+"experiments/block_sparse_cuda/kappa_2" start time: Oct 14 15:03 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 11 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2191 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (665 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3169 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (625 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6690 ms total)
+
+[----------] 3 tests from KappaReuse
+[ RUN      ] KappaReuse.MultiFieldRectangularPathsChangedInputAndMasks
+[       OK ] KappaReuse.MultiFieldRectangularPathsChangedInputAndMasks (639 ms)
+[ RUN      ] KappaReuse.CacheStorageAdmittedBeforeSubmission
+[       OK ] KappaReuse.CacheStorageAdmittedBeforeSubmission (127 ms)
+[ RUN      ] KappaReuse.BosonicOffDiagonalMixingPreservesReflectedOrder
+[       OK ] KappaReuse.BosonicOffDiagonalMixingPreservesReflectedOrder (136 ms)
+[----------] 3 tests from KappaReuse (903 ms total)
+
+[----------] Global test environment tear-down
+[==========] 11 tests from 2 test suites ran. (7594 ms total)
+[  PASSED  ] 11 tests.
+<end of output>
+Test time =   7.85 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/kappa_2" end time: Oct 14 15:03 CEST
+"experiments/block_sparse_cuda/kappa_2" time elapsed: 00:00:07
+----------------------------------------------------------
+
+15/110 Testing: experiments/block_sparse_cuda/mapped_special
+15/110 Test: experiments/block_sparse_cuda/mapped_special
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_special_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/mapped_special
+"experiments/block_sparse_cuda/mapped_special" start time: Oct 14 15:03 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 15 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2092 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (645 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2861 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (368 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6006 ms total)
+
+[----------] 7 tests from MappedKappa
+[ RUN      ] MappedKappa.MultiFieldRectangularPathsChangedInputAndMasks
+[       OK ] MappedKappa.MultiFieldRectangularPathsChangedInputAndMasks (488 ms)
+[ RUN      ] MappedKappa.BosonicOffDiagonalMixingPreservesReflectedOrder
+[       OK ] MappedKappa.BosonicOffDiagonalMixingPreservesReflectedOrder (115 ms)
+[ RUN      ] MappedKappa.MetadataAdmissionAndEmptyRange
+[       OK ] MappedKappa.MetadataAdmissionAndEmptyRange (91 ms)
+[ RUN      ] MappedKappa.NonMappingBosonicSetUsesReference
+[       OK ] MappedKappa.NonMappingBosonicSetUsesReference (135 ms)
+[ RUN      ] MappedKappa.KernelMatchesSparseWeightingWithComplexEmptyColumnsAndTails
+[       OK ] MappedKappa.KernelMatchesSparseWeightingWithComplexEmptyColumnsAndTails (1 ms)
+[ RUN      ] MappedKappa.CancellationKeepsFieldOrderAndEmptyColumns
+[       OK ] MappedKappa.CancellationKeepsFieldOrderAndEmptyColumns (0 ms)
+[ RUN      ] MappedKappa.CompletedNcaPathCutoffNeighborhood
+[       OK ] MappedKappa.CompletedNcaPathCutoffNeighborhood (94 ms)
+[----------] 7 tests from MappedKappa (927 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 2 test suites ran. (6933 ms total)
+[  PASSED  ] 15 tests.
+<end of output>
+Test time =   7.19 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/mapped_special" end time: Oct 14 15:03 CEST
+"experiments/block_sparse_cuda/mapped_special" time elapsed: 00:00:07
+----------------------------------------------------------
+
+28/110 Testing: block_sparse/cuda_admission
+28/110 Test: block_sparse/cuda_admission
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_admission"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_admission" start time: Oct 14 15:03 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BlockSparseCudaAdmission
+[ RUN      ] BlockSparseCudaAdmission.LowerBudgetRejectionAndHigherOrderTransition
+[       OK ] BlockSparseCudaAdmission.LowerBudgetRejectionAndHigherOrderTransition (914 ms)
+[ RUN      ] BlockSparseCudaAdmission.ScratchReleaseRetainsTablesAndSolvesAgain
+[       OK ] BlockSparseCudaAdmission.ScratchReleaseRetainsTablesAndSolvesAgain (4 ms)
+[ RUN      ] BlockSparseCudaAdmission.CompleteHostOutputPlacement
+[       OK ] BlockSparseCudaAdmission.CompleteHostOutputPlacement (1174 ms)
+[----------] 3 tests from BlockSparseCudaAdmission (2093 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (2093 ms total)
+[  PASSED  ] 3 tests.
+<end of output>
+Test time =   2.37 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_admission" end time: Oct 14 15:03 CEST
+"block_sparse/cuda_admission" time elapsed: 00:00:02
+----------------------------------------------------------
+
+30/110 Testing: block_sparse/cuda_diagram_evaluator
+30/110 Test: block_sparse/cuda_diagram_evaluator
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_diagram_evaluator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_diagram_evaluator" start time: Oct 14 15:03 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2096 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (671 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3349 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (789 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6945 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (6945 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   7.20 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_diagram_evaluator" end time: Oct 14 15:03 CEST
+"block_sparse/cuda_diagram_evaluator" time elapsed: 00:00:07
+----------------------------------------------------------
+
+33/110 Testing: block_sparse/cuda_memory_plan
+33/110 Test: block_sparse/cuda_memory_plan
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_memory_plan"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_memory_plan" start time: Oct 14 15:03 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BlockSparseMemoryPlan
+[ RUN      ] BlockSparseMemoryPlan.NumberSectorsAndPlacementWithoutDevice
+[       OK ] BlockSparseMemoryPlan.NumberSectorsAndPlacementWithoutDevice (0 ms)
+[ RUN      ] BlockSparseMemoryPlan.InvalidAndOverflowingExtents
+[       OK ] BlockSparseMemoryPlan.InvalidAndOverflowingExtents (0 ms)
+[ RUN      ] BlockSparseMemoryPlan.MatchesProductionEvaluatorBounds
+[       OK ] BlockSparseMemoryPlan.MatchesProductionEvaluatorBounds (173 ms)
+[----------] 3 tests from BlockSparseMemoryPlan (173 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (173 ms total)
+[  PASSED  ] 3 tests.
+<end of output>
+Test time =   0.41 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_memory_plan" end time: Oct 14 15:03 CEST
+"block_sparse/cuda_memory_plan" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 15:03 CEST

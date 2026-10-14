@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 12: experiments/block_sparse_cuda/kappa_2
+1/5 Test #12: experiments/block_sparse_cuda/kappa_2 ..........   Passed    7.85 sec
+    Start 15: experiments/block_sparse_cuda/mapped_special
+2/5 Test #15: experiments/block_sparse_cuda/mapped_special ...   Passed    7.19 sec
+    Start 28: block_sparse/cuda_admission
+3/5 Test #28: block_sparse/cuda_admission ....................   Passed    2.37 sec
+    Start 30: block_sparse/cuda_diagram_evaluator
+4/5 Test #30: block_sparse/cuda_diagram_evaluator ............   Passed    7.20 sec
+    Start 33: block_sparse/cuda_memory_plan
+5/5 Test #33: block_sparse/cuda_memory_plan ..................   Passed    0.41 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  25.02 sec

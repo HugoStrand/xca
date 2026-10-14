@@ -1,2 +1,3 @@
 xca_add_benchmark(block_sparse_inventory)
 xca_add_benchmark(block_sparse_cpu_benchmark)
+xca_add_benchmark(block_sparse_memory_plan)

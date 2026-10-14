@@ -1,0 +1,71 @@
+{
+  "base_revision": "5f0a19a7838a425422158bd423ceb1c1e265d415",
+  "source_sha256": {
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "67b56f3e633fef3558a63c8f0ce9f889406b924febc299a9e25805eadee9b705",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "79afb3d7229cb0fa4d45264f6128eedb9f85804e420478f885a9eb3ab6eb36e8",
+    "test/c++/block_sparse/cuda_memory_plan.cpp": "8d0a23c42149e8ed7f1f10347e73dab3162b7d66f3dfcae5b8c2a5bd25e9a316",
+    "benchmarks/block_sparse_cpu/block_sparse_memory_plan.cpp": "b6dd727947d165e8e9ca7ce318bb7caaa7262c1610d18abeaee0130d57af818e"
+  },
+  "binary_sha256": "b0d7c1b6660f33d39ddbee9db2df0614cca9d5646a5586be6f3ef06cd02080e4",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "hostname": "ThinkStation",
+  "cases": [
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "10",
+        "--rank",
+        "26",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "10",
+        "--rank",
+        "64",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "14",
+        "--rank",
+        "26",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_cpu/block_sparse_memory_plan",
+        "--modes",
+        "14",
+        "--rank",
+        "64",
+        "--device-gib",
+        "120",
+        "--host-gib",
+        "64"
+      ],
+      "returncode": 0
+    }
+  ],
+  "notes": "Host-only metadata; no CUDA queries/allocations, atom_diag, propagators or arithmetic evaluation. Rank/budgets are diagnostic assumptions."
+}
