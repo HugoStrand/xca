@@ -65,15 +65,20 @@ TEST(SparseOperator, ComplexMixedBlocksAndAdjoints) {
 }
 
 TEST(SparseOperator, NumberSectorsSignedMapsAndNonCanonicalLabels) {
+  // Neither integer labels nor block names encode the Fock-bit position.
+  std::vector<std::pair<std::string, int>> labels{{"z", 17}, {"a", -3}, {"z", 8}, {"m", 42}, {"a", 2}, {"m", 11}};
+  auto annihilator = [&](int i) { return c(labels[i].first, labels[i].second); };
+  auto creator     = [&](int i) { return c_dag(labels[i].first, labels[i].second); };
+  auto number      = [&](int i) { return n(labels[i].first, labels[i].second); };
   triqs::atom_diag::fundamental_operator_set fops;
-  for (int i : {5, 0, 4, 1, 3, 2}) fops.insert("fermion", i);
+  for (int i : {5, 0, 4, 1, 3, 2}) fops.insert(labels[i].first, labels[i].second);
   many_body_operator_complex H, Q;
   for (int i = 0; i < 6; ++i) {
-    Q += n("fermion", i);
-    H += (.1 + .03 * i) * n("fermion", i);
+    Q += number(i);
+    H += (.1 + .03 * i) * number(i);
     for (int j = 0; j < i; ++j) {
       dcomplex z{.011 * (1 + i + j), .009 * (i - j)};
-      H += z * c_dag("fermion", i) * c("fermion", j) + std::conj(z) * c_dag("fermion", j) * c("fermion", i);
+      H += z * creator(i) * annihilator(j) + std::conj(z) * creator(j) * annihilator(i);
     }
   }
   triqs::atom_diag::atom_diag<true> ad(H, fops, std::vector<many_body_operator_complex>{Q});
@@ -112,7 +117,7 @@ TEST(SparseOperator, NumberSectorsSignedMapsAndNonCanonicalLabels) {
       EXPECT_EQ(nda::max_element(nda::abs(anticomm)), 0.);
     }
 
-  compare_export(ad, n("fermion", 0) + dcomplex{0., .2} * c_dag("fermion", 2) * c("fermion", 5));
+  compare_export(ad, number(0) + dcomplex{0., .2} * creator(2) * annihilator(5));
 }
 
 TEST(SparseOperator, RealScalarBlocksAndTinyCoefficients) {

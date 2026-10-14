@@ -103,6 +103,79 @@ namespace {
     EXPECT_LE(nda::max_element(nda::abs(actual - expected)), tolerance * std::max(1e-20, nda::max_element(nda::abs(expected))));
   }
 } // namespace
+TEST(BlockSparseCudaEvaluator, PermutedSectorStateOrder) {
+  auto ad                = atom(1);
+  auto [initial, labels] = bs::atom_diag::get_operators(ad, nda::zeros<dcomplex>(2, 3, 3));
+  auto coeff             = triqs_xca::test_utils::sym_set_diagonal_hyb(labels, 2);
+  std::vector<many_body_operator_complex> bosons{n("f", 0) + n("f", 1) + n("f", 2), c_dag("f", 0) * c("f", 1)};
+  auto dyn     = nda::zeros<dcomplex>(2, 2, 2);
+  dyn(0, 0, 0) = .07;
+  dyn(1, 1, 1) = {.03, .01};
+  auto model   = gpu::export_model(ad, coeff, bosons, dyn);
+  nda::vector<double> poles{1.3, -.8};
+  auto G = triqs_xca::test_utils::ad_to_atom_prop(ad, 2., 40., 1e-10);
+  std::vector<std::vector<long>> permutation;
+  for (long d : model.dimensions()) {
+    std::vector<long> p;
+    for (long i = 0; i < d; ++i) p.push_back(d - 1 - i);
+    permutation.push_back(std::move(p));
+  }
+  auto permute = [&](gpu::SparseOperator const &op) {
+    auto out = op;
+    for (long b = 0; b < long(op.dimensions.size()); ++b) {
+      int target = op.connection[b];
+      if (target == -1) continue;
+      auto const &old = op.blocks[b];
+      auto &block     = out.blocks[b];
+      block.values.clear();
+      block.column_indices.clear();
+      block.row_offsets.assign(block.rows + 1, 0);
+      std::vector<long> inverse(old.columns);
+      for (long i = 0; i < old.columns; ++i) inverse[permutation[b][i]] = i;
+      for (long i = 0; i < old.rows; ++i) {
+        long row = permutation[target][i];
+        std::vector<std::pair<long, dcomplex>> entries;
+        for (long k = old.row_offsets[row]; k < old.row_offsets[row + 1]; ++k) entries.emplace_back(inverse[old.column_indices[k]], old.values[k]);
+        std::sort(entries.begin(), entries.end(), [](auto const &a, auto const &b) { return a.first < b.first; });
+        for (auto [column, value] : entries) {
+          block.column_indices.push_back(column);
+          block.values.push_back(value);
+        }
+        block.row_offsets[i + 1] = block.values.size();
+      }
+    }
+    out.validate();
+    return out;
+  };
+  auto permute_gf = [&](auto const &input) {
+    auto out = input;
+    for (long b = 0; b < input.size(); ++b)
+      for (long t = 0; t < input[b].data().extent(0); ++t)
+        for (long i = 0; i < model.dimensions()[b]; ++i)
+          for (long j = 0; j < model.dimensions()[b]; ++j) out[b].data()(t, i, j) = input[b].data()(t, permutation[b][i], permutation[b][j]);
+    return out;
+  };
+  std::vector<gpu::SparseOperator> fields, mu, kap, pmu, pkap;
+  for (int f = 0; f < model.num_fields(); ++f) fields.push_back(permute(model.field(f)));
+  for (auto const &op : bosons) {
+    mu.push_back(gpu::export_operator(ad, op));
+    kap.push_back(gpu::export_operator(ad, dagger(op)));
+    pmu.push_back(permute(mu.back()));
+    pkap.push_back(permute(kap.back()));
+  }
+  gpu::OperatorModel changed(std::move(fields), model.num_hybridization_fields(), model.coefficients());
+  gpu::DiagramEvaluator reference(model, poles, G[0].mesh()), candidate(std::move(changed), poles, G[0].mesh());
+  auto P = permute_gf(G);
+  for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
+    long se_last  = std::min(3L, reference.get_num_self_energy_backbones(topology));
+    auto expected = reference.compute_self_energy_range(G, topology, 0, se_last);
+    compare(candidate.compute_self_energy_range(P, topology, 0, se_last), permute_gf(expected));
+    long last = std::min(3L, reference.get_num_single_ptcle_gf_backbones(topology));
+    compare_array(candidate.compute_single_ptcle_gf_range(P, topology, 0, last), reference.compute_single_ptcle_gf_range(G, topology, 0, last));
+    compare_array(candidate.compute_correlator_range(P, pmu, pkap, false, topology, 0, last),
+                  reference.compute_correlator_range(G, mu, kap, false, topology, 0, last));
+  }
+}
 TEST(BlockSparseCudaEvaluator, SpgfAndBosonicCorrelatorExactInputs) {
   for (int partition : {0, 1, 2}) {
     SCOPED_TRACE(partition);

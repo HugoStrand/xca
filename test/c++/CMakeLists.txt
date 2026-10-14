@@ -55,6 +55,13 @@ foreach(test ${all_tests})
   endif()
 endforeach()
 
+if(nda_WITH_CUDA_SUPPORT)
+  target_link_libraries(block_sparse_cuda_async_failure ${CMAKE_DL_LIBS})
+  # This re-exec child deliberately traps a device kernel. Do not include it in
+  # sanitizer-clean cohorts, which correctly report the injected device error.
+  set_tests_properties(block_sparse/cuda_async_failure PROPERTIES TIMEOUT 60 LABELS "cuda_fault_injection")
+endif()
+
 # Exercise the complete native small evaluator with the same independent physics
 # and API checks as library CUDA. Each executable owns its GoogleTest registry.
 if(XCA_WITH_CUDA_SMALL)
