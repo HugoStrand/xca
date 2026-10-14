@@ -60,5 +60,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/stream_frag
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/stream_fragments)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/capacity_phase
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/capacity_phase)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/capacity_evaluator
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/capacity_evaluator)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/reference_snapshot)
