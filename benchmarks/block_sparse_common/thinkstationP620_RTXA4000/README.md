@@ -51,3 +51,7 @@ hardware measurements remain outstanding. No N=14 diagonalization was performed.
 control and fresh paired CUDA timings. Its CPU outputs match the original bit for
 bit. Use those ratios when assessing device advantage. `hoisted-cpu-01` is excluded
 from timing comparisons because it overlapped a verification build.
+
+[Ordered sparse candidate complete calls](ordered-evaluator-01/README.md) retain the original GPU
+reference and compare an isolated native operator route. These are local screening
+results; production Python/MPI promotion and target qualification remain pending.

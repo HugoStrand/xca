@@ -41,3 +41,10 @@ COO capability, end-to-end candidate evaluation and GH200 measurements remain
 pending. Before promotion, integrate the candidate in an isolated evaluator and
 apply strict numerical/lifetime/budget/MPI gates and inclusive complete-call timing.
 See [methodology](../README.md). Production CPU/CUDA evaluators are unchanged.
+
+## Complete evaluator candidate
+
+[Paired full-call screening](../../../../benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-evaluator-01/README.md)
+passed all 15 physical workloads with matching discovery counts, CPU screening and
+exact replays. Candidate C++ tests and focused leak/memory checks passed. Python/MPI
+promotion, wider RHS and target-hardware gates remain pending.
