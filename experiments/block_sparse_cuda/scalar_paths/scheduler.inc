@@ -9,6 +9,11 @@ using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
 std::size_t scalar_replayed_lanes = 0;
 #include "../scalar_cutoff/replay.inc"
 #endif
+#ifdef XCA_EXPERIMENT_SCALAR_REAL_NCA
+#include "../scalar_real_nca/guard.inc"
+#else
+bool scalar_call_eligible(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>, nda::array_const_view<int, 2>) { return true; }
+#endif
 bool scalar_eligible() const {
 #ifdef XCA_EXPERIMENT_SCALAR_SETS
   return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; });
@@ -39,6 +44,9 @@ template <typename Input, typename Output>
 void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::vector<ScalarWork> &work,
                   scalar_edge_experiment::ScalarPack &packed) {
   if (work.empty()) return;
+#ifdef XCA_EXPERIMENT_SCALAR_REAL_NCA
+  real_nca_lanes += work.size();
+#endif
   long lanes = packed.f.extent(1), count = work.size();
   Tensor T(r, lanes, 1), zero(r, 1, 1), weights(r, lanes, 1), lane_result(r, 1, 1);
   ops->zero(zero);
@@ -148,7 +156,7 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   ops->finish(); // NDA copy-back uses another stream; explicitly complete the recipe.
 #endif
   auto host = nda::to_host(T);
-#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
+#if defined(XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY) && !defined(XCA_EXPERIMENT_SCALAR_REAL_NCA)
   bool replayed = false;
   std::vector<Tensor> reference_input;
   for (long lane = 0; lane < count; ++lane) {

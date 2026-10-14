@@ -10,7 +10,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${source_dir}/di
 file(READ "${source_dir}/diagram_evaluator.hpp" header)
 file(READ "${source_dir}/diagram_evaluator.cpp" source)
 string(REPLACE "      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)"
-  "      if (placement != OutputPlacement::Resident) throw std::invalid_argument(\"Scalar experiment requires resident output\");\n      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" source "${source}")
+  "      #ifndef XCA_EXPERIMENT_SCALAR_REAL_NCA\n      if (placement != OutputPlacement::Resident) throw std::invalid_argument(\"Scalar experiment requires resident output\");\n      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" source "${source}")
+string(REPLACE "if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" "#endif\n      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" source "${source}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" header "${header}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" source "${source}")
 string(REPLACE "std::size_t last_contributing_paths() const;"
@@ -18,7 +19,10 @@ string(REPLACE "std::size_t last_contributing_paths() const;"
 string(REPLACE "std::size_t ScalarPathEvaluator::last_contributing_paths() const { return impl_->contributions; }"
   "std::size_t ScalarPathEvaluator::last_contributing_paths() const { return impl_->contributions; }\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n  std::size_t ScalarPathEvaluator::last_scalar_replays() const { return impl_->scalar_replayed_lanes; }\n#endif" source "${source}")
 string(REPLACE "x.contributions   = 0;"
-  "x.contributions   = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    x.scalar_replayed_lanes = 0;\n#endif" source "${source}")
+  "x.contributions   = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY\n    x.scalar_replayed_lanes = 0;\n#ifdef XCA_EXPERIMENT_SCALAR_REAL_NCA\n    x.real_nca_lanes = 0;\n#endif\n#endif" source "${source}")
+string(REPLACE "std::size_t last_scalar_replays() const;"
+  "std::size_t last_scalar_replays() const;\n#ifdef XCA_EXPERIMENT_SCALAR_REAL_NCA\n    std::size_t last_real_nca_lanes() const;\n#endif" header "${header}")
+set(source "${source}\n#ifdef XCA_EXPERIMENT_SCALAR_REAL_NCA\nnamespace triqs_xca::block_sparse::cuda { std::size_t ScalarPathEvaluator::last_real_nca_lanes() const { return impl_->real_nca_lanes; } }\n#endif\n")
 set(source "#include <map>\n${source}")
 set(source "#ifdef XCA_EXPERIMENT_SCALAR_AUDIT\n#include \"audit.hpp\"\n#endif\n${source}")
 set(source "#ifdef XCA_EXPERIMENT_SCALAR_RESIDENT\n#include \"resident_kernels.hpp\"\n#endif\n${source}")
@@ -35,7 +39,7 @@ string(FIND "${source}" "${original}" position)
 if(position EQUAL -1)
   message(FATAL_ERROR "Scalar scheduler cannot identify original path visitor")
 endif()
-set(replacement "      if (x.scalar_eligible()) {
+set(replacement "      if (x.scalar_eligible() && x.scalar_call_eligible(G,topology)) {
         std::unique_ptr<scalar_edge_experiment::ScalarPack> packed;
         std::vector<Impl::ScalarWork> work;work.reserve(512);
         auto flush=[&]{if(work.empty())return;if(!packed)packed=std::make_unique<scalar_edge_experiment::ScalarPack>(x.ops,x.mesh.dlr_it(),512);x.scalar_flush(input,output,work,*packed);};
@@ -51,7 +55,7 @@ string(REPLACE "${original}" "${replacement}" source "${source}")
 string(REPLACE "self_energy_storage_bound() const { return impl_->self_energy_bound(false); }"
   "self_energy_storage_bound() const { return checked_add(impl_->self_energy_bound(false),impl_->scalar_extra_bound()); }" source "${source}")
 string(REPLACE "    std::vector<Tensor> input(G.size()), output(G.size());"
-  "#ifdef XCA_EXPERIMENT_SCALAR_ARENA\n    if(first!=last && x.scalar_eligible())return x.scalar_arena_compute(G,topology,live,first,last);\n#endif\n    std::vector<Tensor> input(G.size()), output(G.size());" source "${source}")
+  "#ifdef XCA_EXPERIMENT_SCALAR_ARENA\n    if(first!=last && x.scalar_eligible() && x.scalar_call_eligible(G,topology))return x.scalar_arena_compute(G,topology,live,first,last);\n#endif\n    std::vector<Tensor> input(G.size()), output(G.size());" source "${source}")
 string(REPLACE "return impl_->self_energy_bound(topology.extent(0) == 1);" "return checked_add(impl_->self_energy_bound(topology.extent(0) == 1),impl_->scalar_extra_bound());" source "${source}")
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scalar_evaluator.hpp" CONTENT "${header}" @ONLY)
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scalar_evaluator.cpp" CONTENT "${source}" @ONLY)

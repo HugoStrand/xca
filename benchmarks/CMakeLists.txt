@@ -33,6 +33,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_stag
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_staging)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_streams
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_streams)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_real_nca
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_real_nca)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_audit
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_audit)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/special_vertex
