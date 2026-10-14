@@ -41,3 +41,10 @@ lengths/zero-survival tails. No path/topology reassociation or cutoff was implem
 here. Timed CPU packing/solve controls and a complete candidate evaluator remain
 required before promotion. Wider matrix blocks need a distinct rectangular plan.
 See [methodology](../README.md). Existing implementations/experiments are retained.
+
+## Matched CPU and pointer-table packing
+
+[scalar-cpu-01](scalar-cpu-01/README.md) adds packed CPU controls and single-launch
+GPU gather/scatter through pointer tables. GPU-only ratios above must not be read
+as matched CPU speedups. Small cohorts favor packed CPU; large rank-23 cohorts
+favor GPU in this local segment screen. No evaluator or GH200 dispatch is selected.
