@@ -263,6 +263,18 @@ int main(int argc, char **argv) {
          kernel_scatter();
        },
        packed_out, [&] { return packed.bytes() + 3 * lanes * sizeof(std::uintptr_t); });
+    // Descriptor addresses stay fixed while current propagator contents change.
+    // Validate after timings so all compared rows used the same original inputs.
+    Complex update{.7, .2};
+    for (long lane = 0; lane < lanes; ++lane) {
+      owner->scale(update, f[lane]);
+      host_f[lane]   = update * host_f[lane];
+      expected[lane] = cpu.convolve(2., host.vals2coefs(host_f[lane]), host.vals2coefs(host_g[lane]));
+    }
+    kernel_pack();
+    packed.compute();
+    kernel_scatter();
+    validate(packed_out, expected, false);
     return 0;
   } catch (std::exception const &error) {
     std::cerr << error.what() << '\n';
