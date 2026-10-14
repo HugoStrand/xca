@@ -469,3 +469,56 @@ broad fusion or production backend registration; then phase benchmarks, dispatch
 batching/memory experiments, consolidated CUDA bindings and MPI qualification.
 Large-sector operator-workspace reserves need traced target measurements; no full
 N=14 evaluation, GH200 measurement, supervisor change, install or push was performed.
+
+## 2026-10-14 — E2 correlator fragment and endpoint metadata
+
+Code commit: `0c9e676` (`[bs] trace correlator fragments`). The full implementation
+goal remains active; this checkpoint prepares device correlator execution rather
+than claiming SPGF/one-time correlators are implemented on CUDA.
+
+Extended the portable path module with forward-order descriptors for the [tau,0]
+right fragment and [beta,tau] left fragment, and streaming endpoint proposals in
+CPU mu/root/kappa order. Metadata records each root/end, intermediate G blocks,
+spatial dimensions, special vertex, index and live-mask snapshot. There is no
+numerical cutoff in this endpoint scheduler. Counts include rejected proposals;
+null operators, wrong model dimensions, malformed fragment metadata, noninjective
+core fragment maps, stale masks and mismatched backbones reject before visitation.
+The two root tables have a checked descriptor-slot limit (65536 by default), so
+N=14 scalar partitions fit without retaining all indexed evaluations at once.
+
+Important compatibility finding: CPU correlator walks do not mask the STARTING
+root before internal vertices. BlockDiagOpFun::get_block returns its stored values
+even when the whole-block mask marks it zero. A two-mode scalar model with inner
+c_0 and external c_1/c_1^dagger has a valid OCA SPGF endpoint that begins at the
+masked fully occupied root, passes through live sectors and closes back to it.
+Scaling that starting G by 1e-18 still produces a nonzero CPU SPGF term; replacing
+it with zero removes that term exactly. This independent CPU regression confirms
+that the device correlator must upload/preserve starting values of masked blocks,
+unlike self-energy's initial post-operator pruning. Empty walks also retain roots.
+The plan now records both rules explicitly.
+
+Memory finding: all core maps and their compositions are injective. End blocks in
+each side are therefore unique, and sum_root d_root*d_end <= sum_b d_b^2 by Cauchy–
+Schwarz. Exact rectangular stored fragments need at most one all-sector rank function
+per side. This excludes input, endpoint products, rank scratch and library overhead.
+The collector validates end uniqueness, and number-sector tests check actual side
+capacities over several indices/topologies, including empty-left/empty-right walks.
+This replaces the interpretation that two nblocks*Nmax^2 side allocations are needed.
+
+Three host GoogleTests cover independently known scalar NCA endpoint counts/bit
+maps, masked empty walks, stale masks, bounds/invalid metadata, the numerical CPU
+tiny-root case, and non-square number-sector fragments with one-function capacity.
+These are host controls in both environments. Focused CPU CTest passed 2/2 entries
+(new collector plus previous self-energy path regression, 0.09 s). Focused CUDA
+CTest passed 3/3 entries (those two plus the actual GPU self-energy controls, 5.08 s).
+No new device arithmetic was added in this checkpoint. `git diff --check` passed.
+Logs: `/tmp/xca-bs-corr-path-{cpu,cuda}-{configure,build,test}.log` and the CPU
+regression build log. No full-suite requalification is claimed for this host module
+extension; preceding 74/82 suite results remain recorded separately.
+
+Next: actual right-fragment left products, reverse left-fragment right products,
+DLR reflection, sparse endpoints and device trace/reduction; SPGF plus general
+one-time correlator full/single/range calls. Keep masked starting data, endpoint
+summation order and borrowed-operator cache lifetime safe. Then complete E2 admission
+and numerical gates before production bindings, MPI integration and optimization.
+No N=14 diagonalization, target GPU run, supervisor change, install or push occurred.

@@ -118,6 +118,21 @@ mask. Structural accepted-path counts therefore include candidates that contribu
 nothing numerically. Removing or changing this cutoff requires a separately qualified
 experiment; batching must not apply it to an aggregate instead of individual paths.
 
+Correlators have a different starting-root rule: their walks test the mask after
+internal operators, without first rejecting the root. A two-mode scalar regression
+shows that a masked root with stored values around `1e-18` can still contribute to
+SPGF when the internal walk reaches live sectors and the endpoint closes onto that
+root. Masked BlockDiagOpFun blocks retain their values. Uploading only live blocks
+or substituting zero for every masked block would change this behavior. Preserve
+the actual starting values and empty-walk semantics in the initial device port.
+
+Core field maps are injective, so each correlator fragment map is injective too.
+For either side, `sum_root d_root*d_end <= sum_b d_b^2` by Cauchy–Schwarz. Actual
+rectangular side storage is therefore bounded by one all-sector function per side,
+rather than `nblocks` maximum-sized functions. This excludes temporary tensors,
+transforms, inputs/output and allocator overhead. The descriptor collector checks
+this injectivity and rejects stale masks before endpoint visitation.
+
 Different output blocks can execute independently. Contributions to the same output
 need explicit ownership and a reproducible accumulation order. Preserve caller index
 order and topology order initially. Avoid overlapping cuBLAS batch outputs and
