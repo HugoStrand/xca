@@ -1,5 +1,46 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — GH200 matched multi-set qualification
+
+Previous turn was progress: matched host multi-set control qualified and measured.
+Initial bounded SSH probe failed after multiplexed connection expired. Requested
+user reauthentication per Arrhenius skill; independently prepared syntax-checked
+one-GPU/fifteen-minute density job and pinned6987c4d source-only/GTest988ea2c package
+under /tmp/xca-gh200-6987c4d. User restored connection; bounded retry succeeded,
+empty queue and projinfo2.87 GPU-hours/30days (warning estimate unreliable).
+Previewed/transferred isolated shared/qualification/xca-block-sparse-6987c4d package,
+preserving earlier source/cache and all installs. Remote syntax/test-only passed;
+submitted exactly one job3823469. No duplicate submission or install.
+
+Job ran n414/GCC14.3/CUDA12.9.86/sm90. Build log exposed source future-mtime warnings
+and repeated core builds. Normalized regular-source metadata to2000-01-01 only,
+skipping symlinks, verified representative content hash unchanged. By correction
+time clock had caught up (future counter0); normalization prevented stale objects
+from earlier passes forcing more rebuilds. Added preventive step to job recipe;
+the submitted original script/hash remains in pinned records. No source code edit
+or prefix/build-object mutation during running compilation. Cap remained unchanged.
+
+Five CTests passed57.86s, detailed LastTest proves38 active GoogleTests: candidate18
+and production admission/device/evaluator/DLR3/5/8/4. Target high-order oracle error
+reference5.4404e-13/candidate3.95037e-13 passes the scoped bound; adjacent cutoff,
+replay cohort ownership and multi-set controls pass. All16 processes/48 benchmark
+rows pass numerical/exact-replay, GPU structural counts match; max error1.191e-16.
+Median matchedCPU/GPU ms: N4NCA .966/3.793, N4OCA4.575/7.663, N6OCA17.929/19.528,
+N8OCA9.686/11.828. GPU loses to matchedCPU in every case, while beating generalCUDA
+materially. No GPU-beats-matched-CPU, whole Solver or dispatch-crossover claim.
+
+Job COMPLETED0:0, elapsed446s, oneGPU/billing1, batchRSS2,619,776KiB. Nominal .12389
+GPU-hours added; investigation's four jobs747s=.2075 nominal hours. Retrieved logs,
+commands/source/binary hashes, module/compiler/architecture and accounting under
+CPU/CUDA/common Arrhenius_GH200/density-matched-01; full records/reusable Arm tree
+remain remote. Recipe0db5e2c, timestampfixb900ebb, resultsbd6f919 and plan/log commits
+separate. All local/SSH handles terminal and job accounting confirms completion.
+
+Goal active. Next scoped profiling and reducing host preparation/transfers/syncs,
+then a conservative numerical/promotion decision and integration. Python/MPI/full
+suite/new-variant capacity/fullN14 gates remain; preserve prior variants. No push or
+unrelated-work changes. Target qualifier uses Arrhenius/Arrhenius-software workflows.
+
 ## 2026-10-14 — Algorithm-matched multi-set CPU control
 
 Previous turn was progress: explicit multi-set timing measured gains over unchanged

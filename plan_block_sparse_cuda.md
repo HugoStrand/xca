@@ -136,6 +136,23 @@ equivalence remains separate. Evidence: common local `density-matched-01` campai
 Next qualify this bounded four-route cohort and new semantic controls on GH200,
 within the existing resource cap, before deciding production promotion/defaults.
 
+GH200 multi-set checkpoint: job 3823469 on pinned source 6987c4d passes five CTests
+(38 active controls, including new high-order/cutoff/cohort/multi-set cases) and all
+48 matched benchmark samples. GPU/matched-CPU latency ratios expressed as CPU/GPU
+are 0.25/0.60/0.92/0.82 for N4 NCA/N4 OCA/N6 OCA/N8 OCA: matched CPU wins every
+sampled case. GPU greatly improves on general CUDA, but no target hardware win
+over matched host batching is established. Evidence is in the common GH200
+`density-matched-01` campaign. Prioritize scoped profiling and reduction of host
+descriptor/weight preparation, uploads and synchronizations before promotion.
+Investigate whether GPU-side preparation or fewer/fused launches change this result.
+Do not introduce an automatic dispatch policy from these few cases. The fixed replay
+band, wider numerical regimes, Python/MPI and larger-capacity gates remain open.
+
+This one-GPU job used 446 seconds, nominal 0.12389 GPU-hours; target total is now
+747 seconds (0.2075 GPU-hours). Archive timestamps ahead of the cluster clock caused
+rebuilds; source metadata was normalized without content edits and the recipe now
+prevents recurrence. The source snapshot/build and all previous evidence are retained.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
