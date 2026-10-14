@@ -225,6 +225,40 @@ namespace triqs_xca::block_sparse::cuda {
     }
     return false;
   }
+  void DeviceOps::traces(TensorConstView in, TensorView out) const {
+    require_current();
+    disjoint(in, out);
+    require(in.extent(1) == in.extent(2) && out.shape() == std::array<long, 3>{in.extent(0), 1, 1}, "trace shape mismatch");
+    int d = blas_int(in.extent(1)), step = blas_int(in.extent(1) + 1);
+    nda::vector<Complex> host(d);
+    host() = Complex{1};
+    nda::cuvector<Complex> ones(host);
+    wait_for_default_uploads();
+    check_blas(cublasSetPointerMode(impl_->blas, CUBLAS_POINTER_MODE_DEVICE));
+    try {
+      for (long t = 0; t < in.extent(0); ++t)
+        check_blas(cublasZdotu(impl_->blas, d, reinterpret_cast<cuDoubleComplex const *>(in.data() + t * in.strides()[0]), step,
+                               reinterpret_cast<cuDoubleComplex const *>(ones.data()), 1, reinterpret_cast<cuDoubleComplex *>(out.data() + t)));
+      finish();
+      check_blas(cublasSetPointerMode(impl_->blas, CUBLAS_POINTER_MODE_HOST));
+    } catch (...) {
+      cudaStreamSynchronize(stream());
+      cublasSetPointerMode(impl_->blas, CUBLAS_POINTER_MODE_HOST);
+      throw;
+    }
+  }
+  void DeviceOps::add_trace(TensorConstView in, TensorView out, long mu, long kap) const {
+    require_current();
+    disjoint(in, out);
+    require(in.shape() == std::array<long, 3>{out.extent(0), 1, 1} && mu >= 0 && mu < out.extent(1) && kap >= 0 && kap < out.extent(2),
+            "trace slot mismatch");
+    int r = blas_int(in.extent(0)), stride = blas_int(out.strides()[0]);
+    Complex one{1};
+    wait_for_default_uploads();
+    check_blas(cublasZaxpy(impl_->blas, r, reinterpret_cast<cuDoubleComplex const *>(&one), reinterpret_cast<cuDoubleComplex const *>(in.data()), 1,
+                           reinterpret_cast<cuDoubleComplex *>(out.data() + mu * out.extent(2) + kap), stride));
+    finish();
+  }
   void DeviceOps::product(TensorConstView left, TensorConstView right, TensorView out) const {
     require_current();
     disjoint(left, out);

@@ -88,15 +88,39 @@ namespace triqs_xca::block_sparse::cuda {
       return checked_add(checked_add(checked_multiply(2, function_bytes(r, model.dimensions())), checked_multiply(7, tile)),
                          checked_add(dlr_bound, checked_add(operator_budget, checked_add(kernel_bytes, tensor_bytes(1, r, 1)))));
     }
-    void admit() const {
+    void admit(std::size_t needed) const {
       ops->require_current();
-      auto needed = bound();
-      if (needed > budget) throw std::length_error("CUDA self-energy explicit storage exceeds device budget");
+      if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");
       std::size_t free = 0, total = 0;
       if (cudaMemGetInfo(&free, &total) != cudaSuccess) throw std::runtime_error("CUDA free-memory query failed");
       auto existing = checked_add(dlr->storage_bytes(), checked_add(kernel_bytes, cached ? cached->storage_bytes() : 0));
       if (checked_add(needed > existing ? needed - existing : 0, headroom) > free)
-        throw std::length_error("CUDA self-energy exceeds available device memory/headroom");
+        throw std::length_error("CUDA evaluator exceeds available device memory/headroom");
+    }
+    void admit() const { admit(bound()); }
+    std::size_t correlator_bound(long mu, long kap) const {
+      auto base     = bound();
+      auto function = function_bytes(r, model.dimensions());
+      auto result   = tensor_bytes(r, mu, kap);
+      if (result / sizeof(Complex) > std::size_t(std::numeric_limits<int>::max())) throw std::length_error("Correlator exceeds BLAS vector range");
+      long maximum = *std::max_element(model.dimensions().begin(), model.dimensions().end());
+      return checked_add(base, checked_add(function, checked_add(checked_multiply(2, result), checked_multiply(maximum, sizeof(Complex)))));
+    }
+    std::vector<bool> validate_input(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G) const {
+      ops->require_current();
+      if (G.size() != long(model.dimensions().size())) throw std::invalid_argument("Propagator block count mismatch");
+      std::vector<bool> live(G.size());
+      for (long b = 0; b < G.size(); ++b) {
+        auto d = model.dimensions()[b];
+        if (G[b].mesh() != mesh || G[b].data().shape() != std::array<long, 3>{r, d, d}) throw std::invalid_argument("Propagator mesh/shape mismatch");
+        double magnitude = 0;
+        for (auto const &z : G[b].data()) {
+          if (!std::isfinite(z.real()) || !std::isfinite(z.imag())) throw std::invalid_argument("Nonfinite propagator entry");
+          magnitude = std::max(magnitude, std::abs(z));
+        }
+        live[b] = magnitude >= 1e-16;
+      }
+      return live;
     }
     DeviceSparseBlock &device_operator(SparseBlock const &block) {
       if (cached_host != &block) {
@@ -133,6 +157,149 @@ namespace triqs_xca::block_sparse::cuda {
       dlr->convolve(beta, gc, tc, out);
       sample_memory();
       T = std::move(out);
+    }
+    double kernel_prefactor(Backbone &backbone) const {
+      double prefactor = 1.;
+      for (int x = 0; x < backbone.m - 1; ++x) {
+        int exponent = backbone.get_prefactor_Kexp(x);
+        if (exponent != 0) {
+          int p  = backbone.get_pole_ind(x);
+          auto k = backbone.get_prefactor_Ksign(x) > 0 ? hyb->k_0_p(p) : hyb->k_0_m(p);
+          prefactor *= std::pow(k, -exponent);
+        }
+      }
+      return prefactor;
+    }
+    void correlator_vertex(Tensor &T, CorrelatorBackbone &backbone, int v, int source, bool right) {
+      int field = backbone.get_vertex_orb(v), pole = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v));
+      bool dag          = backbone.has_vertex_dag(v);
+      auto const &op    = backbone.has_vertex_bar(v) ? model.barred(field, pole, dag) : model.field(field, dag);
+      auto const &block = op.blocks[source];
+      Tensor out(r, right ? T.extent(1) : block.rows, right ? block.columns : T.extent(2));
+      if (right)
+        device_operator(block).apply_right(T, out);
+      else
+        device_operator(block).apply_left(T, out);
+      int sign = backbone.get_vertex_Ksign(v) * (right ? -1 : 1);
+      if (sign != 0) ops->weight_rows(out, sign > 0 ? positive[pole] : negative[pole], out);
+      sample_memory();
+      T = std::move(out);
+    }
+    void correlator_edge(Tensor &T, TensorConstView source, CorrelatorBackbone &backbone, int e, bool right) {
+      Tensor weighted(source.shape()), gc(source.shape()), tc(T.shape()), out(T.shape());
+      ops->copy(source, weighted);
+      for (int x = 0; x < backbone.m - 1; ++x) {
+        int sign = backbone.get_edge(e, x), p = backbone.get_pole_ind(x);
+        if (sign != 0) ops->weight_rows(weighted, sign > 0 ? positive[p] : negative[p], weighted);
+      }
+      dlr->vals2coefs(weighted, gc);
+      dlr->vals2coefs(T, tc);
+      if (right)
+        dlr->convolve(beta, tc, gc, out);
+      else
+        dlr->convolve(beta, gc, tc, out);
+      sample_memory();
+      T = std::move(out);
+    }
+    Tensor fragment(std::vector<Tensor> const &G, CorrelatorBackbone &backbone, CorrelatorFragment const &path, bool left) {
+      int s              = backbone.get_topology(0, 1);
+      auto const &source = G[left ? path.end_block : path.root_block];
+      Tensor T(source.shape());
+      ops->copy(source, T);
+      if (!left) {
+        for (int v = 1; v < s; ++v) {
+          correlator_vertex(T, backbone, v, path.propagator_blocks[v - 1], false);
+          correlator_edge(T, G[path.propagator_blocks[v]], backbone, v, false);
+        }
+        ops->scale(kernel_prefactor(backbone), T);
+        ops->scale(backbone.prefactor_sign, T);
+      } else {
+        for (int v = 2 * backbone.m - 1; v > s; --v) {
+          int source_block = path.propagator_blocks[v - s - 1];
+          correlator_vertex(T, backbone, v, source_block, true);
+          correlator_edge(T, G[source_block], backbone, v - 1, true);
+        }
+        Tensor reflected(T.shape());
+        dlr->reflect(T, reflected);
+        T = std::move(reflected);
+      }
+      return T;
+    }
+    nda::array<Complex, 3> correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, std::span<SparseOperator const *const> mu,
+                                      std::span<SparseOperator const *const> kap, bool fermionic, nda::array_const_view<int, 2> topology, long first,
+                                      long last) {
+      auto live = validate_input(G);
+      CorrelatorBackbone backbone(topology, model.num_fields(), model.num_interactions());
+      check_index_range(first, last, backbone.num_flat_indices(model.num_poles()));
+      (void)checked_multiply(checked_multiply(checked_multiply(checked_extent(last - first), mu.size()), G.size()), kap.size());
+      for (auto list : {mu, kap})
+        for (auto const *op : list) {
+          if (!op) throw std::invalid_argument("Null correlator endpoint");
+          op->validate();
+          if (op->dimensions != model.dimensions()) throw std::invalid_argument("Endpoint model dimensions differ");
+        }
+      counts        = {};
+      contributions = 0;
+      peak_delta    = 0;
+      // Endpoint snapshots can be temporary. Never retain an address-based cache
+      // across their lifetime, including an exception or a reused host allocation.
+      struct CacheGuard {
+        Impl &self;
+        explicit CacheGuard(Impl &owner) : self(owner) {
+          self.cached.reset();
+          self.cached_host = nullptr;
+        }
+        ~CacheGuard() {
+          self.cached.reset();
+          self.cached_host = nullptr;
+        }
+      } cache(*this);
+      if (first == last || mu.empty() || kap.empty()) return nda::zeros<Complex>(r, mu.size(), kap.size());
+      if (checked_multiply(2, G.size()) > 65536) throw std::length_error("Correlator fragment slots exceed limit");
+      admit(correlator_bound(mu.size(), kap.size()));
+      std::size_t total = 0;
+      if (cudaMemGetInfo(&baseline_free, &total) != cudaSuccess) throw std::runtime_error("CUDA entry memory query failed");
+      std::vector<Tensor> input(G.size());
+      // Unlike self-energy, a masked starting root can contribute. Keep every
+      // stored input value, including tiny blocks below the whole-block mask.
+      for (long b = 0; b < G.size(); ++b) input[b] = Tensor(G[b].data());
+      Tensor answer(r, mu.size(), kap.size()), value(answer.shape()), traced(r, 1, 1);
+      ops->zero(answer);
+      sample_memory();
+      for (long index = first; index < last; ++index) {
+        backbone.set_flat_index(index, hyb->poles);
+        auto paths = collect_correlator_fragments(model, backbone, live);
+        std::vector<Tensor> right(G.size()), left(G.size());
+        for (long b = 0; b < G.size(); ++b)
+          if (paths.right[b] && live[paths.right[b]->end_block]) right[b] = fragment(input, backbone, *paths.right[b], false);
+        for (long b = 0; b < G.size(); ++b)
+          if (paths.left[b] && live[b]) left[b] = fragment(input, backbone, *paths.left[b], true);
+        ops->zero(value);
+        sample_memory();
+        auto observed   = for_each_correlator_endpoint(model, paths, live, mu, kap,
+                                                       [&](CorrelatorEndpoint const &end, CorrelatorFragment const &, CorrelatorFragment const &) {
+                                                       auto const &F = mu[end.mu]->blocks[end.right_end];
+                                                       Tensor applied(r, F.rows, right[end.right_root].extent(2));
+                                                       device_operator(F).apply_left(right[end.right_root], applied);
+                                                       Tensor product(r, left[end.left_root].extent(1), applied.extent(2));
+                                                       ops->product(left[end.left_root], applied, product);
+                                                       auto const &K = kap[end.kap]->blocks[end.left_end];
+                                                       Tensor square(r, product.extent(1), K.columns);
+                                                       device_operator(K).apply_right(product, square);
+                                                       ops->traces(square, traced);
+                                                       ops->add_trace(traced, value, end.mu, end.kap);
+                                                       sample_memory();
+                                                     });
+        counts.proposed = checked_add(counts.proposed, observed.proposed);
+        counts.accepted = checked_add(counts.accepted, observed.accepted);
+        counts.pruned   = checked_add(counts.pruned, observed.pruned);
+        int flag        = fermionic ? -2 : -3;
+        backbone.set_orb_inds_of_0_and_vct0(flag, flag);
+        ops->scale(backbone.get_parity(), value);
+        ops->axpy(1., value, answer);
+        backbone.reset_all_inds();
+      }
+      return nda::to_host(answer);
     }
     void special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
       int s = path.special_vertex, source = path.propagator_blocks[s - 1];
@@ -207,6 +374,39 @@ namespace triqs_xca::block_sparse::cuda {
   PathCounts DiagramEvaluator::last_path_counts() const { return impl_->counts; }
   std::size_t DiagramEvaluator::last_contributing_paths() const { return impl_->contributions; }
   std::size_t DiagramEvaluator::last_device_peak_delta() const { return impl_->peak_delta; }
+  long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) const {
+    impl_->ops->require_current();
+    return CorrelatorBackbone(topology, impl_->model.num_fields(), impl_->model.num_interactions()).num_flat_indices(impl_->model.num_poles());
+  }
+  std::size_t DiagramEvaluator::correlator_storage_bound(long mu, long kap) const { return impl_->correlator_bound(mu, kap); }
+  nda::array<nda::dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                         nda::array_const_view<int, 2> topology) {
+    return compute_single_ptcle_gf_range(G, topology, 0, get_num_single_ptcle_gf_backbones(topology));
+  }
+  nda::array<nda::dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                         nda::array_const_view<int, 2> topology, long index) {
+    auto total = get_num_single_ptcle_gf_backbones(topology);
+    if (index < 0 || index >= total) throw std::out_of_range("SPGF index outside domain");
+    return compute_single_ptcle_gf_range(G, topology, index, index + 1);
+  }
+  nda::array<nda::dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                               nda::array_const_view<int, 2> topology, long first, long last) {
+    std::vector<SparseOperator const *> mu, kap;
+    for (int i = 0; i < impl_->model.num_hybridization_fields(); ++i) {
+      mu.push_back(&impl_->model.field(i));
+      kap.push_back(&impl_->model.field(i, true));
+    }
+    return impl_->correlator(G, mu, kap, true, topology, first, last);
+  }
+  nda::array<nda::dcomplex, 3> DiagramEvaluator::compute_correlator_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                          std::span<SparseOperator const> mu, std::span<SparseOperator const> kap,
+                                                                          bool fermionic, nda::array_const_view<int, 2> topology, long first,
+                                                                          long last) {
+    std::vector<SparseOperator const *> mu_pointers, kap_pointers;
+    for (auto const &op : mu) mu_pointers.push_back(&op);
+    for (auto const &op : kap) kap_pointers.push_back(&op);
+    return impl_->correlator(G, mu_pointers, kap_pointers, fermionic, topology, first, last);
+  }
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                                                       nda::array_const_view<int, 2> topology, long index) {
     auto count = get_num_self_energy_backbones(topology);

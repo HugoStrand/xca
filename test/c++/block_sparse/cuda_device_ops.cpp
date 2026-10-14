@@ -146,6 +146,28 @@ TEST(BlockSparseCudaOps, OwningDeviceAndLifetime) {
   } else
     op.reset();
 }
+TEST(BlockSparseCudaOps, ComplexTracesAndStridedAccumulation) {
+  gpu::DeviceOps ops;
+  auto values = function(5, 3, 3);
+  gpu::Tensor input(values), traced(5, 1, 1), output(5, 2, 3);
+  auto gold = nda::zeros<dcomplex>(5, 1, 1);
+  for (long t = 0; t < 5; ++t)
+    for (long i = 0; i < 3; ++i) gold(t, 0, 0) += values(t, i, i);
+  ops.traces(input, traced);
+  compare(traced, gold);
+  ops.zero(output);
+  ops.add_trace(traced, output, 1, 2);
+  ops.add_trace(traced, output, 1, 2);
+  auto expected = nda::zeros<dcomplex>(5, 2, 3);
+  for (long t = 0; t < 5; ++t) expected(t, 1, 2) = 2. * gold(t, 0, 0);
+  compare(output, expected);
+  ops.scale(dcomplex{.3, -.7}, traced);
+  compare(traced, nda::array<dcomplex, 3>(dcomplex{.3, -.7} * gold));
+  EXPECT_THROW(ops.traces(input, input), std::invalid_argument);
+  EXPECT_THROW(ops.add_trace(traced, output, 2, 0), std::invalid_argument);
+  ops.traces(input, traced);
+  compare(traced, gold);
+}
 #else
 TEST(BlockSparseCudaOps, DISABLED_RequiresCuda) {}
 #endif

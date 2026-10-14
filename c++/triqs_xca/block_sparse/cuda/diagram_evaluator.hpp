@@ -6,6 +6,7 @@
 #ifdef NDA_HAVE_CUDA
 #include "dlr_ops.hpp"
 #include <triqs/gfs.hpp>
+#include <triqs_xca/operator_statistics.hpp>
 
 namespace triqs_xca::block_sparse::cuda {
   // Initial synchronous device reference. Inputs/outputs are Fock-basis blocks.
@@ -37,6 +38,49 @@ namespace triqs_xca::block_sparse::cuda {
     // library/granularity effects and other processes; compare bounds only in an
     // isolated run. Not process RSS or a continuous driver trace.
     std::size_t last_device_peak_delta() const;
+    long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) const;
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                         nda::array_const_view<int, 2> topology);
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, nda::array_const_view<int, 2> topology,
+                                                         long index);
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                               nda::array_const_view<int, 2> topology, long first, long last);
+    // Sparse endpoint snapshots live for this synchronous call. Their parity is
+    // explicit here; the many-body overload below infers and validates it.
+    nda::array<nda::dcomplex, 3> compute_correlator_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, std::span<SparseOperator const> mu,
+                                                          std::span<SparseOperator const> kap, bool fermionic, nda::array_const_view<int, 2> topology,
+                                                          long first, long last);
+    std::size_t correlator_storage_bound(long n_mu, long n_kap) const;
+    template <bool C>
+    nda::array<nda::dcomplex, 3> compute_one_time_correlator_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                                   std::vector<triqs::operators::many_body_operator_complex> const &mu_ops,
+                                                                   std::vector<triqs::operators::many_body_operator_complex> const &kap_ops,
+                                                                   triqs_xca::atom_diag::triqs_atom_diag_t<C> const &ad,
+                                                                   nda::array_const_view<int, 2> topology, long first, long last) {
+      bool fermionic = triqs_xca::correlator_statistics(mu_ops, kap_ops, "block-sparse CUDA correlator");
+      std::vector<SparseOperator> mu, kap;
+      for (auto const &op : mu_ops) mu.push_back(export_operator(ad, op));
+      for (auto const &op : kap_ops) kap.push_back(export_operator(ad, op));
+      return compute_correlator_range(G, mu, kap, fermionic, topology, first, last);
+    }
+    template <bool C>
+    nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                             std::vector<triqs::operators::many_body_operator_complex> const &mu,
+                                                             std::vector<triqs::operators::many_body_operator_complex> const &kap,
+                                                             triqs_xca::atom_diag::triqs_atom_diag_t<C> const &ad,
+                                                             nda::array_const_view<int, 2> topology) {
+      return compute_one_time_correlator_range(G, mu, kap, ad, topology, 0, get_num_single_ptcle_gf_backbones(topology));
+    }
+    template <bool C>
+    nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                                             std::vector<triqs::operators::many_body_operator_complex> const &mu,
+                                                             std::vector<triqs::operators::many_body_operator_complex> const &kap,
+                                                             triqs_xca::atom_diag::triqs_atom_diag_t<C> const &ad,
+                                                             nda::array_const_view<int, 2> topology, long index) {
+      auto total = get_num_single_ptcle_gf_backbones(topology);
+      if (index < 0 || index >= total) throw std::out_of_range("Correlator index outside domain");
+      return compute_one_time_correlator_range(G, mu, kap, ad, topology, index, index + 1);
+    }
   };
 } // namespace triqs_xca::block_sparse::cuda
 #endif
