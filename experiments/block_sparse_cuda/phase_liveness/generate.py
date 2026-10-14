@@ -1,7 +1,7 @@
 """Private full-shape evaluator variant; reject changes to production seams."""
 from pathlib import Path
 import sys
-root,out=map(Path,sys.argv[1:]);cuda=root/'c++/triqs_xca/block_sparse/cuda'
+root,out=map(Path,sys.argv[1:]);cuda=root/'experiments/block_sparse_cuda/reference_snapshot'
 header=(cuda/'diagram_evaluator.hpp').read_text();source=(cuda/'diagram_evaluator.cpp').read_text()
 def once(old,new):
     global source

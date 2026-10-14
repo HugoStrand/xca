@@ -5,9 +5,9 @@ set(cuda_dir "${PROJECT_SOURCE_DIR}/c++/triqs_xca/block_sparse/cuda")
 add_library(block_sparse_nca_dlr STATIC nca_dlr.cpp)
 target_include_directories(block_sparse_nca_dlr PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" PRIVATE "${cuda_dir}")
 target_link_libraries(block_sparse_nca_dlr PUBLIC ${PROJECT_NAME}::${PROJECT_NAME}_c)
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cuda_dir}/diagram_evaluator.hpp" "${cuda_dir}/diagram_evaluator.cpp")
-file(READ "${cuda_dir}/diagram_evaluator.hpp" header)
-file(READ "${cuda_dir}/diagram_evaluator.cpp" source)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.hpp" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.cpp")
+file(READ "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.hpp" header)
+file(READ "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.cpp" source)
 # Keep this historical control's seven-tensor NCA reserve as well as its DLR
 # reserve, independently of later production liveness refinements.
 string(REPLACE "return generic - (dlr_bound - tables) - inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer;"

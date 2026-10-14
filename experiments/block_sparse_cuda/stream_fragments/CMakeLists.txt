@@ -4,7 +4,7 @@ endif()
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(cuda_dir "${PROJECT_SOURCE_DIR}/c++/triqs_xca/block_sparse/cuda")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-  "${cuda_dir}/diagram_evaluator.hpp" "${cuda_dir}/diagram_evaluator.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/generate.py" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/phase_liveness/generate.py" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/host_inputs/generate.py")
+  "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.hpp" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/generate.py" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/phase_liveness/generate.py" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/host_inputs/generate.py")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/generate.py"
   "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_ERROR_IS_FATAL ANY)
 add_library(block_sparse_stream_fragment_evaluator STATIC "${CMAKE_CURRENT_BINARY_DIR}/stream_evaluator.cpp")

@@ -31,7 +31,7 @@ endif()
 # Private complete-call variant; production evaluator and primitive remain intact.
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-  "${cuda_dir}/diagram_evaluator.hpp" "${cuda_dir}/diagram_evaluator.cpp"
+  "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.hpp" "${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/reference_snapshot/diagram_evaluator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/generate_evaluator.py")
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/generate_evaluator.py"
   "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_ERROR_IS_FATAL ANY)
