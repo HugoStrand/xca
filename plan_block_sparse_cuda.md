@@ -102,6 +102,17 @@ Evidence is in `scalar_cutoff/thinkstationP620_RTXA4000/cohorts-01` under experi
 This strengthens bounded replay ownership/semantics, not the fixed band's universal
 validity or a production/target dispatch policy.
 
+Multi-field scalar checkpoint: separate `experiments/block_sparse_cuda/scalar_sets`
+candidate admits all-scalar propagators with multiple operators per symmetry set.
+It batches independent lanes while preserving outer mu/inner kappa sums, supports
+mixed set widths and reserves three additional batch buffers. Singleton cohorts
+retain the earlier operation sequence; correlators/non-scalar shapes remain general.
+Eighteen local controls pass, including complex retarded two-/three-field sets,
+NCA/OCA ranges, changed owners/masks, repeatability and admission. Targeted memcheck
+is clean; preserved singleton and CPU-only recipe controls pass. Evidence is under
+that experiment's `thinkstationP620_RTXA4000/sets-01`. Dedicated multi-set timing,
+GH200 qualification and conservative cutoff policy remain before promotion.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator

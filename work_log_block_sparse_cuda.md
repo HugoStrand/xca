@@ -1,5 +1,36 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Multi-field scalar special vertices
+
+Previous turn was progress: cutoff replay cohorts/ownership qualified. Addressed
+the singleton-only eligibility gap with separate scalar_sets candidate, preserving
+all earlier variants/production. All-scalar shapes now batch mixed-width symmetry
+sets. Special operation uses reference outer-mu/inner-kappa order per lane, applying
+kappa and weight before its ordered sum and mu afterward; no atomics or reordered
+reduction. Three extra rank-by512 buffers enter admission. Singleton cohorts retain
+the old sequence; non-scalar shapes/correlators remain general. Includes experimental
+cutoff replay, not a new universal numerical policy.
+
+Added fixture with three shifted density fields grouped together, singleton fermion
+sets and complex retarded coefficients. NCA/OCA bounded ranges compare ordered
+CUDA reference, changed owners/zero masks, exact replay, empty ranges and one-byte-
+below workspace rejection. Existing two-field test adjusts eligibility expectation
+only under the new variant macro. First build missed reference header; added it,
+then focused two controls passed .915 s. Full suite18 active GoogleTests passed
+46.56 s. Targeted memcheck passed both tests5.014 s with zero errors/leaks.
+Preserved constants suite rebuilt/passed8.67 s. CPU-only matched scheduler built
+and one active order-three call screened exactly against unchanged CPU (error0),
+verifying shared recipe lambda change compiles without CUDA. All handles terminal.
+
+Code and this plan/log/evidence checkpoint separate. Logs /tmp/xca-bs-scalar-sets-
+{configure,build,focused,suite,lasttest,memcheck,baseline-build,baseline-test,cpu-build}
+.log and cpu.csv. Compact evidence/hashes retained in scalar_sets local sets-01.
+No multi-set performance/whole Solver/GH200/default-policy claim. Goal active: next
+measure explicit multi-set workloads and determine conservative promotion/numerics
+policy, then integrate a qualified scalar backend and finish target/Python/MPI/
+capacity gates. No new Arrhenius jobs (.08361 nominal GPU-hours cumulative), install,
+push or unrelated-work changes.
+
 ## 2026-10-14 — Replay-heavy cohorts and owned input reuse
 
 Previous turn was progress: adjacent high-order cutoff mismatch diagnosed; separate

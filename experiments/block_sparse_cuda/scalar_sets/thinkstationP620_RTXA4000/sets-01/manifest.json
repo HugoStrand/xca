@@ -1,0 +1,12 @@
+{
+  "code_revision": "26a92956a0b6766eef450cc509f5b90c4b55c330",
+  "hardware": "ThinkStation P620 / RTX A4000",
+  "scope": "Multi-field scalar special sums and retained baseline/CPU compatibility",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/scalar_sets/special.inc": "a1a7cfacda2c1184516693a50abfa0623d0d18f1b732f4203c4bfdad37e4f6ea",
+    "experiments/block_sparse_cuda/scalar_sets/qualification.cpp": "ccb0963897e5159db6289d4dfc708fffb538cecd05eeb36b2fa14c1e35e66b8a",
+    "experiments/block_sparse_cuda/scalar_paths/recipe.inc": "47ff60d8cb014e8c50007a364a78f1364e5cd60ad571097f53028a577ffcbb99",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "ae44b4e1ad68ed56e9026bb29e02acfec1b971d5f6bd6908ffe21305ca7f2e5b"
+  },
+  "gpu_hours_added_arrhenius": 0
+}
