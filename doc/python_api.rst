@@ -135,7 +135,7 @@ archive/deepcopy; archives without this field reconstruct with the default.
 
 ``BlockSparseCudaDiagramEvaluator`` accepts ``nca_backend='real_batch'`` directly,
 and ``last_nca_batch_paths()`` reports structural paths executed by that route in
-the latest successful evaluation. Device admission conservatively includes its
+the latest evaluation. Device admission conservatively includes its
 workspace, even when a subsequent call selects the general route. Native-disabled
 builds reject explicit selection. Local RTX A4000 benchmarks guide development;
 the optimization target is GH200-class accelerators.
