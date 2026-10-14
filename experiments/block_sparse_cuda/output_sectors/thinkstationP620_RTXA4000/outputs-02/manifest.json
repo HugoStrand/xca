@@ -1,0 +1,160 @@
+{
+  "host": "ThinkStation",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_commit": "8bba6be8403b5bfa4cf48bcdf92fd9b684b6c569",
+  "git_status": " M .gitignore\n M experiments/block_sparse_cuda/output_sectors/CMakeLists.txt\n M experiments/block_sparse_cuda/output_sectors/generate.py\n?? AGENTS.md\n?? AGENTS.md.bak-20261009\n?? experiments/block_sparse_cuda/output_sectors/benchmark.cpp\n?? experiments/block_sparse_cuda/output_sectors/run.py\n?? experiments/block_sparse_cuda/output_sectors/thinkstationP620_RTXA4000/\n?? test/c++/test_nda_cuda_smoke.cpp\n?? test/python/exp_order_conv/\n",
+  "triqs_root": "/home/hugstr/apps/triqs-cuda",
+  "gpu": "NVIDIA RTX A4000, 16376 MiB, 580.178.04",
+  "binary_sha256": "13d76edf546733f076e371d88dbf867e7e30a129c4ffbfb7454b804b5587adfb",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/output_sectors/tests.cpp": "b41717478f913a713940936c6b0a995a3e912a3d9d5e34ef4e98134d89438912",
+    "experiments/block_sparse_cuda/output_sectors/benchmark.cpp": "f6c94ccc39b9f3a7c4bd76fd5a0ecf693b47fbd6bf96e5567638e7c3c70d0d28",
+    "experiments/block_sparse_cuda/output_sectors/generate.py": "5462806f3f82cc932eef6f260ba6d09f1f31952378e4a18506db613e48a56f49",
+    "experiments/block_sparse_cuda/output_sectors/CMakeLists.txt": "b7ba721fadf4c850ba9a5274ec616c2f78be267cc40635a1386594defd1a06c4",
+    "experiments/block_sparse_cuda/output_sectors/run.py": "55318877671f36f134304c1e3ac5f43125ad13f4c2bb82323cb579e643d2006e",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "d044d49c68de48b208ddfe90f2666bebcd864ea3502a2bc5888087c3747b3a13",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.cpp": "61766faf7215400413bdcbe9bfe40504a268e4ef248989d5ea66e5498f42ae14",
+    "c++/triqs_xca/block_sparse/cuda/path.cpp": "d5a2b3ae85b59e81809d3adecd62153717604b3dcc1e1d799ce0fad41b2d64b5",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "c4ed6b58cc1835583a4960d9cd4ff3799918e943ced6212511f0bad45c9b987e",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.cpp": "cb6a8993dd398cf274cff60fb40f7a7141b632b9efa964ad41934bfbfc1b8b25",
+    "benchmarks/block_sparse_common/fixture.hpp": "db9c9f8884edca96607064f33e10f94e2ab83d5c3e2af8aaab42e56fb72864a9",
+    "benchmarks/block_sparse_common/call_runner.hpp": "c2c111d59844778dbec0d62d05c25c7026cbb72748991973c991e07d675d8928"
+  },
+  "cases": [
+    {
+      "name": "n4-number-o2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "3",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-mixed-o3",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "mixed",
+        "--order",
+        "3",
+        "--first",
+        "7",
+        "--count",
+        "3",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-occupation-o3",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--order",
+        "3",
+        "--first",
+        "7",
+        "--count",
+        "3",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-o2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--order",
+        "2",
+        "--first",
+        "7",
+        "--count",
+        "3",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-o1",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-o1",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--order",
+        "1",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-o2",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/output_sectors/block_sparse_output_sector_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "3",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    }
+  ],
+  "memory_scope": "Sampled global free-memory drop relative to each call entry, not a continuous or process-private peak; RSS is cumulative for the paired process"
+}

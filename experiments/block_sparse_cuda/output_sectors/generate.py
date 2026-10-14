@@ -75,3 +75,12 @@ source = source.replace('"diagram_evaluator.hpp"', '"output_evaluator.hpp"')
 destination.mkdir(parents=True, exist_ok=True)
 (destination / 'output_evaluator.hpp').write_text(header)
 (destination / 'output_evaluator.cpp').write_text(source)
+# Separate ownership control: original resident algorithm, explicit return move.
+move_header = (source_dir / 'diagram_evaluator.hpp').read_text().replace('DiagramEvaluator', 'MoveOutputEvaluator')
+move_source = (source_dir / 'diagram_evaluator.cpp').read_text()
+if move_source.count('    return {result};') != 1:
+    raise RuntimeError('Resident return-ownership seam changed')
+move_source = move_source.replace('    return {result};', '    return {std::move(result)};')
+move_source = move_source.replace('DiagramEvaluator', 'MoveOutputEvaluator').replace('"diagram_evaluator.hpp"', '"move_evaluator.hpp"')
+(destination / 'move_evaluator.hpp').write_text(move_header)
+(destination / 'move_evaluator.cpp').write_text(move_source)

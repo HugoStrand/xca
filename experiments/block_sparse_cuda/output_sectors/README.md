@@ -27,3 +27,20 @@ occupation partitions, changed inputs/masks, empty calls and returned full secto
 No performance or N=14 full-system qualification is implied by these small controls.
 Input streaming, slabs, transfer costs, host/opaque peak measurements and target
 hardware remain separate gates before production adoption.
+
+Build `block_sparse_output_sector_benchmark`, then run `run.py --machine MACHINE`.
+The complete-call comparison has three routes: production resident output, resident
+output with an explicit vector move at return, and streamed sectors with that same
+move. All outputs and accepted/contributing counts must match exactly. Route order
+rotates across three warm/changed-G samples. First-call rows share an initialized
+CUDA context and are not independent process-cold measurements. Setup is reported
+separately; G changes before each changed-input sample. Inputs/outputs and sector
+transfers are inside timing. No MPI or full Solver timing is included.
+
+Memory rows use the evaluator's largest sampled drop in global free device memory
+relative to call entry. They include allocator/other-process effects and can be zero
+for tiny workloads. They are not continuous, process-private peaks. Host RSS is the
+cumulative peak of the process holding all compared evaluators/results, so it cannot
+be used to compare per-route host peaks. Bounds report explicit conservative storage,
+with the streamed difference exactly one full output minus one maximum rank tile.
+The ownership control prevents attributing return-copy savings to sector streaming.
