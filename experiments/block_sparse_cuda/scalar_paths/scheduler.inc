@@ -2,6 +2,9 @@ using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
 #ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
 #include "../scalar_resident/resident.inc"
 #endif
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+#include "../scalar_staging/buffers.inc"
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
 std::size_t scalar_replayed_lanes = 0;
 #include "../scalar_cutoff/replay.inc"
@@ -19,6 +22,9 @@ std::size_t scalar_extra_bound() const {
   auto bound = checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1));
 #ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
   bound = checked_add(bound, checked_multiply(512, sizeof(scalar_resident_experiment::Weight)));
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+  bound = checked_add(bound, checked_multiply(512, sizeof(Complex) + sizeof(std::uintptr_t)));
+#endif
 #endif
 #ifdef XCA_EXPERIMENT_SCALAR_SETS
   bound = checked_add(bound, tensor_bytes(r, 3 * 512, 1));
@@ -36,6 +42,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   long lanes = packed.f.extent(1), count = work.size();
   Tensor T(r, lanes, 1), zero(r, 1, 1), weights(r, lanes, 1), lane_result(r, 1, 1);
   ops->zero(zero);
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+  ScalarStaging staging(ops, lanes);
+#endif
 #ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
   prepare_resident_weights();
 #endif
@@ -47,12 +56,19 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     };
 #ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
     if constexpr (std::is_same_v<decltype(weight_at(0, 0)), scalar_resident_experiment::Weight>) {
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+      staging.host_weights() = scalar_resident_experiment::Weight{};
+      for (long lane = 0; lane < count; ++lane) staging.host_weights(lane) = weight_at(lane, 0);
+      staging.upload(staging.device_weights, staging.host_weights);
+      scalar_edge_experiment::check(scalar_resident_experiment::apply(target.data(), staging.device_weights.data(), r, lanes, ops->stream()));
+#else
       nda::vector<scalar_resident_experiment::Weight> descriptors(lanes);
       descriptors() = scalar_resident_experiment::Weight{};
       for (long lane = 0; lane < count; ++lane) descriptors(lane) = weight_at(lane, 0);
       nda::cuvector<scalar_resident_experiment::Weight> device(descriptors);
       ops->wait_for_default_uploads();
       scalar_edge_experiment::check(scalar_resident_experiment::apply(target.data(), device.data(), r, lanes, ops->stream()));
+#endif
       ops->finish();
     } else
 #endif
@@ -71,6 +87,12 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   };
   auto apply_constants = [&](Tensor &target, auto get) {
 #ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+    staging.host_constants() = 1.;
+    for (long lane = 0; lane < count; ++lane) staging.host_constants(lane) = get(work[lane].first, work[lane].second, 0);
+    staging.upload(staging.device_constants, staging.host_constants);
+    scalar_edge_experiment::check(scalar_edge_experiment::multiply_by_lane(target.data(), staging.device_constants.data(), target.data(), target.size(), lanes, ops->stream()));
+#else
     nda::vector<Complex> values(lanes);
     values() = 1.;
     for (long lane = 0; lane < count; ++lane) values(lane) = get(work[lane].first, work[lane].second, 0);
@@ -78,12 +100,19 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     ops->wait_for_default_uploads();
     scalar_edge_experiment::check(
        scalar_edge_experiment::multiply_by_lane(target.data(), constants.data(), target.data(), target.size(), lanes, ops->stream()));
+#endif
     ops->finish();
 #else
     apply_weights(target, get);
 #endif
   };
   auto gather = [&](int edge) {
+#ifdef XCA_EXPERIMENT_SCALAR_STAGING
+    for (long lane = 0; lane < lanes; ++lane)
+      staging.host_pointers(lane) = reinterpret_cast<std::uintptr_t>(lane < count ? G[work[lane].second.propagator_blocks[edge]].data() : zero.data());
+    staging.upload(staging.device_pointers, staging.host_pointers);
+    scalar_edge_experiment::check(scalar_edge_experiment::gather(staging.device_pointers.data(), staging.device_pointers.data(), packed.f.data(), packed.tmp.data(), r, lanes, ops->stream()));
+#else
     nda::vector<std::uintptr_t> pointers(lanes);
     for (long lane = 0; lane < lanes; ++lane)
       pointers(lane) = reinterpret_cast<std::uintptr_t>(lane < count ? G[work[lane].second.propagator_blocks[edge]].data() : zero.data());
@@ -91,6 +120,7 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     ops->wait_for_default_uploads();
     scalar_edge_experiment::check(
        scalar_edge_experiment::gather(device.data(), device.data(), packed.f.data(), packed.tmp.data(), r, lanes, ops->stream()));
+#endif
     ops->finish();
   };
   auto copy = [&](auto const &from, auto &to) { ops->copy(from, to); };

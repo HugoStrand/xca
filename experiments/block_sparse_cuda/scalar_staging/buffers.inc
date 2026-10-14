@@ -1,0 +1,28 @@
+struct ScalarStaging {
+  std::shared_ptr<DeviceOps> owner;
+  nda::vector<scalar_resident_experiment::Weight> host_weights;
+  nda::vector<Complex> host_constants;
+  nda::vector<std::uintptr_t> host_pointers;
+  nda::cuvector<scalar_resident_experiment::Weight> device_weights;
+  nda::cuvector<Complex> device_constants;
+  nda::cuvector<std::uintptr_t> device_pointers;
+  ScalarStaging(std::shared_ptr<DeviceOps> ops, long lanes)
+    : owner(std::move(ops)), host_weights(lanes), host_constants(lanes), host_pointers(lanes),
+      device_weights(host_weights), device_constants(lanes), device_pointers(lanes) {
+    // Weight has nontrivial default initialization. NDA's extent constructor
+    // attempts that initialization on the host even for device storage. Copy
+    // a host vector instead, and complete this initial default-stream upload
+    // before reusing its source on the evaluator stream.
+    owner->wait_for_default_uploads();
+    owner->finish();
+  }
+  ~ScalarStaging() {
+    // Complete copies/readers before destroying either source or device buffers,
+    // including unwinding after a failed launch. Normal operations also finish.
+    try { owner->finish(); } catch (...) {}
+  }
+  template <typename Device, typename Host> void upload(Device &device, Host const &host) {
+    scalar_edge_experiment::check(cudaMemcpyAsync(device.data(), host.data(), host.size() * sizeof(*host.data()),
+                                                cudaMemcpyHostToDevice, owner->stream()));
+  }
+};
