@@ -1743,3 +1743,72 @@ thinkstationP620_RTXA4000/fock-slabs-01/README.md. Temporary logs:
 /tmp/xca-bs-slab-{configure,build,final-build,campaign}.log,
 /tmp/xca-bs-slab-{cpu,host}-test.log, /tmp/xca-bs-slab-final-memcheck.log,
 /tmp/xca-bs-slab-smoke.csv; CPU configure/build logs.
+
+## 2026-10-14 — Production mapped policy and MPI integration
+
+Previous turn made progress through actual fourteen-mode primitive slices. f58aad5
+[bs] map CUDA special vertices promotes the qualified column classifier/kernel and
+special vertex into the production CUDA evaluator, with optional SpecialBackend::Mapped
+and default Reference. SparseBackend remains independent. XCA_CUDA_BLOCK_SPARSE
+builds both native kernels; compiler-disabled CUDA rejects explicit mapped requests.
+Constructor validates policy/capability before creating operator/DLR work. The Python
+facade validates capability before model export/device setup. Maps and weights own
+their storage through stream completion and default-upload handoff. CSR eligibility,
+shape checks, field order, original left application and sequential mu addition are
+retained. Unsupported columns/singleton sets choose the device reference before any
+mapped work; failures propagate without CPU replay. Reported/admitted explicit
+storage adds checked metadata allowance only for mapped policy. Correlator admission
+conservatively includes it although correlators retain original execution.
+
+Production tests port seven meaningful experimental controls to the real evaluator
+and add invalid-policy/unavailable-capability checks. Direct primitive calls use the
+production native kernel and classifier. Eight controls pass in the native build;
+compiler-disabled builds omit native primitive tests and check rejection. CPU has
+the expected disabled CUDA case, not GPU validation. Initial full build exposed
+duplicated policy enum/function definitions in generated private copies. The enum
+moved to shared DeviceOps declarations and capability definition to its shared
+translation unit. All retained experiments then build without altering their default
+reference policy, numerical controls or ownership. No production tolerance changes.
+
+aa014e5 [solv] select mapped CUDA special vertices adds special_backend='mapped' to
+both real/complex consolidated facades and block_sparse_special_backend to Solver.
+Reference remains default. gpu.py validates/lazily loads and checks compiled support
+before device/model setup; CPU stores preference unused. TOML explicitly exports
+block_sparse_mapped_available; only consolidated CUDA bindings were regenerated
+with clair and optional-small guards restored. Archive/deep-copy/old-archive defaults
+are tested. Public documentation describes eligibility, budgets, independent sparse
+selection and target limits. Python registration tests cross both special policies
+with available library/ordered backends, all three partitions, dynamic variants and
+SE/SPGF/correlators. Collective initialization/count/compute failures and retry also
+run with mapped policy, plus bad selector and compiler-disabled rejection.
+
+All full builds and suites pass: CPU 79/79 in 50.39 s; CUDA 96/96 in 673.45 s;
+library-only CUDA 81/81 in 353.91 s. CUDA trees initially competed for the same GPU,
+substantially increasing wall times. A stop was prepared for the overlapping library
+CTest, but authoritative inspection found it had already completed successfully,
+so no signal was sent and no suite restarted. These durations are correctness
+verification, not benchmark data. Compiler-disabled tree keeps both native options
+OFF and benchmark fixtures ON. Production memcheck, after full GPU suites were
+terminal, passes all eight controls in 9.45 s: zero errors, zero leaked bytes. The
+first sanitizer invocation used a wrong executable path and performed no work;
+corrected path came from CTest's registered command.
+
+Two-rank MPI then ran the actual five-method Python suite using CTest environment
+modifications (build package plus cached adapol/pyed), OMP/BLAS threads one. Both
+ranks pass all five methods in 92.742 s, including mapped/archive/collective recovery
+checks. Harmless existing X11 authorization diagnostics appear before execution;
+there was no tool approval rejection. No production timing claim from MPI/tests.
+
+Goal remains active. Next refine schedule-sensitive E7 admission and scratch
+lifetimes; distinguish NCA from convolution-bearing paths and retain complete API
+output accounting. Higher-order cutoff-adjacent coverage, broader batching and GH200/
+full N=14 qualification remain. No new target/default crossover is claimed. All
+baselines/experiments retained. No install, push, supervisor or unrelated user-work
+changes. Code and integration commits are separate from this plan/log checkpoint;
+git diff --check passes.
+
+Evidence: doc/python_api.rst; test/c++/block_sparse/cuda_mapped_special.cpp;
+test/python/block_sparse_cuda.py. Temporary logs:
+/tmp/xca-bs-mapped-prod-{cpu,cuda,library}-test.log and associated build/configure
+logs; /tmp/xca-bs-mapped-prod-{memcheck,mpi}.log;
+/tmp/xca-bs-mapped-api-{configure,wrap,build}.log.

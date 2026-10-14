@@ -858,6 +858,38 @@ qualify optional production/Python/MPI integration. Higher-order cutoff-adjacent
 paths and target hardware remain gates. Preserve all current controls and reference
 fallbacks. GH200-class hardware remains the optimization target.
 
+Production mapped-policy checkpoint (2026-10-14): the qualified special vertex
+is now available through ``SpecialBackend::Mapped`` and Solver
+``block_sparse_special_backend='mapped'``. ``'reference'`` remains the default;
+selection is independent of the library/ordered sparse operator backend. Native
+build support is inherited from XCA_CUDA_BLOCK_SPARSE, with explicit unsupported
+rejection. The consolidated CUDA module exports compiled capability through
+``block_sparse_mapped_available()``. CPU preferences remain stored without importing
+CUDA; archives preserve the setting and older archives default to reference.
+
+The production implementation owns maps/weights until stream completion, keeps
+original field/left-application order, uses actual CSR eligibility and retains
+device-reference execution for non-mapping operators/singletons. Structural
+fallback occurs before mapped device work, never after a submitted failure. The
+checked metadata allowance is included in reported/admitted storage, including
+conservative correlator admission. No global handle or tolerance changes.
+
+Full CPU 79/79, CUDA 96/96 and native-disabled library-only CUDA 81/81 suites pass.
+Eight production controls pass memcheck with zero errors/leaks. Python tests cover
+both special policies crossed with available sparse backends, all current
+observables, dynamic interactions, archives and collective setup/count/evaluation
+errors. Two MPI ranks pass five methods each. Concurrent CUDA-tree verification
+caused contention; these wall times are correctness evidence, not performance.
+Shared policy declarations/capability definitions live outside generated experiment
+copies so all retained controls still build.
+
+This completes optional mapped integration, not the whole implementation goal.
+Next refine E7 schedule-sensitive admission and scratch lifetimes, especially NCA
+versus convolution-bearing paths. Preserve full API output requirements and reject
+before submission when the declared working set cannot fit. Higher-order boundary
+coverage, broader batching and GH200/full fourteen-mode validation remain gates;
+existing experiments and reference defaults remain available.
+
 ### E7 — Large-sector memory and placement
 
 Test liveness-based reuse, output spatial slabs, streamed special-vertex buffers and
