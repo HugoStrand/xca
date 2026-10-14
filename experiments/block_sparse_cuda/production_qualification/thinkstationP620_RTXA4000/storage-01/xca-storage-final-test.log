@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 37: block_sparse/cuda_diagram_evaluator
+1/5 Test #37: block_sparse/cuda_diagram_evaluator ...   Passed    7.38 sec
+    Start 40: block_sparse/cuda_memory_plan
+2/5 Test #40: block_sparse/cuda_memory_plan .........   Passed    0.42 sec
+    Start 45: block_sparse/cuda_storage_policy
+3/5 Test #45: block_sparse/cuda_storage_policy ......   Passed   42.53 sec
+    Start 91: Py_cuda_backends
+4/5 Test #91: Py_cuda_backends ......................   Passed    1.70 sec
+    Start 92: Py_block_sparse_cuda
+5/5 Test #92: Py_block_sparse_cuda ..................   Passed   29.72 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  81.75 sec

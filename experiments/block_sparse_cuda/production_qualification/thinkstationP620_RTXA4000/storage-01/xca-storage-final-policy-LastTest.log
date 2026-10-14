@@ -1,0 +1,135 @@
+Start testing: Oct 14 21:28 CEST
+----------------------------------------------------------
+27/121 Testing: experiments/block_sparse_cuda/stream_fragments
+27/121 Test: experiments/block_sparse_cuda/stream_fragments
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments/block_sparse_stream_fragment_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/stream_fragments
+"experiments/block_sparse_cuda/stream_fragments" start time: Oct 14 21:28 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 14 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2311 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (822 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3351 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (786 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (7309 ms total)
+
+[----------] 6 tests from StreamFragmentEvaluator
+[ RUN      ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] StreamFragmentEvaluator.CompleteCallsChangedInputAndPlacement (1865 ms)
+[ RUN      ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] StreamFragmentEvaluator.CompleteBudgetRejectionAndRecovery (279 ms)
+[ RUN      ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery
+[       OK ] StreamFragmentEvaluator.CorrelatorBudgetAndEndpointRecovery (531 ms)
+[ RUN      ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation
+[       OK ] StreamFragmentEvaluator.CacheReuseAndPerCallInvalidation (390 ms)
+[ RUN      ] StreamFragmentEvaluator.RejectsResidentArenaPolicy
+[       OK ] StreamFragmentEvaluator.RejectsResidentArenaPolicy (4 ms)
+[ RUN      ] StreamFragmentEvaluator.NativePolicyCombinations
+[       OK ] StreamFragmentEvaluator.NativePolicyCombinations (3160 ms)
+[----------] 6 tests from StreamFragmentEvaluator (6231 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 2 test suites ran. (13541 ms total)
+[  PASSED  ] 14 tests.
+<end of output>
+Test time =  13.80 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/stream_fragments" end time: Oct 14 21:29 CEST
+"experiments/block_sparse_cuda/stream_fragments" time elapsed: 00:00:13
+----------------------------------------------------------
+
+45/121 Testing: block_sparse/cuda_storage_policy
+45/121 Test: block_sparse/cuda_storage_policy
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_storage_policy"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_storage_policy" start time: Oct 14 21:29 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 22 tests from 4 test suites.
+[----------] Global test environment set-up.
+[----------] 5 tests from StoragePolicy
+[ RUN      ] StoragePolicy.CompleteCallsBoundsAndRecovery
+[       OK ] StoragePolicy.CompleteCallsBoundsAndRecovery (20887 ms)
+[ RUN      ] StoragePolicy.TightBudgetAndInvalidPolicies
+[       OK ] StoragePolicy.TightBudgetAndInvalidPolicies (480 ms)
+[ RUN      ] StoragePolicy.StridedHostInput
+[       OK ] StoragePolicy.StridedHostInput (386 ms)
+[ RUN      ] StoragePolicy.NativePolicyCombinations
+[       OK ] StoragePolicy.NativePolicyCombinations (6222 ms)
+[ RUN      ] StoragePolicy.AdjacentCutoffMatchesFrozenReference
+[       OK ] StoragePolicy.AdjacentCutoffMatchesFrozenReference (8753 ms)
+[----------] 5 tests from StoragePolicy (36730 ms total)
+
+[----------] 1 test from StoragePolicyInventory
+[ RUN      ] StoragePolicyInventory.AvailableWithoutDevice
+[       OK ] StoragePolicyInventory.AvailableWithoutDevice (0 ms)
+[----------] 1 test from StoragePolicyInventory (0 ms total)
+
+[----------] 8 tests from HostInputsStorageEvaluator
+[ RUN      ] HostInputsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] HostInputsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs (1860 ms)
+[ RUN      ] HostInputsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] HostInputsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (672 ms)
+[ RUN      ] HostInputsStorageEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] HostInputsStorageEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] HostInputsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] HostInputsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] HostInputsStorageEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] HostInputsStorageEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] HostInputsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] HostInputsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks (3386 ms)
+[ RUN      ] HostInputsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] HostInputsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] HostInputsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] HostInputsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity (792 ms)
+[----------] 8 tests from HostInputsStorageEvaluator (6749 ms total)
+
+[----------] 8 tests from StreamFragmentsStorageEvaluator
+[ RUN      ] StreamFragmentsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] StreamFragmentsStorageEvaluator.SpgfAndBosonicCorrelatorExactInputs (2008 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] StreamFragmentsStorageEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (829 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] StreamFragmentsStorageEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] StreamFragmentsStorageEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] StreamFragmentsStorageEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] StreamFragmentsStorageEvaluator.SelfEnergyThreeControlsAndChangedMasks (3383 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] StreamFragmentsStorageEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] StreamFragmentsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] StreamFragmentsStorageEvaluator.OrdinaryManualNcaAndRangeAdditivity (791 ms)
+[----------] 8 tests from StreamFragmentsStorageEvaluator (7051 ms total)
+
+[----------] Global test environment tear-down
+[==========] 22 tests from 4 test suites ran. (50531 ms total)
+[  PASSED  ] 22 tests.
+<end of output>
+Test time =  50.79 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_storage_policy" end time: Oct 14 21:30 CEST
+"block_sparse/cuda_storage_policy" time elapsed: 00:00:50
+----------------------------------------------------------
+
+End testing: Oct 14 21:30 CEST

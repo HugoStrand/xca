@@ -1,0 +1,10 @@
+[  0%] Built target triqs_xca_small_kernels
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[ 18%] Built target gtest_main
+[ 81%] Built target triqs_xca_c
+[ 90%] Built target block_sparse_reference_evaluator
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_storage_policy.dir/block_sparse/cuda_storage_policy.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_storage_policy
+[100%] Built target block_sparse_cuda_storage_policy

@@ -1,0 +1,47 @@
+[  0%] Built target triqs_xca_small_kernels
+[ 12%] Built target triqs_xca_sparse_kernels
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 25%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+[ 37%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 37%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+[ 37%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 37%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 37%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 50%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 62%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 62%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 62%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 62%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 62%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 75%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 87%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 87%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 87%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:571:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  571 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.cpp:619:10: warning: declaration shadows a field of 'triqs_xca::dense::DiagramEvaluator' [-Wshadow]
+  619 |     auto U = ad.get_unitary_matrix(0);
+      |          ^
+/home/hugstr/dev/xca/c++/triqs_xca/dense/diagram_evaluator.hpp:50:29: note: previous declaration is here
+   50 |     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+      |                             ^
+[ 87%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 87%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[100%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+2 warnings generated.
+[100%] Linking CXX static library libtriqs_xca_c.a
+[100%] Built target triqs_xca_c

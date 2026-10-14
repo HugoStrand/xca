@@ -1,0 +1,40 @@
+[  0%] Built target triqs_xca_small_kernels
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[ 18%] Built target gtest_main
+[ 18%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 27%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 27%] Linking CXX static library libtriqs_xca_c.a
+[ 81%] Built target triqs_xca_c
+[ 81%] Building CXX object benchmarks/experiments/block_sparse_cuda/reference_snapshot/CMakeFiles/block_sparse_reference_evaluator.dir/reference_evaluator.cpp.o
+[ 81%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 81%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 90%] Linking CXX static library libblock_sparse_reference_evaluator.a
+[ 90%] Built target block_sparse_reference_evaluator
+[100%] Linking CXX static library libtriqs_xca_test_utils.a
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_storage_policy.dir/block_sparse/cuda_storage_policy.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_storage_policy
+[100%] Built target block_sparse_cuda_storage_policy
+[  0%] Built target triqs_xca_small_kernels
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 10%] Built target gtest
+[ 20%] Built target gtest_main
+[ 90%] Built target triqs_xca_c
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_diagram_evaluator.dir/block_sparse/cuda_diagram_evaluator.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_diagram_evaluator
+[100%] Built target block_sparse_cuda_diagram_evaluator
+[  0%] Built target triqs_xca_small_kernels
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 10%] Built target gtest
+[ 20%] Built target gtest_main
+[ 90%] Built target triqs_xca_c
+[100%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_memory_plan.dir/block_sparse/cuda_memory_plan.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_memory_plan
+[100%] Built target block_sparse_cuda_memory_plan

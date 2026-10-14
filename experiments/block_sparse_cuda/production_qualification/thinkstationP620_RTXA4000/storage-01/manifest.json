@@ -1,0 +1,41 @@
+{
+  "source": "9524c0c",
+  "frozen_reference_commit": "98a5ebd",
+  "native_final_policy_GoogleTests": 22,
+  "native_policy_host_only_inventory_tests": 1,
+  "native_final_policy_ctest_seconds": 50.79,
+  "native_retained_stream_GoogleTests": 14,
+  "native_retained_stream_ctest_seconds": 13.8,
+  "native_two_ctests_seconds": 64.59,
+  "library_pre_cutoff_GoogleTests_passed": 20,
+  "library_native_policy_skipped": 1,
+  "library_cutoff_additional_test_seconds": 9.053,
+  "library_three_ctests_seconds": 43.72,
+  "resident_python_and_cpp_five_ctests_seconds": 81.75,
+  "ordinary_memcheck_controls": 2,
+  "ordinary_memcheck_seconds": 232.746,
+  "strided_memcheck_controls": 1,
+  "strided_memcheck_seconds": 5.502,
+  "memcheck_errors": 0,
+  "memcheck_leaks": 0,
+  "CPU_host_inventory_available": true,
+  "CPU_GPU_test_disabled": true,
+  "no_benchmarks_CUDA_test_target_configure_build_passed": true,
+  "library_native_flags": "both OFF, Build_Benchmarks restored ON",
+  "all_configured_targets_built": [
+    "CPU",
+    "native CUDA"
+  ],
+  "limitations": "C++ policy integration only. Existing Python CUDA entry points use Resident; new storage strings, Solver archives/mutability/MPI pending. No new target/full-suite or performance claim.",
+  "binaries": {
+    "cbuild-cuda/cuda_storage_policy": {
+      "sha256": "7b0f510bc9b6f8e4b177c28be2852dbf580fcacdbba5a541a37a8e1286b8bc13"
+    },
+    "cbuild-cuda-library-api/cuda_storage_policy": {
+      "sha256": "13d91726349db955ae8806c0286cfefad85a130fbeb4891529517716370645d5"
+    },
+    "cbuild/cuda_storage_policy": {
+      "sha256": "a544a1c8c017a0afc74c3c2239b04d4125ff310834a5b4cdbbd2c6ebbbc8d0fe"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "policy": "Archive-only LF/trailing whitespace normalization, numeric values unchanged.",
+  "files": {
+    "xca-storage-configure.log": {
+      "original_sha256": "1de57f0fb0131267ac4f11b80c2e71c897c7e9226518a660265575a668a80978",
+      "archived_sha256": "e1af7b4ea9cfc04c9a45a9e3462db551e2bc037108211b3c51fe2993064e0bbb"
+    },
+    "xca-storage-cpu-all-build.log": {
+      "original_sha256": "a73d5f6b37aa11b3bf9fc9536e466f98356ba4d9cbdd0e1b148601611ec2556e",
+      "archived_sha256": "c3dcd1dcad464a99d014f24cf464ab248b93795b7898cbb1e3f79e0e15ccd5a5"
+    },
+    "xca-storage-cpu-configure.log": {
+      "original_sha256": "679ee52652fcfd5dc6abc59d22f1eeeb065a271fc565343c52cf3947889f02b1",
+      "archived_sha256": "b2594346219df667191c5fceefe8fe55077beb51fb99c75ddcf538f1d1384c53"
+    },
+    "xca-storage-expanded-configure.log": {
+      "original_sha256": "50f186b592b3758170a0b12abecd95bf9dbf9cb54b67c21ec2663b16492f089c",
+      "archived_sha256": "e7ea043782462526c798f9d570f28a248b82a8f538a9a0a5c518e84a11989734"
+    },
+    "xca-storage-final-all-build.log": {
+      "original_sha256": "aff2e298f2ad971de4bfd4e57c80cfa49de1c9373905be9e5768ddfc62e2fb80",
+      "archived_sha256": "e524a098a7ce176688925a0f8f1cf0c194aaf593bfd096301ed3e343574cbb36"
+    },
+    "xca-storage-final-configure.log": {
+      "original_sha256": "50f186b592b3758170a0b12abecd95bf9dbf9cb54b67c21ec2663b16492f089c",
+      "archived_sha256": "e7ea043782462526c798f9d570f28a248b82a8f538a9a0a5c518e84a11989734"
+    },
+    "xca-storage-freeze-configure.log": {
+      "original_sha256": "50f186b592b3758170a0b12abecd95bf9dbf9cb54b67c21ec2663b16492f089c",
+      "archived_sha256": "e7ea043782462526c798f9d570f28a248b82a8f538a9a0a5c518e84a11989734"
+    },
+    "xca-storage-library-configure.log": {
+      "original_sha256": "adbf217ad9eb4158ca6b0be5d647f30f56850492109167d943a14a26009f3da3",
+      "archived_sha256": "2f1714f078720473eefb89dd1507cbbeabcc97c70c764929e744a60e1994cf7e"
+    },
+    "xca-storage-library-expanded-configure.log": {
+      "original_sha256": "804e01884bc42c5e61de385de2de4cc9386fa597add81276eed832f3a610149e",
+      "archived_sha256": "d9598e5c8a540278c759e5327a170c4f3af191644a4224cd794cf94f2a032c04"
+    },
+    "xca-storage-library-restore-configure.log": {
+      "original_sha256": "5c6af1ebaf00c367b2c6ae0282ca12f33edd44d9fc2aaa0e621d56be6d83c7d3",
+      "archived_sha256": "be5873e0d271e8f943c137b0cd4344cd69fd43b41bb48691efb9c21925f7aac2"
+    },
+    "xca-storage-nobench-configure.log": {
+      "original_sha256": "487a6ab2c22534bb814c3af7d23f29a18e25b7f016f98fc81cb21f762c4430f2",
+      "archived_sha256": "6bb86cee8ef5cb54d8a1c46550038df86130cf54abb00476de267f1086d98cb0"
+    },
+    "xca-storage-test-configure.log": {
+      "original_sha256": "48f5058a72bb0177945077cc79e63d417fd2cf466e15a97052c24449df00269e",
+      "archived_sha256": "dbf760bce27667bd4872cdc2582df4bd66b2a2914db8fe3119974cc6653f3700"
+    }
+  }
+}

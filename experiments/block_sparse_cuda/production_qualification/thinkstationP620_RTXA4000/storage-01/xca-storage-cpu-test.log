@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild
+Test project /home/hugstr/dev/xca/cbuild
+    Start 13: block_sparse/cuda_memory_plan
+1/2 Test #13: block_sparse/cuda_memory_plan ......   Passed    0.01 sec
+    Start 18: block_sparse/cuda_storage_policy
+2/2 Test #18: block_sparse/cuda_storage_policy ...   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.03 sec

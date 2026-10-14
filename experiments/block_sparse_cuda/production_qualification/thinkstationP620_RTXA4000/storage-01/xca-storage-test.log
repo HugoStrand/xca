@@ -1,0 +1,37 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 37: block_sparse/cuda_diagram_evaluator
+1/3 Test #37: block_sparse/cuda_diagram_evaluator ...   Passed    7.28 sec
+    Start 40: block_sparse/cuda_memory_plan
+2/3 Test #40: block_sparse/cuda_memory_plan .........   Passed    0.42 sec
+    Start 45: block_sparse/cuda_storage_policy
+3/3 Test #45: block_sparse/cuda_storage_policy ......***Failed    1.10 sec
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from StoragePolicy
+[ RUN      ] StoragePolicy.CompleteCallsBoundsAndRecovery
+unknown file: Failure
+C++ exception with description "DiagramEvaluator: flat-index range must satisfy 0 <= first <= last <= count" thrown in the test body.
+
+[  FAILED  ] StoragePolicy.CompleteCallsBoundsAndRecovery (290 ms)
+[ RUN      ] StoragePolicy.TightBudgetAndInvalidPolicies
+[       OK ] StoragePolicy.TightBudgetAndInvalidPolicies (556 ms)
+[----------] 2 tests from StoragePolicy (846 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (846 ms total)
+[  PASSED  ] 1 test.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] StoragePolicy.CompleteCallsBoundsAndRecovery
+
+ 1 FAILED TEST
+
+
+67% tests passed, 1 tests failed out of 3
+
+Total Test time (real) =   8.81 sec
+
+The following tests FAILED:
+	 45 - block_sparse/cuda_storage_policy (Failed)
+Errors while running CTest
