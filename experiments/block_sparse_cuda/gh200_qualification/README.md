@@ -50,3 +50,14 @@ zero/active windows, an eight-index range, N=10 scalar blocks, an order-six chai
 window and a mixed retarded correlator fallback. Inspect actual survival before
 claiming high-order arithmetic coverage. Allocation is capped at fifteen minutes
 on one GPU; failures stop the campaign. Results use `Arrhenius_GH200/scalar-01`.
+
+`density.sbatch` targets isolated snapshot 6987c4d, preserving the earlier snapshot
+and Arm build. It builds four matched density-set frontends and the new multi-set
+semantic suite plus four production CUDA controls. Tests run before the bounded
+four-case/48-sample density campaign; any failure stops benchmarking. One GPU is
+capped at fifteen minutes (nominal maximum 0.25 GPU-hours), build workers capped
+at six from allocated CPUs. Installed Arm TRIQS is reused; no software is installed.
+Its literal Slurm paths refer to `shared/qualification/xca-block-sparse-6987c4d`.
+Prepare pinned GTest source and source-revisions.json as for the first snapshot.
+Remote syntax/scheduler checks, live queue/balance inspection and actual submission
+are still required; local preparation does not establish target qualification.
