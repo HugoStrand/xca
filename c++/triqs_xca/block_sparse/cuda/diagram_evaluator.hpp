@@ -3,6 +3,7 @@
 #pragma once
 #include "operator_model.hpp"
 #include "path.hpp"
+#include "output_placement.hpp"
 #ifdef NDA_HAVE_CUDA
 #include "dlr_ops.hpp"
 #include <triqs/gfs.hpp>
@@ -22,7 +23,8 @@ namespace triqs_xca::block_sparse::cuda {
     public:
     DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh,
                      std::size_t device_budget = 1024ULL * 1024 * 1024, std::size_t sparse_budget = 32ULL * 1024 * 1024,
-                     SparseBackend operator_backend = SparseBackend::Library, SpecialBackend special_backend = SpecialBackend::Reference);
+                     SparseBackend operator_backend = SparseBackend::Library, SpecialBackend special_backend = SpecialBackend::Reference,
+                     OutputPlacement output_placement = OutputPlacement::Resident, std::size_t host_output_budget = 512ULL * 1024 * 1024);
     ~DiagramEvaluator();
     DiagramEvaluator(DiagramEvaluator const &)            = delete;
     DiagramEvaluator &operator=(DiagramEvaluator const &) = delete;

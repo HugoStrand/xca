@@ -9,14 +9,16 @@ set(source_dir "${PROJECT_SOURCE_DIR}/c++/triqs_xca/block_sparse/cuda")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${source_dir}/diagram_evaluator.hpp" "${source_dir}/diagram_evaluator.cpp")
 file(READ "${source_dir}/diagram_evaluator.hpp" header)
 file(READ "${source_dir}/diagram_evaluator.cpp" source)
+string(REPLACE "      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)"
+  "      if (placement != OutputPlacement::Resident) throw std::invalid_argument(\"Scalar experiment requires resident output\");\n      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)" source "${source}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" header "${header}")
 string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" source "${source}")
 set(source "#include <map>\n${source}")
 string(REPLACE "\"diagram_evaluator.hpp\"" "\"scalar_evaluator.hpp\"\n#include \"../scalar_edges/scalar_pack.hpp\"" source "${source}")
 string(REPLACE "    void evaluate(std::vector<Tensor>" "#include \"scheduler.inc\"\n    void evaluate(std::vector<Tensor>" source "${source}")
 string(REPLACE "if (first != last) x.prepare_self_energy(topology);" "if (first != last) x.prepare_self_energy(topology,x.scalar_extra_bound());" source "${source}")
-set(original "      x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
-                                           [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });")
+set(original "        x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
+                                             [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });")
 string(FIND "${source}" "${original}" position)
 if(position EQUAL -1)
   message(FATAL_ERROR "Scalar scheduler cannot identify original path visitor")
@@ -34,8 +36,8 @@ set(replacement "      if (x.scalar_eligible()) {
 ${original}
       }")
 string(REPLACE "${original}" "${replacement}" source "${source}")
-string(REPLACE "self_energy_storage_bound() const { return impl_->bound(); }"
-  "self_energy_storage_bound() const { return checked_add(impl_->bound(),impl_->scalar_extra_bound()); }" source "${source}")
+string(REPLACE "self_energy_storage_bound() const { return impl_->self_energy_bound(false); }"
+  "self_energy_storage_bound() const { return checked_add(impl_->self_energy_bound(false),impl_->scalar_extra_bound()); }" source "${source}")
 string(REPLACE "    std::vector<Tensor> input(G.size()), output(G.size());"
   "#ifdef XCA_EXPERIMENT_SCALAR_ARENA\n    if(first!=last && x.scalar_eligible())return x.scalar_arena_compute(G,topology,live,first,last);\n#endif\n    std::vector<Tensor> input(G.size()), output(G.size());" source "${source}")
 string(REPLACE "return impl_->self_energy_bound(topology.extent(0) == 1);" "return checked_add(impl_->self_energy_bound(topology.extent(0) == 1),impl_->scalar_extra_bound());" source "${source}")

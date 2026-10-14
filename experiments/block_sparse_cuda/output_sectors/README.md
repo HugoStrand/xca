@@ -46,3 +46,11 @@ with the streamed difference exactly one full output minus one maximum rank tile
 The ownership control prevents attributing return-copy savings to sector streaming.
 The generator preserves both copy and move variants as production evolves, so
 promotion of the move does not silently turn the copying control into another move.
+
+The production C++ evaluator now has explicit `OutputPlacement::HostSectors` with
+the same ordering and complete-output contract. Resident remains its default;
+Python/MPI selection is pending. `resident_header.hpp.in` and `resident_source.cpp.in`
+freeze the pre-placement evaluator used by this experiment, keeping its original
+copy/move/stream comparisons independent of future production placement edits.
+`block_sparse/cuda_host_output` runs all eight reusable observable controls against
+production with HostSectors selected. The original private controls remain separate.

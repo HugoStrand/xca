@@ -73,6 +73,54 @@ TEST(BlockSparseCudaAdmission, ScratchReleaseRetainsTablesAndSolvesAgain) {
   }
 }
 
+TEST(BlockSparseCudaAdmission, CompleteHostOutputPlacement) {
+  for (auto partition : {"number", "mixed", "occupation"}) {
+    auto ad    = block_sparse_bench::atom(4, partition);
+    auto model = gpu::export_model(ad, block_sparse_bench::coefficients(ad));
+    triqs::mesh::dlr_imtime mesh(2., triqs::mesh::Fermion, 20., 1e-10, false);
+    auto G = block_sparse_bench::propagator(ad, mesh);
+    nda::vector<double> poles{-1.5, .6};
+    nda::array<int, 2> topology{{0, 3}, {1, 4}, {2, 5}}, nca{{0, 1}};
+    auto host_bytes = gpu::function_bytes(mesh.dlr_it().rank(), model.dimensions());
+    auto tile       = gpu::inventory_memory(mesh.dlr_it().rank(), model.dimensions(), 0).maximum_rank_buffer;
+    for (auto special : {gpu::SpecialBackend::Reference, gpu::SpecialBackend::Mapped}) {
+      if (special == gpu::SpecialBackend::Mapped && !gpu::mapped_special_available()) continue;
+      auto sparse = special == gpu::SpecialBackend::Mapped ? gpu::SparseBackend::Ordered : gpu::SparseBackend::Library;
+      gpu::DiagramEvaluator resident(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special);
+      gpu::DiagramEvaluator streamed(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special,
+                                     gpu::OutputPlacement::HostSectors, host_bytes);
+      auto bound = streamed.self_energy_storage_bound(topology);
+      EXPECT_EQ(resident.self_energy_storage_bound(topology) - bound, host_bytes - tile);
+      EXPECT_EQ(resident.self_energy_storage_bound(nca) - streamed.self_energy_storage_bound(nca), host_bytes - tile);
+      EXPECT_EQ(resident.correlator_storage_bound(2, 2), streamed.correlator_storage_bound(2, 2));
+      gpu::DiagramEvaluator tight(model, poles, mesh, bound, 32ULL * 1024 * 1024, sparse, special, gpu::OutputPlacement::HostSectors, host_bytes);
+      gpu::DiagramEvaluator rejected(model, poles, mesh, bound, 32ULL * 1024 * 1024, sparse, special);
+      EXPECT_THROW(rejected.compute_self_energy_range(G, topology, 0, 3), std::length_error);
+      exact(tight.compute_self_energy_range(G, topology, 0, 3), resident.compute_self_energy_range(G, topology, 0, 3));
+      gpu::DiagramEvaluator low_host(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, sparse, special,
+                                     gpu::OutputPlacement::HostSectors, host_bytes - 1);
+      EXPECT_THROW(low_host.compute_self_energy_range(G, topology, 0, 3), std::length_error);
+      EXPECT_THROW(low_host.compute_self_energy_range(G, topology, 2, 2), std::length_error);
+      EXPECT_EQ(nda::max_element(
+                   nda::abs(low_host.compute_single_ptcle_gf_range(G, topology, 0, 1) - resident.compute_single_ptcle_gf_range(G, topology, 0, 1))),
+                0.);
+      for (int update = 0; update < 3; ++update) {
+        if (update == 1)
+          for (long b = 0; b < G.size(); ++b) G[b].data() *= 1.01;
+        if (update == 2)
+          for (long b = 0; b < G.size(); ++b)
+            if (b % 2 == 0) G[b].data() = 0.;
+        exact(streamed.compute_self_energy_range(G, topology, 0, 3), resident.compute_self_energy_range(G, topology, 0, 3));
+        EXPECT_EQ(streamed.last_contributing_paths(), resident.last_contributing_paths());
+      }
+      exact(streamed.compute_self_energy_range(G, topology, 2, 2), resident.compute_self_energy_range(G, topology, 2, 2));
+    }
+    EXPECT_THROW(gpu::DiagramEvaluator(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, gpu::SparseBackend::Library,
+                                       gpu::SpecialBackend::Reference, static_cast<gpu::OutputPlacement>(17)),
+                 std::invalid_argument);
+  }
+}
+
 #else
 #include <gtest/gtest.h>
 TEST(BlockSparseCudaAdmission, DISABLED_RequiresCuda) {}

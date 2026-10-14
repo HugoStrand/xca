@@ -79,6 +79,15 @@ in the square case; the next solve raises that to five. The evaluator reserves f
 maximum-size DLR tiles plus fixed tables. Standalone convolutions with aliased output
 retain a separate diagonal buffer and validate the corresponding larger working set.
 
+The C++ evaluator additionally accepts ``OutputPlacement::HostSectors`` and a host
+self-energy output payload budget (default 512 MiB). This keeps one output sector
+on device and the full output on host, preserving GPU accumulation order. Inputs
+remain resident. The device bound replaces one full output function with one maximum
+tile; host payload rejection precedes upload, including empty ranges. The host limit
+excludes caller input, metadata, allocator overhead and a transient sector download.
+Resident output remains the default. SPGF/correlator bounds and behavior are unchanged.
+Python selection of this placement is pending integration.
+
 This initial reference covers self-energy, SPGF and one-time correlators; its
 dispatch/batching optimizations are still under investigation. The performance
 target is GH200-class hardware; workstation measurements are development proxies.

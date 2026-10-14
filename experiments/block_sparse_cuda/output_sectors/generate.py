@@ -3,9 +3,9 @@ from pathlib import Path
 import sys
 
 root, destination = map(Path, sys.argv[1:])
-source_dir = root / 'c++/triqs_xca/block_sparse/cuda'
-header = (source_dir / 'diagram_evaluator.hpp').read_text()
-source = (source_dir / 'diagram_evaluator.cpp').read_text()
+source_dir = Path(__file__).resolve().parent
+header = (source_dir / 'resident_header.hpp.in').read_text()
+source = (source_dir / 'resident_source.cpp.in').read_text()
 # Normalize ownership for the streaming template; keep copying as a control.
 source = source.replace('    return {std::move(result)};', '    return {result};')
 
@@ -78,12 +78,12 @@ destination.mkdir(parents=True, exist_ok=True)
 (destination / 'output_evaluator.hpp').write_text(header)
 (destination / 'output_evaluator.cpp').write_text(source)
 # Keep both ownership controls, independent of the production return choice.
-original = (source_dir / 'diagram_evaluator.cpp').read_text()
+original = (source_dir / 'resident_source.cpp.in').read_text()
 if original.count('    return {result};') + original.count('    return {std::move(result)};') != 1:
     raise RuntimeError('Resident return-ownership seam changed')
 for name, stem, ownership in [('MoveOutputEvaluator', 'move', 'std::move(result)'),
                                ('CopyOutputEvaluator', 'copy', 'result')]:
-    control_header = (source_dir / 'diagram_evaluator.hpp').read_text().replace('DiagramEvaluator', name)
+    control_header = (source_dir / 'resident_header.hpp.in').read_text().replace('DiagramEvaluator', name)
     control_source = original.replace('    return {std::move(result)};', '    return {result};')
     control_source = control_source.replace('    return {result};', f'    return {{{ownership}}};')
     control_source = control_source.replace('DiagramEvaluator', name).replace('"diagram_evaluator.hpp"', f'"{stem}_evaluator.hpp"')

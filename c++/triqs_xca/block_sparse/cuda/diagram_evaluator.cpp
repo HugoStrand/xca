@@ -46,6 +46,8 @@ namespace triqs_xca::block_sparse::cuda {
     std::size_t budget, kernel_bytes, dlr_bound, operator_budget;
     SparseBackend operator_backend;
     SpecialBackend special_backend;
+    OutputPlacement output_placement;
+    std::size_t host_output_budget;
     PathCounts counts{};
     std::size_t contributions = 0;
     std::size_t baseline_free = 0, peak_delta = 0;
@@ -55,7 +57,7 @@ namespace triqs_xca::block_sparse::cuda {
       if (free < baseline_free) peak_delta = std::max(peak_delta, baseline_free - free);
     }
     Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit,
-         SparseBackend selected, SpecialBackend special_selected)
+         SparseBackend selected, SpecialBackend special_selected, OutputPlacement placement, std::size_t host_limit)
        : model(std::move(input)),
          mesh(std::move(tau)),
          r(mesh.dlr_it().rank()),
@@ -63,7 +65,11 @@ namespace triqs_xca::block_sparse::cuda {
          budget(limit),
          operator_budget(operator_limit),
          operator_backend(selected),
-         special_backend(special_selected) {
+         special_backend(special_selected),
+         output_placement(placement),
+         host_output_budget(host_limit) {
+      if (placement != OutputPlacement::Resident && placement != OutputPlacement::HostSectors)
+        throw std::invalid_argument("Invalid output placement");
       if (special_selected != SpecialBackend::Reference && special_selected != SpecialBackend::Mapped)
         throw std::invalid_argument("Invalid special backend");
       if (special_selected == SpecialBackend::Mapped && !mapped_special_available())
@@ -112,6 +118,8 @@ namespace triqs_xca::block_sparse::cuda {
     }
     std::size_t self_energy_bound(bool nca) const {
       auto generic = bound();
+      if (output_placement == OutputPlacement::HostSectors)
+        generic = checked_add(generic - function_bytes(r, model.dimensions()), inventory_memory(r, model.dimensions(), 0).maximum_rank_buffer);
       if (!nca) return generic;
       auto tables = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(checked_add(r, 1), sizeof(int)));
       if (dlr_bound < tables) throw std::logic_error("Invalid DLR scratch reserve");
@@ -450,14 +458,16 @@ namespace triqs_xca::block_sparse::cuda {
     }
   };
   DiagramEvaluator::DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh, std::size_t budget,
-                                     std::size_t sparse_budget, SparseBackend operator_backend, SpecialBackend special_backend)
-     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend, special_backend)) {}
+                                     std::size_t sparse_budget, SparseBackend operator_backend, SpecialBackend special_backend,
+                                     OutputPlacement output_placement, std::size_t host_output_budget)
+     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend, special_backend,
+                                    output_placement, host_output_budget)) {}
   DiagramEvaluator::~DiagramEvaluator() = default;
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();
     return Backbone(topology, impl_->model.num_fields(), impl_->model.num_interactions()).num_flat_indices(impl_->model.num_poles());
   }
-  std::size_t DiagramEvaluator::self_energy_storage_bound() const { return impl_->bound(); }
+  std::size_t DiagramEvaluator::self_energy_storage_bound() const { return impl_->self_energy_bound(false); }
   std::size_t DiagramEvaluator::self_energy_storage_bound(nda::array_const_view<int, 2> topology) const {
     get_num_self_energy_backbones(topology);
     return impl_->self_energy_bound(topology.extent(0) == 1);
@@ -528,25 +538,61 @@ namespace triqs_xca::block_sparse::cuda {
       }
       live[b] = magnitude >= 1e-16;
     }
-    x.counts        = {};
-    x.contributions = 0;
-    x.peak_delta    = 0;
+    x.counts          = {};
+    x.contributions   = 0;
+    x.peak_delta      = 0;
+    bool host_sectors = x.output_placement == OutputPlacement::HostSectors;
+    if (host_sectors && function_bytes(x.r, x.model.dimensions()) > x.host_output_budget)
+      throw std::length_error("Full self-energy output exceeds host payload budget");
     if (first != last) x.prepare_self_energy(topology); // Before input/output upload or path arithmetic.
     std::vector<Tensor> input(G.size()), output(G.size());
+    std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
+    long active_output = -1;
+    auto flush_output  = [&] {
+      if (active_output >= 0) {
+        x.ops->finish();
+        result[active_output].data() = nda::to_host(output[active_output]);
+        output[active_output]        = Tensor();
+        active_output                = -1;
+      }
+    };
+    if (host_sectors)
+      for (long b = 0; b < G.size(); ++b) {
+        auto d = x.model.dimensions()[b];
+        result.emplace_back(x.mesh, nda::zeros<Complex>(x.r, d, d));
+      }
     if (first != last) {
       std::size_t total = 0;
       if (cudaMemGetInfo(&x.baseline_free, &total) != cudaSuccess) throw std::runtime_error("CUDA entry memory query failed");
       for (long b = 0; b < G.size(); ++b) {
         auto d = x.model.dimensions()[b];
         if (live[b]) input[b] = Tensor(G[b].data());
-        output[b] = Tensor(x.r, d, d);
-        x.ops->zero(output[b]);
+        if (!host_sectors) {
+          output[b] = Tensor(x.r, d, d);
+          x.ops->zero(output[b]);
+        }
       }
       x.sample_memory();
-      x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
-                                           [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });
+      if (!host_sectors) {
+        x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
+                                             [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });
+      } else {
+        x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last, [&](Backbone &backbone, SelfEnergyPath const &path) {
+          if (active_output != path.output_block) {
+            flush_output();
+            active_output         = path.output_block;
+            output[active_output] = Tensor(result[active_output].data());
+            x.ops->wait_for_default_uploads();
+            x.sample_memory();
+          }
+          x.evaluate(input, output, backbone, path);
+        });
+      }
     }
-    std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
+    if (host_sectors) {
+      flush_output();
+      return {std::move(result)};
+    }
     for (long b = 0; b < G.size(); ++b) {
       auto d      = x.model.dimensions()[b];
       auto values = first == last ? nda::zeros<Complex>(x.r, d, d) : nda::to_host(output[b]);
