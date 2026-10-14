@@ -235,6 +235,30 @@ strategy. Keep full output/API and caller input storage accounted. Remaining lar
 allocation, optimized promotion and Python/MPI/full-suite gates stay open. Target
 budget unchanged .27556GPU-hours; no new cluster allocation for metadata work.
 
+### 2026-10-14 — Qualified NCA six-tensor reserve
+
+NCA reference special lives in six rank tensors including T; mapped either uses
+fewer or falls back to that implementation. No convolution edges; separate bounded
+CSR/workspace and weight storage, cache reset before replacement, DLR scratch
+release precedes admission. Production and host-only planner subtract one additional
+maximum tile for NCA. Generic/convolution/correlator and arithmetic unchanged;
+historical admission experiment preserves its old reserve.
+
+Forty-four inherited/production CUDA controls,24 dynamic fallback/policy routes and
+two boundedN10 placement calls pass. Exactbudget admits, onebyte lower rejects, changed
+inputs match generous reference. Focused memcheck zero errors/leaks, CPU-only planner
+passes. N10 sampled deltas stay below bounds; physical sampling is not liveness proof.
+Evidence: common/CPU local reference-nca-liveness-01, old reports retained.
+
+N14 host-output Reference NCA admission envelope now47.517GiB at r26/116.921GiB at
+r64, versus convolution74.898/184.318GiB. This makes r64 NCA fit a declared120GiB
+payload envelope, conditional on actual free HBM/host budget. No physical rank/fullN14
+or GH200 allocation is qualified. Current default512MiB host limit still rejects
+full14-mode outputs; large host budget must be explicit. Refresh production full
+CPU/CUDA/Python/MPI checks next and resolve scalar promotion/defer policy using
+numerical/target evidence. Larger convolution capacity requires separate work.
+Target cumulative .27556GPU-hours unchanged this step; goal remains active.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device

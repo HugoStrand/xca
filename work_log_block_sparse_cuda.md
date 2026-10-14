@@ -1,5 +1,49 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Six-tensor NCA liveness qualification
+
+Previous goal turn was progress: production host-only preflight exposed rank sensitivity.
+Audited NCA: no ordinary vertices/convolution edges, reference special retains T/out/
+kap/weighted/mu/term (six maximum rank tensors); mapped uses fewer or falls back to
+this reference. CSR/workspace separately bounded, old sparse cache reset before new,
+row weights separately charged and retained DLR scratch released before admission.
+Reduced NCA reserve by one tile; generic/convolution/correlator unchanged. Host-only
+planner updated. Arithmetic/allocations unchanged: tighter admission, not runtime
+storage savings. Historical nca_admission generator explicitly retains seven-tensor
+reserve plus its old DLR reserve; all other experiment code/results kept.
+
+FiveCUDA entries/44controls pass64.03s with isolated peak check: scalar_streams20,
+historicalNca10, productionadmission3, referenceobservables8, planner3. Added liveness
+control24routes, dynamic number/mixed/occupation models across Library/Ordered,
+Reference/Mapped, resident/host-sector output, changedinputs. Number/mixed retarded
+sum+identity operator explicitly fails column-map eligibility, exercising fallback.
+First compile needed explicit many_body_operator scalar construction, corrected.
+Exact-bound succeeds; bound-minus-one rejects before work; OCA rejects; numerical
+arrays match generous reference exactly and remain active. Added boundedN10 number
+sector one-index NCA for bothplacements, preserving completeG/returnedoutputs. Two
+new controls pass12.05s. Observed N10 resident/host-sector deltas274,726,912/226,492,416
+bytes within309,795,936/265,175,200 bounds. Sampling allows64MiB library/allocator
+context overhead and may miss intermediate peaks; this is separate from liveness
+proof/admission. Focused24-route memcheck passes55.940s, zeroerrors/leaks. Sanitized
+peak rows excluded from physical-observation CSV. CPU-only planner two controls pass.
+
+Regenerated fourcases/16metadata rows, assert NCA exactlyone-tile difference versus
+previous stored report; convolution/correlator/hostoutput unchanged. N14 host-sector
+Reference NCA r26 52.081→47.517GiB, r64 128.154→116.921GiB, within declared120GiB
+payload budget. Convolution74.898/184.318GiB unchanged. Fulloutput15.543/38.258GiB
+needs explicit largehost budget (diagnostic64GiB vs productiondefault512MiB). No
+fullN14 numerical/physical-rank/actualGH200 memory qualification follows. Extra caller
+inputs/model/atom_diag/hostcopies/context/free-memory checks still required.
+
+Code560d402/evidence4f9e833 separate from this plan/log. Raw metadata/hashes/testlogs,
+26physical peak rows and interpretation in common/CPU local reference-nca-liveness-01.
+Temporary /tmp/xca-nca-live-* may disappear. All processes terminal. No new target
+hours (.27556 cumulative), install/push or unrelated changes. Goal active. Next
+refresh complete production CPU/CUDA and Python/MPI verification, then make an
+explicit scalar promotion/defer decision from target evidence and numerical cutoff
+policy. Larger convolution capacity still needs a distinct strategy and qualification;
+do not call the whole goal complete from these local NCA controls.
+
 ## 2026-10-14 — Host-only production memory preflight
 
 Previous goal turn was progress: upload events qualified/committed. Reviewed E7 and
