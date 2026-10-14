@@ -15,6 +15,20 @@ Local measurements establish correctness and screen ideas; target measurements m
 establish dispatch thresholds, memory policy and production defaults. Here N means
 fermionic modes (spin orbitals), not spatial orbitals whose spin doubles N.
 
+### Production storage facade checkpoint
+
+The C++ storage policies are now available through the consolidated Python facade
+(`storage_policy`) and mutable Solver (`block_sparse_storage_policy`). Resident remains
+the default, including old archives. HostInputs and StreamFragments require reference
+NCA. CPU-only preference validation does not import CUDA. Deepcopy/HDF, complete
+observable output, rank-local collective errors and recovery are locally qualified.
+Two local MPI ranks pass all 12 storage/observable tests after fixing a default-stream
+initialization versus owned-stream copy race. Optional dense-small binding guards
+survive scoped regeneration. Evidence is under production_qualification/
+thinkstationP620_RTXA4000/storage-python-01. Next refresh broader suites and audit
+remaining capacity and accuracy gates; this checkpoint does not qualify target
+Python/MPI, full physical N14, or composed large-Solver capacity.
+
 ### Arrhenius experiment budget
 
 The user's Arrhenius allocation is **100 GPU-hours/month**, shared with their other

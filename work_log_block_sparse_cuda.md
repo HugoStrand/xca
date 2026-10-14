@@ -1,5 +1,41 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Python storage policies and stream ordering
+
+Exposed Resident(default), HostInputs and StreamFragments through all four consolidated
+facade constructors and mutable Solver block_sparse_storage_policy. Validate before
+CUDA import/model export; nonresident policies require reference NCA, not real_batch.
+Preferences survive deepcopy/HDF; old archives default to resident. Regenerated only
+consolidated CUDA bindings and restored optional dense-small guards. CPU preferences
+need no CUDA import. Constructor-bound probes verify all policies/signatures are forwarded.
+
+MPI tests exposed an actual HostInputs race: NDA complex allocation initialization runs
+on the default stream, whereas host copies use a nonblocking owned stream. Added the
+existing default-stream event handoff before copies (7054f0c). Diagnostic comparisons
+now match Resident exactly; no tolerance waiver. Facade/Solver/tests/docs committed
+separately as 85ecb2d. Initial binding-target attempt unavailable with regeneration OFF;
+direct clair generation succeeded. Corrected direct C++ exception expectation to c2py
+RuntimeError, and MPI launcher to apply CTest ENVIRONMENT_MODIFICATION build-tree paths.
+Failed attempts and before/after race diagnostics remain in the evidence archive.
+
+Post-fix native three CTests pass119.54 s:22 C++ storage controls50.18 s,
+Py_cuda_backends1.59 s and12 block-sparse Python methods67.77 s. Library-only two
+pass52.47 s (0.92/51.54), native flags OFF. CPU metadata/archive entry passes0.69 s,
+two active and ten GPU skips. Two local MPI ranks each pass12 methods331.449/331.454 s,
+launcher0, including static/dynamic SE/SPGF/correlators, storage/placement combinations,
+rank-local initialization/budget failures and recovery. GPU runs strictly sequential.
+Evidence: production_qualification/thinkstationP620_RTXA4000/storage-python-01, original
+hashes retained with archive whitespace normalization. These are focused checks, not
+new full-suite or target Python/MPI qualification.
+
+SSH restored and bounded probe succeeds; queue empty, prior GH200 job3847180 remains
+COMPLETED0:0/138 s. No duplicate/new allocation. Target cumulative1704 GPU-seconds,
+0.47333 nominal GPU-hours, subject to shared100 GPU-hour/month ceiling. GH200-class
+remains target; localA4000 qualifies glue. All handles terminal; unrelated files and
+experiments preserved, no install/push/supervisor changes. Goal active. Next refresh
+broader production suites and audit remaining functionality/capacity/accuracy gates;
+full physicalN14 and composed Solver capacity are not newly qualified.
+
 ## 2026-10-14 — Production C++ storage policy integration
 
 Previous turn was progress: native policy and84 GiB phase qualified on GH200. Froze the
