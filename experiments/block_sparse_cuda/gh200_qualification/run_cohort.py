@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
-    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams'], default='initial')
+    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams', 'real_nca'], default='initial')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -98,6 +98,20 @@ def main():
                 'gpu_staging': staging/'block_sparse_scalar_density_staging_benchmark',
                 'gpu_streams': streams/'block_sparse_scalar_density_streams_benchmark',
             }
+    if args.cohort == 'real_nca':
+        experiment = args.build/'benchmarks/experiments/block_sparse_cuda'
+        binaries = {
+            'cpu_constants': experiment/'scalar_paths/block_sparse_cpu_scalar_constants_benchmark',
+            'ordered': binaries['ordered'],
+            'prototype': experiment/'scalar_real_nca/block_sparse_scalar_real_nca_benchmark',
+            'production': args.build/'benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark',
+        }
+        cases = [
+            ('n4-nca', 4, 'occupation', 'se', 1, False, 0, 1, 'crossing'),
+            ('n8-nca', 8, 'occupation', 'se', 1, False, 0, 1, 'crossing'),
+            ('n4-oca-fallback', 4, 'occupation', 'se', 2, False, 0, 1, 'crossing'),
+            ('n4-number-fallback', 4, 'number', 'se', 1, False, 0, 1, 'crossing'),
+        ]
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
                     cohort=args.cohort,
                     host=platform.node(), platform=platform.platform(),

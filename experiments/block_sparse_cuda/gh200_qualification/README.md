@@ -68,3 +68,20 @@ parity-hoisted CPU/GPU frontends, and runs nineteen candidate controls plus four
 production CUDA CTests before the four-case/36-sample resident campaign. One GPU,
 fifteen-minute cap (0.25 nominal GPU-hours); no install or shared-checkout update.
 Record actual job status and allocated time before claiming target qualification.
+
+`real_nca.sbatch` is prepared for isolated source snapshot b5a131c. It builds and
+qualifies the production pointwise NCA policy and retained prototype before running
+`run_cohort.py --cohort real_nca`: four cases, four routes, three samples (48 rows).
+Routes are the constants CPU control, general ordered CUDA, retained real-NCA
+prototype and production. Cases include N4/N8 real scalar NCA and higher-order/
+number-sector fallback. CPU control preparation differs from the unchanged CPU
+frontend; keep that distinction in comparisons. This is not a full topology sum,
+large-system qualification, Python/MPI target test, or universal crossover table.
+
+The script retains one GPU / fifteen minutes (at most .25 nominal GPU-hours),
+uses the installed Arm TRIQS stack, and installs nothing. Literal log paths point
+to `shared/qualification/xca-block-sparse-b5a131c`. Stage pinned b5a131c sources
+and GTest as before, copy the updated runner/job recipe separately, and record all
+archive/runner hashes. Local syntax/help checks and local cohort replay do not
+prove remote scheduler acceptance or execution. Live SSH/account/queue checks and
+`sbatch --test-only` remain required before exactly one authorized submission.
