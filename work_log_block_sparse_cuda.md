@@ -1,5 +1,38 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Pointwise real NCA primitive
+
+Extracted the guarded experiment's pointwise arithmetic into an internal production
+RealNcaBatch primitive. Fixed capacity 512, immutable forward/reflected real tables,
+checked payload budget, owned stream, persistent metadata/value buffers, ordered
+per-output accumulation and strict completed-lane cutoff. No DLR transform or solver
+scratch. Caller still must verify exactly real inputs and safe intermediate/whole
+output range before selecting it; no public policy or dispatcher integration yet.
+Device descriptors are trivial POD; uploads drain before host buffers die, including
+error paths. Invalid shapes/metadata and input/output aliases reject before submission.
+
+Code 437629f and evidence 315f66a are separate commits. Focused final CPU CTest passes
+.02 s (one active metadata/capability control, GPU disabled); native CUDA passes .82 s
+(three active controls); native-disabled CUDA passes .45 s (capability and constructor
+rejection active, threshold case skipped). Tests cover 511-lane and tail batches,
+reference sparse/BLAS arithmetic, forward/reflected weights, parity, existing output,
+cutoff-adjacent doubles, live subnormal and metadata recovery. Recorded native memcheck
+passes three controls in 3.031 s with zero errors/leaks, before the final capability-only
+test edits. Initial underscore CTest regex matched no tests; corrected slash-qualified
+runs provide the evidence. All three builds and verification processes terminal.
+
+User reports restored Arrhenius connection, but bounded noninteractive probe still
+returns Permission denied from this process. Requested reconnection from ts; no new
+job submitted. The earlier resident qualification already completed as 3828369; do
+not duplicate it. Allocation remains 992 s / .27556 nominal GPU-hours, against shared
+100 GPU-hours/month. These new controls are local A4000 evidence, not GH200 qualification.
+
+Goal active. Next integrate guarded production NCA selection, explicit policy and
+consolidated bindings/Python/MPI, then consider a capped target finalist. Higher-order
+numerical acceptance and larger convolution capacity remain open. Preserve baseline
+and experiments. No push/install, supervisor change or unrelated user edits. Evidence:
+experiments/block_sparse_cuda/production_qualification/thinkstationP620_RTXA4000/real-nca-01.
+
 ## 2026-10-14 — Guarded real scalar NCA prototype
 
 Previous turn was progress: observable sensitivity/cancellation diagnostics. Added

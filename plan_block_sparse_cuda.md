@@ -356,6 +356,21 @@ cover FP64/subnormal/order/budget/lifetime behavior before choosing defaults. Ke
 higher-order replay/enclosure and large-convolution work in the wholegoal; NCA is
 incremental, not a narrower completion definition. No new target allocation.
 
+## 2026-10-14 — Internal pointwise NCA kernel checkpoint
+
+The production tree now contains a qualified internal RealNcaBatch primitive
+(code 437629f; local evidence 315f66a). It owns only real NCA tables and bounded
+metadata/value buffers, preserves sequential field/lane accumulation and the strict
+completed-lane cutoff, and has CPU/native/native-disabled controls plus a clean native
+memory check. This is not yet an evaluator policy: callers must establish exactly
+real inputs and a finite intermediate/whole-output range guard. Integrate that guard,
+explicit selection and consolidated C++/Python/MPI controls next. Keep the general
+reference for unsupported inputs/observables and retain all experimental variants.
+Higher-order numerical gates and convolution memory capacity remain open; no fixed
+cutoff band is promoted by this NCA extraction. GH200 qualification is still required
+for target conclusions; current evidence uses the local RTX A4000. No new cluster
+allocation was consumed, and the earlier resident job 3828369 must not be resubmitted.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
