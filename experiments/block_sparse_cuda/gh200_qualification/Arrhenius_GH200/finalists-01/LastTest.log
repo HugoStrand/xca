@@ -1,0 +1,140 @@
+Start testing: Oct 14 23:59 CEST
+----------------------------------------------------------
+37/82 Testing: block_sparse/cuda_async_failure
+37/82 Test: block_sparse/cuda_async_failure
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse/cuda_async_failure"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_async_failure" start time: Oct 14 23:59 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/deps/GTest/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaFailure
+[ RUN      ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback
+[       OK ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback (2358 ms)
+[----------] 1 test from BlockSparseCudaFailure (2358 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (2358 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   2.90 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_async_failure" end time: Oct 15 00:00 CEST
+"block_sparse/cuda_async_failure" time elapsed: 00:00:02
+----------------------------------------------------------
+
+41/82 Testing: block_sparse/cuda_mapped_special
+41/82 Test: block_sparse/cuda_mapped_special
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse/cuda_mapped_special"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_mapped_special" start time: Oct 15 00:00 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/deps/GTest/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaMapped
+[ RUN      ] BlockSparseCudaMapped.MultiFieldRectangularPathsChangedInputAndMasks
+[       OK ] BlockSparseCudaMapped.MultiFieldRectangularPathsChangedInputAndMasks (1151 ms)
+[ RUN      ] BlockSparseCudaMapped.BosonicOffDiagonalMixingPreservesReflectedOrder
+[       OK ] BlockSparseCudaMapped.BosonicOffDiagonalMixingPreservesReflectedOrder (124 ms)
+[ RUN      ] BlockSparseCudaMapped.MetadataAdmissionAndEmptyRange
+[       OK ] BlockSparseCudaMapped.MetadataAdmissionAndEmptyRange (83 ms)
+[ RUN      ] BlockSparseCudaMapped.NonMappingBosonicSetUsesReference
+[       OK ] BlockSparseCudaMapped.NonMappingBosonicSetUsesReference (115 ms)
+[ RUN      ] BlockSparseCudaMapped.KernelMatchesSparseWeightingWithComplexEmptyColumnsAndTails
+[       OK ] BlockSparseCudaMapped.KernelMatchesSparseWeightingWithComplexEmptyColumnsAndTails (2 ms)
+[ RUN      ] BlockSparseCudaMapped.CancellationKeepsFieldOrderAndEmptyColumns
+[       OK ] BlockSparseCudaMapped.CancellationKeepsFieldOrderAndEmptyColumns (1 ms)
+[ RUN      ] BlockSparseCudaMapped.CompletedNcaPathCutoffNeighborhood
+[       OK ] BlockSparseCudaMapped.CompletedNcaPathCutoffNeighborhood (79 ms)
+[ RUN      ] BlockSparseCudaMapped.InvalidPolicyAndUnavailableCapability
+[       OK ] BlockSparseCudaMapped.InvalidPolicyAndUnavailableCapability (3 ms)
+[----------] 8 tests from BlockSparseCudaMapped (1560 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (1561 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   1.70 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_mapped_special" end time: Oct 15 00:00 CEST
+"block_sparse/cuda_mapped_special" time elapsed: 00:00:01
+----------------------------------------------------------
+
+43/82 Testing: block_sparse/cuda_nca_dispatch
+43/82 Test: block_sparse/cuda_nca_dispatch
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse/cuda_nca_dispatch"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_nca_dispatch" start time: Oct 15 00:00 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/deps/GTest/googletest/src/gtest_main.cc
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from ProductionRealNca
+[ RUN      ] ProductionRealNca.MultiSetTailChangedInputsAndGeneralFallback
+[       OK ] ProductionRealNca.MultiSetTailChangedInputsAndGeneralFallback (54276 ms)
+[ RUN      ] ProductionRealNca.AdjacentCutoffWithoutReplay
+[       OK ] ProductionRealNca.AdjacentCutoffWithoutReplay (23 ms)
+[ RUN      ] ProductionRealNca.UnsafeRangeAndComplexModelFallback
+[       OK ] ProductionRealNca.UnsafeRangeAndComplexModelFallback (33 ms)
+[ RUN      ] ProductionRealNca.RangeAdmissionAndOtherObservables
+[       OK ] ProductionRealNca.RangeAdmissionAndOtherObservables (471 ms)
+[ RUN      ] ProductionRealNca.PolicyAvailability
+[       OK ] ProductionRealNca.PolicyAvailability (3 ms)
+[----------] 5 tests from ProductionRealNca (54808 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (54808 ms total)
+[  PASSED  ] 5 tests.
+<end of output>
+Test time =  54.94 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_nca_dispatch" end time: Oct 15 00:00 CEST
+"block_sparse/cuda_nca_dispatch" time elapsed: 00:00:54
+----------------------------------------------------------
+
+45/82 Testing: block_sparse/cuda_real_nca
+45/82 Test: block_sparse/cuda_real_nca
+Command: "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse/cuda_real_nca"
+Directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/test/c++/block_sparse
+"block_sparse/cuda_real_nca" start time: Oct 15 00:00 CEST
+Output:
+----------------------------------------------------------
+Running main() from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/deps/GTest/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from RealNcaStorage
+[ RUN      ] RealNcaStorage.CheckedPayload
+[       OK ] RealNcaStorage.CheckedPayload (0 ms)
+[----------] 1 test from RealNcaStorage (0 ms total)
+
+[----------] 3 tests from RealNcaPrimitive
+[ RUN      ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery
+[       OK ] RealNcaPrimitive.OrderedSpecialCutoffTailAndMetadataRecovery (994 ms)
+[ RUN      ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission
+[       OK ] RealNcaPrimitive.OverlappingViewsRejectBeforeSubmission (1 ms)
+[ RUN      ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal
+[       OK ] RealNcaPrimitive.AdjacentThresholdAndLiveSubnormal (2 ms)
+[----------] 3 tests from RealNcaPrimitive (998 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 2 test suites ran. (998 ms total)
+[  PASSED  ] 4 tests.
+<end of output>
+Test time =   1.14 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_real_nca" end time: Oct 15 00:01 CEST
+"block_sparse/cuda_real_nca" time elapsed: 00:00:01
+----------------------------------------------------------
+
+End testing: Oct 15 00:01 CEST
+
+cuda_fault_injection =   2.90 sec*proc

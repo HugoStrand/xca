@@ -1,0 +1,236 @@
+[  0%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/kernels.cu.o
+[ 11%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/real_nca.cu.o
+[ 11%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/mapped.cu.o
+[ 11%] Linking CUDA static library libtriqs_xca_sparse_kernels.a
+[ 11%] Built target triqs_xca_sparse_kernels
+[ 11%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:194:12: warning: declaration of ‘x’ shadows a previous local [-Wshadow=local]
+  194 |       auto x = reinterpret_cast<std::uintptr_t>(a.data()), y = reinterpret_cast<std::uintptr_t>(b.data());
+      |            ^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:186:11: note: shadowed declaration is here
+  186 |     auto &x = *impl_;
+      |           ^
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 33%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:284:30: warning: declaration of ‘bool is_forward’ shadows a parameter [-Wshadow=compatible-local]
+  284 |   auto F_selector = [&](bool is_forward, int b_ix_ix, int p_ix, int ix) {
+      |                         ~~~~~^~~~~~~~~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:272:128: note: shadowed declaration is here
+  272 | void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0,
+      |                                                                                                                           ~~~~~^~~~~~~~~~
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 55%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+[ 55%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 55%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 55%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 55%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 66%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 77%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 77%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 77%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 77%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+[ 77%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 88%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[ 88%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+[ 88%] Linking CXX static library libtriqs_xca_c.a
+[ 88%] Built target triqs_xca_c
+[ 88%] Building CXX object benchmarks/block_sparse_cpu/CMakeFiles/block_sparse_cpu_benchmark.dir/block_sparse_cpu_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cpu/../block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark.cpp:1:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cpu/../block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cpu/../block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cpu/../block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cpu_benchmark
+[100%] Built target block_sparse_cpu_benchmark
+[ 12%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/hoisted_evaluator.cpp.o
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/dlr_hoisted/CMakeFiles/block_sparse_cpu_hoisted_benchmark.dir/block_sparse_cpu_hoisted_benchmark.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/dlr_hoisted/hoisted_evaluator.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/dlr_hoisted/hoisted_evaluator.cpp:284:30: warning: declaration of ‘bool is_forward’ shadows a parameter [-Wshadow=compatible-local]
+  284 |   auto F_selector = [&](bool is_forward, int b_ix_ix, int p_ix, int ix) {
+      |                         ~~~~~^~~~~~~~~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda/benchmarks/experiments/block_sparse_cuda/dlr_hoisted/hoisted_evaluator.cpp:272:135: note: shadowed declaration is here
+  272 | void HoistedDiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0,
+      |                                                                                                                                  ~~~~~^~~~~~~~~~
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/dlr_hoisted/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/dlr_hoisted/block_sparse_cpu_hoisted_benchmark.cpp:4:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/dlr_hoisted/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/dlr_hoisted/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/dlr_hoisted/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cpu_hoisted_benchmark
+[100%] Built target block_sparse_cpu_hoisted_benchmark
+[ 11%] Built target triqs_xca_sparse_kernels
+[ 88%] Built target triqs_xca_c
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/scalar_paths/CMakeFiles/block_sparse_cpu_scalar_constants_benchmark.dir/block_sparse_cpu_scalar_path_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/scalar_paths/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_path_benchmark.cpp:2:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/scalar_paths/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/scalar_paths/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/experiments/block_sparse_cuda/scalar_paths/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cpu_scalar_constants_benchmark
+[100%] Built target block_sparse_cpu_scalar_constants_benchmark
+[ 12%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_benchmark.dir/block_sparse_cuda_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark.cpp:1:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cuda_benchmark
+[100%] Built target block_sparse_cuda_benchmark
+[ 12%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_ordered_benchmark.dir/block_sparse_cuda_ordered_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark.cpp:3:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cuda_ordered_benchmark
+[100%] Built target block_sparse_cuda_ordered_benchmark
+[ 12%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_mapped_benchmark.dir/block_sparse_cuda_mapped_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/block_sparse_cuda_mapped_benchmark.cpp:3:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cuda_mapped_benchmark
+[100%] Built target block_sparse_cuda_mapped_benchmark
+[ 12%] Built target triqs_xca_sparse_kernels
+[100%] Built target triqs_xca_c
+[100%] Building CXX object benchmarks/block_sparse_cuda/CMakeFiles/block_sparse_cuda_real_nca_benchmark.dir/block_sparse_cuda_real_nca_benchmark.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/block_sparse_cuda_real_nca_benchmark.cpp:4:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/benchmarks/block_sparse_cuda/../block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse_cuda_real_nca_benchmark
+[100%] Built target block_sparse_cuda_real_nca_benchmark
+[ 10%] Building CXX object deps/GTest/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[ 10%] Built target triqs_xca_sparse_kernels
+[ 80%] Built target triqs_xca_c
+[ 80%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/block_sparse.cpp.o
+[ 80%] Building CXX object test/c++/CMakeFiles/triqs_xca_test_utils.dir/test_utils/dense.cpp.o
+[ 80%] Linking CXX static library ../../../lib/libgtest.a
+[ 80%] Built target gtest
+[ 80%] Building CXX object deps/GTest/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[ 90%] Linking CXX static library libtriqs_xca_test_utils.a
+[ 90%] Built target triqs_xca_test_utils
+[100%] Linking CXX static library ../../../lib/libgtest_main.a
+[100%] Built target gtest_main
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_async_failure.dir/block_sparse/cuda_async_failure.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_async_failure.cpp:6:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+[100%] Linking CXX executable block_sparse/cuda_async_failure
+[100%] Built target block_sparse_cuda_async_failure
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[ 18%] Built target gtest_main
+[ 81%] Built target triqs_xca_c
+[ 90%] Built target triqs_xca_test_utils
+[ 90%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_mapped_special.dir/block_sparse/cuda_mapped_special.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_mapped_special.cpp:6:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_mapped_special.cpp: In member function ‘virtual void BlockSparseCudaMapped_InvalidPolicyAndUnavailableCapability_Test::TestBody()’:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_mapped_special.cpp:284:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wdangling-else]
+  284 |   if (!gpu::mapped_special_available()) EXPECT_THROW(make_mapped(model, poles, mesh), std::runtime_error);
+      |      ^
+[100%] Linking CXX executable block_sparse/cuda_mapped_special
+[100%] Built target block_sparse_cuda_mapped_special
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[ 18%] Built target gtest_main
+[ 81%] Built target triqs_xca_c
+[ 90%] Built target triqs_xca_test_utils
+[ 90%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_nca_dispatch.dir/block_sparse/cuda_nca_dispatch.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/call_runner.hpp:2,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:5:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:44:28: warning: declaration of ‘int n’ shadows a parameter [-Wshadow=compatible-local]
+   44 |     auto binomial = [](int n, int k) {
+      |                        ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/../../../benchmarks/block_sparse_common/fixture.hpp:43:52: note: shadowed declaration is here
+   43 |   inline std::vector<long> analytic_dimensions(int n, std::string const &partition) {
+      |                                                ~~~~^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp: In member function ‘virtual void ProductionRealNca_AdjacentCutoffWithoutReplay_Test::TestBody()’:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:69:5: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   69 |     for (long b=0;b<G.size();++b) G[b].data()=0.;G[0].data()=amplitude;
+      |     ^~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:69:50: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   69 |     for (long b=0;b<G.size();++b) G[b].data()=0.;G[0].data()=amplitude;
+      |                                                  ^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp: In member function ‘virtual void ProductionRealNca_PolicyAvailability_Test::TestBody()’:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/src/test/c++/block_sparse/cuda_nca_dispatch.cpp:129:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wdangling-else]
+  129 |   if (!gpu::real_nca_available()) EXPECT_THROW(BatchEvaluator(model,poles,mesh),std::runtime_error);
+      |      ^
+[100%] Linking CXX executable block_sparse/cuda_nca_dispatch
+[100%] Built target block_sparse_cuda_nca_dispatch
+[  9%] Built target triqs_xca_sparse_kernels
+[  9%] Built target gtest
+[ 18%] Built target gtest_main
+[ 81%] Built target triqs_xca_c
+[ 90%] Built target triqs_xca_test_utils
+[100%] Building CXX object test/c++/CMakeFiles/block_sparse_cuda_real_nca.dir/block_sparse/cuda_real_nca.cpp.o
+[100%] Linking CXX executable block_sparse/cuda_real_nca
+[100%] Built target block_sparse_cuda_real_nca

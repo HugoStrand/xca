@@ -1,0 +1,4 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cpu_hoisted,6,mixed,1,correlator,crossing,2,23,16,9,0,1,0,9.7331690000000002,1.097793,13.835326999999999,2.5281530000000001,0.093855862126426826,0,0,184320,0,0,NA,NA,NA
+cpu_hoisted,6,mixed,1,correlator,crossing,2,23,16,9,0,1,1,9.7331690000000002,1.097793,13.835326999999999,2.49193,0.093855862126426826,0,0,184320,0,0,NA,NA,NA
+cpu_hoisted,6,mixed,1,correlator,crossing,2,23,16,9,0,1,2,9.7331690000000002,1.097793,13.835326999999999,2.4895299999999998,0.093855862126426826,0,0,184320,0,0,NA,NA,NA

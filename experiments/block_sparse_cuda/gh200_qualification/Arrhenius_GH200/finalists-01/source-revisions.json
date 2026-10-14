@@ -1,0 +1,14 @@
+{
+  "xca": "d9fa8a2be38863cc2d0b54edf0d2899baba66bd7",
+  "runtime": "85ecb2d",
+  "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a",
+  "recipe_commit": "b052919",
+  "runner_sha256": "812a54f6a1d02cfbe15ca6a1722c9e0407405ebaf919be2242251083e72241a9",
+  "job_sha256": "a1b31ebd62bfa43db971c079c7aee33a4c89a2831ed90d95a7d3ebca310b8a6d",
+  "gpu_count": 1,
+  "walltime_cap_seconds": 900,
+  "processes": 126,
+  "samples": 378,
+  "case_selection": "Six fixed production/control cases, three fresh processes, three samples; no N10/N14 repetition",
+  "shared_allocation_gpu_hours_per_month": 100
+}

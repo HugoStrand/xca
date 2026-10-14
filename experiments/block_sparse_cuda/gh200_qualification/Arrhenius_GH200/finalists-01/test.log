@@ -1,0 +1,17 @@
+Internal ctest changing into directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda
+Test project /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-finalists-d9fa8a2/cbuild_cuda
+    Start 37: block_sparse/cuda_async_failure
+1/4 Test #37: block_sparse/cuda_async_failure ....   Passed    2.90 sec
+    Start 41: block_sparse/cuda_mapped_special
+2/4 Test #41: block_sparse/cuda_mapped_special ...   Passed    1.70 sec
+    Start 43: block_sparse/cuda_nca_dispatch
+3/4 Test #43: block_sparse/cuda_nca_dispatch .....   Passed   54.94 sec
+    Start 45: block_sparse/cuda_real_nca
+4/4 Test #45: block_sparse/cuda_real_nca .........   Passed    1.14 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+cuda_fault_injection    =   2.90 sec*proc (1 test)
+
+Total Test time (real) =  60.72 sec

@@ -1,0 +1,12 @@
+{
+  "samples": 378,
+  "processes": 126,
+  "unique_pids": 126,
+  "groups": 42,
+  "processes_per_group": 3,
+  "all_child_statuses_zero": true,
+  "all_sample_metrics_finite_nonnegative": true,
+  "all_signals_nonzero": true,
+  "maximum_absolute_error": 1.3326300227043823e-14,
+  "maximum_relative_error": 5.7076352156454585e-15
+}

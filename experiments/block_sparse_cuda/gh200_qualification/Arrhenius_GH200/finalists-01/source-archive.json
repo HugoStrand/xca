@@ -1,0 +1,7 @@
+{
+  "source_commit": "d9fa8a2be38863cc2d0b54edf0d2899baba66bd7",
+  "recipe_commit": "b052919",
+  "runtime_commit": "85ecb2d",
+  "staged_archive_sha256": "e3277ae5ab908c51ffac6c7eb9f60bacc49f5e83368bc43bf4e6fd614e64e3f6",
+  "normalization": "Archived text uses LF, strips trailing whitespace and retains one final newline. raw-sha256.json hashes downloaded originals."
+}
