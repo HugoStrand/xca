@@ -1,0 +1,361 @@
+{
+  "source": "21e11000d76641705d213d4b331025fa3b36f55c",
+  "binaries": {
+    "reference": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+      "sha256": "fe435f8c4d8b96c5e3095dd9b29e3ff128ae0ed408edbe00864cf2ca6094007e"
+    },
+    "rows": {
+      "path": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+      "sha256": "eedd30b8b16584f602df2bd945aa3865bac93285c4153276470bc50dd553849b"
+    }
+  },
+  "cases": [
+    {
+      "name": "n4-number-oca",
+      "route": "reference",
+      "row_cap": 1,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-oca",
+      "route": "rows",
+      "row_cap": 1,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n4-number-oca",
+      "route": "rows_sampled",
+      "row_cap": 1,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "reference",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "rows",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-number-oca",
+      "route": "rows_sampled",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "reference",
+      "row_cap": 8,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "rows",
+      "row_cap": 8,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n8-number-oca",
+      "route": "rows_sampled",
+      "row_cap": 8,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "8",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "reference",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "rows",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n6-mixed-spgf",
+      "route": "rows_sampled",
+      "row_cap": 4,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "6",
+        "--partition",
+        "mixed",
+        "--observable",
+        "spgf",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "reference",
+      "row_cap": 16,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_cuda/block_sparse_cuda_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "rows",
+      "row_cap": 16,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "3"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "n10-number-oca",
+      "route": "rows_sampled",
+      "row_cap": 16,
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "number",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--first",
+        "0",
+        "--count",
+        "1",
+        "--samples",
+        "1"
+      ],
+      "returncode": 0
+    }
+  ],
+  "policy": "sequential GPU runs, one OMP/BLAS thread, warm complete-call fixture, 3 timing samples; allocation observer separately 1 sample"
+}

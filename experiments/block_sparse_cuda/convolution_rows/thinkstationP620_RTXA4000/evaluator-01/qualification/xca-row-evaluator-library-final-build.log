@@ -1,0 +1,14 @@
+[  5%] Built target gtest
+[ 11%] Built target gtest_main
+[ 82%] Built target triqs_xca_c
+[ 88%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_dlr.dir/row_dlr.cpp.o
+[ 94%] Built target triqs_xca_test_utils
+[ 94%] Linking CXX static library libblock_sparse_row_dlr.a
+[ 94%] Built target block_sparse_row_dlr
+[ 94%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_evaluator.dir/row_evaluator.cpp.o
+[ 94%] Linking CXX static library libblock_sparse_row_evaluator.a
+[ 94%] Built target block_sparse_row_evaluator
+[ 94%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_evaluator_tests.dir/inherited_evaluator_tests.cpp.o
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_evaluator_tests.dir/evaluator_tests.cpp.o
+[100%] Linking CXX executable block_sparse_row_evaluator_tests
+[100%] Built target block_sparse_row_evaluator_tests

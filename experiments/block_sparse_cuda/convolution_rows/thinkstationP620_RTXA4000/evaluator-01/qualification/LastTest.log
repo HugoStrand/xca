@@ -1,0 +1,50 @@
+Start testing: Oct 14 20:12 CEST
+----------------------------------------------------------
+24/116 Testing: experiments/block_sparse_cuda/convolution_row_evaluator
+24/116 Test: experiments/block_sparse_cuda/convolution_row_evaluator
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows/block_sparse_row_evaluator_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/convolution_rows
+"experiments/block_sparse_cuda/convolution_row_evaluator" start time: Oct 14 20:12 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 10 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2213 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (677 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (30 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3434 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (796 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (7161 ms total)
+
+[----------] 2 tests from RowEvaluator
+[ RUN      ] RowEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] RowEvaluator.CompleteCallsChangedInputAndPlacement (1900 ms)
+[ RUN      ] RowEvaluator.CompleteBudgetRejectionAndRecovery
+[       OK ] RowEvaluator.CompleteBudgetRejectionAndRecovery (290 ms)
+[----------] 2 tests from RowEvaluator (2191 ms total)
+
+[----------] Global test environment tear-down
+[==========] 10 tests from 2 test suites ran. (9352 ms total)
+[  PASSED  ] 10 tests.
+<end of output>
+Test time =   9.61 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/convolution_row_evaluator" end time: Oct 14 20:12 CEST
+"experiments/block_sparse_cuda/convolution_row_evaluator" time elapsed: 00:00:09
+----------------------------------------------------------
+
+End testing: Oct 14 20:12 CEST

@@ -1,0 +1,2 @@
+backend,modes,partition,dynamic,observable,topology,order,rank,blocks,max_dim,first,last,sample,atom_ms,evaluator_setup_ms,cpu_control_ms,call_ms,signal_norm,max_abs_error,relative_error,host_peak_kib,device_bound_bytes,device_peak_delta,proposed,accepted,pruned
+cuda_row_convolution,6,mixed,0,spgf,crossing,2,23,16,9,0,1,0,9.1434899999999999,160.73772399999999,8.2822549999999993,180.65834899999999,0.01877007139104013,4.5106295884375699e-17,2.4030966608846856e-15,512740,34371632,0,576,153,423

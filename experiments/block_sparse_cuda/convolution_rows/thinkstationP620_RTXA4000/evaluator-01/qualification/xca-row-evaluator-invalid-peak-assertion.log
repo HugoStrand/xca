@@ -1,0 +1,55 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 24: experiments/block_sparse_cuda/convolution_row_evaluator
+1/1 Test #24: experiments/block_sparse_cuda/convolution_row_evaluator ...***Failed    9.52 sec
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 10 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2182 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (669 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (3420 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (789 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (7099 ms total)
+
+[----------] 2 tests from RowEvaluator
+[ RUN      ] RowEvaluator.CompleteCallsChangedInputAndPlacement
+[       OK ] RowEvaluator.CompleteCallsChangedInputAndPlacement (1878 ms)
+[ RUN      ] RowEvaluator.CompleteBudgetRejectionAndRecovery
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/convolution_rows/evaluator_tests.cpp:80: Failure
+Expected: (tight.last_device_peak_delta()) > (0), actual: 0 vs 0
+
+/home/hugstr/dev/xca/experiments/block_sparse_cuda/convolution_rows/evaluator_tests.cpp:80: Failure
+Expected: (tight.last_device_peak_delta()) > (0), actual: 0 vs 0
+
+[  FAILED  ] RowEvaluator.CompleteBudgetRejectionAndRecovery (287 ms)
+[----------] 2 tests from RowEvaluator (2165 ms total)
+
+[----------] Global test environment tear-down
+[==========] 10 tests from 2 test suites ran. (9265 ms total)
+[  PASSED  ] 9 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] RowEvaluator.CompleteBudgetRejectionAndRecovery
+
+ 1 FAILED TEST
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   9.52 sec
+
+The following tests FAILED:
+	 24 - experiments/block_sparse_cuda/convolution_row_evaluator (Failed)
+Errors while running CTest

@@ -1,0 +1,11 @@
+[  0%] Built target triqs_xca_small_kernels
+[  8%] Built target triqs_xca_sparse_kernels
+[  8%] Built target gtest
+[ 16%] Built target gtest_main
+[ 75%] Built target triqs_xca_c
+[ 83%] Built target block_sparse_row_dlr
+[ 91%] Built target triqs_xca_test_utils
+[ 91%] Built target block_sparse_row_evaluator
+[100%] Building CXX object benchmarks/experiments/block_sparse_cuda/convolution_rows/CMakeFiles/block_sparse_row_evaluator_tests.dir/evaluator_tests.cpp.o
+[100%] Linking CXX executable block_sparse_row_evaluator_tests
+[100%] Built target block_sparse_row_evaluator_tests

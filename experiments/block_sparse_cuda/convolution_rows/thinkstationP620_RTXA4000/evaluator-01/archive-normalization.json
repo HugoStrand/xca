@@ -1,0 +1,29 @@
+{
+  "policy": "Archive-only LF and trailing-whitespace normalization; numeric values unchanged.",
+  "files": {
+    "qualification/xca-row-evaluator-audit-configure.log": {
+      "original_sha256": "450f68708a910eea3d7573adaf436cb566bf6a4d138ceebafc1730c6abe30a6e",
+      "archived_sha256": "d2f0b17a328c55d7e1be6a30742add4dbd223e6dd9dfa38a66ad98d9d191f2ae"
+    },
+    "qualification/xca-row-evaluator-configure.log": {
+      "original_sha256": "450f68708a910eea3d7573adaf436cb566bf6a4d138ceebafc1730c6abe30a6e",
+      "archived_sha256": "d2f0b17a328c55d7e1be6a30742add4dbd223e6dd9dfa38a66ad98d9d191f2ae"
+    },
+    "qualification/xca-row-evaluator-cpu-configure.log": {
+      "original_sha256": "fdb9d9e1bedaaa207b941a638e01d858e73c84e2cb1478c7ac573360852a4bb4",
+      "archived_sha256": "cf6982957c62a546401078b259ef1573e0af8d91cf3ee30b1dfc045b6a14991e"
+    },
+    "qualification/xca-row-evaluator-final-configure.log": {
+      "original_sha256": "450f68708a910eea3d7573adaf436cb566bf6a4d138ceebafc1730c6abe30a6e",
+      "archived_sha256": "d2f0b17a328c55d7e1be6a30742add4dbd223e6dd9dfa38a66ad98d9d191f2ae"
+    },
+    "qualification/xca-row-evaluator-library-configure.log": {
+      "original_sha256": "cad62426c2693eb9349b0b37ab86a3c6953c35164964a1f4156e1e3ce58b1ccd",
+      "archived_sha256": "047afb264f2afc11b2be53789e4a6b102dbb1ef7541a338d5cfc32ab4bc9168a"
+    },
+    "qualification/xca-row-evaluator-library-final-configure.log": {
+      "original_sha256": "cad62426c2693eb9349b0b37ab86a3c6953c35164964a1f4156e1e3ce58b1ccd",
+      "archived_sha256": "047afb264f2afc11b2be53789e4a6b102dbb1ef7541a338d5cfc32ab4bc9168a"
+    }
+  }
+}

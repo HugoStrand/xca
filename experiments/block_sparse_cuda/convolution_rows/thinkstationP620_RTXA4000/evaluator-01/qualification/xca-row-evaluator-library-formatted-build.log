@@ -1,0 +1,7 @@
+[  5%] Built target gtest
+[ 11%] Built target gtest_main
+[ 82%] Built target triqs_xca_c
+[ 88%] Built target triqs_xca_test_utils
+[ 94%] Built target block_sparse_row_dlr
+[ 94%] Built target block_sparse_row_evaluator
+[100%] Built target block_sparse_row_evaluator_tests

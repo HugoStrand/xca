@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 24: experiments/block_sparse_cuda/convolution_row_evaluator
+1/1 Test #24: experiments/block_sparse_cuda/convolution_row_evaluator ...   Passed    9.75 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   9.75 sec
