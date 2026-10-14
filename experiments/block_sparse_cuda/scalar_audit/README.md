@@ -47,3 +47,17 @@ general convolution exactly on all three fixtures. The wide variant still differ
 solve width and rank-transform layout remain numerical effects. Product replacement
 alone is not a fix or a promoted evaluator. Timings of this diagnostic are excluded
 from speedup claims. Outputs/residuals/conditions and memcheck live in hardware folders.
+
+Optional `block_sparse_scalar_stage_audit --sensitivity output.csv` evaluates the
+cached-table convolution formula and its analytic Jacobians using224/320binary-bit
+arithmetic. Directional and bilinear identity checks validate the formula; precision
+agreement must be better than1e-25 without relaxing that criterion. Earlier160-bit
+calculation failed this check on cancellation-heavy inputs, so precision was increased.
+The node Jacobian multiplies the coefficient Jacobian by the existing double cached-
+LU inverse. That inverse remains approximate; convergence is not interval certification.
+
+Sensitivity norms use componentwise complex l1 and row-sum norms. Absolute scales
+expand the intermediate terms before cancellation. They distinguish a benign smooth
+case from enormous cancellation in the difficult node inputs. All previous42GPU stage
+rows must remain unchanged. These are numerical diagnostics; they neither implement
+an eligibility rule nor bound the opaque library's floating arithmetic.

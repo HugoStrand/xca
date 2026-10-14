@@ -3,6 +3,8 @@
 #include "../scalar_edges/scalar_pack.hpp"
 #include "../../../benchmarks/block_sparse_common/call_runner.hpp"
 #include <iomanip>
+#include <fstream>
+#include "sensitivity.hpp"
 
 namespace gpu = triqs_xca::block_sparse::cuda;
 using Complex = nda::dcomplex;
@@ -33,8 +35,15 @@ double compare(auto const &wide, auto const &narrow) {
   return result;
 }
 
-int main() {
+int main(int argc, char **argv) {
   try {
+    std::ofstream sensitivity;
+    if (argc != 1) {
+      if (argc != 3 || std::string(argv[1]) != "--sensitivity") throw std::invalid_argument("Expected --sensitivity output.csv");
+      sensitivity.open(argv[2]);
+      if (!sensitivity) throw std::runtime_error("Cannot open sensitivity output");
+      sensitivity << std::setprecision(17) << "pattern,rank,coefficient_jacobian_f,node_jacobian_f,coefficient_jacobian_g,node_jacobian_g,ideal_narrow_norm,ideal_wide_norm,ideal_solve_effect,quadratic_effect,narrow_absolute_scale,wide_absolute_scale,precision_relative_difference,bits\n";
+    }
     std::cout << std::setprecision(17)
       << "pattern,rank,lanes,stage,max_abs_difference,narrow_norm,wide_norm,coefficient_norm,narrow_residual,wide_residual,condition_estimate,long_double_digits\n";
     for (auto pattern : {std::string("smooth"), std::string("oscillating"), std::string("complex")}) {
@@ -72,6 +81,23 @@ int main() {
         return result;
       };
       double condition = row_norm(C) * row_norm(inverse);
+      if (sensitivity.is_open()) {
+        auto H = nda::to_host(narrow.H), Q = nda::to_host(narrow.Q);
+        auto low = scalar_sensitivity::measure<224>(C,H,Q,inverse,nf,ng,wf,wg);
+        auto high = scalar_sensitivity::measure<320>(C,H,Q,inverse,nf,ng,wf,wg);
+        scalar_sensitivity::Real<320> difference = 0;
+        for (std::size_t i=0;i<high.size();++i) {
+          auto delta = boost::multiprecision::abs(scalar_sensitivity::Real<320>(low[i])-high[i]);
+          auto scale = std::max(scalar_sensitivity::Real<320>(1),boost::multiprecision::abs(high[i]));
+          difference = std::max(difference,scalar_sensitivity::Real<320>(delta/scale));
+        }
+        if (difference > scalar_sensitivity::Real<320>("1e-25")) throw std::runtime_error("Sensitivity precision convergence failed");
+        sensitivity << pattern << ',' << rank;
+        for (auto const &value:high) sensitivity << ',' << value.template convert_to<double>();
+        sensitivity << ',' << difference.template convert_to<double>() << ",320\n";
+        sensitivity.flush();
+      }
+
       auto norm = [](auto const &a) { double v = 0; for (auto z : a) v = std::max(v, std::abs(z)); return v; };
       auto emit = [&](char const *stage, auto const &w, auto const &n, double coef, long double nr, long double wr) {
         std::cout << pattern << ',' << rank << ",512," << stage << ',' << compare(w, n) << ',' << norm(n) << ',' << norm(w)
