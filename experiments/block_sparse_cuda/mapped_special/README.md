@@ -55,3 +55,41 @@ compares both bounded caches with the reference and mapper. Finish tests/profile
 before isolated timings. Selected-index results do not establish Solver/topology
 throughput or target dispatch. Next replay actual fourteen-mode sparse maps on
 bounded row slabs without atom_diag, and continue large-sector streaming/admission.
+
+## Actual Fock-sector row slices
+
+`block_sparse_mapped_slab_benchmark` generates all canonical fields between adjacent
+half-filled number sectors, using occupation masks and exact fermionic signs.
+Creation uses their adjoints. No Hamiltonian, atom_diag diagonalization or full
+solver evaluation is constructed. CPU checks include known four-mode matrix entries
+and fourteen-mode number/complement completeness; each field has 1716 entries in
+3003x3432 or 3432x3003 blocks.
+
+The primitive forms one mu row slice, with deterministic dense complex input and
+complex rank-dependent weights. Rows are bounded to 128 and the source-sector
+size, rank to 26, explicit tensor/map/operator payload to one GiB with free-memory
+headroom. A matched serial CPU computes the same ordered field sum. GPU controls
+separate right applications/weights/additions with all operator snapshots resident,
+which favors that reference versus rebuilding snapshots in the production loop.
+The resident mapper times synchronized execution with fixed inputs/maps/weights.
+A separate route includes map rebuilding, uploads and mu download while input and
+output tensors remain allocated. It does not include input upload, the left operator,
+remaining mu summation, path cutoff, DLR transforms, full output, MPI or model setup.
+
+Setup and controls are outside timing; resident GPU result downloads are outside
+those resident timers. CPU and maps/download routes return owned host results inside
+their timers. Validation includes finite outputs, strict 1e-13 relative control and
+exact resident mapped replay. Profiler/sanitizer times are excluded from comparisons.
+
+```bash
+python3 experiments/block_sparse_cuda/mapped_special/run_slabs.py \
+ --machine thinkstationP620_RTXA4000 --campaign fock-slabs-01
+```
+
+The recorder runs both directions for modes 4, 10 and 14, with actual sector widths,
+including rank 26 and 32/128-row fourteen-mode slices. Three timed repetitions per
+route/case remain one process, not independent trials. Raw rows and provenance go
+under this experiment's hardware folder. These replays qualify map indexing at
+large dimensions and primitive memory costs, not fourteen-mode full-call admission.
+GH200 remains the target; serial CPU/compiler optimization and transfer costs must
+remain visible when assessing any primitive advantage.
