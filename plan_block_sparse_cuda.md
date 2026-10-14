@@ -1066,6 +1066,18 @@ Oversized settings reject without altering state; explicit clear releases host
 snapshot capacity as well as device entries. This closes forced-limit and selected
 range-tail controls, not broader cohort selection, setup-policy or GH200 gates.
 
+Broader private checkpoint `selection-01`: distributed connected selections within
+15/105/4096 scanned pairings, first indices 0/7/31 (count three), three four-mode
+partitions and one six-mode number case yield 28 processes/252 exact paired samples.
+Both accepted and contributing path counts match, including output-cutoff rejection.
+Changed-G active order-3 gains are 18–27% locally; the six-mode number case gains
+21.5%. Order-6 mixed selections remain roughly neutral/slower, so keep a selective
+policy rather than unconditional reuse. The bounded generator prefix is not a
+population sample; topology discovery/model setup remain outside device timing.
+Next measure the cost of a reuse selection policy against always-on/off execution
+and wider/random index cohorts. These local results do not qualify GH200 performance
+or settle the remaining full-function memory and many-small batching decisions.
+
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
 operator/block paths, including low-overlap controls. Existing correlator fragment
 reuse is part of the baseline. A candidate shared node must agree in all numerical

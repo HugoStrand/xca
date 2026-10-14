@@ -2126,3 +2126,49 @@ test}.log, /tmp/xca-bs-prefix-limits-final-{configure,build,test}.log,
 /tmp/xca-bs-prefix-limits-library-{configure,build,test}.log and
 /tmp/xca-bs-prefix-limits-memcheck.log. Full production suites remain the prior
 checkpoint; these focused checks qualify the private cache experiment only.
+
+## 2026-10-14 — Distributed topology and index selections
+
+Previous goal turn was progress: forced cache limits, capacity release, tails and
+both native configurations were verified and committed. Extended the private cache
+benchmark with bounded first/count/modes selection, validating every topology domain
+before timing. Original CLI remains supported. Paired complete-call comparisons now
+also require exact accepted and contributing path counts and finite cached outputs.
+No production evaluator or integration policy changes.
+
+New selection-01 recorder scans at most 4096 actual diag.py pairings, then spreads up
+to six connected topologies across the bounded set. Order-3/4 scans exhaust 15/105
+pairings and select 4/6 of 4/27 connected topologies. Order 6 scans only 4096 of
+10,395 pairings, selects six of 963 connected members; this remains biased rather
+than population sampling. First indices 0,7,31 cover three indices in each four-mode
+number/mixed/occupation case. One extra six-mode number order-3 case uses first 7.
+Discovery time and actual selections are retained; discovery/model setup are outside
+device timing. Snapshot invalidation, key generation, misses/copies and transfers
+remain inside changed-G complete-call timings. No concurrent builds/tests/profilers
+overlapped the timing campaign.
+
+28 processes / 252 samples pass exact output and accepted/contributing count checks.
+Largest charged cache is 2,278,656 bytes; forced saturation evidence remains the
+earlier limit tests. Active changed-G order-3 four-mode gains are 18.0–27.1%; six-mode
+number medians are 202.672/159.149 ms independent/cached (21.5% reduction). Active
+order-4 gains are 11.1–20.3%, order-6 number 8.9–9.0%; mixed order-6 ranges from .7%
+regression to 1.0% reduction with zero/two hits. Occupation order-4 first 0 and all
+selected order-6 have no accepted paths, excluded from active-work gain claims.
+Accepted-but-output-cutoff-rejected number paths agree on both routes; this is not
+a separately constructed cutoff-adjacency proof.
+
+Benchmark build, final source-hash check and invalid first/count/modes argument
+controls pass. After timings terminate, distributed mixed order-4 first31/count3
+memcheck/full leaks passes all nine complete-call samples with zero errors/leaks.
+These are benchmark qualification checks; earlier full production suites and private
+ten-control regression remain the prior checkpoints. No new target-hardware timing
+claim. Data/manifest under topology_reuse/thinkstationP620_RTXA4000/selection-01;
+logs /tmp/xca-bs-prefix-selection-{build,campaign,memcheck}.log.
+
+Goal stays active. Broader evidence supports selective graph-free sharing but not
+universal promotion. Next measure reuse-selection overhead versus always-on/off
+execution and wider/random index cohorts; audit remaining full-function memory and
+many-small batching gates. GH200-class hardware remains the target, with local
+RTX A4000 results only a development proxy. All baselines/experiments and unrelated
+user work preserved. Code/data and plan/log commits separate; no push/install or
+supervisor changes.
