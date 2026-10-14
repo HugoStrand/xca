@@ -1981,6 +1981,56 @@ API comparisons, consolidated bindings, mutable Solver preferences, archives/dee
 collective MPI failure/recovery. Target phase success is one gate toward this integration,
 not a completion claim or permission to drop complete-output checks.
 
+### Production C++ storage policies integrated (2026-10-14)
+
+The qualified choices are now implemented in the production C++ evaluator (9524c0c):
+`StoragePolicy::Resident` (unchanged default), `HostInputs` (borrow host blocks, retain
+correlator fragments), and `StreamFragments` (host inputs plus two per-index slots).
+One shared input/edge/fragment implementation implements them; production is not generated
+from experiments. Complete outputs and existing output placement remain orthogonal.
+RealBatch explicitly requires Resident. Constructor/type-domain validation and admission
+reject incompatible settings before uploads. `last_fragment_builds()` reports builds.
+
+Host policies use the qualified completed-phase schedule, seven temporary rank tensors
+for SE convolution and eight for streamed correlators; caller storage/fixed/operator/
+result/trace/headroom reserves remain as derived. `reference_memory_plan` accepts the
+same optional policy and agrees with runtime accessors. Strided host views pack at most
+one host block, then finish the owned-stream read before releasing it. This CPU staging
+is additional to caller host input/output and outside device bounds; include it in host
+capacity planning. Resident device copies preserve the existing operations/shapes.
+
+Before integration, evaluator source/hashes were frozen under
+`experiments/block_sparse_cuda/reference_snapshot` (98a5ebd). Retained generators now
+read this snapshot and compile against unchanged DeviceOps/DlrOps/model helpers; those
+helpers still need separate baseline audits if changed later. A renamed reference library
+supports direct exact comparisons. The new CUDA test fixture also builds with benchmarks
+OFF. CPU-only configuration has no GPU dependency and runs host metadata inventory.
+
+Native final storage CTest passes22 controls in50.79 s, including both eight-control
+inherited suites for HostInputs/StreamFragments, exact frozen comparisons, all native
+sparse/special choices with dynamic interactions, changed G/masks, complete outputs,
+tight-budget rejection/recovery, strided NaN-sentinel packing, and54 adjacent-cutoff
+policy probes at ranks23/28. One of22 is host-only inventory. Frozen stream experiment
+still passes14 controls in13.80 s; two CTests64.59 s. Library-only20 active/one native
+skip pass, plus added cutoff test9.053 s. Two ordinary lifetime controls memcheck232.746 s
+and strided packing5.502 s report zero errors/leaks. CPU host tests pass, GPU cases disabled.
+All configured CPU/native CUDA targets build, including all retained experiments. Library
+build is focused targets, not a new all-target/full-suite claim. Existing resident Python
+CUDA checks plus three C++ entries pass five CTests81.75 s, proving resident constructor/
+entry-point compatibility, not new-policy Python support. [Evidence](experiments/block_sparse_cuda/production_qualification/thinkstationP620_RTXA4000/storage-01/README.md).
+
+No new target job or performance claim for the refactored production glue; prior GH200
+qualification belongs to the equivalent candidate/phase and retains its limits. Complete
+physical N14 construction/rank accuracy/composed Solver capacity remain unqualified.
+Next add `storage_policy` to the consolidated CUDA facade/explicit instantiations and
+GPU helper, and mutable `block_sparse_storage_policy` Solver preference. Preserve Resident
+on old archives/defaults, deepcopy/HDF, CPU-only metadata without CUDA import, early string/
+arena validation and collective MPI initialization/evaluation failure/recovery. Regenerate
+only intended CUDA bindings, reconfigure copied Python sources in all variants, then test
+all observables and forced storage choices through Python/two-rank MPI. Retain baselines
+and reserve another capped target run for an integration question that local checks cannot
+answer. GH200 remains target; no additional Arrhenius time this turn.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

@@ -1,5 +1,62 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Production C++ storage policy integration
+
+Previous turn was progress: native policy and84 GiB phase qualified on GH200. Froze the
+current evaluator source/hashes under reference_snapshot and repointed retained experiment
+input/dependency seams, preserving helpers and every candidate (98a5ebd). Configure succeeds,
+source hashes match originals; all configured native targets including retained experiments
+build. Renamed baseline library used by new direct comparisons. C++ test fixture can be
+configured/built with Build_Benchmarks OFF; restored library tree ON afterward. CPU-only
+build does not require the CUDA fixture. Helper changes still need separate snapshot audit.
+
+Integrated shared production Inputs/edges/fragments with StoragePolicy Resident(default),
+HostInputs and StreamFragments (9524c0c). Input provider uploads only requested host blocks
+on owned stream, or keeps resident arrays/copies. Both host modes release completed phase
+values/scratch as qualified; streamed correlators use two per-index/call root-keyed slots,
+evict before construction and retain endpoint accumulation order. No production generation,
+row reassociation, cutoff band, hidden CPU fallback or output truncation. Explicit arena
+requires Resident; invalid enum/combination rejects before uploads. Host-only memory planner
+optional policy matches runtime bounds for both output placements. Exposed fragment build
+observer. Strided GF views CPU-pack one block and drain before staging release; input/output/
+optional packing/model CPU costs separate from declared device bound.
+
+Initial configure failed mixing keyword linkage into a plain-link CMake target; corrected
+and made baseline fixture independently available when benchmarks OFF. Initial comparison
+fixture requested two NCA indices though its domain is one; bounded by actual reported
+count and reset original G per scenario. No implementation failure/tolerance waived.
+Full inherited evaluator suites added for both host policies, alongside exact frozen tests,
+policy combinations, budgets/recovery and strided NaN-sentinel input. CPU metadata inventory
+works without device; GPU-disabled CPU case is not evidence for CUDA. Native/library builds
+use separate trees; no same-tree concurrent build and no concurrent GPU verification.
+
+Final native storage22 controls pass50.79 s (one host-only inventory), retained frozen
+stream14 pass13.80 s, two CTests64.59 s. Before added cutoff test, default-reference/memory/
+storage/Python resident checks pass five CTests81.75 s: C++7.38/.42/42.53 s, Python CUDA
+backends1.70 s and block-sparse CUDA29.72 s. Library-only three CTests43.72 s, storage20
+active/one native skip; additional frozen adjacent-cutoff control9.053 s. Final production
+cutoff comparison covers54 probes (three policies, nine neighbors, ranks23/28), exact
+matrices/counts. Higher-order/dynamic/correlator/tiny-root inherited suites retained.
+Ordinary lifetime/admission memcheck two controls232.746 s, strided packing one5.502 s,
+zero errors/leaks. CPU two host CTests .03 s, GPU case disabled. Native flags both OFF
+in library tree, no new native proof from it. Native/CPU all targets build; library focused
+checks only. No newly claimed full CTest sweep, MPI run or new-policy Python support.
+
+Evidence ddae16d under production_qualification/thinkstationP620_RTXA4000/storage-01:
+failed/final configure/build/test logs, copied raw test output, memcheck and binary/source
+metadata. Archive-only whitespace normalization records original hashes. Frozen reference,
+production code/tests and evidence commits separate; this plan/log separate. User files
+preserved. All process/session handles terminal; no install/push/supervisor or new Arrhenius
+allocation (tracked cumulative .47333 nominal GPU-hours). GH200-class is target; A4000
+qualifies refactored glue. Prior candidate/large-phase target evidence retains its limits.
+
+Goal active. Next consolidated facade `storage_policy` forwarding/instantiations, lazy GPU
+helper validation and mutable Solver `block_sparse_storage_policy`, Resident defaults for
+old archives/CPU metadata, deepcopy/HDF and collective errors. Then regenerate scoped
+bindings, reconfigure build-tree Python copies, verify all observables and two-rank MPI
+for actual memory choices. New policies currently selectable from C++ only. Full physical
+N14/rank accuracy/composed Solver capacity not newly claimed. Preserve all experiments.
+
 ## 2026-10-14 — Native policies and GH200 large phase
 
 Previous turn was progress: two-slot fragment streaming qualified/benchmarked locally,
