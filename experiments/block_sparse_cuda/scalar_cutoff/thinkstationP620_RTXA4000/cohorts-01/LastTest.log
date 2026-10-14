@@ -1,0 +1,71 @@
+Start testing: Oct 14 12:45 CEST
+----------------------------------------------------------
+6/104 Testing: experiments/block_sparse_cuda/scalar_cutoff
+6/104 Test: experiments/block_sparse_cuda/scalar_cutoff
+Command: "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_cutoff/block_sparse_scalar_cutoff_tests"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_cutoff
+"experiments/block_sparse_cuda/scalar_cutoff" start time: Oct 14 12:45 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 17 tests from 4 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs
+[       OK ] BlockSparseCudaEvaluator.SpgfAndBosonicCorrelatorExactInputs (2173 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.CorrelatorApiErrorsRecoveryAndRangeAdditivity (672 ms)
+[ RUN      ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload
+[       OK ] BlockSparseCudaEvaluator.RealAtomDiagFermionicEndpointOverload (7 ms)
+[ RUN      ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl
+[       OK ] BlockSparseCudaEvaluator.LongDoubleCachedSolveAndConvolutionControl (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues
+[       OK ] BlockSparseCudaEvaluator.CorrelatorKeepsMaskedStartingValues (29 ms)
+[ RUN      ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks
+[       OK ] BlockSparseCudaEvaluator.SelfEnergyThreeControlsAndChangedMasks (2624 ms)
+[ RUN      ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary
+[       OK ] BlockSparseCudaEvaluator.MagnitudePolicyAcrossChunkBoundary (0 ms)
+[ RUN      ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity
+[       OK ] BlockSparseCudaEvaluator.OrdinaryManualNcaAndRangeAdditivity (789 ms)
+[----------] 8 tests from BlockSparseCudaEvaluator (6297 ms total)
+
+[----------] 7 tests from ScalarPathQualification
+[ RUN      ] ScalarPathQualification.CohortTailChangedValuesAndMasks
+[       OK ] ScalarPathQualification.CohortTailChangedValuesAndMasks (1584 ms)
+[ RUN      ] ScalarPathQualification.CompletedPathCutoffAdjacentValues
+[       OK ] ScalarPathQualification.CompletedPathCutoffAdjacentValues (57 ms)
+[ RUN      ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange
+[       OK ] ScalarPathQualification.AdditionalWorkspaceAdmissionAndEmptyRange (15 ms)
+[ RUN      ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute
+[       OK ] ScalarPathQualification.MultipleFieldScalarSetRetainsGeneralRoute (59 ms)
+[ RUN      ] ScalarPathQualification.ActiveOrderSixCutoffAndReallocatedInputs
+Order-six relative error against long-double arithmetic: reference=4.28209e-13 candidate=3.89703e-13 active_index=10
+[       OK ] ScalarPathQualification.ActiveOrderSixCutoffAndReallocatedInputs (501 ms)
+[ RUN      ] ScalarPathQualification.CutoffReplayAcrossCohortsAndPoleChoices
+[       OK ] ScalarPathQualification.CutoffReplayAcrossCohortsAndPoleChoices (36226 ms)
+[ RUN      ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference
+[       OK ] ScalarPathQualification.AdjacentOrderSixCutoffMatchesReference (1278 ms)
+[----------] 7 tests from ScalarPathQualification (39723 ms total)
+
+[----------] 1 test from ScalarFaninOrder
+[ RUN      ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput
+[       OK ] ScalarFaninOrder.CancellationKeepsSequentialOrderAndExistingOutput (0 ms)
+[----------] 1 test from ScalarFaninOrder (0 ms total)
+
+[----------] 1 test from ScalarConstants
+[ RUN      ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates
+[       OK ] ScalarConstants.BroadcastMatchesExpandedWeightsWithTailsAndUpdates (1 ms)
+[----------] 1 test from ScalarConstants (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 17 tests from 4 test suites ran. (46023 ms total)
+[  PASSED  ] 17 tests.
+<end of output>
+Test time =  46.29 sec
+----------------------------------------------------------
+Test Passed.
+"experiments/block_sparse_cuda/scalar_cutoff" end time: Oct 14 12:46 CEST
+"experiments/block_sparse_cuda/scalar_cutoff" time elapsed: 00:00:46
+----------------------------------------------------------
+
+End testing: Oct 14 12:46 CEST

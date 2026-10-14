@@ -92,6 +92,16 @@ regression. The band is not a proven bound for arbitrary conditioning/order or
 cancellation. Broader stress, replay cost/capacity and GH200 qualification remain
 required; production is unchanged.
 
+Cutoff-cohort gate: replay input storage is now copied once per cohort and reused
+by sensitive lanes. A private observer verifies actual replay across 512 lanes and
+a tail and per-call reset. New order-two tests cover seven threshold-neighbor
+amplitudes with zero and nonzero pole choices, comparing counts/output/repeatability
+against ordered general CUDA. All 17 local replay controls pass; focused cohort
+memcheck reports zero errors/leaks and preserved constants controls pass afterward.
+Evidence is in `scalar_cutoff/thinkstationP620_RTXA4000/cohorts-01` under experiments.
+This strengthens bounded replay ownership/semantics, not the fixed band's universal
+validity or a production/target dispatch policy.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator

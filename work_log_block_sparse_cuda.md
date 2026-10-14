@@ -1,5 +1,35 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Replay-heavy cohorts and owned input reuse
+
+Previous turn was progress: adjacent high-order cutoff mismatch diagnosed; separate
+replay experiment qualified. Reviewed replay/admission. Replaced whole-G copy per
+sensitive lane with one lazy owned copy per cohort, retaining it until cohort fan-in
+finishes; no cross-call cache. Maximum live payload/admission reserve is unchanged.
+Added order-two cutoff stress: isolated-path calibration, six-mode/eight-index range,
+seven surrounding amplitudes, zero and two nonzero poles. More than512 structural
+paths plus a tail, contributing-count/output checks and exact repeated output.
+
+Initial two-test run passed37.576 s. Added a private experimental replay observer
+and reset, proving actual >512 replayed lanes at the zero-pole center rather than
+just structurally accepted paths. Repeated calls must have identical replay counts.
+Full replay CTest passed46.29 s, detailed LastTest proves17 active GoogleTests.
+Ran memcheck once on the replay-heavy cohort test: passed482.049 s, zero errors and
+zero leaked bytes. Long instrumentation was repeatedly verified live through the
+tool session/PIDs and CPU/GPU activity; no restart or overlap. Only after terminal
+completion rebuilt/reran preserved constants suite, which passed. All handles
+terminal before checkpoint. Logs /tmp/xca-bs-scalar-cutoff-{cohorts-build,cohorts-test,
+count-build,count-suite,cohorts-memcheck,cohorts-baseline-build,cohorts-baseline-test,
+cohorts-lasttest}.log. Compact evidence/hashes retained in local cohorts-01 folder.
+
+Code and this plan/log/evidence checkpoint are separate commits. Goal active:
+bounded replay ownership/cohort/pole semantics strengthened, but fixed uncertainty
+band remains unproven for arbitrary rank/conditioning/cancellation/order. Next
+resolve conservative promotion policy and broader scalar operation capability;
+target new-variant and Python/MPI/capacity gates remain. No performance inference
+from instrumentation. No new Arrhenius jobs (.08361 nominal GPU-hours cumulative),
+install, push or unrelated-work changes.
+
 ## 2026-10-14 — Adjacent high-order cutoff replay experiment
 
 Previous turn was progress: active order-six/ownership oracle controls passed. Added

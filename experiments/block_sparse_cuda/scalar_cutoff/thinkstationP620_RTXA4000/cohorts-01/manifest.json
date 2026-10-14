@@ -1,0 +1,12 @@
+{
+  "code_revision": "bce1eede3a5bc9d5cee3dbe572b4e330b70b8d34",
+  "hardware": "ThinkStation P620 / RTX A4000",
+  "scope": "Cutoff-heavy cohort/tail, pole choices and replay ownership",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/scalar_cutoff/replay.inc": "293b117dcb14a8655c0c285c116e4551df859bd935181f715a45539439dec001",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "67e02c8dd1487ebc65ce7bf907888d9697b799a3222aae7055bd85c2a3288dfe",
+    "experiments/block_sparse_cuda/scalar_paths/qualification.cpp": "5614fb984d4ba7c058169ec2eb085214baec4e558137319ec8a1f0b379f91213",
+    "experiments/block_sparse_cuda/scalar_paths/CMakeLists.txt": "451b5be19c1128c4bb812e45d4f398e117ea8dba61ed1a7d00a5345f43718626"
+  },
+  "gpu_hours_added_arrhenius": 0
+}
