@@ -3,6 +3,9 @@ bool scalar_eligible() const {
   return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })
      && std::all_of(model.sets().begin(), model.sets().end(), [](auto const &set) { return set.size() == 1; });
 }
+std::size_t scalar_extra_bound() const {
+  return scalar_eligible() ? checked_add(checked_multiply(12, tensor_bytes(1, r, r)), tensor_bytes(r, 16 * 512, 1)) : 0;
+}
 void scalar_flush(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma, std::vector<ScalarWork> &work,
                   scalar_edge_experiment::ScalarPack &packed) {
   if (work.empty()) return;
