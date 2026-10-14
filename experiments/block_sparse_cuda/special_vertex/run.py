@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--build', type=Path, default=ROOT/'cbuild-cuda')
     parser.add_argument('--machine', required=True)
     parser.add_argument('--campaign', default='kappa-01')
+    parser.add_argument('--with-mapped', action='store_true', help='Include the native mapped-kappa variant')
     args = parser.parse_args()
     for name in (args.machine, args.campaign):
         if not name or Path(name).name != name or name in ('.', '..'):
@@ -29,6 +30,8 @@ def main():
         'slots2': base/'experiments/block_sparse_cuda/special_vertex/block_sparse_kappa_2_benchmark',
         'slots16': base/'experiments/block_sparse_cuda/special_vertex/block_sparse_kappa_16_benchmark',
     }
+    if args.with_mapped:
+        binaries['mapped'] = base/'experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_special_benchmark'
     sources = [*ROOT.glob('c++/triqs_xca/block_sparse/**/*.hpp'),
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.cpp'),
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.cu'),
@@ -36,7 +39,8 @@ def main():
                ROOT/'benchmarks/block_sparse_cuda/block_sparse_cuda_ordered_benchmark.cpp',
                *[ROOT/'c++/triqs_xca'/n for n in ('backbone.cpp', 'backbone.hpp', 'hyb.cpp', 'hyb.hpp')],
                *ROOT.glob('benchmarks/block_sparse_common/*.[ch]pp'),
-               *Path(__file__).parent.glob('*')]
+               *Path(__file__).parent.glob('*'),
+               *ROOT.glob('experiments/block_sparse_cuda/mapped_special/*')]
     sources = [p for p in sources if p.is_file()]
     manifest = dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                     git_status=subprocess.check_output(['git', 'status', '--short'], cwd=ROOT, text=True),
@@ -66,6 +70,9 @@ def main():
                                   variable_reference_envelope_bytes=2*function+13*tile,
                                   variable_candidate_envelope_bytes=2*function+(13+slots)*tile))
     manifest['analytic_number_symmetry_envelopes'] = envelopes
+    manifest['analytic_column_map_envelopes'] = [dict(modes=n, rank=r, fields=n, maximum_dimension=math.comb(n,n//2),
+                                                     extra_map_bytes=n*(math.comb(n,n//2)*24+r*16))
+                                                for n,r in ((10,23),(14,26))]
     manifest['analytic_envelope_scope'] = 'Binomial dimensions only, no atom_diag/evaluation; variable device envelope excludes fixed tables/operator reserve/host/opaque allocations. Rank 26 is the retained fourteen-mode inventory proxy, not a new diagonalization.'
     folder = ROOT/'benchmarks/block_sparse_common'/args.machine/args.campaign
     folder.mkdir(parents=True, exist_ok=False)
