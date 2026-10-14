@@ -62,3 +62,7 @@ integrated backend. The private candidate and library baseline remain separate.
 [Bounded scalar self-energy scheduler](scalar-path-02/README.md) retains general
 execution for other cohorts. scalar-path-01 is excluded because the revised
 workspace-bound source had not rebuilt; corrected data is in scalar-path-02.
+
+[Matched scalar CPU/GPU scheduling](scalar-matched-01/README.md) isolates algorithmic
+batching gains. The previous hoisted CPU comparison is not evidence that scalar
+GPU scheduling beats matched CPU; this full-call screen favors CPU in that regime.
