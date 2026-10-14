@@ -1372,3 +1372,56 @@ git diff --check passed.
 Logs /tmp/xca-bs-scalar-matched-{configure,build,test,cpu-configure,cpu-build,campaign}.log;
 /tmp/xca-bs-scalar-matched-cpu-{tail,large,only-test}.csv. Persistent paired data under
 benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-matched-01.
+
+
+### 2026-10-14 — Output-owned ordered GPU fan-in
+
+Previous turn made progress by establishing full matched CPU scheduling and showing
+the scalar GPU still loses. Goal active. This turn isolates serialized per-path
+accumulation handoffs rather than promoting based on old-baseline speedups.
+
+e52609d [bench] preserve ordered scalar GPU fan-in adds a conditional private variant
+and separate library/frontend/test targets, retaining the serial candidate. Host
+maxabs cutoff per lane stays unchanged. Surviving lanes are grouped by destination
+in discovery order. Each GPU thread owns one output/rank element, loads the prior
+value and sequentially adds each lane, with no atomics/tree reduction/reassociation.
+Outputs may execute independently in parallel, but each output's original arithmetic
+order is preserved across/cohorts. Pointer/offset/index arrays remain owned until
+completion, bounded by the 512-lane cohort; existing extra admission has room for
+metadata. All host grouping/upload/kernel costs enter complete calls. No production
+selector or input-policy change was introduced.
+
+Baseline twelve tests and variant thirteen tests pass (2/2 CTest entries,16.52s).
+The additional adversarial test uses large cancelling complex terms, interleaved
+output ownership, nonzero existing output and a second application to expose reorder
+or reset bugs; GPU results match sequential CPU exactly. Five focused qualification/
+order tests pass memcheck+full leak checking in17.6s with0errors/0bytes leaked.
+This includes cutoff-adjacent NCA, multi-cohort/tails, changed masks/data, rejected
+budgets/empty ranges and scalar multi-field general fallback. No inherited tolerance
+was loosened. Production unchanged, so full solver suites were not repeated.
+
+After all verification handles were terminal, scalar-fanin-01 completed30isolated
+processes/82rows. cf28179 [bench] record ordered scalar GPU fan-in stores source/
+binary/kernel/recipe hashes, commands, numerical/count comparisons and raw timings.
+Screening and exact replay pass; proposed/accepted/pruned counts match retained
+serial candidate. Maximum screening relative error remains3.645e-13 on the existing
+weak higher-order non-scalar control; large scalar error4.926e-15. Serial values are
+from a prior clean run, disclosed. Other geometries/observables remain general paths.
+
+Ten-mode scalar selected SE now56.14ms versus prior GPU89.40ms and matched CPU
+22.91ms. Separate three-sample validation measured57.36ms median; campaign's ten-mode
+point has one repetition. This is a useful GPU bottleneck reduction, still not a
+win over matched CPU or whole Solver throughput. GPU-losing/zero-survival rows remain
+visible. No promotion/default/target threshold follows; GH200 remains performance
+target. All previous implementations and experiments retained.
+
+Next: profile residual host weight/descriptor preparation, rank-solve/transform
+synchronization and cutoff transfer; use measured breakdown to choose bounded caching
+or fusion with complete propagator/model/topology invalidation. Continue general
+special/correlator scheduling, memory and target gates. Goal not complete. No install,
+push, supervisor/user-work edits. Plan/work-log/README update separate from code/data;
+git diff --check passed.
+
+Logs: /tmp/xca-bs-fanin-{configure,build,test,memcheck,campaign}.log and
+/tmp/xca-bs-fanin-large-smoke.csv. Persistent paired results under
+benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-fanin-01.

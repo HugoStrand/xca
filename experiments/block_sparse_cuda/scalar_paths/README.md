@@ -68,3 +68,21 @@ are screened against original CPU and repeat exactly. Compare identical eligible
 scalar self-energy rows before attributing any old-baseline speedup to GPU hardware.
 Descriptor setup, allocations, host transfers and cutoff/fan-in remain relevant
 inclusive costs. Results under the common hardware folder document GPU-losing cases.
+
+## Output-owned accumulation variant
+
+`block_sparse_scalar_fanin_benchmark` and `block_sparse_scalar_fanin_tests` link an
+isolated variant of the same evaluator. The host per-lane cutoff scan is unchanged;
+surviving lane IDs are grouped by output, preserving original lane order. One GPU
+thread owns each output/rank element and sequentially adds all its terms to the
+existing value. No atomics, tree sum or algebraic reassociation occurs. Temporary
+pointer/offset/lane tables remain owned until stream completion. Their preparation,
+upload and kernel completion enter full-call timing; the conservative batch bound
+has room for these bounded metadata arrays.
+
+The serial variant remains a control. Tests reuse all 12 semantic/physics cases,
+plus a cancellation-sensitive order test with interleaved owners and existing sums.
+Use the fan-in binary as the CUDA recorder argument, campaign `scalar-fanin-01`,
+with the matched CPU scheduler. A lower latency versus serial GPU does not imply a
+win over matched CPU or select a production/GH200 default. No bindings expose this
+experimental variant.

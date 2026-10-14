@@ -696,6 +696,24 @@ handoffs with output ownership that preserves per-output contribution order, the
 repeat the matched complete-call and semantic gates. GH200 remains target hardware;
 these timings do not impose a CPU fallback or target default.
 
+Ordered fan-in checkpoint (2026-10-14): the private scalar scheduler now has
+an isolated output-owned accumulation variant while retaining the serial control.
+The host per-lane cutoff is unchanged. Surviving IDs are grouped by output in their
+original lane order; one GPU thread owns each output/rank cell and sequentially
+adds to the existing value, without atomics/tree reduction. All preparation/upload
+costs are charged. Baseline/variant pass 12/13 tests; the extra cancellation case
+checks interleaved owners, existing sums and sequential order. Five focused memory/
+leak cases pass with zero errors/leaked bytes.
+
+[Matched full calls](benchmarks/block_sparse_common/thinkstationP620_RTXA4000/scalar-fanin-01/README.md)
+pass 30 processes / 82 rows with matching counts and exact replay. Ten-mode scalar
+SE drops from prior serial GPU 89.4 ms to 56.1 ms, but matched CPU is 22.9 ms.
+This does not meet a CPU-beating scalar promotion claim. Target GH200 measurements
+and other regimes remain necessary. Next profile remaining host weights/descriptor
+preparation, rank-solve/transform synchronization and cutoff transfer, then test
+bounded caching/fusion only with complete invalidation and matched controls.
+Retain every previous candidate/reference and do not hide the GPU-losing result.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused
