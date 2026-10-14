@@ -87,6 +87,23 @@ TEST(RealNcaPrimitive, OrderedSpecialCutoffTailAndMetadataRecovery) {
     EXPECT_THROW(batch.evaluate_add(G,G,lanes,fields,left,right,signs),std::invalid_argument);
   }
 }
+TEST(RealNcaPrimitive, OverlappingViewsRejectBeforeSubmission) {
+  if(!gpu::real_nca_available()) GTEST_SKIP();
+  constexpr long rank=7;
+  auto ops=std::make_shared<gpu::DeviceOps>();
+  auto table=nda::zeros<nda::dcomplex>(rank,1,1); table()=.5;
+  gpu::RealNcaBatch batch(ops,table,table,1,1ULL<<20);
+  gpu::Tensor storage(rank+1,1,1), output(rank,1,1);
+  ops->zero(storage); ops->zero(output); ops->finish();
+  constexpr auto all=nda::range::all;
+  std::vector<gpu::TensorConstView> input{storage(nda::range(0,rank),all,all)};
+  std::vector<gpu::TensorView> overlapping{storage(nda::range(1,rank+1),all,all)};
+  std::vector<gpu::RealNcaLane> lanes{{0,0,0,0,1,1,1}};
+  EXPECT_THROW(batch.evaluate_add_views(input,overlapping,lanes,{0},{1.},{1.},{1}),std::invalid_argument);
+  std::vector<gpu::TensorView> repeated{output,output}; lanes.push_back({0,1,0,0,1,1,1});
+  EXPECT_THROW(batch.evaluate_add_views(input,repeated,lanes,{0},{1.},{1.},{1}),std::invalid_argument);
+  EXPECT_EQ(nda::max_element(nda::abs(nda::to_host(output))),0.);
+}
 TEST(RealNcaPrimitive, AdjacentThresholdAndLiveSubnormal) {
   if(!gpu::real_nca_available())GTEST_SKIP()<<"Native NCA kernels disabled";
   auto ops=std::make_shared<gpu::DeviceOps>();

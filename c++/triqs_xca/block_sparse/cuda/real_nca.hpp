@@ -4,6 +4,7 @@
 #include "device_ops.hpp"
 #include "memory.hpp"
 #include "real_nca_types.hpp"
+#include <span>
 namespace triqs_xca::block_sparse::cuda {
 bool real_nca_available();
 inline constexpr long real_nca_capacity = 512;
@@ -32,6 +33,9 @@ public:
   RealNcaBatch(RealNcaBatch const&)=delete;
   RealNcaBatch& operator=(RealNcaBatch const&)=delete;
   std::size_t storage_bytes() const;
+  std::size_t evaluate_add_views(std::span<TensorConstView const> G,std::span<TensorView const> Sigma,
+    std::vector<RealNcaLane> const &lanes,std::vector<int> const &fields,
+    std::vector<double> const &left,std::vector<double> const &right,std::vector<int> const &signs);
   std::size_t evaluate_add(std::vector<Tensor> const &G,std::vector<Tensor> &Sigma,
     std::vector<RealNcaLane> const &lanes,std::vector<int> const &fields,
     std::vector<double> const &left,std::vector<double> const &right,std::vector<int> const &signs);

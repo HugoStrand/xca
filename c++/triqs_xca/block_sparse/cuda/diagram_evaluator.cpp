@@ -445,7 +445,7 @@ namespace triqs_xca::block_sparse::cuda {
       };
       return grow(field_max) && grow(weight_max) && grow(nca_width()) && grow(field_max) && grow(nca_width()) && grow(paths);
     }
-    PathCounts evaluate_nca(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma,
+    PathCounts evaluate_nca(std::vector<TensorConstView> const &G, std::vector<TensorView> const &Sigma,
                            nda::array_const_view<int, 2> topology, std::vector<bool> const &live, long first, long last) {
       ops->wait_for_default_uploads();
       RealNcaBatch batch(ops, hyb->values, hyb->values_reflect, nca_width(), nca_extra_bound());
@@ -455,7 +455,7 @@ namespace triqs_xca::block_sparse::cuda {
       lanes.reserve(real_nca_capacity);
       auto flush = [&] {
         if (lanes.empty()) return;
-        contributions += batch.evaluate_add(G, Sigma, lanes, fields, left, right, signs);
+        contributions += batch.evaluate_add_views(G, Sigma, lanes, fields, left, right, signs);
         nca_batch_paths += lanes.size();
         sample_memory();
         lanes.clear(); fields.clear(); signs.clear(); left.clear(); right.clear();
@@ -484,6 +484,36 @@ namespace triqs_xca::block_sparse::cuda {
         });
       flush();
       return result;
+    }
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> nca_arena_compute(
+        triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G, nda::array_const_view<int, 2> topology,
+        std::vector<bool> const &live, long first, long last) {
+      std::size_t total = 0;
+      if (cudaMemGetInfo(&baseline_free, &total) != cudaSuccess) throw std::runtime_error("NCA arena memory query failed");
+      auto host_input = nda::zeros<Complex>(G.size(), r, 1);
+      for (long b = 0; b < G.size(); ++b) if (live[b])
+        for (long t = 0; t < r; ++t) host_input(b,t,0) = G[b].data()(t,0,0);
+      Tensor input_storage(host_input), output_storage(G.size(),r,1);
+      struct Drain {
+        std::shared_ptr<DeviceOps> owner;
+        ~Drain() { try { owner->finish(); } catch (...) {} }
+      } drain{ops};
+      ops->zero(output_storage);
+      constexpr auto all = nda::range::all;
+      std::vector<TensorConstView> input;
+      std::vector<TensorView> output;
+      input.reserve(G.size()); output.reserve(G.size());
+      for (long b = 0; b < G.size(); ++b) {
+        input.emplace_back(nda::reshape(input_storage(b,all,all),r,1,1));
+        output.emplace_back(nda::reshape(output_storage(b,all,all),r,1,1));
+      }
+      counts = evaluate_nca(input,output,topology,live,first,last);
+      sample_memory();
+      auto host_output = nda::to_host(output_storage);
+      std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
+      result.reserve(G.size());
+      for (long b = 0; b < G.size(); ++b) result.emplace_back(mesh,nda::reshape(host_output(b,all,all),r,1,1));
+      return {std::move(result)};
     }
     void special(Tensor &T, Backbone &backbone, SelfEnergyPath const &path) {
       if (special_backend == SpecialBackend::Mapped && apply_mapped_special(T, backbone, path)) return;
@@ -637,6 +667,7 @@ namespace triqs_xca::block_sparse::cuda {
     if (host_sectors && function_bytes(x.r, x.model.dimensions()) > x.host_output_budget)
       throw std::length_error("Full self-energy output exceeds host payload budget");
     if (first != last) x.prepare_self_energy(topology); // Before input/output upload or path arithmetic.
+    if (first != last && x.nca_eligible(G,topology)) return x.nca_arena_compute(G,topology,live,first,last);
     std::vector<Tensor> input(G.size()), output(G.size());
     std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> result;
     long active_output = -1;
@@ -665,9 +696,7 @@ namespace triqs_xca::block_sparse::cuda {
         }
       }
       x.sample_memory();
-      if (!host_sectors && x.nca_eligible(G, topology)) {
-        x.counts = x.evaluate_nca(input, output, topology, live, first, last);
-      } else if (!host_sectors) {
+      if (!host_sectors) {
         x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
                                              [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });
       } else {

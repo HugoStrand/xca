@@ -82,6 +82,16 @@ std::size_t RealNcaBatch::storage_bytes()const{return impl_->bound;}
 std::size_t RealNcaBatch::evaluate_add(std::vector<Tensor>const&G,std::vector<Tensor>&Sigma,
     std::vector<RealNcaLane>const&lanes,std::vector<int>const&fields,std::vector<double>const&left,
     std::vector<double>const&right,std::vector<int>const&signs) {
+  std::vector<TensorConstView> input;
+  std::vector<TensorView> output;
+  input.reserve(G.size()); output.reserve(Sigma.size());
+  for(auto const &tensor:G) input.emplace_back(tensor);
+  for(auto &tensor:Sigma) output.emplace_back(tensor);
+  return evaluate_add_views(input,output,lanes,fields,left,right,signs);
+}
+std::size_t RealNcaBatch::evaluate_add_views(std::span<TensorConstView const> G,std::span<TensorView const> Sigma,
+    std::vector<RealNcaLane>const&lanes,std::vector<int>const&fields,std::vector<double>const&left,
+    std::vector<double>const&right,std::vector<int>const&signs) {
 #ifndef XCA_HAVE_BLOCK_SPARSE_KERNELS
   throw std::runtime_error("Real NCA kernels were not built");
 #else
@@ -100,13 +110,23 @@ std::size_t RealNcaBatch::evaluate_add(std::vector<Tensor>const&G,std::vector<Te
     if(checked_add(lane.field_offset,lane.size)>fields.size()
        ||checked_add(lane.sign_offset,checked_multiply(lane.size,lane.size))>signs.size())throw std::invalid_argument("Real NCA lane offsets");
     auto shape=std::array<long,3>{x.rank,1,1};
-    if(G[lane.input_block].shape()!=shape||Sigma[lane.output_block].shape()!=shape)throw std::invalid_argument("Real NCA tensor shape");
+    if(G[lane.input_block].shape()!=shape||Sigma[lane.output_block].shape()!=shape
+       || !G[lane.input_block].indexmap().is_contiguous() || !Sigma[lane.output_block].indexmap().is_contiguous())throw std::invalid_argument("Real NCA tensor shape");
     metadata.push_back({reinterpret_cast<std::uintptr_t>(G[lane.input_block].data()),lane.field_offset,lane.sign_offset,
                         lane.size,lane.forward,lane.final_sign});
   }
-  for(auto const &input:metadata)for(auto const &lane:lanes)
-    if(input.input==reinterpret_cast<std::uintptr_t>(Sigma[lane.output_block].data()))
+  auto bytes=checked_multiply(x.rank,sizeof(nda::dcomplex));
+  for(auto const &input:metadata)for(auto const &lane:lanes) {
+    auto output=reinterpret_cast<std::uintptr_t>(Sigma[lane.output_block].data());
+    if(input.input<=output ? output-input.input<bytes : input.input-output<bytes)
       throw std::invalid_argument("Real NCA input/output alias");
+  }
+  for(auto const &a:lanes)for(auto const &b:lanes) if(a.output_block<b.output_block) {
+    auto first=reinterpret_cast<std::uintptr_t>(Sigma[a.output_block].data());
+    auto second=reinterpret_cast<std::uintptr_t>(Sigma[b.output_block].data());
+    if(first<=second ? second-first<bytes : first-second<bytes)
+      throw std::invalid_argument("Real NCA output alias");
+  }
   if(lanes.empty())return 0;
   // These host buffers outlive copies/readers even if a later launch fails.
   std::vector<std::uintptr_t> destinations;
