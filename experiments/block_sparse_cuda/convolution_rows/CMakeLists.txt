@@ -6,7 +6,13 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cuda_dir}/dlr_
 file(READ "${cuda_dir}/dlr_ops.hpp" header)
 file(READ "${cuda_dir}/dlr_ops.cpp" source)
 string(REPLACE "DlrOps" "RowDlrOps" header "${header}")
+set(header "#include <functional>\n${header}")
 string(REPLACE "DlrOps" "RowDlrOps" source "${source}")
+string(REPLACE [=[    std::unique_ptr<Impl> impl_;]=] [=[    std::unique_ptr<Impl> impl_;
+    std::function<void()> observer_;
+]=] header "${header}")
+string(REPLACE [=[    // Release completed RHS]=] [=[    void set_allocation_observer(std::function<void()> observer) { observer_ = std::move(observer); }
+    // Release completed RHS]=] header "${header}")
 string(REPLACE "    // Coefficient inputs, time-ordered value output" "    // Row experiment requires disjoint output; bound excludes caller tensors.\n    std::size_t row_storage_bound(long M, long K, long N, long rows) const;\n    void convolve_rows(double beta, TensorConstView fc, TensorConstView gc, TensorView out, long rows);\n    // Coefficient inputs, time-ordered value output" header "${header}")
 string(REPLACE "\"dlr_ops.hpp\"" "\"row_dlr.hpp\"" source "${source}")
 set(source "${source}\n#include \"rows.inc\"\n")
@@ -22,3 +28,27 @@ if(Build_Tests)
   target_link_libraries(block_sparse_row_dlr_tests PRIVATE block_sparse_row_dlr gtest_main)
   add_test(NAME "experiments/block_sparse_cuda/convolution_rows" COMMAND block_sparse_row_dlr_tests)
 endif()
+# Private complete-call variant; production evaluator and primitive remain intact.
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${cuda_dir}/diagram_evaluator.hpp" "${cuda_dir}/diagram_evaluator.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/generate_evaluator.py")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/generate_evaluator.py"
+  "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" COMMAND_ERROR_IS_FATAL ANY)
+add_library(block_sparse_row_evaluator STATIC "${CMAKE_CURRENT_BINARY_DIR}/row_evaluator.cpp")
+target_link_libraries(block_sparse_row_evaluator PUBLIC block_sparse_row_dlr)
+add_executable(block_sparse_row_evaluator_benchmark evaluator_benchmark.cpp)
+target_link_libraries(block_sparse_row_evaluator_benchmark PRIVATE block_sparse_row_evaluator)
+if(Build_Tests)
+  set(reference "${PROJECT_SOURCE_DIR}/test/c++/block_sparse/cuda_diagram_evaluator.cpp")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${reference}")
+  file(READ "${reference}" tests)
+  string(REPLACE "<triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>" "\"row_evaluator.hpp\"" tests "${tests}")
+  string(REPLACE "gpu::DiagramEvaluator" "gpu::RowDiagramEvaluator" tests "${tests}")
+  file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/inherited_evaluator_tests.cpp" CONTENT "${tests}" @ONLY)
+  add_executable(block_sparse_row_evaluator_tests "${CMAKE_CURRENT_BINARY_DIR}/inherited_evaluator_tests.cpp" evaluator_tests.cpp)
+  target_link_libraries(block_sparse_row_evaluator_tests PRIVATE block_sparse_row_evaluator ${PROJECT_NAME}_test_utils gtest_main)
+  add_test(NAME "experiments/block_sparse_cuda/convolution_row_evaluator" COMMAND block_sparse_row_evaluator_tests)
+endif()
+add_executable(block_sparse_row_evaluator_cutoff_audit cutoff_audit.cpp)
+target_link_libraries(block_sparse_row_evaluator_cutoff_audit PRIVATE block_sparse_row_evaluator)

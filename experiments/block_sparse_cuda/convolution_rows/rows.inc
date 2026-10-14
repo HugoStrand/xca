@@ -30,6 +30,7 @@ void RowDlrOps::convolve_rows(double beta, TensorConstView fc, TensorConstView g
       long B=std::min(rows,M-first);
       Tensor f(x.r,B,K),hf(f.shape()),product(x.r,B,N),cross(product.shape()),diagonal(product.shape());
       try {
+        if (observer_) observer_();
         check_cuda(cudaMemcpy2DAsync(f.data(),B*K*sizeof(Complex),fc.data()+first*K,M*K*sizeof(Complex),
                                     B*K*sizeof(Complex),x.r,cudaMemcpyDeviceToDevice,x.ops->stream()));
         x.ops->rank_product(x.H,f,hf);

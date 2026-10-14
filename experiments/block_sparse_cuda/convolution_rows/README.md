@@ -44,3 +44,34 @@ primitive replays, not Solver/topology-sum timings. Full-call integration, admis
 liveness, wider cancellation/cutoff coverage, alias fallback and target performance
 remain separate gates before any production decision. Generic methodology stays here;
 results and hardware-specific comments belong in informative subdirectories.
+
+## Complete evaluator experiment
+
+`RowDiagramEvaluator` is generated from the current production source with checked
+replacement seams. Its additional last constructor argument selects a positive row
+cap (default eight). It routes both self-energy edge directions and correlator
+fragment edges through the row primitive. All production APIs remain intact in this
+private class, including complete host output placement and NCA fallback. The declared
+DLR reserve is tables + full maximum rank tensor + five maximum row strips; the
+seven caller rank tensors and input/output reserves are unchanged. NCA estimates
+omit this inactive convolution scratch as in production. No Python integration or
+production promotion is implied.
+
+Build `block_sparse_row_evaluator_tests`, `block_sparse_row_evaluator_benchmark` and
+`block_sparse_row_evaluator_cutoff_audit`. Inherited production controls plus additional
+tests cover changed inputs/masks, output placement, exact budget admission/rejection,
+repeated calls and recovery. The benchmark uses the shared complete-call fixture and
+the library sparse/reference special-vertex policies. Set `XCA_EXPERIMENT_CONV_ROWS`
+to a cap between 1 and 512. Setting `XCA_EXPERIMENT_SAMPLE_ROWS` additionally samples
+free device memory while row temporaries are live; measure this diagnostic separately
+from normal latency. It is a sampled global free-memory delta, not a continuous or
+process-isolated peak. Library allocations and other activity can affect it.
+
+The cutoff audit bisects an active physical OCA call to adjacent representable
+propagator scales, then compares nine neighboring scales at two ranks and three row
+caps. Its CSV includes contribution counts, errors and explicit decision agreement.
+A successful process means the diagnostic completed, **not** that its candidate passed
+semantic acceptance. At rank23/cap1 one sampled scale retains a contribution in the
+reference and drops it in the candidate. Keep the route experimental; a tolerance
+comparison at ordinary scales does not resolve this disagreement. Preserve the
+counterexample rather than modifying the production cutoff.
