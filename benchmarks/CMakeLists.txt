@@ -25,3 +25,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/special_ver
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/special_vertex)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/mapped_special
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/mapped_special)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/compact_dlr
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/compact_dlr)

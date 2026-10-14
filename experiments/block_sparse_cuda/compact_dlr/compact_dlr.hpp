@@ -1,0 +1,32 @@
+// Copyright (c) 2026, The Simons Foundation
+// SPDX-License-Identifier: Apache-2.0
+#pragma once
+#include <triqs_xca/block_sparse/cuda/device_ops.hpp>
+#ifdef NDA_HAVE_CUDA
+#include <cppdlr/dlr_imtime.hpp>
+
+namespace triqs_xca::block_sparse::cuda {
+  // Immutable rank tables/LU snapshot, own cuSOLVER handle on the shared stream.
+  // Scratch follows actual rectangular shapes. Budget covers explicit tables,
+  // pivots/status, RHS and convolution scratch, excluding caller input/output and
+  // opaque library allocations. One owner at a time; public calls are synchronous.
+  class CompactDlrOps {
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+
+    public:
+    CompactDlrOps(std::shared_ptr<DeviceOps> ops, cppdlr::imtime_ops const &host, std::size_t storage_budget = 256ULL * 1024 * 1024);
+    ~CompactDlrOps();
+    CompactDlrOps(CompactDlrOps const &)            = delete;
+    CompactDlrOps &operator=(CompactDlrOps const &) = delete;
+    long rank() const;
+    std::size_t storage_bytes() const;
+    void vals2coefs(TensorConstView values, TensorView coefficients);
+    void coefs2vals(TensorConstView coefficients, TensorView values) const;
+    void reflect(TensorConstView values, TensorView reflected) const;
+    // Coefficient inputs, time-ordered value output; out may alias an input when
+    // their shapes match. Aliased input reads finish before output overwrite; disjoint out stores diagonal scratch.
+    void convolve(double beta, TensorConstView fc, TensorConstView gc, TensorView out);
+  };
+} // namespace triqs_xca::block_sparse::cuda
+#endif

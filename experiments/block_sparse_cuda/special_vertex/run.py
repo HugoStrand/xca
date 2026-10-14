@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--build', type=Path, default=ROOT/'cbuild-cuda')
     parser.add_argument('--machine', required=True)
     parser.add_argument('--campaign', default='kappa-01')
+    parser.add_argument('--with-compact', action='store_true', help='Include the compact DLR full evaluator')
     parser.add_argument('--with-mapped', action='store_true', help='Include the native mapped-kappa variant')
     args = parser.parse_args()
     for name in (args.machine, args.campaign):
@@ -32,6 +33,8 @@ def main():
     }
     if args.with_mapped:
         binaries['mapped'] = base/'experiments/block_sparse_cuda/mapped_special/block_sparse_mapped_special_benchmark'
+    if args.with_compact:
+        binaries['compact'] = base/'experiments/block_sparse_cuda/compact_dlr/block_sparse_compact_evaluator_benchmark'
     sources = [*ROOT.glob('c++/triqs_xca/block_sparse/**/*.hpp'),
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.cpp'),
                *ROOT.glob('c++/triqs_xca/block_sparse/**/*.cu'),
@@ -40,7 +43,8 @@ def main():
                *[ROOT/'c++/triqs_xca'/n for n in ('backbone.cpp', 'backbone.hpp', 'hyb.cpp', 'hyb.hpp')],
                *ROOT.glob('benchmarks/block_sparse_common/*.[ch]pp'),
                *Path(__file__).parent.glob('*'),
-               *ROOT.glob('experiments/block_sparse_cuda/mapped_special/*')]
+               *ROOT.glob('experiments/block_sparse_cuda/mapped_special/*'),
+               *ROOT.glob('experiments/block_sparse_cuda/compact_dlr/*')]
     sources = [p for p in sources if p.is_file()]
     manifest = dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                     git_status=subprocess.check_output(['git', 'status', '--short'], cwd=ROOT, text=True),
