@@ -70,19 +70,21 @@ printf '%s\n' "$previous" > "$record/reused-checkpoint.txt"
 qualified_python="$PWD/qualified-mpi-python"
 if ! test -L "$qualified_python"; then ln -s "$(command -v python3)" "$qualified_python"; fi
 python3 - "$qualified_python.hpcinfo" "$EBROOTOPENMPI" <<'PYMPI'
-import json, shutil, sys
+import json, sys
 from pathlib import Path
-launcher = Path(sys.argv[2]) / 'bin/mpirun'
-assert launcher.is_file(), launcher
-assert Path(shutil.which('mpirun')).resolve() == launcher.resolve()
-Path(sys.argv[1]).write_text(json.dumps({'launcher': 'mpirun',
- 'launcher_path': str(launcher), 'native': True, 'modules': []}, indent=2) + '\n')
+# Reuse the site's PMIx/fabric environment and launch arguments verbatim.
+profile = Path(sys.argv[2]) / 'lib/libmpi.so.hpcinfo'
+entries = json.loads(profile.read_text())
+selected = next(entry for entry in entries if entry['launcher'] == 'srun')
+assert selected['env']['SLURM_MPI_TYPE'] == 'pmix'
+assert 'pmix' in selected['launch_args']
+Path(sys.argv[1]).write_text(json.dumps(selected, indent=2) + '\n')
 PYMPI
 cp "$qualified_python.hpcinfo" "$record/python.hpcinfo"
 sha256sum run_python_mpi.py > "$record/mpi-runner.sha256"
 timeout 420 python3 run_python_mpi.py \
-  --ctest-json "$record/ctest.json" --record "$record/mpi-command.json" --python "$qualified_python" \
+  --verbose --ctest-json "$record/ctest.json" --record "$record/mpi-command.json" --python "$qualified_python" \
   --launcher /software/sse2/generic/manual/ssetools/v2.1.0/bin/mpprun \
-  --launcher-arg=--no-modules --launcher-arg=--allow-runpath --launcher-arg=--launcher=mpirun \
+  --launcher-arg=--no-modules --launcher-arg=--allow-runpath --launcher-arg=--launcher=srun --launcher-arg=--handler=hpcinfo \
   --launcher-arg=-n --launcher-arg=2 > "$record/mpi.log" 2>&1
 printf '%s\n' PASS > "$record/result.txt"

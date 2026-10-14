@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run a registered CTest Python case under MPI with its build-tree environment."""
 import argparse
+import faulthandler
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,16 @@ if len(sys.argv) > 1 and sys.argv[1] == '--worker':
     if actual != expected:
         raise RuntimeError(f'Expected {expected} MPI ranks, got {actual}')
     print(f'Qualification MPI rank {MPI.COMM_WORLD.Get_rank()}/{actual}', flush=True)
+    # Fail before CUDA setup if launcher rank discovery works but communication
+    # does not. Later diagnostic dumps preserve test/collective stack locations.
+    faulthandler.dump_traceback_later(45, exit=True)
+    total = MPI.COMM_WORLD.allreduce(MPI.COMM_WORLD.Get_rank() + 1)
+    if total != actual * (actual + 1) // 2:
+        raise RuntimeError('MPI allreduce preflight failed')
+    MPI.COMM_WORLD.Barrier()
+    faulthandler.cancel_dump_traceback_later()
+    print(f'Qualification MPI collective passed on rank {MPI.COMM_WORLD.Get_rank()}', flush=True)
+    faulthandler.dump_traceback_later(90, repeat=True)
     sys.argv = sys.argv[3:]
     runpy.run_path(sys.argv[0], run_name='__main__')
 else:
@@ -28,6 +39,7 @@ else:
     parser.add_argument('--launcher', default='mpprun')
     parser.add_argument('--python', help='Alias of the CTest interpreter carrying site MPI metadata')
     parser.add_argument('--launcher-arg', action='append', default=[])
+    parser.add_argument('--verbose', action='store_true')
     parser.add_argument('test_args', nargs='*')
     args = parser.parse_args()
     if args.ranks < 1:
@@ -58,7 +70,7 @@ else:
     env.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
     command = [args.launcher, *args.launcher_arg, interpreter,
                str(Path(__file__).resolve()), '--worker', str(args.ranks),
-               *test['command'][1:], *args.test_args]
+               *test['command'][1:], *(['-v'] if args.verbose else []), *args.test_args]
     Path(args.record).write_text(json.dumps({
         'command': command, 'working_directory': props.get('WORKING_DIRECTORY'),
         'expected_ranks': args.ranks,
