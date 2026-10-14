@@ -19,7 +19,8 @@ namespace triqs_xca::block_sparse::cuda {
 
     public:
     DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh,
-                     std::size_t device_budget = 1024ULL * 1024 * 1024, std::size_t sparse_budget = 32ULL * 1024 * 1024);
+                     std::size_t device_budget = 1024ULL * 1024 * 1024, std::size_t sparse_budget = 32ULL * 1024 * 1024,
+                     SparseBackend operator_backend = SparseBackend::Library);
     ~DiagramEvaluator();
     DiagramEvaluator(DiagramEvaluator const &)            = delete;
     DiagramEvaluator &operator=(DiagramEvaluator const &) = delete;

@@ -74,3 +74,24 @@ if(XCA_WITH_CUDA_SMALL)
     add_test(NAME "dense/cuda_small/${suffix}" COMMAND ${target})
   endforeach()
 endif()
+
+# Keep the library control and run identical physics/API gates with ordered CSR.
+if(TARGET triqs_xca_sparse_kernels)
+  set(reference "${CMAKE_CURRENT_SOURCE_DIR}/block_sparse/cuda_diagram_evaluator.cpp")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${reference}")
+  file(READ "${reference}" contents)
+  string(REPLACE "gpu::DiagramEvaluator" "OrderedTestEvaluator" contents "${contents}")
+  set(adapter "class OrderedTestEvaluator : public gpu::DiagramEvaluator {
+    public:
+    OrderedTestEvaluator(gpu::OperatorModel model, nda::vector_const_view<double> poles,
+      triqs::mesh::dlr_imtime mesh, std::size_t budget = 1024ULL*1024*1024,
+      std::size_t sparse_budget = 32ULL*1024*1024)
+      : gpu::DiagramEvaluator(std::move(model), poles, std::move(mesh), budget,
+                             sparse_budget, gpu::SparseBackend::Ordered) {}
+  };")
+  string(REPLACE "namespace gpu = bs::cuda;" "namespace gpu = bs::cuda;\n${adapter}" contents "${contents}")
+  file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/block_sparse_ordered_evaluator.cpp" CONTENT "${contents}" @ONLY)
+  add_executable(block_sparse_native_evaluator "${CMAKE_CURRENT_BINARY_DIR}/block_sparse_ordered_evaluator.cpp")
+  target_link_libraries(block_sparse_native_evaluator PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c ${PROJECT_NAME}_test_utils gtest_main)
+  add_test(NAME "block_sparse/ordered_evaluator" COMMAND block_sparse_native_evaluator)
+endif()

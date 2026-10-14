@@ -71,7 +71,9 @@ namespace block_sparse_operator_experiment {
     }
 
     public:
-    OrderedSparseBlock(std::shared_ptr<gpu::DeviceOps> ops, gpu::SparseBlock const &host, std::size_t budget) : owner(std::move(ops)) {
+    OrderedSparseBlock(std::shared_ptr<gpu::DeviceOps> ops, gpu::SparseBlock const &host, std::size_t budget,
+                       gpu::SparseBackend = gpu::SparseBackend::Library)
+       : owner(std::move(ops)) {
       if (!owner) throw std::invalid_argument("Missing ordered sparse device owner");
       owner->require_current();
       host.validate();

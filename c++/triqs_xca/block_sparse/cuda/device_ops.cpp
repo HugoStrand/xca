@@ -3,6 +3,9 @@
 #include "device_ops.hpp"
 #ifdef NDA_HAVE_CUDA
 #include "memory.hpp"
+#ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
+#include "kernels/kernels.hpp"
+#endif
 #include <cublas_v2.h>
 #include <cusparse.h>
 #include <cstdint>
@@ -293,11 +296,19 @@ namespace triqs_xca::block_sparse::cuda {
     finish();
   }
 
+  bool ordered_sparse_available() noexcept {
+#ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
+    return true;
+#else
+    return false;
+#endif
+  }
   struct DeviceSparseBlock::Impl {
     Context context;
     std::shared_ptr<DeviceOps> ops;
     long rows, columns;
     std::size_t budget, resident;
+    SparseBackend backend;
     struct Csr {
       nda::cuvector<long> offsets, indices;
       nda::cuvector<Complex> values;
@@ -324,10 +335,13 @@ namespace triqs_xca::block_sparse::cuda {
     };
     std::unique_ptr<Csr> forward, transposed;
     nda::cuvector<unsigned char> workspace;
-    Impl(std::shared_ptr<DeviceOps> owner, SparseBlock const &host, std::size_t limit)
-       : ops(std::move(owner)), rows(host.rows), columns(host.columns), budget(limit), resident(0) {
+    Impl(std::shared_ptr<DeviceOps> owner, SparseBlock const &host, std::size_t limit, SparseBackend selected)
+       : ops(std::move(owner)), rows(host.rows), columns(host.columns), budget(limit), resident(0), backend(selected) {
       require(bool(ops), "missing device owner");
       ops->require_current();
+      require(backend == SparseBackend::Library || backend == SparseBackend::Ordered, "invalid sparse backend");
+      if (backend == SparseBackend::Ordered && !ordered_sparse_available())
+        throw std::runtime_error("Ordered block-sparse CUDA kernels were not built");
       host.validate();
       require(rows > 0 && columns > 0, "cannot upload an absent/empty-dimension operator block");
       auto transpose = plain_transpose(host);
@@ -356,6 +370,17 @@ namespace triqs_xca::block_sparse::cuda {
         return;
       }
       long rhs = left ? a[2] : a[1], k = left ? columns : rows, m = left ? rows : columns;
+#ifdef XCA_HAVE_BLOCK_SPARSE_KERNELS
+      if (backend == SparseBackend::Ordered) {
+        auto count = bytes(out) / sizeof(Complex);
+        if ((count + 255) / 256 > std::size_t(std::numeric_limits<int>::max())) throw std::length_error("Sparse CUDA grid exceeds range");
+        ops->wait_for_default_uploads();
+        check_cuda(native::ordered_apply(csr.offsets.data(), csr.indices.data(), csr.values.data(), in.data(), out.data(), a[0], m, k, rhs, !left,
+                                         ops->stream()));
+        ops->finish(); // Caller tensors can be released immediately after return.
+        return;
+      }
+#endif
       // Right product uses F^T * T^T: C-order T is a column-major T^T view.
       auto order = left ? CUSPARSE_ORDER_ROW : CUSPARSE_ORDER_COL;
       long ld = left ? rhs : k, ldc = left ? rhs : m;
@@ -382,8 +407,8 @@ namespace triqs_xca::block_sparse::cuda {
       }
     }
   };
-  DeviceSparseBlock::DeviceSparseBlock(std::shared_ptr<DeviceOps> ops, SparseBlock const &host, std::size_t budget)
-     : impl_(std::make_unique<Impl>(std::move(ops), host, budget)) {}
+  DeviceSparseBlock::DeviceSparseBlock(std::shared_ptr<DeviceOps> ops, SparseBlock const &host, std::size_t budget, SparseBackend backend)
+     : impl_(std::make_unique<Impl>(std::move(ops), host, budget, backend)) {}
   DeviceSparseBlock::~DeviceSparseBlock() = default;
   long DeviceSparseBlock::rows() const { return impl_->rows; }
   long DeviceSparseBlock::columns() const { return impl_->columns; }

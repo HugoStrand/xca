@@ -40,6 +40,7 @@ namespace triqs_xca::block_sparse::cuda {
     long r;
     double beta;
     std::size_t budget, kernel_bytes, dlr_bound, operator_budget;
+    SparseBackend operator_backend;
     PathCounts counts{};
     std::size_t contributions = 0;
     std::size_t baseline_free = 0, peak_delta = 0;
@@ -48,8 +49,18 @@ namespace triqs_xca::block_sparse::cuda {
       if (cudaMemGetInfo(&free, &total) != cudaSuccess) throw std::runtime_error("CUDA memory sampling failed");
       if (free < baseline_free) peak_delta = std::max(peak_delta, baseline_free - free);
     }
-    Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit)
-       : model(std::move(input)), mesh(std::move(tau)), r(mesh.dlr_it().rank()), beta(mesh.beta()), budget(limit), operator_budget(operator_limit) {
+    Impl(OperatorModel input, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime tau, std::size_t limit, std::size_t operator_limit,
+         SparseBackend selected)
+       : model(std::move(input)),
+         mesh(std::move(tau)),
+         r(mesh.dlr_it().rank()),
+         beta(mesh.beta()),
+         budget(limit),
+         operator_budget(operator_limit),
+         operator_backend(selected) {
+      if (selected != SparseBackend::Library && selected != SparseBackend::Ordered) throw std::invalid_argument("Invalid sparse backend");
+      if (selected == SparseBackend::Ordered && !ordered_sparse_available())
+        throw std::runtime_error("Ordered block-sparse CUDA kernels were not built");
       if (operator_budget == 0) throw std::invalid_argument("CUDA evaluator sparse budget must be positive");
       if (poles.size() != model.num_poles() || r <= 0 || !std::isfinite(beta) || beta <= 0)
         throw std::invalid_argument("CUDA evaluator pole/mesh mismatch");
@@ -126,7 +137,7 @@ namespace triqs_xca::block_sparse::cuda {
       if (cached_host != &block) {
         cached.reset();
         cached_host = nullptr;
-        cached      = std::make_unique<DeviceSparseBlock>(ops, block, operator_budget);
+        cached      = std::make_unique<DeviceSparseBlock>(ops, block, operator_budget, operator_backend);
         cached_host = &block;
       }
       return *cached;
@@ -363,8 +374,8 @@ namespace triqs_xca::block_sparse::cuda {
     }
   };
   DiagramEvaluator::DiagramEvaluator(OperatorModel model, nda::vector_const_view<double> poles, triqs::mesh::dlr_imtime mesh, std::size_t budget,
-                                     std::size_t sparse_budget)
-     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget)) {}
+                                     std::size_t sparse_budget, SparseBackend operator_backend)
+     : impl_(std::make_unique<Impl>(std::move(model), poles, std::move(mesh), budget, sparse_budget, operator_backend)) {}
   DiagramEvaluator::~DiagramEvaluator() = default;
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) const {
     impl_->ops->require_current();

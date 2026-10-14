@@ -7,6 +7,9 @@
 #include <memory>
 
 namespace triqs_xca::block_sparse::cuda {
+  enum class SparseBackend { Library, Ordered };
+  bool ordered_sparse_available() noexcept;
+
   using Tensor          = nda::cuarray<nda::dcomplex, 3>;
   using TensorView      = nda::cuarray_view<nda::dcomplex, 3>;
   using TensorConstView = nda::cuarray_const_view<nda::dcomplex, 3>;
@@ -49,14 +52,16 @@ namespace triqs_xca::block_sparse::cuda {
   };
 
   // An owned immutable CSR snapshot, including its plain transpose for right
-  // products. No dense expansion or adjoint substitution. Deterministic ALG3 is
-  // used one DLR node at a time. Workspace is retained/reused within the budget.
+  // products. No dense expansion or adjoint substitution. Library ALG3 runs one
+  // node at a time; optional ordered CSR uses one native rank-wide launch. Both
+  // return synchronously and retain storage within the supplied budget.
   class DeviceSparseBlock {
     struct Impl;
     std::unique_ptr<Impl> impl_;
 
     public:
-    DeviceSparseBlock(std::shared_ptr<DeviceOps> ops, SparseBlock const &host, std::size_t storage_budget = 32ULL * 1024 * 1024);
+    DeviceSparseBlock(std::shared_ptr<DeviceOps> ops, SparseBlock const &host, std::size_t storage_budget = 32ULL * 1024 * 1024,
+                      SparseBackend backend = SparseBackend::Library);
     ~DeviceSparseBlock();
     DeviceSparseBlock(DeviceSparseBlock const &)            = delete;
     DeviceSparseBlock &operator=(DeviceSparseBlock const &) = delete;
