@@ -1,5 +1,41 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Lane-invariant parity preparation
+
+Previous turn was progress: scoped trace identified repeated field/parity work and
+small upload/sync overhead. Added separate scalar_signs folder/CPU/GPU targets,
+preserving multi-set baseline. Special field assignment/parity now computed once
+per active lane/mu-kappa pair, reused across rank nodes. Integer sign multiplies
+the same hybridization value in the same order; missing set members remain zero,
+sums/cutoff/fan-in unchanged. Source get_parity is pure apart from temporary
+allocations, setter changes only orbital indices. Bounded host sign vector<=512
+per pair, no device payload/admission or cross-call cache changes. Private callback
+adapter accepts optional lane index; old callers/variants retain old behavior.
+
+Built both new CPU/GPU and old matched controls, plus full inherited candidate
+suite18 controls, passed47.00s. After handle termination isolated16-process/48-row
+campaign passed numerical/finite/exact replay. GPU norm/error/count/range/rank
+summaries match old/new; this is not an assertion of elementwise bitwise equality.
+GPU median old/new ms: N4NCA2.812/2.231, N4OCA6.402/4.137, N6OCA21.989/11.619,
+N8OCA12.604/7.496. OCA speedups1.55/1.89/1.68; CPU speedups1.55/1.74/1.83.
+New matchedCPU/GPU ratios.51/.97/1.18/.80: gains benefit both algorithms and hardware
+win remains case dependent. Three local samples do not prove a robust crossover or
+whole Solver speedup. All four binary routes rebuilt before recording.
+
+Then CPU-only new control built and three N6 samples screened exactly against
+originalCPU. Device allocation/lifetimes unchanged, so no redundant memcheck run;
+full inherited ownership/cutoff tests passed. All handles terminal before commits.
+Code c10acf2, results32e2ff5 and plan/log separate. Raw provenance, samples/summary,
+full tests and CPU-only evidence retained in common/CPU/CUDA local density-signs-01.
+Logs /tmp/xca-bs-density-signs-{configure,build,test,lasttest,campaign,cpu-configure,
+cpu-build}.log and cpu.csv. No target hours, install/push or unrelated-work changes.
+
+Goal active. Next resident immutable weight tables/device descriptor packing to
+reduce repeated uploads/synchronizations, then target finalist qualification and
+conservative numerical/promotion decision. Broader integration/capacity/Python/MPI
+gates remain; all prior variants retained. Target cumulative usage .2075 nominal
+GPU-hours, unchanged this turn.
+
 ## 2026-10-14 — Scoped multi-set CUDA call profiling
 
 Previous turn was progress: GH200 matched controls passed, showing no matched-CPU

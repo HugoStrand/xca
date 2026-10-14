@@ -166,6 +166,18 @@ weight tables and device descriptor packing to reduce uploads/synchronizations.
 Preserve the current candidate/profile as controls and repeat semantic/cutoff gates
 before target timing or promotion. No GH200 inference follows from this local trace.
 
+Parity-hoisting checkpoint: separate scalar_signs candidate prepares field indices
+and parity once per lane/operator pair, preserving weight arithmetic, sums and
+cutoff/fan-in. Matched host control shares that preparation; baselines remain.
+All18 controls and48 old/new CPU/GPU samples pass, plus CPU-only exact screening.
+Local GPU OCA speedups are1.55–1.89x; matched CPU1.55–1.83x. New GPU wins sampled
+N6 over matchedCPU by1.18x, is near even atN4 OCA, and loses elsewhere. GPU summary
+norms/errors/counts match old/new, without claiming cross-route bitwise equality.
+Evidence is common local density-signs-01. Device payload/admission are unchanged.
+Next reduce repeated immutable weight uploads and stream/event barriers through a
+separate resident-table/device-descriptor candidate, preserving current timing and
+numerical controls. GH200 qualification and conservative promotion remain required.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
