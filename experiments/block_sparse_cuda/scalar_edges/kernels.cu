@@ -26,4 +26,24 @@ namespace scalar_edge_experiment {
                                                           static_cast<double2 *>(out), count);
     return cudaGetLastError();
   }
+  __global__ void gather_kernel(std::uintptr_t const *f, std::uintptr_t const *g, double2 *fp, double2 *gp, long rank, long lanes) {
+    long i = long(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (i < rank * lanes) {
+      long lane = i % lanes, node = i / lanes;
+      fp[i] = reinterpret_cast<double2 const *>(f[lane])[node];
+      gp[i] = reinterpret_cast<double2 const *>(g[lane])[node];
+    }
+  }
+  __global__ void scatter_kernel(double2 const *packed, std::uintptr_t const *out, long rank, long lanes) {
+    long i = long(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (i < rank * lanes) reinterpret_cast<double2 *>(out[i % lanes])[i / lanes] = packed[i];
+  }
+  cudaError_t gather(std::uintptr_t const *f, std::uintptr_t const *g, void *fp, void *gp, long rank, long lanes, cudaStream_t stream) {
+    gather_kernel<<<(rank * lanes + 255) / 256, 256, 0, stream>>>(f, g, static_cast<double2 *>(fp), static_cast<double2 *>(gp), rank, lanes);
+    return cudaGetLastError();
+  }
+  cudaError_t scatter(void const *packed, std::uintptr_t const *out, long rank, long lanes, cudaStream_t stream) {
+    scatter_kernel<<<(rank * lanes + 255) / 256, 256, 0, stream>>>(static_cast<double2 const *>(packed), out, rank, lanes);
+    return cudaGetLastError();
+  }
 } // namespace scalar_edge_experiment

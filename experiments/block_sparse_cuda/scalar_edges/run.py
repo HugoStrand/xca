@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--machine', required=True)
-    parser.add_argument('--campaign', default='scalar-01')
+    parser.add_argument('--campaign', default='scalar-cpu-01')
     args = parser.parse_args()
     for name in (args.machine, args.campaign):
         if not name or Path(name).name != name or name in ('.', '..'):
@@ -48,7 +48,7 @@ def main():
                     cppdlr_headers={str(p.relative_to(prefix)): digest(p) for p in (prefix/'include/cppdlr').glob('**/*.hpp')},
                     cases=[])
     rows = []
-    cases = [(count, 40) for count in (1, 2, 4, 8, 17, 32, 64, 127, 256)]
+    cases = [(count, 40) for count in (1, 2, 4, 8, 17, 32, 64, 127, 256, 512, 1024)]
     cases += [(count, lam) for lam in (10, 120) for count in (1, 17, 127)]
     for lanes, lam in cases:
         samples = 3
@@ -64,8 +64,8 @@ def main():
                 (folder/(name+'.log')).write_text(run.stderr)
             if run.returncode == 0:
                 data = list(csv.DictReader(io.StringIO(run.stdout)))
-                if len(data) != 3*samples:
-                    case['validation_error'] = 'Expected three scalar routes'
+                if len(data) != 8*samples:
+                    case['validation_error'] = 'Expected three CPU and five GPU scalar routes'
                     case['returncode'] = 1
                 else:
                     for row in data:

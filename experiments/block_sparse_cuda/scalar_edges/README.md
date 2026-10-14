@@ -48,3 +48,19 @@ The CUDA-compiler experiment is omitted in CPU-only builds. Lane count is bounde
 1/2/4/8/17/32/64/127/256 lanes at Lambda=40, plus 1/17/127 at 10 and 120. It retains
 source/binary/header hashes, exact commands, errors and timeouts (120 s); existing
 campaigns are refused. System results belong under hardware subdirectories.
+
+The extended matched screen adds timed CPU independent/packed routes using the same
+cached LU and hoisted transform formula. CPU inclusive packing/scattering is charged;
+CPU intermediate allocations are inside timing and CPU work bytes are `NA` (not a
+measured host peak). It also adds GPU pointer-table gather/scatter routes: one kernel
+per pack/scatter instead of per-lane copies. Tables are uploaded during setup and
+borrow addresses from edge buffers that remain owned/alive throughout the run.
+If buffers move, a future scheduler must refresh those tables; this is not an
+ownership guarantee from the descriptors themselves.
+
+The extended bound is 1–1024 lanes, adding 512/1024 at Lambda40. The new default
+campaign is `scalar-cpu-01`, 17 cases and eight routes per case, three samples each.
+The original GPU-only `scalar-01` results remain intact. CPU packing also improves
+its arithmetic; compare matched CPU rather than only GPU independent/packed ratios.
+Pointer-table setup, changed input/allocator costs and full diagram scheduling are
+still outside this segment screen and require later qualification.
