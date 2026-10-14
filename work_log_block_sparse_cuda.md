@@ -1689,3 +1689,57 @@ benchmarks/block_sparse_common/thinkstationP620_RTXA4000/kappa-mapped-01/README.
 Logs /tmp/xca-bs-mapped-{configure,build,test,campaign,memcheck}.log,
 /tmp/xca-bs-mapped-{final,cpu,library}-{build,test}.log and configuration logs,
 /tmp/xca-bs-mapped-fallback-{build,test}.log.
+
+## 2026-10-14 — Actual fourteen-mode Fock row slices
+
+Previous turn progressed through mapped-kappa full-call qualification. 1cc80db
+[bench] replay Fock sector row slices adds canonical adjacent number-sector fields
+without atom_diag/Hamiltonian construction, plus a bounded one-mu primitive. Both
+annihilation and adjoint creation orientations use actual 3003/3432 shapes at fourteen
+modes. Independent host tests verify known four-mode signs and fourteen-mode
+completeness: 1716 entries per field, seven annihilation possibilities per upper
+state and eight additions per lower state. Three host tests pass CPU-only (0.02 s)
+and CUDA. Primitive rank/rows are bounded (26/128), rows must fit the source sector,
+and explicit tensor/maps/control-operator envelope is checked against one GiB plus
+free headroom before allocation. Fresh inclusive-route maps and duplicate resident
+rank weights are accounted. Host/opaque allocator/context peaks are not claimed.
+
+Four routes retain a matched serial CPU field-order sum, separate resident GPU
+right/weight/add operations, resident mapped GPU, and fresh map rebuild/upload plus
+mu download. Reference snapshots/rank weights are deliberately resident, favoring
+that control over production snapshot rebuilding. CPU and maps/download return host
+output within their timers; resident routes download outside timing. Input/output
+GPU tensors remain allocated even for maps/download. Setup, warm controls and
+validation remain outside timers. This is one mu slice, not a complete special
+vertex/path/solver. No left operation, sum over mu, cutoff, DLR, full output or MPI.
+
+Fourteen-mode/rank3/17-row smoke passes. Inverse creation slice passes final
+memcheck/full leaks with zero errors and zero bytes leaked. Sanitizer timings are
+excluded. All verification handles were terminal before isolated measurement.
+d45c698 [bench] record Fock slice timings retains eight processes / 96 rows:
+both directions for N4/r3/rows3, N10/r26/rows32, N14/r26/rows32 and rows128.
+Three timed samples per route are one process, not independent repetitions.
+Source/executable hashes, toolchain/hardware and commands are recorded. All strict
+1e-13 relative controls and exact mapped replay pass; mapped CPU/device errors are
+zero for this finite suite. Serial/compiler CPU control is not a tuned/threaded
+CPU ceiling; small four-mode CPU remains faster than GPU.
+
+N14/r26/rows128 medians: CPU 682.044/637.464 ms, separate resident GPU 43.813/38.943
+ms, mapped resident 20.281/17.784 ms, fresh maps+download 111.836/96.341 ms
+(annihilation/creation). At rows32, mapped resident 5.123/4.497 ms, maps+download
+29.299/24.698 ms. Materialization can dominate: keep mu on-device through consumers.
+These primitive results do not qualify whole-solver throughput, complete live peak,
+N=14 full-call admission or GH200 performance. No full N=14 model was constructed.
+
+Next integrate an explicit production mapped option with unchanged reference
+defaults and full CPU/CUDA/library-only/Python/archive/MPI qualification, then
+continue E7 scheduling and higher-order boundary gates. GH200 remains the target.
+All baselines/experiments retained. Goal active, not complete. No install/push,
+supervisor or unrelated user-work changes. Plan/log checkpoint separate from code/
+data; git diff --check passed.
+
+Evidence: experiments/block_sparse_cuda/mapped_special/README.md and its
+thinkstationP620_RTXA4000/fock-slabs-01/README.md. Temporary logs:
+/tmp/xca-bs-slab-{configure,build,final-build,campaign}.log,
+/tmp/xca-bs-slab-{cpu,host}-test.log, /tmp/xca-bs-slab-final-memcheck.log,
+/tmp/xca-bs-slab-smoke.csv; CPU configure/build logs.

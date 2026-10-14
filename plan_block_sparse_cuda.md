@@ -882,6 +882,36 @@ work. Do not present multi-GPU index partitioning as a solution to per-GPU capac
 Decision: a demonstrated memory envelope and a rejected/accepted full-call admission
 policy; retain streaming even when it sacrifices peak GEMM throughput to make a case fit.
 
+E7 actual-sector primitive checkpoint (2026-10-14):
+[bounded Fock slices](experiments/block_sparse_cuda/mapped_special/thinkstationP620_RTXA4000/fock-slabs-01/README.md)
+replay one mu row slice with all canonical creation/annihilation maps between
+3003/3432-dimensional fourteen-mode sectors. No atom_diag, Hamiltonian or complete
+evaluation is built. Independent host checks verify known four-mode signs and
+fourteen-mode occupancy/complement counts; each field has 1716 entries. Both
+orientations and 32/128 rows at rank26 are exercised, with smaller controls.
+
+Eight isolated processes / 96 samples pass strict controls and exact mapped replay.
+The matched serial CPU and mapped GPU outputs agree exactly in this finite suite;
+this is not a universal bitwise claim or tuned/threaded CPU ceiling. CPU-only and
+CUDA host cases pass, and the fourteen-mode inverse slice passes memcheck with no
+errors/leaks. Resident GPU reference retains all snapshots outside timing; a
+separate route charges fresh maps/uploads and mu download. Input/output buffers
+remain resident, and explicit tensor/map/operator payload is capped at one GiB;
+host/opaque memory is not a complete peak measurement.
+
+Fourteen-mode/rank26/128-row resident mapper times are 20.281/17.784 ms for
+annihilation/creation, versus separate GPU 43.813/38.943 ms. Map rebuilding plus
+host materialization costs 111.836/96.341 ms. This supports keeping mu on the device
+through its consumers; slices omit other rows, left application, sum over mu, cutoff,
+DLR work, full output and MPI. They qualify actual large-sector indexing and a
+bounded primitive, not a fitting fourteen-mode full solver. GH200 remains the target.
+
+Next integrate the mapped route as an explicitly selected production option while
+retaining reference defaults and all controls. Requalify CPU-only, CUDA/library-only,
+all current observables, archive/error behavior and MPI before enabling it publicly.
+Continue E7 scheduling/admission and higher-order boundary work; full N=14 and GH200
+dispatch remain unqualified. Do not use primitive CPU ratios as whole-solver evidence.
+
 ### E8 — Topologies, shared subcomputations and graphs
 
 Start with independent topology cohorts. Measure reusable prefixes/suffixes on actual
