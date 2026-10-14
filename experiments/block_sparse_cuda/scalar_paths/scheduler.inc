@@ -35,16 +35,44 @@ void scalar_flush(std::vector<Tensor> const &G, std::vector<Tensor> &Sigma, std:
   auto copy = [&](auto const &from, auto &to) { ops->copy(from, to); };
 #include "recipe.inc"
   auto host = nda::to_host(T);
+#ifdef XCA_EXPERIMENT_SCALAR_FANIN
+  std::map<int, std::vector<long>> selected;
+#endif
   for (long lane = 0; lane < count; ++lane) {
     double magnitude = 0;
     for (long t = 0; t < r; ++t) magnitude = std::max(magnitude, std::abs(host(t, lane, 0)));
     if (magnitude <= 1e-16) continue;
+#ifdef XCA_EXPERIMENT_SCALAR_FANIN
+    selected[work[lane].second.output_block].push_back(lane);
+#else
     scalar_edge_experiment::check(cudaMemcpy2DAsync(lane_result.data(), sizeof(Complex), T.data() + lane, lanes * sizeof(Complex), sizeof(Complex), r,
                                                     cudaMemcpyDeviceToDevice, ops->stream()));
     ops->finish();
     ops->axpy(1., lane_result, Sigma[work[lane].second.output_block]);
+#endif
     ++contributions;
   }
+#ifdef XCA_EXPERIMENT_SCALAR_FANIN
+  if (!selected.empty()) {
+    long slots = selected.size(), accepted = 0;
+    for (auto const &entry : selected) accepted += entry.second.size();
+    nda::vector<std::uintptr_t> destinations(slots);
+    nda::vector<long> offsets(slots + 1), indices(accepted);
+    long slot = 0, position = 0;
+    offsets(0) = 0;
+    for (auto const &[block, sequence] : selected) {
+      destinations(slot) = reinterpret_cast<std::uintptr_t>(Sigma[block].data());
+      for (long lane : sequence) indices(position++) = lane;
+      offsets(++slot) = position;
+    }
+    nda::cuvector<std::uintptr_t> device_destinations(destinations);
+    nda::cuvector<long> device_offsets(offsets), device_indices(indices);
+    ops->wait_for_default_uploads();
+    scalar_edge_experiment::check(scalar_edge_experiment::ordered_fanin(T.data(), device_destinations.data(), device_offsets.data(),
+                                                                        device_indices.data(), r, lanes, slots, ops->stream()));
+    ops->finish();
+  }
+#endif
   sample_memory();
   work.clear();
 }

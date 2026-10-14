@@ -46,4 +46,25 @@ namespace scalar_edge_experiment {
     scatter_kernel<<<(rank * lanes + 255) / 256, 256, 0, stream>>>(static_cast<double2 const *>(packed), out, rank, lanes);
     return cudaGetLastError();
   }
+  __global__ void fanin_kernel(double2 const *packed, std::uintptr_t const *outputs, long const *offsets, long const *lanes_list, long rank,
+                               long lanes, long count) {
+    long index = long(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (index >= rank * count) return;
+    long node = index / count, slot = index % count;
+    auto *destination = reinterpret_cast<double2 *>(outputs[slot]) + node;
+    double2 sum       = *destination;
+    // Stable per-output order, no atomics or tree reduction.
+    for (long i = offsets[slot]; i < offsets[slot + 1]; ++i) {
+      auto term = packed[node * lanes + lanes_list[i]];
+      sum.x += term.x;
+      sum.y += term.y;
+    }
+    *destination = sum;
+  }
+  cudaError_t ordered_fanin(void const *packed, std::uintptr_t const *outputs, long const *offsets, long const *lanes_list, long rank, long lanes,
+                            long count, cudaStream_t stream) {
+    fanin_kernel<<<(rank * count + 255) / 256, 256, 0, stream>>>(static_cast<double2 const *>(packed), outputs, offsets, lanes_list, rank, lanes,
+                                                                 count);
+    return cudaGetLastError();
+  }
 } // namespace scalar_edge_experiment
