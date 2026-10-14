@@ -1,3 +1,4 @@
+xca_add_benchmark(block_sparse_cpu_scalar_path_benchmark)
 if(NOT TARGET block_sparse_scalar_edge_kernels)
   return()
 endif()
