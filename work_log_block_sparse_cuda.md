@@ -1,5 +1,49 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Restored target qualification and reusable staging
+
+User restored Arrhenius SSH authentication. Bounded probe succeeded; queue empty.
+Used arrhenius/arrhenius-software skills. Staging local suite from the interrupted
+turn had failed with a host segfault, so excluded that unqualified variant from
+cluster submission. Archived committed77f59ac plus pinnedGTest988ea2c source only
+into new isolated shared/qualification/xca-block-sparse-77f59ac. Installed ArmTRIQS
+reused; shared sources/installations preserved. Reviewed transfer, shell syntax and
+remote sbatch--test-only, then submitted resident job3828369, oneGPU/15min cap.
+Job COMPLETED0:0 on n123;245s=.06806 nominalGPU-hours (extern step246s), batchRSS
+2,186,432KiB. Cumulative tracked target allocation992s=.27556GPU-hours, against
+user100GPU-hours/month. FiveCTest entries/39 active controls passed53.07s; campaign
+36rows/fourcases/three routes passes finite outputs, CPU screening/exact replay.
+GPU signal/error/count/range/rank summaries match; no cross-route bitwise claim.
+Max error1.1904e-16. CPU/parityGPU/residentGPU medianms:
+N4NCA.430/3.280/2.923, N4OCA2.442/5.438/4.265, N6OCA8.370/10.492/8.848,
+N8OCA4.760/7.165/6.153. Resident improves GPU12–28%; matchedCPU still wins all.
+No universal crossover or full10/14-mode validation follows. Target staging untested.
+
+Locally isolated failure with memcheck (host exit, not a passing zero-error result)
+and gdb: NDA extent construction default-initializes nontrivial Weight in device
+storage from host. Switched descriptor construction to host-vector copy, explicitly
+ordered/completed initial default-stream upload before host-source reuse. Added
+separate scalar_staging candidate: cohort-owned descriptor/constants/pointer buffers,
+subsequent uploads on ownedstream, operation completion retained before rewrites,
+destructor completion before host/device cleanup including unwind. Charges12,288
+extra simultaneous device bytes at512 lanes. Baselines unchanged; no cross-call
+cache. Full19 local controls pass46.17s; focused changed-mask/multi-set/adjacent-cutoff
+memcheck three tests38.926s passes zero errors/leaked bytes. Rebuilt residentGPU and
+matchedCPU before isolated12-process/36sample campaign. CPU/residentGPU/stagingGPU
+medianms: N4NCA1.192/1.794/1.690, N4OCA4.191/3.314/3.132,
+N6OCA13.787/8.741/8.013, N8OCA5.936/5.852/5.374. Gains6–9%; smallNCA loses.
+Max error1.5697e-16; finite/screen/replay and GPU summary matches, bound difference
+exact12,288bytes. No profiling/API-count claims or newest broad full-suite claims.
+
+Job recipe44bebb6, stagingcode1b1fee0, raw evidence092a08f separate from this plan/log.
+Artifacts common/CPU/CUDA under local density-staging-01 and GH200 density-resident-01;
+submitted script, provenance/hashes, logs/accounting retained. Temporary debug/build/
+test/memcheck/campaign logs /tmp/xca-bs-staging-* may disappear. All processes/jobs
+terminal, no install/push/unrelated-work edits. Persistent goal remains active.
+Next scoped staging trace then barrier-reduction experiment with explicit lifetime
+checks; target finalist qualification/promotion decision. Experimental cutoff band,
+optimized production integration and capacity/Python/MPI gates remain open.
+
 ## 2026-10-14 — Resident weight tables and device selectors
 
 Previous turn was progress: parity hoisting measured/qualified. Added separate

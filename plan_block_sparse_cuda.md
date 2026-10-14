@@ -178,6 +178,25 @@ Next reduce repeated immutable weight uploads and stream/event barriers through 
 separate resident-table/device-descriptor candidate, preserving current timing and
 numerical controls. GH200 qualification and conservative promotion remain required.
 
+### 2026-10-14 — Resident target qualification and reusable staging
+
+GH200 resident qualification job3828369 completed0:0, oneGPU245s (.06806GPU-hours).
+FiveCTest entries/39controls and36matched samples pass. Resident gains12–28% over
+parityGPU, but matchedCPU wins all four bounded cases. Target dispatch must follow
+complete-call evidence, not localA4000 crossover. Total tracked allocation .27556
+GPU-hours; retain100GPU-hours/month constraint and defer broad sweeps.
+
+Separate scalar_staging reuses cohort-owned weight/constant/pointer buffers with
+owned-stream copies; completion still precedes source rewrites and destruction.
+NDA nontrivial descriptor extent-constructor host fault fixed with ordered initial
+host-vector upload. Nineteen local tests and three targeted memchecks pass;36local
+samples show6–9% gain over resident,12,288extra device bytes charged to admission.
+No target staging qualification, API-count profile or production promotion yet.
+Next trace staging, then isolate barrier reduction with source-lifetime checks.
+Cutoff band proof/promotion, broader capacity/Python/MPI and integration remain open.
+Evidence: common/CPU/CUDA hardware folders density-staging-01 (local) and
+ density-resident-01 (GH200); all older variants retained.
+
 ## 1. Questions to resolve
 
 Resident weight checkpoint: separate scalar_resident candidate reuses pole device
