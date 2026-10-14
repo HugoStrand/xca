@@ -1,0 +1,27 @@
+{
+  "partial_job": 3851765,
+  "completed_methods": [
+    "test_collective_count_and_compute_failures",
+    "test_host_output_placement_and_collective_recovery",
+    "test_native_capability_and_collective_failures",
+    "test_preferences_validation_and_archives",
+    "test_real_nca_capability_selection_and_collective_recovery",
+    "test_real_nca_real_dynamics_and_fallback_observables",
+    "test_registration_and_all_observables",
+    "test_self_consistency_and_initialization_failure",
+    "test_storage_mutation_collective_recovery"
+  ],
+  "method_starts_each": 2,
+  "ok_results": 18,
+  "unfinished_method": "test_storage_policies_all_observables",
+  "cohort_job": 3851926,
+  "cohort_methods": [
+    "test_storage_policies_all_observables",
+    "test_storage_preferences_serialization",
+    "test_topology_storage_admission_and_transitions"
+  ],
+  "cohort_tests_per_rank": 3,
+  "cohort_seconds_per_rank": 323.619,
+  "cohort_exit": "0:0",
+  "scope": "Split method coverage; no successful single-run twelve-method target MPI claim"
+}

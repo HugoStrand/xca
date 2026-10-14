@@ -1,0 +1,18 @@
+{
+  "sources": {
+    "xca": "7b5d223",
+    "c2py": "58e0586a32cd3e4bc197b2ca753b51f128db39d2",
+    "adapol": "d3c4ab78f83922dbaae4d78c5c9d91e22fb974ce",
+    "pyed": "248bd34aa1ba974dc77dad4d8004631fc83d5515",
+    "GTest": "988ea2c1798de7779f656df2281dd36d6039a17a"
+  },
+  "recipe_commit": "e2c0737",
+  "job_sha256": "76dff6af2614f59221f0725ba394838b385d4254611f5f295971d3e5ea049e71",
+  "gpu_count": 1,
+  "mpi_ranks": 2,
+  "walltime_cap_seconds": 900,
+  "build_timeout_seconds": 420,
+  "serial_timeout_seconds": 180,
+  "mpi_timeout_seconds": 420,
+  "note": "Isolated build; existing coherent Arm TRIQS/Python modules, no install; shared100 GPUh/month ceiling"
+}

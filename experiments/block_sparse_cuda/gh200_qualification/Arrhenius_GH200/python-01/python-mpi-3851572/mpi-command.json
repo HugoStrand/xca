@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/software/sse2/generic/manual/ssetools/v2.1.0/bin/mpprun",
+    "--no-modules",
+    "--allow-runpath",
+    "--launcher=mpirun",
+    "-n",
+    "2",
+    "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python",
+    "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py",
+    "--worker",
+    "2",
+    "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py"
+  ],
+  "working_directory": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/",
+  "expected_ranks": 2,
+  "ctest_command": [
+    "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+    "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py"
+  ],
+  "ctest_environment": [],
+  "ctest_environment_modification": [
+    "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+    "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+    "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+  ],
+  "resolved_PYTHONPATH": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed:/nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/mpi4py/4.1.0-gompi-2025b/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/SciPy-bundle/2025.07-gfbf-2025b/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/Python-bundle-PyPI/2025.07-GCCcore-14.3.0/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/virtualenv/20.32.0-GCCcore-14.3.0/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/cryptography/45.0.5-GCCcore-14.3.0/lib/python3.13/site-packages:/software/sse2/el9_gh200/easybuild/prefix/software/cffi/1.17.1-GCCcore-14.3.0/lib/python3.13/site-packages:/software/sse2/generic/manual/easybuild/5.2.1-hpca3ef7d197/easybuild-easyconfigs:/software/sse2/generic/manual/easybuild/5.2.1-hpca3ef7d197/easybuild-easyblocks:/software/sse2/generic/manual/easybuild/5.2.1-hpca3ef7d197/easybuild-framework:/software/sse2/generic/manual/easybuild/5.2.1-hpca3ef7d197/vsc-install/lib:/software/sse2/generic/manual/easybuild/5.2.1-hpca3ef7d197/vsc-base/lib"
+}

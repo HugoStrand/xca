@@ -1,0 +1,20 @@
+3851249|FAILED|1:0|00:02:48|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851249.batch|FAILED|1:0|00:02:48|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|1213248K
+3851249.extern|COMPLETED|0:0|00:02:48|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851450|FAILED|1:0|00:00:11|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851450.batch|FAILED|1:0|00:00:11|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3851450.extern|COMPLETED|0:0|00:00:12|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851450.0|FAILED|1:0|00:00:03|cpu=2,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=2918M,node=1|36M
+3851572|CANCELLED by 4000949|0:0|00:04:09|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851572.batch|CANCELLED|0:15|00:04:12|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|1210705K
+3851572.extern|COMPLETED|0:0|00:04:12|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851572.0|COMPLETED|0:0|00:00:02|cpu=1,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3851572.1|COMPLETED|0:0|00:01:24|cpu=1,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3851765|FAILED|124:0|00:07:12|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851765.batch|FAILED|124:0|00:07:12|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3851765.extern|COMPLETED|0:0|00:07:17|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851765.0|CANCELLED by 4000949|0:9|00:07:03|cpu=2,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=2918M,node=1|611322K
+3851926|COMPLETED|0:0|00:05:39|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851926.batch|COMPLETED|0:0|00:05:39|cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|36M
+3851926.extern|COMPLETED|0:0|00:05:40|billing=1,cpu=72,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=105048M,node=1|
+3851926.0|COMPLETED|0:0|00:05:32|cpu=2,gres/gpu:nvidia_gh200_120gb=1,gres/gpu=1,mem=2918M,node=1|596484K

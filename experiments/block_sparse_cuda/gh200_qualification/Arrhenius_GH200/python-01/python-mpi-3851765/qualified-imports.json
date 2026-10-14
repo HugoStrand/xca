@@ -1,0 +1,20 @@
+Warning: could not identify MPI environment!
+{
+  "architecture": "aarch64",
+  "numpy": "2.3.2",
+  "origins": {
+    "triqs_xca": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/__init__.py",
+    "cppdlr": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/cppdlr/__init__.py",
+    "triqs_xca._triqs_xca": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/_triqs_xca.so",
+    "triqs_xca._triqs_xca_cuda": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/_triqs_xca_cuda.so",
+    "cppdlr._cppdlr": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/cppdlr/_cppdlr.so",
+    "triqs": "/nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs/lib/python3.13/site-packages/triqs/__init__.py",
+    "h5": "/nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs/lib/python3.13/site-packages/h5/__init__.py",
+    "nda_py": "/nobackup/proj/disk/naiss2026-3-569/shared/apps-cuda/triqs/lib/python3.13/site-packages/nda_py/__init__.py"
+  },
+  "cuda": true,
+  "cuda_small": false,
+  "ordered": true,
+  "mapped": true,
+  "real_nca": true
+}

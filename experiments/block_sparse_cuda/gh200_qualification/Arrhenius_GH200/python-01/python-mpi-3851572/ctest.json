@@ -1,0 +1,2154 @@
+{
+  "backtraceGraph" :
+  {
+    "commands" :
+    [
+      "add_test"
+    ],
+    "files" :
+    [
+      "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/c++/CMakeLists.txt",
+      "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/CMakeLists.txt"
+    ],
+    "nodes" :
+    [
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 0
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 2
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 4
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 6
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 8
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 10
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 12
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 14
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 16
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 18
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 20
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 22
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 24
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 26
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 28
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 30
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 32
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 34
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 36
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 38
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 40
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 42
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 44
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 46
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 48
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 50
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 52
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 54
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 56
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 58
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 60
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 62
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 64
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 66
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 68
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 70
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 72
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 74
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 76
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 78
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 80
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 82
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 84
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 86
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 88
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 90
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 92
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 94
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 96
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 98
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 37,
+        "parent" : 100
+      },
+      {
+        "file" : 0
+      },
+      {
+        "command" : 0,
+        "file" : 0,
+        "line" : 96,
+        "parent" : 102
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 104
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 106
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 108
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 110
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 112
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 114
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 116
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 118
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 120
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 122
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 124
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 126
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 128
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 130
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 132
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 134
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 136
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 138
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 140
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 142
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 144
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 146
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 148
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 150
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 152
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 154
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 156
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 158
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 160
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 162
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 164
+      },
+      {
+        "file" : 1
+      },
+      {
+        "command" : 0,
+        "file" : 1,
+        "line" : 47,
+        "parent" : 166
+      }
+    ]
+  },
+  "kind" : "ctestInfo",
+  "tests" :
+  [
+    {
+      "backtrace" : 1,
+      "name" : "atom_diag_utils",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 3,
+      "name" : "backbone_indexing",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 5,
+      "name" : "backbone_parity",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 7,
+      "name" : "block_diag_op_fun",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 9,
+      "name" : "block_sparse/atom_prop",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 11,
+      "name" : "block_sparse/correlator_path",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 13,
+      "name" : "block_sparse/cuda_admission",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 15,
+      "name" : "block_sparse/cuda_device_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 17,
+      "name" : "block_sparse/cuda_diagram_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 19,
+      "name" : "block_sparse/cuda_dlr_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 21,
+      "name" : "block_sparse/cuda_mapped_special",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 23,
+      "name" : "block_sparse/cuda_memory_plan",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 25,
+      "name" : "block_sparse/cuda_nca_dispatch",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 27,
+      "name" : "block_sparse/cuda_nca_liveness",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 29,
+      "name" : "block_sparse/cuda_real_nca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 31,
+      "name" : "block_sparse/cuda_sparse_backend",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 33,
+      "name" : "block_sparse/cuda_storage_policy",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 35,
+      "name" : "block_sparse/dynint_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 37,
+      "name" : "block_sparse/dynint_sets",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 39,
+      "name" : "block_sparse/dynint_spin_flip",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 41,
+      "name" : "block_sparse/evaluator_api",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 43,
+      "name" : "block_sparse/operator_model",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 45,
+      "name" : "block_sparse/path",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 47,
+      "name" : "block_sparse/sparse_operator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 49,
+      "name" : "block_sparse/sparsity_invariance",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 51,
+      "name" : "block_sparse/sym_set_mask",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 53,
+      "name" : "block_sparse/sym_sets",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/block_sparse"
+        }
+      ]
+    },
+    {
+      "backtrace" : 55,
+      "name" : "dense/benchmark_validation",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 57,
+      "name" : "dense/correlator_statistics",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 59,
+      "name" : "dense/cuda/device_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense/cuda"
+        }
+      ]
+    },
+    {
+      "backtrace" : 61,
+      "name" : "dense/cuda/dlr_ops",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense/cuda"
+        }
+      ]
+    },
+    {
+      "backtrace" : 63,
+      "name" : "dense/cuda_small/batch_api",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense/cuda_small"
+        }
+      ]
+    },
+    {
+      "backtrace" : 65,
+      "name" : "dense/dynint_parity",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/dense"
+        }
+      ]
+    },
+    {
+      "backtrace" : 67,
+      "name" : "dense_cuda_benchmark_contract",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 69,
+      "name" : "dynint_spin_rotation",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 71,
+      "name" : "evaluator_ranges",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 73,
+      "name" : "flat_index_range",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 75,
+      "name" : "hyb",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 77,
+      "name" : "manual_routines",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 79,
+      "name" : "one_fermion_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 81,
+      "name" : "propagator_layout",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 83,
+      "name" : "topology",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 85,
+      "name" : "triqs_soehyb/test_convolve",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 87,
+      "name" : "triqs_soehyb/test_dimer",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 89,
+      "name" : "triqs_soehyb/test_dlr",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 91,
+      "name" : "triqs_soehyb/test_fastdiagram",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 93,
+      "name" : "triqs_soehyb/test_oca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 95,
+      "name" : "triqs_soehyb/test_oca_equi",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 97,
+      "name" : "triqs_soehyb/test_tca",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 99,
+      "name" : "two_fermions_se_spgf_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 101,
+      "name" : "unitary_invariance_all_evals",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 103,
+      "name" : "block_sparse/ordered_evaluator",
+      "properties" :
+      [
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/c++"
+        }
+      ]
+    },
+    {
+      "backtrace" : 105,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//cppdlr_imtime_ops.py"
+      ],
+      "name" : "Py_cppdlr_imtime_ops",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 107,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//cuda_backends.py"
+      ],
+      "name" : "Py_cuda_backends",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 109,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py"
+      ],
+      "name" : "Py_block_sparse_cuda",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 111,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/load_module.py"
+      ],
+      "name" : "Py_triqs_soehyb/load_module",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 113,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/spinless_dimer.py"
+      ],
+      "name" : "Py_triqs_soehyb/spinless_dimer",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 115,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/spinless_dimer_solver.py"
+      ],
+      "name" : "Py_triqs_soehyb/spinless_dimer_solver",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 117,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/offdiagonal_nca.py"
+      ],
+      "name" : "Py_triqs_soehyb/offdiagonal_nca",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 119,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//diag.py"
+      ],
+      "name" : "Py_diag",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 121,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/unitary_invariance.py"
+      ],
+      "name" : "Py_triqs_soehyb/unitary_invariance",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 123,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//unitary_invariance.py"
+      ],
+      "name" : "Py_unitary_invariance",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 125,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/h5_io.py"
+      ],
+      "name" : "Py_triqs_soehyb/h5_io",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 127,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//h5_io.py"
+      ],
+      "name" : "Py_h5_io",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 129,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//dynint.py"
+      ],
+      "name" : "Py_dynint",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 131,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//dynint_spin_flip.py"
+      ],
+      "name" : "Py_dynint_spin_flip",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 133,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//dynint_transverse.py"
+      ],
+      "name" : "Py_dynint_transverse",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 135,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//topology.py"
+      ],
+      "name" : "Py_topology",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 137,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/triqs_solver.py"
+      ],
+      "name" : "Py_triqs_soehyb/triqs_solver",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 139,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/one_spinful_fermion.py"
+      ],
+      "name" : "Py_triqs_soehyb/one_spinful_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 141,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python/triqs_soehyb/analytic_diagrams.py"
+      ],
+      "name" : "Py_triqs_soehyb/analytic_diagrams",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/triqs_soehyb"
+        }
+      ]
+    },
+    {
+      "backtrace" : 143,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//solver_copy.py"
+      ],
+      "name" : "Py_solver_copy",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 145,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//api.py"
+      ],
+      "name" : "Py_api",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 147,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//api_one_fermion.py"
+      ],
+      "name" : "Py_api_one_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 149,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//api_two_fermions.py"
+      ],
+      "name" : "Py_api_two_fermions",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 151,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//bethe_self_cons.py"
+      ],
+      "name" : "Py_bethe_self_cons",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 153,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//dense_manual_NCA_OCA.py"
+      ],
+      "name" : "Py_dense_manual_NCA_OCA",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 155,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//normalization.py"
+      ],
+      "name" : "Py_normalization",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 157,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//spgf_ordering.py"
+      ],
+      "name" : "Py_spgf_ordering",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 159,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//bug_bs_one_fermion.py"
+      ],
+      "name" : "Py_bug_bs_one_fermion",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 161,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//volterra_integral.py"
+      ],
+      "name" : "Py_volterra_integral",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 163,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//one_time_correlator.py"
+      ],
+      "name" : "Py_one_time_correlator",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 165,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//expectation_value.py"
+      ],
+      "name" : "Py_expectation_value",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    },
+    {
+      "backtrace" : 167,
+      "command" :
+      [
+        "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13",
+        "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//order_conv.py"
+      ],
+      "name" : "Py_order_conv",
+      "properties" :
+      [
+        {
+          "name" : "ENVIRONMENT_MODIFICATION",
+          "value" :
+          [
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/pyed",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/adapol/src",
+            "PYTHONPATH=path_list_prepend:/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python"
+          ]
+        },
+        {
+          "name" : "WORKING_DIRECTORY",
+          "value" : "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/test/python/"
+        }
+      ]
+    }
+  ],
+  "version" :
+  {
+    "major" : 1,
+    "minor" : 0
+  }
+}

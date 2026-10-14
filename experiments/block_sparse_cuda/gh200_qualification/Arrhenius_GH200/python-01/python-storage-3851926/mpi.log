@@ -1,0 +1,154 @@
+mpprun INFO: mpprun v2.1.0 started
+mpprun INFO: hpcinfo file: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python.hpcinfo
+mpprun INFO: Setting env variable: FI_PROVIDER=cxi
+mpprun INFO: Setting env variable: SLURM_MPI_TYPE=pmix
+mpprun INFO: Setting env variable: SLURM_KILL_BAD_EXIT=1 (was unset; to override, set to 0 before invoking mpprun)
+mpprun INFO: threading env variables set by user: OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1; left unset by mpprun: MKL_NUM_THREADS, NUMEXPR_NUM_THREADS
+mpprun INFO: mpprun v2.1.0 executing: /usr/bin/srun --mpi pmix -m block:block --ntasks=2 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py --worker 2 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py -v BlockSparseCudaTests.test_storage_policies_all_observables BlockSparseCudaTests.test_storage_preferences_serialization BlockSparseCudaTests.test_topology_storage_admission_and_transitions
+Qualification MPI rank 0/2
+Qualification MPI rank 1/2
+Qualification MPI collective passed on rank 0
+Qualification MPI collective passed on rank 1
+Starting run with 2 MPI rank(s) at : 2026-10-14 23:05:33.718989
+test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables) ... Timeout (0:01:30)!
+Thread 0x000040001a4da820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 118 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+test_storage_policies_all_observables (__main__.BlockSparseCudaTests.test_storage_policies_all_observables) ... Timeout (0:01:30)!
+Thread 0x000040000d57a820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 118 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+Timeout (0:01:30)!
+Thread 0x000040001a4da820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 117 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+Timeout (0:01:30)!
+Thread 0x000040000d57a820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 117 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+Timeout (0:01:30)!
+Thread 0x000040001a4da820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 118 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+Timeout (0:01:30)!
+Thread 0x000040000d57a820 (most recent call first):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 904 in <lambda>
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/gpu.py", line 103 in collective_call
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/solver.py", line 905 in __eval_pseudo_particle_self_energy_topology_loop
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 118 in test_storage_policies_all_observables
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 606 in _callTestMethod
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 651 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/case.py", line 707 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 122 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/suite.py", line 84 in __call__
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/runner.py", line 240 in run
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 270 in runTests
+  File "/software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/lib/python3.13/unittest/main.py", line 104 in __init__
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py", line 409 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 98 in _run_module_code
+  File "<frozen runpy>", line 287 in run_path
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py", line 32 in <module>
+ok
+ok
+test_storage_preferences_serialization (__main__.BlockSparseCudaTests.test_storage_preferences_serialization) ... ok
+test_storage_preferences_serialization (__main__.BlockSparseCudaTests.test_storage_preferences_serialization) ... ok
+test_topology_storage_admission_and_transitions (__main__.BlockSparseCudaTests.test_topology_storage_admission_and_transitions) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 323.619s
+
+OK
+test_topology_storage_admission_and_transitions (__main__.BlockSparseCudaTests.test_topology_storage_admission_and_transitions) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 323.619s
+
+OK

@@ -1,0 +1,87 @@
+[ 40%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/converters/numpy_proxy.cpp.o
+[ 40%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/converters/wrapped.cpp.o
+[ 40%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/dyn_dispatch/pycfun_kw.cpp.o
+[ 40%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/dyn_dispatch/dispatcher.cpp.o
+[ 80%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/pyref.cpp.o
+[ 80%] Building CXX object deps/c2py/src/c2py/CMakeFiles/c2py.dir/pyfunction.cpp.o
+[ 80%] Linking CXX static library libc2py.a
+[ 80%] Built target c2py
+[ 80%] Building CXX object python/cppdlr/CMakeFiles/_cppdlr.dir/_cppdlr.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/c2py.hpp:44,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/python/cppdlr/_cppdlr.cpp:3:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/serialization/repr.hpp:8:24: warning: ‘constexpr char* module_name()’ declared ‘static’ but never defined [-Wunused-function]
+    8 | static constexpr char *module_name(); // forward
+      |                        ^~~~~~~~~~~
+[100%] Linking CXX shared module _cppdlr.so
+[100%] Built target _cppdlr
+[  4%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/mapped.cu.o
+[  8%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/kernels.cu.o
+[  8%] Building CUDA object c++/triqs_xca/block_sparse/cuda/kernels/CMakeFiles/triqs_xca_sparse_kernels.dir/real_nca.cu.o
+[ 24%] Built target c2py
+[ 28%] Linking CUDA static library libtriqs_xca_sparse_kernels.a
+[ 28%] Built target triqs_xca_sparse_kernels
+[ 28%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/atom_diag.cpp.o
+[ 36%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/backbone.cpp.o
+[ 36%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/atom_diag.cpp.o
+[ 36%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/device_ops.cpp.o
+[ 36%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/block_op.cpp.o
+[ 40%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/diagram_evaluator.cpp.o
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/dlr_ops.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:194:12: warning: declaration of ‘x’ shadows a previous local [-Wshadow=local]
+  194 |       auto x = reinterpret_cast<std::uintptr_t>(a.data()), y = reinterpret_cast<std::uintptr_t>(b.data());
+      |            ^
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp:186:11: note: shadowed declaration is here
+  186 |     auto &x = *impl_;
+      |           ^
+[ 44%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/operator_model.cpp.o
+[ 48%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/path.cpp.o
+[ 48%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/real_nca.cpp.o
+[ 52%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/cuda/sparse_operator.cpp.o
+[ 52%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/diagram_evaluator.cpp.o
+[ 56%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/dynint.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/sigma.cpp.o
+[ 60%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/block_sparse/manual/spgf.cpp.o
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp: In lambda function:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:284:30: warning: declaration of ‘bool is_forward’ shadows a parameter [-Wshadow=compatible-local]
+  284 |   auto F_selector = [&](bool is_forward, int b_ix_ix, int p_ix, int ix) {
+      |                         ~~~~~^~~~~~~~~~
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/c++/triqs_xca/block_sparse/diagram_evaluator.cpp:272:128: note: shadowed declaration is here
+  272 | void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0,
+      |                                                                                                                           ~~~~~^~~~~~~~~~
+[ 64%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/atom_diag.cpp.o
+[ 64%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/device_ops.cpp.o
+[ 68%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/diagram_evaluator.cpp.o
+[ 68%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda/dlr_ops.cpp.o
+[ 72%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/batch_evaluator.cpp.o
+[ 76%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/device_ops.cpp.o
+[ 76%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/diagram_evaluator.cpp.o
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/cuda_small/dlr_ops.cpp.o
+[ 80%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/diagram_evaluator.cpp.o
+[ 84%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/dynint.cpp.o
+[ 84%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/fset.cpp.o
+[ 88%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/sigma.cpp.o
+[ 92%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/dense/manual/spgf.cpp.o
+[ 92%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/hyb.cpp.o
+[ 96%] Building CXX object c++/triqs_xca/CMakeFiles/triqs_xca_c.dir/topology.cpp.o
+[ 96%] Linking CXX static library libtriqs_xca_c.a
+[ 96%] Built target triqs_xca_c
+[ 96%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca.dir/_triqs_xca.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/c2py.hpp:44,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/python/triqs_xca/_triqs_xca.cpp:3:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/serialization/repr.hpp:8:24: warning: ‘constexpr char* module_name()’ declared ‘static’ but never defined [-Wunused-function]
+    8 | static constexpr char *module_name(); // forward
+      |                        ^~~~~~~~~~~
+[100%] Linking CXX shared module _triqs_xca.so
+[100%] Built target _triqs_xca
+[ 16%] Built target triqs_xca_sparse_kernels
+[ 28%] Built target c2py
+[ 96%] Built target triqs_xca_c
+[ 96%] Building CXX object python/triqs_xca/CMakeFiles/_triqs_xca_cuda.dir/_triqs_xca_cuda.cpp.o
+In file included from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/c2py.hpp:44,
+                 from /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/python/triqs_xca/_triqs_xca_cuda.cpp:1:
+/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/deps/c2py/src/c2py/serialization/repr.hpp:8:24: warning: ‘constexpr char* module_name()’ declared ‘static’ but never defined [-Wunused-function]
+    8 | static constexpr char *module_name(); // forward
+      |                        ^~~~~~~~~~~
+[100%] Linking CXX shared module _triqs_xca_cuda.so
+[100%] Built target _triqs_xca_cuda

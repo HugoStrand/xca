@@ -1,0 +1,3 @@
+cbuild_cuda/python/triqs_xca/_triqs_xca_cuda.so: OK
+cbuild_cuda/python/triqs_xca/_triqs_xca.so: OK
+cbuild_cuda/python/cppdlr/_cppdlr.so: OK

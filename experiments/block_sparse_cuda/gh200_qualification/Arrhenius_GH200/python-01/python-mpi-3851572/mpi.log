@@ -1,0 +1,9 @@
+mpprun INFO: mpprun v2.1.0 started
+mpprun INFO: mpprun srun handler invoked on: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python
+mpprun INFO: hpcinfo file: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python.hpcinfo
+mpprun INFO: Setting env variable: SLURM_KILL_BAD_EXIT=1 (was unset; to override, set to 0 before invoking mpprun)
+mpprun INFO: threading env variables set by user: OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1; left unset by mpprun: MKL_NUM_THREADS, NUMEXPR_NUM_THREADS
+mpprun INFO: mpprun v2.1.0 executing: /software/sse2/el9_gh200/easybuild/prefix/software/OpenMPI/5.0.8-GCC-14.3.0/bin/mpirun -n 2 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/qualified-mpi-python /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/run_python_mpi.py --worker 2 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py
+Qualification MPI rank 1/2
+Qualification MPI rank 0/2
+Starting run with 2 MPI rank(s) at : 2026-10-14 22:50:06.721843

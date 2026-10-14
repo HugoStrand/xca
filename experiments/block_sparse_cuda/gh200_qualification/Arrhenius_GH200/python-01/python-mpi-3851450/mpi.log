@@ -1,0 +1,16 @@
+mpprun INFO: mpprun v2.1.0 started
+mpprun INFO: mpprun srun handler invoked on: /software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13
+mpprun INFO: Using srun handler that just uses srun without setting up the environment.
+mpprun INFO: Setting env variable: SLURM_KILL_BAD_EXIT=1 (was unset; to override, set to 0 before invoking mpprun)
+mpprun INFO: threading env variables set by user: OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1; left unset by mpprun: MKL_NUM_THREADS, NUMEXPR_NUM_THREADS
+mpprun INFO: mpprun v2.1.0 executing: /usr/bin/srun --ntasks=2 /software/sse2/el9_gh200/easybuild/prefix/software/Python/3.13.5-GCCcore-14.3.0/bin/python3.13 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py --worker 2 /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/test/python//block_sparse_cuda.py
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py", line 18, in <module>
+    raise RuntimeError(f'Expected {expected} MPI ranks, got {actual}')
+RuntimeError: Expected 2 MPI ranks, got 1
+  File "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/src/experiments/block_sparse_cuda/gh200_qualification/run_python_mpi.py", line 18, in <module>
+    raise RuntimeError(f'Expected {expected} MPI ranks, got {actual}')
+RuntimeError: Expected 2 MPI ranks, got 1
+srun: error: n195: tasks 0-1: Exited with exit code 1
+srun: Terminating StepId=3851450.0

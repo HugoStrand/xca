@@ -1,0 +1,14 @@
+{
+  "launcher": "srun",
+  "launch_args": [
+    "--mpi",
+    "pmix",
+    "-m",
+    "block:block"
+  ],
+  "env": {
+    "FI_PROVIDER": "cxi",
+    "SLURM_MPI_TYPE": "pmix"
+  },
+  "native": false
+}

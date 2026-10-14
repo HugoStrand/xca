@@ -1,0 +1,6 @@
+{
+  "launcher": "mpirun",
+  "launcher_path": "/software/sse2/el9_gh200/easybuild/prefix/software/OpenMPI/5.0.8-GCC-14.3.0/bin/mpirun",
+  "native": true,
+  "modules": []
+}

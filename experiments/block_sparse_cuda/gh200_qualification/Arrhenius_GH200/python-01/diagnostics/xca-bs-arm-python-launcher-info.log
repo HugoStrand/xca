@@ -1,0 +1,21 @@
+mpprun INFO: mpprun v2.1.0 started
+
+Found handlers (in order of priority, force use with --handler argument):
+
+  * hpcinfo
+  * srun
+
+Viable:
+
+ * hpcinfo (launcher: mpirun):
+    - info: ['hpcinfo file: ./qualified-mpi-python.hpcinfo']
+    - native: True
+    - modules: ['!buildenv-intel', '!buildenv-gcc', '!OpenMPI', '!openmpi', '!impi', '!foss', '!intel']
+    - launcher_path: /software/sse2/el9_gh200/easybuild/prefix/software/OpenMPI/5.0.8-GCC-14.3.0/bin/mpirun
+    - provider: /software/sse2/generic/manual/ssetools/v2.1.0/mpprun/mpprun_handlers/mpprun_handler_50_hpcinfo.py
+
+
+Not viable:
+
+
+mpprun INFO: mpprun srun handler invoked on: ./qualified-mpi-python

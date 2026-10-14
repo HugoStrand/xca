@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda
+Test project /nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda
+    Start 54: Py_cuda_backends
+1/2 Test #54: Py_cuda_backends .................   Passed    1.98 sec
+    Start 55: Py_block_sparse_cuda
+2/2 Test #55: Py_block_sparse_cuda .............   Passed   63.62 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  65.63 sec

@@ -1,0 +1,554 @@
+{
+  "source_commit": "7b5d223",
+  "runtime_code": "85ecb2d",
+  "source_archive_sha256": "fbb6d350ef11f2305b4a6dd5d1ecd6378093e4a9a1830d5ada43c9ba90fdb645",
+  "gpu_count_per_job": 1,
+  "jobs": [
+    {
+      "id": 3851249,
+      "state": "FAILED",
+      "exit": "1:0",
+      "seconds": 168,
+      "scope": "Build/import/capabilities and both serial CTests pass; MPI executable absent"
+    },
+    {
+      "id": 3851450,
+      "state": "FAILED",
+      "exit": "1:0",
+      "seconds": 11,
+      "scope": "Plain srun produced size1 workers; rank guard rejects"
+    },
+    {
+      "id": 3851572,
+      "state": "CANCELLED",
+      "seconds": 249,
+      "scope": "Native launcher stalls before first completed method; stopped to bound cost; diagnostic attach incomplete"
+    },
+    {
+      "id": 3851765,
+      "state": "FAILED",
+      "exit": "124:0",
+      "seconds": 432,
+      "scope": "Site PMIx; nine methods complete per rank; timeout in storage method"
+    },
+    {
+      "id": 3851926,
+      "state": "COMPLETED",
+      "exit": "0:0",
+      "seconds": 339,
+      "scope": "Three remaining methods pass per rank"
+    }
+  ],
+  "new_nominal_gpu_seconds": 1199,
+  "cumulative_tracked_nominal_gpu_seconds": 3027,
+  "cumulative_nominal_gpu_hours": 0.8408333333333333,
+  "accounting_method": "Parent job elapsed, including failed/cancelled/build time; step and cleanup timings retained; not an exact site billing claim",
+  "normalization": "LF, trailing whitespace/empty EOF lines removed; original hashes retained",
+  "files": [
+    {
+      "file": "accounting.txt",
+      "original_sha256": "f5cd4235358f21e213a73a189bafd83972a33d73b4b6ab59fe229e092d25248a",
+      "archive_sha256": "f5cd4235358f21e213a73a189bafd83972a33d73b4b6ab59fe229e092d25248a"
+    },
+    {
+      "file": "coverage.json",
+      "original_sha256": "a89c00dfe40c5c829d3895ac066832bb39efac747bf135468217bdd30c2ec8ee",
+      "archive_sha256": "a89c00dfe40c5c829d3895ac066832bb39efac747bf135468217bdd30c2ec8ee"
+    },
+    {
+      "file": "python-3851249/CMakeCache.txt",
+      "original_sha256": "e6aa0d3dcbc190f164ad14604f42ca4eff78edcadd3908c7647143f3c04fe379",
+      "archive_sha256": "7b938c67931d7962bada433aa5927c0825e2953697a113f4722ee95db2841f6e"
+    },
+    {
+      "file": "python-3851249/LastTest.log",
+      "original_sha256": "a37b83b0aeffb7eafa4236f873761c045473dffc36967d239b004e5302e6cdee",
+      "archive_sha256": "a37b83b0aeffb7eafa4236f873761c045473dffc36967d239b004e5302e6cdee"
+    },
+    {
+      "file": "python-3851249/architecture.txt",
+      "original_sha256": "33d3707aa416876acc14674aa3cfad51ee433352583c6f5beadd0ac3a1ff5800",
+      "archive_sha256": "33d3707aa416876acc14674aa3cfad51ee433352583c6f5beadd0ac3a1ff5800"
+    },
+    {
+      "file": "python-3851249/binaries.sha256",
+      "original_sha256": "b99015aa3c2a2417bcd571840d1297aaac84a28a95cd113da22c641d9de6ac45",
+      "archive_sha256": "b99015aa3c2a2417bcd571840d1297aaac84a28a95cd113da22c641d9de6ac45"
+    },
+    {
+      "file": "python-3851249/build.log",
+      "original_sha256": "dc7770ac1a6589fecb9c5e8a7ce9075267ceaf32369b96f42b18b2160bc0d910",
+      "archive_sha256": "dc7770ac1a6589fecb9c5e8a7ce9075267ceaf32369b96f42b18b2160bc0d910"
+    },
+    {
+      "file": "python-3851249/compiler.txt",
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archive_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    {
+      "file": "python-3851249/configure.log",
+      "original_sha256": "6d48c12b7e0f8fded19c2a5e852dbeb40a73654f27c1e03b3b4f23b6ed20deea",
+      "archive_sha256": "10705c17c34e5589c2734f0818c6fcc81f8e118354168bc93a10e2fac7004f0e"
+    },
+    {
+      "file": "python-3851249/ctest.json",
+      "original_sha256": "2d61b6625cff41d450b9d55465b8ba4414025bf6346ea0720a3710889ad73cc0",
+      "archive_sha256": "400da90460e48726ef3355638715838b7b113a617aaa3b49b895749350c7a4eb"
+    },
+    {
+      "file": "python-3851249/exit-code.txt",
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "archive_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "python-3851249/gpu.txt",
+      "original_sha256": "1330f46ebcd451d33446aec7ba1ac0c56d57eb20f63d50caa049e5f885b97367",
+      "archive_sha256": "2a5f511645d53717ba86cdd3ec1e7db2c2dfe9c40754bcca3740c641ab26ed87"
+    },
+    {
+      "file": "python-3851249/imports.json",
+      "original_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460",
+      "archive_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460"
+    },
+    {
+      "file": "python-3851249/job.txt",
+      "original_sha256": "69cfc5f71377f36be29789fb5b6377ce6d2e889a88a7d89ae87446d0b1bf7b5c",
+      "archive_sha256": "1c1c8667546298ff31dbb8df9418089dfff61a3f9184dc78ae0292a214470ef0"
+    },
+    {
+      "file": "python-3851249/modules.txt",
+      "original_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55",
+      "archive_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55"
+    },
+    {
+      "file": "python-3851249/mpi-command.json",
+      "original_sha256": "7fb650db7f398d171745b0de356a9230263c3f690bd0f4ccc39b8634262487e5",
+      "archive_sha256": "7fb650db7f398d171745b0de356a9230263c3f690bd0f4ccc39b8634262487e5"
+    },
+    {
+      "file": "python-3851249/mpi.log",
+      "original_sha256": "f48c0e480a08e50a3bfba4720d8d28dedec7556135a98fd32107ebb1ba2b1d97",
+      "archive_sha256": "f48c0e480a08e50a3bfba4720d8d28dedec7556135a98fd32107ebb1ba2b1d97"
+    },
+    {
+      "file": "python-3851249/nvcc.txt",
+      "original_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c",
+      "archive_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c"
+    },
+    {
+      "file": "python-3851249/source-mtime-epoch.txt",
+      "original_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab",
+      "archive_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab"
+    },
+    {
+      "file": "python-3851249/source-revisions.json",
+      "original_sha256": "be0bef2102ab388327b3060063591b18a4534f38b5efd7b553b8fa56b133aebd",
+      "archive_sha256": "be0bef2102ab388327b3060063591b18a4534f38b5efd7b553b8fa56b133aebd"
+    },
+    {
+      "file": "python-3851249/test.log",
+      "original_sha256": "f264d0f937a69c6cfb6d6634f2b63b2ecf0e9762a481ebb38976606b089c7efa",
+      "archive_sha256": "f264d0f937a69c6cfb6d6634f2b63b2ecf0e9762a481ebb38976606b089c7efa"
+    },
+    {
+      "file": "python-mpi-3851450/architecture.txt",
+      "original_sha256": "c3a2294b496f926ff7c170522fdadbf13cc290de1efe57bd5d371ac69502efe0",
+      "archive_sha256": "c3a2294b496f926ff7c170522fdadbf13cc290de1efe57bd5d371ac69502efe0"
+    },
+    {
+      "file": "python-mpi-3851450/binary-check.txt",
+      "original_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553",
+      "archive_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553"
+    },
+    {
+      "file": "python-mpi-3851450/compiler.txt",
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archive_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    {
+      "file": "python-mpi-3851450/ctest.json",
+      "original_sha256": "2d61b6625cff41d450b9d55465b8ba4414025bf6346ea0720a3710889ad73cc0",
+      "archive_sha256": "400da90460e48726ef3355638715838b7b113a617aaa3b49b895749350c7a4eb"
+    },
+    {
+      "file": "python-mpi-3851450/exit-code.txt",
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "archive_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "python-mpi-3851450/gpu.txt",
+      "original_sha256": "6cdfa67784ad695853a157d03c1184982dd4e6d7d70d5dac502cce74fe40ef98",
+      "archive_sha256": "a55203b89b2310f77b7d2874253ea55e8aefd206c2f2003fa081ffcd4c32fd7d"
+    },
+    {
+      "file": "python-mpi-3851450/job.txt",
+      "original_sha256": "44a28a605d3cd85a9802dced4cb79b5dd84d37f044b01aa89b509aa279ec46cf",
+      "archive_sha256": "197a6028a45b9e39c1ce1068209c90e8b70cf91e5ca7655ef34fa2f2c4c47cfe"
+    },
+    {
+      "file": "python-mpi-3851450/modules.txt",
+      "original_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55",
+      "archive_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55"
+    },
+    {
+      "file": "python-mpi-3851450/mpi-command.json",
+      "original_sha256": "6cf6fa1000cfeb7431639e0b6e82ac990eeed880c2ab170e0aa462ef97036a8e",
+      "archive_sha256": "6cf6fa1000cfeb7431639e0b6e82ac990eeed880c2ab170e0aa462ef97036a8e"
+    },
+    {
+      "file": "python-mpi-3851450/mpi.log",
+      "original_sha256": "573c5cc891f4aab77adcc4a5b8ba1c0fa4940ac2cf2cd3551e1a676c69c0a92a",
+      "archive_sha256": "573c5cc891f4aab77adcc4a5b8ba1c0fa4940ac2cf2cd3551e1a676c69c0a92a"
+    },
+    {
+      "file": "python-mpi-3851450/nvcc.txt",
+      "original_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c",
+      "archive_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c"
+    },
+    {
+      "file": "python-mpi-3851450/qualified-imports.json",
+      "original_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460",
+      "archive_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460"
+    },
+    {
+      "file": "python-mpi-3851450/reused-checkpoint.txt",
+      "original_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb",
+      "archive_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb"
+    },
+    {
+      "file": "python-mpi-3851450/source-mtime-epoch.txt",
+      "original_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab",
+      "archive_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab"
+    },
+    {
+      "file": "python-mpi-3851450/source-revisions.json",
+      "original_sha256": "89c32101faf0267d706762c02db15158db74129281361fbe7d053cfcbbd8e7fd",
+      "archive_sha256": "89c32101faf0267d706762c02db15158db74129281361fbe7d053cfcbbd8e7fd"
+    },
+    {
+      "file": "python-mpi-3851572/architecture.txt",
+      "original_sha256": "fe8709e541a31fa2834135fa5a137b2e32ade183648b7d6f460d7ebc215f9353",
+      "archive_sha256": "fe8709e541a31fa2834135fa5a137b2e32ade183648b7d6f460d7ebc215f9353"
+    },
+    {
+      "file": "python-mpi-3851572/binary-check.txt",
+      "original_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553",
+      "archive_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553"
+    },
+    {
+      "file": "python-mpi-3851572/compiler.txt",
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archive_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    {
+      "file": "python-mpi-3851572/ctest.json",
+      "original_sha256": "2d61b6625cff41d450b9d55465b8ba4414025bf6346ea0720a3710889ad73cc0",
+      "archive_sha256": "400da90460e48726ef3355638715838b7b113a617aaa3b49b895749350c7a4eb"
+    },
+    {
+      "file": "python-mpi-3851572/exit-code.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "archive_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "python-mpi-3851572/gpu.txt",
+      "original_sha256": "d3ed7fd1adca5662ff2725d4912e3cb1751739a2c7dff49cda3ca18d77967fec",
+      "archive_sha256": "9f7b245afad7447ad6ccf59fd5c22b3ab51343dbfc8277372573fa8e2ebb4856"
+    },
+    {
+      "file": "python-mpi-3851572/job.txt",
+      "original_sha256": "f8ce430c661675f595fd03f19f2e096692b5f507fad1f3de7c73c966b79f9118",
+      "archive_sha256": "7668263c00c9bfec8427e2050c9150a21b16c7d620371ffb7f603513321a2f49"
+    },
+    {
+      "file": "python-mpi-3851572/modules.txt",
+      "original_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55",
+      "archive_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55"
+    },
+    {
+      "file": "python-mpi-3851572/mpi-command.json",
+      "original_sha256": "43fc0266a4458977d72bbf0f3c6570ad48c24da922039dd32f5e084ab810b1bc",
+      "archive_sha256": "43fc0266a4458977d72bbf0f3c6570ad48c24da922039dd32f5e084ab810b1bc"
+    },
+    {
+      "file": "python-mpi-3851572/mpi-runner.sha256",
+      "original_sha256": "e3781edda1f54bff0ace9728499f46bdb46457317cc1b2a78a9af552ee1fa972",
+      "archive_sha256": "e3781edda1f54bff0ace9728499f46bdb46457317cc1b2a78a9af552ee1fa972"
+    },
+    {
+      "file": "python-mpi-3851572/mpi.log",
+      "original_sha256": "93cec9c99f1abda9671e96b1a10c54a736fab3faeab8a9380743885db0709fa1",
+      "archive_sha256": "93cec9c99f1abda9671e96b1a10c54a736fab3faeab8a9380743885db0709fa1"
+    },
+    {
+      "file": "python-mpi-3851572/nvcc.txt",
+      "original_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c",
+      "archive_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c"
+    },
+    {
+      "file": "python-mpi-3851572/python.hpcinfo",
+      "original_sha256": "f3b7f93e302de8eb426adc48df1977406c2c5a012d29916609af4683c96bd463",
+      "archive_sha256": "f3b7f93e302de8eb426adc48df1977406c2c5a012d29916609af4683c96bd463"
+    },
+    {
+      "file": "python-mpi-3851572/qualified-imports.json",
+      "original_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460",
+      "archive_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460"
+    },
+    {
+      "file": "python-mpi-3851572/reused-checkpoint.txt",
+      "original_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb",
+      "archive_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb"
+    },
+    {
+      "file": "python-mpi-3851572/source-mtime-epoch.txt",
+      "original_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab",
+      "archive_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab"
+    },
+    {
+      "file": "python-mpi-3851572/source-revisions.json",
+      "original_sha256": "212789af491137b58626259fcf37da0bc6ba40d6b2ea0ec352e3a0b94723b49c",
+      "archive_sha256": "212789af491137b58626259fcf37da0bc6ba40d6b2ea0ec352e3a0b94723b49c"
+    },
+    {
+      "file": "python-mpi-3851765/architecture.txt",
+      "original_sha256": "04dbbcbb28cd6d68f0969aa3ab6eedadf7c1649110ac7ccbd4b70c6ec5b6b1dd",
+      "archive_sha256": "04dbbcbb28cd6d68f0969aa3ab6eedadf7c1649110ac7ccbd4b70c6ec5b6b1dd"
+    },
+    {
+      "file": "python-mpi-3851765/binary-check.txt",
+      "original_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553",
+      "archive_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553"
+    },
+    {
+      "file": "python-mpi-3851765/compiler.txt",
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archive_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    {
+      "file": "python-mpi-3851765/ctest.json",
+      "original_sha256": "2d61b6625cff41d450b9d55465b8ba4414025bf6346ea0720a3710889ad73cc0",
+      "archive_sha256": "400da90460e48726ef3355638715838b7b113a617aaa3b49b895749350c7a4eb"
+    },
+    {
+      "file": "python-mpi-3851765/exit-code.txt",
+      "original_sha256": "ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff",
+      "archive_sha256": "ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff"
+    },
+    {
+      "file": "python-mpi-3851765/gpu.txt",
+      "original_sha256": "b030e861ac593b5ef0621f6fc1fc0bb1b19e5ced9141fc84958b06b83dc4470c",
+      "archive_sha256": "801b13f8b32a28fa3bc11f2662975f4da3b9a427bd2501c48e65c644ba805ece"
+    },
+    {
+      "file": "python-mpi-3851765/job.txt",
+      "original_sha256": "644c84ebc573794320ebeb63e9cb698c23473568fb8c9b442cf2bec2e3b67942",
+      "archive_sha256": "d7ece586176c4c81af88786659cbd2219ffe4a9b6827a6dec830b4694d15527b"
+    },
+    {
+      "file": "python-mpi-3851765/modules.txt",
+      "original_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55",
+      "archive_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55"
+    },
+    {
+      "file": "python-mpi-3851765/mpi-command.json",
+      "original_sha256": "6beb4d090a0080f9d287d3c71bca68a2ab6ee3e17e734700c1b8bccb13c703d3",
+      "archive_sha256": "6beb4d090a0080f9d287d3c71bca68a2ab6ee3e17e734700c1b8bccb13c703d3"
+    },
+    {
+      "file": "python-mpi-3851765/mpi-runner.sha256",
+      "original_sha256": "cdd627629e54f184df81e2481300eab580ab34062a48486cb976f0016870635e",
+      "archive_sha256": "cdd627629e54f184df81e2481300eab580ab34062a48486cb976f0016870635e"
+    },
+    {
+      "file": "python-mpi-3851765/mpi.log",
+      "original_sha256": "edd545c6775237b9609e8cebb7e9424f1039c2237d5be943ef114ebdb2d2002c",
+      "archive_sha256": "edd545c6775237b9609e8cebb7e9424f1039c2237d5be943ef114ebdb2d2002c"
+    },
+    {
+      "file": "python-mpi-3851765/nvcc.txt",
+      "original_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c",
+      "archive_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c"
+    },
+    {
+      "file": "python-mpi-3851765/python.hpcinfo",
+      "original_sha256": "a257048c7dc7bd3ddd3e5f18633f9e19c21f97968b9bef1c876d877d6e209b1a",
+      "archive_sha256": "a257048c7dc7bd3ddd3e5f18633f9e19c21f97968b9bef1c876d877d6e209b1a"
+    },
+    {
+      "file": "python-mpi-3851765/qualified-imports.json",
+      "original_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460",
+      "archive_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460"
+    },
+    {
+      "file": "python-mpi-3851765/reused-checkpoint.txt",
+      "original_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb",
+      "archive_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb"
+    },
+    {
+      "file": "python-mpi-3851765/source-mtime-epoch.txt",
+      "original_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab",
+      "archive_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab"
+    },
+    {
+      "file": "python-mpi-3851765/source-revisions.json",
+      "original_sha256": "9d425fb179e9477e99a5f1ef03fdf185cae8fe70686e63e6818d8e438562028a",
+      "archive_sha256": "9d425fb179e9477e99a5f1ef03fdf185cae8fe70686e63e6818d8e438562028a"
+    },
+    {
+      "file": "python-storage-3851926/architecture.txt",
+      "original_sha256": "e7ef47d3dc24deadfd62626452454d5b7171b9928635a93d2393dbaccdaa3500",
+      "archive_sha256": "e7ef47d3dc24deadfd62626452454d5b7171b9928635a93d2393dbaccdaa3500"
+    },
+    {
+      "file": "python-storage-3851926/binary-check.txt",
+      "original_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553",
+      "archive_sha256": "3e2b35e65f8d6643a77e7209667465bd35272bc17efd114fbae2f9847cc7f553"
+    },
+    {
+      "file": "python-storage-3851926/compiler.txt",
+      "original_sha256": "bb269ff65e019528e5925df20e1f88888bf1b0db26cace1857cc69d81ddbfdad",
+      "archive_sha256": "b038fe84d861ad5b5d9273e4a0f290867a2157b8520c00a8db3e18deaf1b58e0"
+    },
+    {
+      "file": "python-storage-3851926/ctest.json",
+      "original_sha256": "2d61b6625cff41d450b9d55465b8ba4414025bf6346ea0720a3710889ad73cc0",
+      "archive_sha256": "400da90460e48726ef3355638715838b7b113a617aaa3b49b895749350c7a4eb"
+    },
+    {
+      "file": "python-storage-3851926/exit-code.txt",
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "archive_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "python-storage-3851926/gpu.txt",
+      "original_sha256": "8d9a63d10e66dc7803c0a1a0daa36247cc53f123140ff037c955687e0c2acc81",
+      "archive_sha256": "f2a4d8344e803b2aa3e6e8e6c0f1ea6f9fb101ea44ac42300dd4c4f47824a5be"
+    },
+    {
+      "file": "python-storage-3851926/job.txt",
+      "original_sha256": "4fe71413969013618004e6186ac7fb09d014643afbafe982d167c09f5a349892",
+      "archive_sha256": "da4686b76a783723205232d38b0a0c49c5f2e8b239023b1df6f054d93392192d"
+    },
+    {
+      "file": "python-storage-3851926/modules.txt",
+      "original_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55",
+      "archive_sha256": "bf0af4617590d60ecc36542b4e0569f4255b4b9b489ce9c32f8709dfb384ff55"
+    },
+    {
+      "file": "python-storage-3851926/mpi-command.json",
+      "original_sha256": "d71690baa53b19264d38514403933a566eb1c9ce4f6ec0d7c606b35bf3a4bb60",
+      "archive_sha256": "d71690baa53b19264d38514403933a566eb1c9ce4f6ec0d7c606b35bf3a4bb60"
+    },
+    {
+      "file": "python-storage-3851926/mpi-runner.sha256",
+      "original_sha256": "cdd627629e54f184df81e2481300eab580ab34062a48486cb976f0016870635e",
+      "archive_sha256": "cdd627629e54f184df81e2481300eab580ab34062a48486cb976f0016870635e"
+    },
+    {
+      "file": "python-storage-3851926/mpi.log",
+      "original_sha256": "974e04766874fa33323384401b2f19a398f0ebdaed93383a63c3326a03080bfd",
+      "archive_sha256": "974e04766874fa33323384401b2f19a398f0ebdaed93383a63c3326a03080bfd"
+    },
+    {
+      "file": "python-storage-3851926/nvcc.txt",
+      "original_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c",
+      "archive_sha256": "74b4ef9446ca7218f812bdd66958fb0b49c2b7ac369b3b6bc29ef5caf8fc7e3c"
+    },
+    {
+      "file": "python-storage-3851926/python.hpcinfo",
+      "original_sha256": "a257048c7dc7bd3ddd3e5f18633f9e19c21f97968b9bef1c876d877d6e209b1a",
+      "archive_sha256": "a257048c7dc7bd3ddd3e5f18633f9e19c21f97968b9bef1c876d877d6e209b1a"
+    },
+    {
+      "file": "python-storage-3851926/qualified-imports.json",
+      "original_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460",
+      "archive_sha256": "397ad94e3ca9c385899c1fce7d6ebcabfad87a70a034c91a51fd9eaa5480e460"
+    },
+    {
+      "file": "python-storage-3851926/result.txt",
+      "original_sha256": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+      "archive_sha256": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431"
+    },
+    {
+      "file": "python-storage-3851926/reused-checkpoint.txt",
+      "original_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb",
+      "archive_sha256": "d7a2c859735731742841c8f44f53116075a951bd0674d1d00ea6df4b7e744beb"
+    },
+    {
+      "file": "python-storage-3851926/source-mtime-epoch.txt",
+      "original_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab",
+      "archive_sha256": "2032b7461ee73e73c7ea09ea9efacb3575f1ce49dcdab5caffcf80cc326e80ab"
+    },
+    {
+      "file": "python-storage-3851926/source-revisions.json",
+      "original_sha256": "8b3b044f64423098cfdc17463b71423b36f5cf25526c854cd339588ffd464f06",
+      "archive_sha256": "8b3b044f64423098cfdc17463b71423b36f5cf25526c854cd339588ffd464f06"
+    },
+    {
+      "file": "xca-bs-gh200-python-3851249.err",
+      "original_sha256": "efcfba1fbe281d55ad23564a211a7bcb0c633759c4cb842fd1094ea528118b1a",
+      "archive_sha256": "efcfba1fbe281d55ad23564a211a7bcb0c633759c4cb842fd1094ea528118b1a"
+    },
+    {
+      "file": "xca-bs-gh200-python-3851249.out",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851450.err",
+      "original_sha256": "3901a0ba4ab9f49246f49b6632bdbaa1a09f85723af8959e1e3aef764344d91a",
+      "archive_sha256": "ea72cbdb733aca80046e2766e90dab6d82fef533f835d8f041937e57b0e2cfc4"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851450.out",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851572.err",
+      "original_sha256": "4271a401d8c09203f1785900f1f199820e3ccd5ae0e300eec997cc124645c993",
+      "archive_sha256": "4271a401d8c09203f1785900f1f199820e3ccd5ae0e300eec997cc124645c993"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851572.out",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851765.err",
+      "original_sha256": "3901a0ba4ab9f49246f49b6632bdbaa1a09f85723af8959e1e3aef764344d91a",
+      "archive_sha256": "ea72cbdb733aca80046e2766e90dab6d82fef533f835d8f041937e57b0e2cfc4"
+    },
+    {
+      "file": "xca-bs-gh200-python-mpi-3851765.out",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "xca-bs-gh200-storage-3851926.err",
+      "original_sha256": "3901a0ba4ab9f49246f49b6632bdbaa1a09f85723af8959e1e3aef764344d91a",
+      "archive_sha256": "ea72cbdb733aca80046e2766e90dab6d82fef533f835d8f041937e57b0e2cfc4"
+    },
+    {
+      "file": "xca-bs-gh200-storage-3851926.out",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "diagnostics/xca-bs-arm-python-launcher-info.log",
+      "original_sha256": "9a47c55de80351ea9dcc2c8988641df2de481bdfe4569b5a42b953ba56f001eb",
+      "archive_sha256": "9a47c55de80351ea9dcc2c8988641df2de481bdfe4569b5a42b953ba56f001eb"
+    },
+    {
+      "file": "diagnostics/xca-bs-arm-python-pmix-profile-info.log",
+      "original_sha256": "70e7f013336662d9127d3175d9fc1f58d50916060058c09b34b93533e2c2a177",
+      "archive_sha256": "70e7f013336662d9127d3175d9fc1f58d50916060058c09b34b93533e2c2a177"
+    },
+    {
+      "file": "diagnostics/xca-bs-arm-python-live-stack.log",
+      "original_sha256": "324c743248366bc8e58d9f52b4c3b91ad08db17bb17239ecc933cffa5933e3dc",
+      "archive_sha256": "324c743248366bc8e58d9f52b4c3b91ad08db17bb17239ecc933cffa5933e3dc"
+    }
+  ]
+}
