@@ -14,7 +14,7 @@ string(REPLACE "DiagramEvaluator" "ScalarPathEvaluator" source "${source}")
 set(source "#include <map>\n${source}")
 string(REPLACE "\"diagram_evaluator.hpp\"" "\"scalar_evaluator.hpp\"\n#include \"../scalar_edges/scalar_pack.hpp\"" source "${source}")
 string(REPLACE "    void evaluate(std::vector<Tensor>" "#include \"scheduler.inc\"\n    void evaluate(std::vector<Tensor>" source "${source}")
-string(REPLACE "if (first != last) x.admit();" "if (first != last) x.admit(checked_add(x.bound(),x.scalar_extra_bound()));" source "${source}")
+string(REPLACE "if (first != last) x.prepare_self_energy(topology);" "if (first != last) x.prepare_self_energy(topology,x.scalar_extra_bound());" source "${source}")
 set(original "      x.counts = for_each_self_energy_path(x.model, x.hyb->poles, topology, live, first, last,
                                            [&](Backbone &backbone, SelfEnergyPath const &path) { x.evaluate(input, output, backbone, path); });")
 string(FIND "${source}" "${original}" position)
@@ -38,6 +38,7 @@ string(REPLACE "self_energy_storage_bound() const { return impl_->bound(); }"
   "self_energy_storage_bound() const { return checked_add(impl_->bound(),impl_->scalar_extra_bound()); }" source "${source}")
 string(REPLACE "    std::vector<Tensor> input(G.size()), output(G.size());"
   "#ifdef XCA_EXPERIMENT_SCALAR_ARENA\n    if(first!=last && x.scalar_eligible())return x.scalar_arena_compute(G,topology,live,first,last);\n#endif\n    std::vector<Tensor> input(G.size()), output(G.size());" source "${source}")
+string(REPLACE "return impl_->self_energy_bound(topology.extent(0) == 1);" "return checked_add(impl_->self_energy_bound(topology.extent(0) == 1),impl_->scalar_extra_bound());" source "${source}")
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scalar_evaluator.hpp" CONTENT "${header}" @ONLY)
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/scalar_evaluator.cpp" CONTENT "${source}" @ONLY)
 add_library(block_sparse_scalar_path_evaluator STATIC "${CMAKE_CURRENT_BINARY_DIR}/scalar_evaluator.cpp")

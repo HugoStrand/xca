@@ -110,6 +110,20 @@ namespace triqs_xca::block_sparse::cuda {
          checked_add(checked_multiply(2, function_bytes(r, model.dimensions())), checked_multiply(7, tile)),
          checked_add(dlr_bound, checked_add(operator_budget, checked_add(checked_add(kernel_bytes, mapped_storage_bound()), tensor_bytes(1, r, 1)))));
     }
+    std::size_t self_energy_bound(bool nca) const {
+      auto generic = bound();
+      if (!nca) return generic;
+      auto tables = checked_add(checked_multiply(5, tensor_bytes(1, r, r)), checked_multiply(checked_add(r, 1), sizeof(int)));
+      if (dlr_bound < tables) throw std::logic_error("Invalid DLR scratch reserve");
+      return generic - (dlr_bound - tables);
+    }
+    void prepare_self_energy(nda::array_const_view<int, 2> topology, std::size_t extra = 0) const {
+      bool nca    = topology.extent(0) == 1;
+      auto needed = checked_add(self_energy_bound(nca), extra);
+      if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");
+      if (nca) dlr->release_scratch();
+      admit(needed);
+    }
     void admit(std::size_t needed) const {
       ops->require_current();
       if (needed > budget) throw std::length_error("CUDA evaluator explicit storage exceeds device budget");
@@ -444,6 +458,10 @@ namespace triqs_xca::block_sparse::cuda {
     return Backbone(topology, impl_->model.num_fields(), impl_->model.num_interactions()).num_flat_indices(impl_->model.num_poles());
   }
   std::size_t DiagramEvaluator::self_energy_storage_bound() const { return impl_->bound(); }
+  std::size_t DiagramEvaluator::self_energy_storage_bound(nda::array_const_view<int, 2> topology) const {
+    get_num_self_energy_backbones(topology);
+    return impl_->self_energy_bound(topology.extent(0) == 1);
+  }
   PathCounts DiagramEvaluator::last_path_counts() const { return impl_->counts; }
   std::size_t DiagramEvaluator::last_contributing_paths() const { return impl_->contributions; }
   std::size_t DiagramEvaluator::last_device_peak_delta() const { return impl_->peak_delta; }
@@ -513,7 +531,7 @@ namespace triqs_xca::block_sparse::cuda {
     x.counts        = {};
     x.contributions = 0;
     x.peak_delta    = 0;
-    if (first != last) x.admit(); // Before input/output upload or path arithmetic.
+    if (first != last) x.prepare_self_energy(topology); // Before input/output upload or path arithmetic.
     std::vector<Tensor> input(G.size()), output(G.size());
     if (first != last) {
       std::size_t total = 0;

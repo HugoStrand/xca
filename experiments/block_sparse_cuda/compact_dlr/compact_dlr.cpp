@@ -137,6 +137,21 @@ namespace triqs_xca::block_sparse::cuda {
   CompactDlrOps::CompactDlrOps(std::shared_ptr<DeviceOps> ops, cppdlr::imtime_ops const &host, std::size_t budget)
      : impl_(std::make_unique<Impl>(std::move(ops), host, budget)) {}
   CompactDlrOps::~CompactDlrOps() = default;
+  void CompactDlrOps::release_scratch() {
+    auto &x = *impl_;
+    x.ops->require_current();
+    if (x.rhs.size() == 0 && x.scratch_bytes() == 0) return;
+    x.ops->finish();
+    x.rhs                       = decltype(x.rhs)();
+    x.hf                        = Tensor();
+    x.hg                        = Tensor();
+    x.product                   = Tensor();
+    x.cross                     = Tensor();
+    x.diagonal                  = Tensor();
+    x.convolution_shape         = {};
+    x.external_diagonal         = false;
+    x.scratch_external_diagonal = false;
+  }
   long CompactDlrOps::rank() const { return impl_->r; }
   std::size_t CompactDlrOps::storage_bytes() const { return impl_->storage_bytes(); }
   void CompactDlrOps::vals2coefs(TensorConstView values, TensorView coefficients) {

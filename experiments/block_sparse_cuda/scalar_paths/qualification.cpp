@@ -92,7 +92,7 @@ TEST(ScalarPathQualification, AdditionalWorkspaceAdmissionAndEmptyRange) {
   gpu::ScalarPathEvaluator candidate(model, poles, mesh);
   gpu::DiagramEvaluator reference(model, poles, mesh);
   EXPECT_GT(candidate.self_energy_storage_bound(), reference.self_energy_storage_bound());
-  gpu::ScalarPathEvaluator limited(model, poles, mesh, candidate.self_energy_storage_bound() - 1);
+  gpu::ScalarPathEvaluator limited(model, poles, mesh, candidate.self_energy_storage_bound(topology) - 1);
   EXPECT_THROW(limited.compute_self_energy_range(G, topology, 0, 1), std::length_error);
   EXPECT_EQ(limited.last_device_peak_delta(), 0);
   EXPECT_EQ(limited.last_path_counts().accepted, 0);

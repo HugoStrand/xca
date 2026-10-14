@@ -44,7 +44,7 @@ TEST(KappaReuse, CacheStorageAdmittedBeforeSubmission) {
   gpu::KappaCacheEvaluator candidate(model, poles, mesh);
   EXPECT_EQ(candidate.self_energy_storage_bound() - control.self_energy_storage_bound(),
             std::min(4, XCA_EXPERIMENT_KAPPA_SLOTS) * mesh.dlr_it().rank() * 6 * 6 * sizeof(nda::dcomplex));
-  gpu::KappaCacheEvaluator limited(model, poles, mesh, candidate.self_energy_storage_bound() - 1);
+  gpu::KappaCacheEvaluator limited(model, poles, mesh, candidate.self_energy_storage_bound(topology) - 1);
   EXPECT_THROW(limited.compute_self_energy_range(G, topology, 0, 1), std::length_error);
   EXPECT_EQ(limited.last_path_counts().accepted, 0);
   EXPECT_EQ(limited.last_device_peak_delta(), 0);

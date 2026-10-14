@@ -20,6 +20,7 @@ namespace triqs_xca::block_sparse::cuda {
     CompactDlrOps(CompactDlrOps const &)            = delete;
     CompactDlrOps &operator=(CompactDlrOps const &) = delete;
     long rank() const;
+    void release_scratch();
     std::size_t storage_bytes() const;
     void vals2coefs(TensorConstView values, TensorView coefficients);
     void coefs2vals(TensorConstView coefficients, TensorView values) const;

@@ -20,6 +20,8 @@ namespace triqs_xca::block_sparse::cuda {
     DlrOps(DlrOps const &)            = delete;
     DlrOps &operator=(DlrOps const &) = delete;
     long rank() const;
+    // Release completed RHS/convolution storage, preserving immutable tables and handles.
+    void release_scratch();
     std::size_t storage_bytes() const;
     void vals2coefs(TensorConstView values, TensorView coefficients);
     void coefs2vals(TensorConstView coefficients, TensorView values) const;

@@ -35,6 +35,8 @@ namespace triqs_xca::block_sparse::cuda {
                                                                             nda::array_const_view<int, 2> topology, long first, long last);
     // Conservative explicit-storage bound, not a measured opaque-library peak.
     std::size_t self_energy_storage_bound() const;
+    // Validated topology estimate; NCA omits inactive convolution scratch.
+    std::size_t self_energy_storage_bound(nda::array_const_view<int, 2> topology) const;
     PathCounts last_path_counts() const;
     std::size_t last_contributing_paths() const;
     // Largest sampled drop in global device free memory since call entry. Includes
