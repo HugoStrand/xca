@@ -1,0 +1,178 @@
+{
+  "purpose": "Fresh scalar-only repeat comparison; separate from standard campaign",
+  "git_commit": "6068a8b10cc58c009e6b4a1f70235e7af94a0d2c",
+  "source_manifest": "../manifest.json",
+  "samples_per_case": 5,
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "binary_sha256": {
+    "cpu_baseline": "2cc850064a383baef13bcd637551413abc75ac62d9fa9218da18b777cf3b7c17",
+    "gpu_arena": "be93742133418dc9fe510a49cefbff2787d57890568869892ff482120b363623",
+    "cpu_constants": "07fddfa4bc2ff145b142176673ab91670aee7a22ebc4ad104ae85a59dfc5b710",
+    "gpu_constants": "589bfaeaaa01f9eadcbe942ac0b1afd552307195ddc81df35f6fbf6e49f54648"
+  },
+  "cases": [
+    {
+      "name": "n4-cpu_baseline",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_path_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.1526817340636626
+    },
+    {
+      "name": "n4-gpu_arena",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_arena_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.5801712420070544
+    },
+    {
+      "name": "n4-cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.148880262975581
+    },
+    {
+      "name": "n4-gpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_constants_benchmark",
+        "--modes",
+        "4",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.49105423502624035
+    },
+    {
+      "name": "n10-cpu_baseline",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_path_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.294128164066933
+    },
+    {
+      "name": "n10-gpu_arena",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_arena_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.804220859077759
+    },
+    {
+      "name": "n10-cpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_cpu_scalar_constants_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.314951602020301
+    },
+    {
+      "name": "n10-gpu_constants",
+      "command": [
+        "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/experiments/block_sparse_cuda/scalar_paths/block_sparse_scalar_constants_benchmark",
+        "--modes",
+        "10",
+        "--partition",
+        "occupation",
+        "--observable",
+        "se",
+        "--order",
+        "2",
+        "--count",
+        "1",
+        "--samples",
+        "5"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.7993507749633864
+    }
+  ]
+}

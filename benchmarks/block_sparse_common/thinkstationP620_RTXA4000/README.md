@@ -74,3 +74,7 @@ GPU still trails matched CPU; no production promotion follows from this screen.
 [Contiguous scalar device arenas](scalar-arena-01/README.md) reduce allocation/copy
 multiplicity identified by a separately scoped trace. Unprofiled matched timings
 remain separate from profiler diagnostics; all prior candidates are retained.
+
+[Path-constant scalar coefficient preparation](scalar-constants-01/README.md)
+compares matched CPU and broadcast GPU variants, including fresh five-sample scalar
+controls. Local near-parity does not select production or GH200 dispatch.
