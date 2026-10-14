@@ -14,3 +14,5 @@ target_link_libraries(block_sparse_scalar_audit_evaluator PUBLIC ${PROJECT_NAME}
 add_executable(block_sparse_scalar_cutoff_audit audit.cpp)
 target_compile_definitions(block_sparse_scalar_cutoff_audit PRIVATE XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY)
 target_link_libraries(block_sparse_scalar_cutoff_audit PRIVATE block_sparse_scalar_audit_evaluator ${PROJECT_NAME}_warnings)
+add_executable(block_sparse_scalar_stage_audit stages.cpp)
+target_link_libraries(block_sparse_scalar_stage_audit PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c block_sparse_scalar_edge_kernels ${PROJECT_NAME}_warnings)

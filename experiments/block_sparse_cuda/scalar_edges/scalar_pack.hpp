@@ -33,6 +33,9 @@ namespace scalar_edge_experiment {
     void compute(double beta = 2.) {
       dlr.vals2coefs(f, fc);
       dlr.vals2coefs(g, gc);
+      compute_from_coefficients(beta);
+    }
+    void compute_from_coefficients(double beta = 2.) {
       owner->rank_product(H, fc, hf);
       owner->rank_product(H, gc, hg);
       check(scalar_edge_experiment::multiply(fc.data(), gc.data(), tmp.data(), tmp.size(), owner->stream()));

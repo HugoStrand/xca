@@ -32,3 +32,18 @@ output exactly in this isolated-lane cohort. It performs general work for every
 lane and cannot establish an optimized replay policy. Widening to another empirical
 constant is not a conservative error certificate. Next derive/qualify a bound or
 eligibility/replay rule before production integration; retain these counterexamples.
+
+`block_sparse_scalar_stage_audit` isolates DLR solve and convolution effects on
+three matching node-pattern fixtures. It compares1/512-column solves and coefficient
+injection into the same narrow general convolution. Extended64-bit-mantissa host
+accumulation measures residuals against the sampled double C matrix; the host
+cached-LU inverse supplies a condition estimate. Neither is an interval certificate.
+
+It also compares literal complex products with the general path's BLAS products,
+retaining the same rank transforms. Flattened1×1 strided-batched products preserve
+independent lanes; broadcast coefficients must match across all512lanes before
+same-coefficient conclusions are accepted. The narrow BLAS-product variant matches
+general convolution exactly on all three fixtures. The wide variant still differs:
+solve width and rank-transform layout remain numerical effects. Product replacement
+alone is not a fix or a promoted evaluator. Timings of this diagnostic are excluded
+from speedup claims. Outputs/residuals/conditions and memcheck live in hardware folders.
