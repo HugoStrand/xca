@@ -70,10 +70,11 @@ printf '%s\n' "$previous" > "$record/reused-checkpoint.txt"
 qualified_python="$PWD/qualified-mpi-python"
 if ! test -L "$qualified_python"; then ln -s "$(command -v python3)" "$qualified_python"; fi
 python3 - "$qualified_python.hpcinfo" "$EBROOTOPENMPI" <<'PYMPI'
-import json, sys
+import json, shutil, sys
 from pathlib import Path
 launcher = Path(sys.argv[2]) / 'bin/mpirun'
 assert launcher.is_file(), launcher
+assert Path(shutil.which('mpirun')).resolve() == launcher.resolve()
 Path(sys.argv[1]).write_text(json.dumps({'launcher': 'mpirun',
  'launcher_path': str(launcher), 'native': True, 'modules': []}, indent=2) + '\n')
 PYMPI
