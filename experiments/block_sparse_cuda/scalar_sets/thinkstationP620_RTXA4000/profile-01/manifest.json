@@ -1,0 +1,36 @@
+{
+  "code_revision": "a0384d71600c9d9ae7ad3ceb4855558c08e45250",
+  "profiler": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0",
+  "flags": [
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop",
+    "--trace=cuda",
+    "--sample=none",
+    "--cpuctxsw=none"
+  ],
+  "case": {
+    "modes": 6,
+    "partition": "occupation",
+    "observable": "se",
+    "dynamic": true,
+    "order": 2,
+    "first": 1,
+    "count": 8,
+    "samples": 1
+  },
+  "binary_sha256": "ca1540d39c328cce47c467816059bbb341e766aa42349f724d440a89b4409472",
+  "report_path": "/tmp/xca-density-profile-baseline.nsys-rep",
+  "report_sha256": "50b63738e09718a9bbc4138e76f8441a4a8034058038fbd86c69c363124ffc3f",
+  "source_hashes": {
+    "experiments/block_sparse_cuda/scalar_sets/density_benchmark.cpp": "5b60c07db533c30db9e3cda5e7f1058e12fa393569a0c2d62127923267589be3",
+    "experiments/block_sparse_cuda/scalar_sets/special.inc": "2df9beab24fc46aeb28b3578170458fdf655972735cae65da377cdcb3b2176af",
+    "experiments/block_sparse_cuda/scalar_paths/scheduler.inc": "61e0a27c595c40748b8e31fa673fc1ec13fe44c43e9f5ad184f5ec139478f000",
+    "experiments/block_sparse_cuda/scalar_paths/recipe.inc": "47ff60d8cb014e8c50007a364a78f1364e5cd60ad571097f53028a577ffcbb99"
+  },
+  "runtime_span_ms": 25.890023,
+  "runtime_interval_sum_ms": 9.134475,
+  "runtime_events": 2453,
+  "gpu_kernel_interval_sum_ms": 2.452493,
+  "gpu_kernel_events": 255,
+  "gpu_hours_added_arrhenius": 0
+}
