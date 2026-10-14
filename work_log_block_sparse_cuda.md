@@ -1092,3 +1092,59 @@ Logs: /tmp/xca-bs-native-bindings-generate.log,
 /tmp/xca-bs-native-production-{bench-configure,bench-build,campaign}.log.
 Persistent results: benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-production-01.
 Temporary logs may disappear; three build trees and source checkpoints are retained.
+
+
+### 2026-10-14 — Packed scalar edge investigation
+
+Previous goal turn made verified progress: native Python/MPI integration and complete
+CPU/CUDA/native-disabled qualification plus actual production benchmarks. Goal stays
+active. Initial proposed rank-product batching was already present in authoritative
+DeviceOps::product; corrected direction before changing it. This turn investigates
+packing independent scalar edges across RHS instead, as E4/E5 prescribe.
+
+50e1f7e [bench] batch scalar DLR edges adds isolated experiments/block_sparse_cuda/scalar_edges;
+9f6b1c6 [bench] record scalar edge batching stores the bounded results. Production
+code and numerical policies are unchanged. Independent DlrOps does two coefficient
+solves and convolution per scalar lane. Packed route uses cached LU/getrs on r-by-L
+RHS, shared rank transforms and ordered complex-double elementwise diagonal/cross
+products, FMA disabled. Every lane retains all nodes; no outer product/cross-lane
+sum, inverse or custom LU is introduced. Packed route has retained scratch/table
+storage; it currently duplicates helper tables rather than exposing production
+DlrOps internals. This is a segment candidate, not a full evaluator scheduler.
+
+Inclusive timing gathers separately owned device inputs via cudaMemcpy2DAsync,
+computes and scatters to separate outputs. Resident variant excludes input gathering
+but still scatters. Initial context/allocation/uploads and host downloads/checks are
+outside timing. Explicit work bytes exclude common inputs/outputs and opaque library
+peak; these are not full-evaluator admission numbers. CPU Hoisted supplies numerical
+reference per lane; matched CPU batching timings are not yet supplied. Per-lane
+screening is 1e-12*lane norm+1e-30, avoiding a batch norm hiding weak/zero results.
+Exact GPU replay is required. Inputs include zero lanes and 1e-10-scale coefficient
+pairs, producing outputs near 1e-20. No completed-path cutoff is applied here.
+
+CUDA experiment build and CPU-only configure passed. Invalid lane count 257 rejects.
+Initial 32-lane smoke passed; width-17 Lambda=120 memcheck plus full leak check passed
+with 0 errors / 0 leaked allocations. After build/sanitizer completion, scalar-01
+ran all 15 isolated cases / 135 rows successfully: lanes 1/2/4/8/17/32/64/127/256 at
+Lambda40, plus 1/17/127 at Lambda10/120. Three repetitions per case. Maximum per-lane
+relative error was 2.7657e-15; all outputs repeated exactly. Source/binary/cppdlr
+header hashes, commands/compiler/machine metadata and raw samples are persisted.
+
+Rank23 medians independent / packed inclusive: 32 lanes 9.683 / 0.723 ms, 127
+38.584 / 1.520 ms, 256 77.673 / 2.627 ms. Single lane 0.310 / 0.279 ms retains
+fixed overhead; no target threshold is selected. These compare GPU segments, not
+CPU or full Solver throughput. All sampled tails and zeros are retained. No broad
+solver suites repeated because this commit only adds an isolated experiment; previous
+full qualification remains the production checkpoint. Plan updated with evidence.
+
+Next: timed independent/packed CPU controls, then bounded evaluator ready-work
+scheduler with copied borrowed backbone metadata, original contribution order and
+per-path cutoff. Special vertices and correlator fragments require full semantics;
+do not substitute an edge microbenchmark for full functionality. Continue memory/
+wider RHS/topology and GH200 qualification. Native/library references and all
+experiments remain. No install/push/supervisor changes or unrelated user work edits.
+Plan/work-log checkpoint separate from code/results. git diff --check passed.
+
+Logs /tmp/xca-bs-scalar-{configure,build,cpu-configure,invalid,memcheck,campaign}.log,
+/tmp/xca-bs-scalar-smoke.csv. Persistent artifacts under
+experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/scalar-01.

@@ -586,6 +586,31 @@ verification build; numerical results and the exclusion are retained. Target run
 threaded CPU comparison, changed-G replay, RHS grouping/caching and detailed phase
 profiling remain pending. No dispatch choice follows from hoisting alone.
 
+E4/E5 scalar-edge checkpoint (2026-10-14): production rectangular products
+already batch across DLR nodes. [scalar_edges](experiments/block_sparse_cuda/scalar_edges/README.md)
+instead packs independent scalar edges across spatial RHS columns, using the same
+cached LU/getrs and shared rank transforms with elementwise scalar products (no
+cross-lane outer product). Inputs retain separate owned buffers; inclusive timing
+charges per-lane device gather/scatter. Each lane is compared against CPU separately,
+including zeros and tiny inputs, and repeated outputs must match exactly.
+
+The [local sweep](experiments/block_sparse_cuda/scalar_edges/thinkstationP620_RTXA4000/README.md)
+passed 15 cases / 135 rows across 1–256 lanes and three mesh scales, with maximum
+per-lane relative error 2.77e-15 and zero memory/leak errors in a tail-size check.
+At rank 23, 32 edges take 0.723 ms packed inclusive versus 9.68 ms independent;
+127 take 1.52 versus 38.58 ms; 256 take 2.63 versus 77.67 ms. These are GPU-segment
+ratios, not CPU or Solver speedups. Initial upload/setup and host output downloads
+are excluded; CPU controls are numerical, with timed matched CPU packing/solve
+still pending. No scheduler, cutoff or topology reassociation is implemented.
+
+Next establish timed matched CPU batch controls, then build a bounded evaluator
+candidate retaining copied path metadata, per-path magnitude decisions and original
+accumulation order. Special-vertex mu/kappa grouping and irregular correlator
+fragments need explicit scheduling coverage; do not assume packed scalar convolution
+alone handles their semantics. Ready-operation grouping, tails/changed-G and peak
+memory must enter full-call evidence before promotion. GH200 measurements remain
+required for defaults.
+
 ### E6 — Special-vertex mixing
 
 Compare the current kappa-buffer strategy with streaming kappa/mu tiles and fused
