@@ -116,3 +116,26 @@ device work. Operator/backend preferences and budgets are retained in solver arc
 archives default to library operator execution. CPU evaluation can retain the
 ordered preference without loading CUDA; it applies when CUDA is selected.
 
+
+Guarded real NCA batching
+-------------------------
+
+Set ``block_sparse_backend='cuda'`` and ``block_sparse_nca_backend='real_batch'``
+to opt into pointwise NCA self-energy batching. It requires native sparse CUDA
+kernels. ``triqs_xca.gpu.block_sparse_real_nca_available()`` reports build capability
+without querying a device and returns false in CPU-only builds.
+
+The batch route requires resident output, all Hilbert-space blocks of dimension
+one, and finite exactly real operators, hybridization tables and propagators. A
+range guard checks intermediate and complete-output sums before selection. Other
+inputs, expansion orders and observables retain the configured general CUDA
+operator/special backend. Errors after batch submission propagate collectively;
+there is no CPU replay. The default remains ``'reference'``. Preferences survive
+archive/deepcopy; archives without this field reconstruct with the default.
+
+``BlockSparseCudaDiagramEvaluator`` accepts ``nca_backend='real_batch'`` directly,
+and ``last_nca_batch_paths()`` reports structural paths executed by that route in
+the latest successful evaluation. Device admission conservatively includes its
+workspace, even when a subsequent call selects the general route. Native-disabled
+builds reject explicit selection. Local RTX A4000 benchmarks guide development;
+the optimization target is GH200-class accelerators.

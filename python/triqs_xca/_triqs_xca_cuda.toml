@@ -2,7 +2,7 @@ package_name = "triqs_xca"
 documentation = "CUDA diagram evaluators and shared device runtime."
 namespaces = ""
 # Register only the explicit c2py_module alias.
-match_names = "^::xca_python::(cuda_(device_count|current_device|select_device)|block_sparse_(ordered|mapped)_available)$"
+match_names = "^::xca_python::(cuda_(device_count|current_device|select_device)|block_sparse_(ordered|mapped|real_nca)_available)$"
 reject_names = ""
 match_files = ""
 wrap_no_arg_methods_as_properties = false

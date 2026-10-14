@@ -83,6 +83,10 @@ class Solver(object):
     block_sparse_special_backend : {'reference', 'mapped'}, optional
         CUDA special-vertex policy. 'mapped' fuses eligible sparse column maps;
         requires native CUDA kernels. The reference policy remains the default.
+    block_sparse_nca_backend : {'reference', 'real_batch'}, optional
+        Opt into pointwise real NCA batching for resident self-energy with all 1x1
+        blocks and safe finite real inputs. Other domains retain general CUDA.
+        Requires native sparse kernels. Default reference.
     block_sparse_operator_budget : int, optional
         One-entry sparse operator plus library workspace limit (default 32 MiB).
     block_sparse_output_placement : {'resident', 'host_sectors'}, optional
@@ -129,7 +133,7 @@ class Solver(object):
                  dense_device_memory_reserve=64 * 1024 * 1024,
                  block_sparse_backend='cpu', block_sparse_workspace_budget=1024 * 1024 * 1024,
                  block_sparse_operator_budget=32 * 1024 * 1024, block_sparse_operator_backend='library', block_sparse_special_backend='reference',
-                 block_sparse_output_placement='resident', block_sparse_host_output_budget=512 * 1024 * 1024):
+                 block_sparse_output_placement='resident', block_sparse_host_output_budget=512 * 1024 * 1024, block_sparse_nca_backend='reference'):
 
         if dense_backend not in {'cpu', 'cuda', 'cuda_small'}:
             raise ValueError("dense_backend must be 'cpu', 'cuda' or 'cuda_small'")
@@ -153,6 +157,9 @@ class Solver(object):
             raise ValueError("block_sparse_output_placement must be 'resident' or 'host_sectors'")
         self.block_sparse_output_placement = block_sparse_output_placement
         self.block_sparse_host_output_budget = gpu.block_sparse_host_output_budget(block_sparse_host_output_budget)
+        if block_sparse_nca_backend not in {'reference', 'real_batch'}:
+            raise ValueError("block_sparse_nca_backend must be 'reference' or 'real_batch'")
+        self.block_sparse_nca_backend = block_sparse_nca_backend
         self.block_sparse_special_backend = block_sparse_special_backend
         self.block_sparse_operator_backend = block_sparse_operator_backend
         self.block_sparse_backend = block_sparse_backend
@@ -432,11 +439,11 @@ class Solver(object):
             else:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
         else:
-            evaluator_class = gpu.block_sparse_evaluator_class(self.block_sparse_backend, self.block_sparse_operator_backend, self.block_sparse_special_backend, self.block_sparse_output_placement)
+            evaluator_class = gpu.block_sparse_evaluator_class(self.block_sparse_backend, self.block_sparse_operator_backend, self.block_sparse_special_backend, self.block_sparse_output_placement, self.block_sparse_nca_backend)
             budgets = {}
             if self.block_sparse_backend != 'cpu':
                 gpu.configure_device(self.gpu_device)
-                budgets = dict(device_budget=self.block_sparse_workspace_budget, sparse_budget=self.block_sparse_operator_budget, operator_backend=self.block_sparse_operator_backend, special_backend=self.block_sparse_special_backend, output_placement=self.block_sparse_output_placement, host_output_budget=gpu.block_sparse_host_output_budget(self.block_sparse_host_output_budget))
+                budgets = dict(device_budget=self.block_sparse_workspace_budget, sparse_budget=self.block_sparse_operator_budget, operator_backend=self.block_sparse_operator_backend, special_backend=self.block_sparse_special_backend, output_placement=self.block_sparse_output_placement, host_output_budget=gpu.block_sparse_host_output_budget(self.block_sparse_host_output_budget), nca_backend=self.block_sparse_nca_backend)
             if self.has_dynamic_interactions:
                 self.d = evaluator_class(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs, **budgets)
             else:
@@ -1467,7 +1474,7 @@ class Solver(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         arg_keys = ['H_loc', 'beta', 'w_max', 'eps', 'gf_struct', 'conserved_operators']
-        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve', 'block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend', 'block_sparse_output_placement', 'block_sparse_host_output_budget']
+        argv_keys = ['atom_diag', 'verbose', 'dlr_symmetrize', 'dense_backend', 'dense_batch_capacity', 'dense_workspace_budget', 'gpu_device', 'dense_device_memory_reserve', 'block_sparse_backend', 'block_sparse_workspace_budget', 'block_sparse_operator_budget', 'block_sparse_operator_backend', 'block_sparse_special_backend', 'block_sparse_output_placement', 'block_sparse_host_output_budget', 'block_sparse_nca_backend']
         verbose = d['verbose']
         d['verbose'] = False # -- Suppress printouts on reconstruction from dict
         ret = cls(*[ d[key] for key in arg_keys ],

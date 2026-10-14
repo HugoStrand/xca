@@ -21,13 +21,21 @@ def block_sparse_mapped_available():
     return import_module('._triqs_xca_cuda', __package__).block_sparse_mapped_available()
 
 
-def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference', output_placement='resident'):
+def block_sparse_real_nca_available():
+    if not CUDA_ENABLED:
+        return False
+    return import_module('._triqs_xca_cuda', __package__).block_sparse_real_nca_available()
+
+
+def block_sparse_evaluator_class(backend, operator_backend='library', special_backend='reference', output_placement='resident', nca_backend='reference'):
     if output_placement not in {'resident', 'host_sectors'}:
         raise ValueError("Block-sparse output placement must be 'resident' or 'host_sectors'")
     if operator_backend not in {'library', 'ordered'}:
         raise ValueError("Block-sparse operator backend must be 'library' or 'ordered'")
     if special_backend not in {'reference', 'mapped'}:
         raise ValueError("Block-sparse special backend must be 'reference' or 'mapped'")
+    if nca_backend not in {'reference', 'real_batch'}:
+        raise ValueError("Block-sparse NCA backend must be 'reference' or 'real_batch'")
     if backend == 'cpu':
         from ._triqs_xca import BlockSparseDiagramEvaluator
         return BlockSparseDiagramEvaluator
@@ -41,6 +49,8 @@ def block_sparse_evaluator_class(backend, operator_backend='library', special_ba
             raise RuntimeError("Ordered block-sparse CUDA kernels are unavailable in this build")
         if special_backend == 'mapped' and not module.block_sparse_mapped_available():
             raise RuntimeError("Mapped special-vertex CUDA kernels are unavailable in this build")
+        if nca_backend == 'real_batch' and not module.block_sparse_real_nca_available():
+            raise RuntimeError("Real NCA CUDA kernels are unavailable in this build")
         return module.BlockSparseCudaDiagramEvaluator
     except (ImportError, AttributeError) as error:
         raise RuntimeError(f"Requested block-sparse backend 'cuda' is unavailable: {error}") from error
