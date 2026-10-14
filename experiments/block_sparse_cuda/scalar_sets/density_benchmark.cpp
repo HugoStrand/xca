@@ -67,7 +67,9 @@ int main(int argc, char **argv) {
   constexpr auto backend = "profile_batched_density_sets";
 #else
   using Evaluator = gpu::ScalarPathEvaluator;
-#if defined(XCA_EXPERIMENT_SCALAR_STAGING)
+#if defined(XCA_EXPERIMENT_SCALAR_STREAMS)
+  constexpr auto backend = "cuda_density_streams";
+#elif defined(XCA_EXPERIMENT_SCALAR_STAGING)
   constexpr auto backend = "cuda_density_staging";
 #elif defined(XCA_EXPERIMENT_SCALAR_RESIDENT)
   constexpr auto backend = "cuda_density_resident";

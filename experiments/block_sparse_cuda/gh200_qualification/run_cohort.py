@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--revisions', type=Path, required=True)
-    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging'], default='initial')
+    parser.add_argument('--cohort', choices=['initial', 'scalar', 'density', 'signs', 'resident', 'staging', 'streams'], default='initial')
     args = parser.parse_args()
     binaries = {
         'cpu': args.build/'benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark',
@@ -50,7 +50,7 @@ def main():
             ('scalar-order6', 4, 'occupation', 'se', 6, False, 1, 8, 'chain'),
             ('mixed-fallback', 4, 'mixed', 'correlator', 2, True, 0, 1, 'crossing'),
         ]
-    if args.cohort in ('density', 'signs', 'resident', 'staging'):
+    if args.cohort in ('density', 'signs', 'resident', 'staging', 'streams'):
         experiment = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_sets'
         binaries = {
             'cpu': experiment/'block_sparse_cpu_density_sets_benchmark',
@@ -88,6 +88,15 @@ def main():
                 'cpu_signs': signs/'block_sparse_cpu_density_signs_benchmark',
                 'gpu_resident': resident/'block_sparse_scalar_density_resident_benchmark',
                 'gpu_staging': staging/'block_sparse_scalar_density_staging_benchmark',
+            }
+        if args.cohort == 'streams':
+            signs = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_signs'
+            staging = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_staging'
+            streams = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_streams'
+            binaries = {
+                'cpu_signs': signs/'block_sparse_cpu_density_signs_benchmark',
+                'gpu_staging': staging/'block_sparse_scalar_density_staging_benchmark',
+                'gpu_streams': streams/'block_sparse_scalar_density_streams_benchmark',
             }
     manifest = dict(revisions=json.loads(args.revisions.read_text()),
                     cohort=args.cohort,

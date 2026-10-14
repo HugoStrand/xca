@@ -57,6 +57,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
 #ifdef XCA_EXPERIMENT_SCALAR_RESIDENT
     if constexpr (std::is_same_v<decltype(weight_at(0, 0)), scalar_resident_experiment::Weight>) {
 #ifdef XCA_EXPERIMENT_SCALAR_STAGING
+#ifdef XCA_EXPERIMENT_SCALAR_STREAMS
+      staging.prepare(staging.host_weights);
+#endif
       staging.host_weights() = scalar_resident_experiment::Weight{};
       for (long lane = 0; lane < count; ++lane) staging.host_weights(lane) = weight_at(lane, 0);
       staging.upload(staging.device_weights, staging.host_weights);
@@ -69,7 +72,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
       ops->wait_for_default_uploads();
       scalar_edge_experiment::check(scalar_resident_experiment::apply(target.data(), device.data(), r, lanes, ops->stream()));
 #endif
+#ifndef XCA_EXPERIMENT_SCALAR_STREAMS
       ops->finish();
+#endif
     } else
 #endif
     {
@@ -88,6 +93,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   auto apply_constants = [&](Tensor &target, auto get) {
 #ifdef XCA_EXPERIMENT_SCALAR_CONSTANTS
 #ifdef XCA_EXPERIMENT_SCALAR_STAGING
+#ifdef XCA_EXPERIMENT_SCALAR_STREAMS
+    staging.prepare(staging.host_constants);
+#endif
     staging.host_constants() = 1.;
     for (long lane = 0; lane < count; ++lane) staging.host_constants(lane) = get(work[lane].first, work[lane].second, 0);
     staging.upload(staging.device_constants, staging.host_constants);
@@ -101,13 +109,18 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     scalar_edge_experiment::check(
        scalar_edge_experiment::multiply_by_lane(target.data(), constants.data(), target.data(), target.size(), lanes, ops->stream()));
 #endif
+#ifndef XCA_EXPERIMENT_SCALAR_STREAMS
     ops->finish();
+#endif
 #else
     apply_weights(target, get);
 #endif
   };
   auto gather = [&](int edge) {
 #ifdef XCA_EXPERIMENT_SCALAR_STAGING
+#ifdef XCA_EXPERIMENT_SCALAR_STREAMS
+    staging.prepare(staging.host_pointers);
+#endif
     for (long lane = 0; lane < lanes; ++lane)
       staging.host_pointers(lane) = reinterpret_cast<std::uintptr_t>(lane < count ? G[work[lane].second.propagator_blocks[edge]].data() : zero.data());
     staging.upload(staging.device_pointers, staging.host_pointers);
@@ -121,7 +134,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     scalar_edge_experiment::check(
        scalar_edge_experiment::gather(device.data(), device.data(), packed.f.data(), packed.tmp.data(), r, lanes, ops->stream()));
 #endif
+#ifndef XCA_EXPERIMENT_SCALAR_STREAMS
     ops->finish();
+#endif
   };
   auto copy = [&](auto const &from, auto &to) { ops->copy(from, to); };
 #ifdef XCA_EXPERIMENT_SCALAR_SETS
@@ -129,6 +144,9 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
   auto add_batch = [&](Tensor const &from, Tensor &to) { ops->axpy(1., from, to); };
 #endif
 #include "recipe.inc"
+#ifdef XCA_EXPERIMENT_SCALAR_STREAMS
+  ops->finish(); // NDA copy-back uses another stream; explicitly complete the recipe.
+#endif
   auto host = nda::to_host(T);
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY
   bool replayed = false;
