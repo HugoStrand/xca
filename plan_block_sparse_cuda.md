@@ -1775,6 +1775,55 @@ and only tighten admission after this evidence. If this still cannot fit target 
 qualify resident-input/fragment streaming separately without changing GEMM reduction
 shapes. No new Arrhenius job is justified by the failed row candidate.
 
+### Full-shape lifetime candidate (2026-10-14)
+
+A separate [phase-liveness experiment](experiments/block_sparse_cuda/phase_liveness/README.md)
+now releases completed value/scratch tensors while preserving original solve/GEMM
+shapes, operand/path order and cutoff. At each edge it releases previous scratch,
+converts weighted values, releases that value tensor, converts T, releases T values,
+then executes the unchanged disjoint full convolution. Both coefficient inputs stay
+live through completion; convolution scratch is cleared before the next vertex.
+Explicit drains protect the last queued reads and errors retain the public drain guard.
+
+The initial six-case/36-sample local campaign (0580dfb) has roughly flat latency.
+N10 number OCA medians are 1108.918 ms reference / 1107.885 ms lifetime; sampled global
+memory delta 343932928 / 299892736 bytes (-12.8%). N8 latency is 265.659/265.847 ms.
+No speedup/default/target inference from three samples; zero memory deltas on small
+cases can reflect caching. This is not a continuous/process-local peak measurement.
+
+After the initial timing, a phase audit tightened the private admission (b549256).
+Worst temporary overlap is seven maximum rank tensors: two coefficients + output +
+four disjoint DLR tensors. Solves require at most four, special fallback six, ordinary
+vertices/reflection two. Correlator retained fragments keep the existing two-function
+reserve (injective block-map compositions bound their rectangular storage); result,
+trace, model/sparse/mapped metadata and complete output reserves remain. Every admitted
+entry drains stale scratch from a previous failed call before allocating caller arrays.
+NCA bound is unchanged. Generic convolution/correlator bound drops five maximum tensors;
+opaque allocations/headroom remain additional. This bound applies to the private
+schedule only; do not substitute it into unchanged production admission.
+
+Eleven controls pass native/library-only in 9.80/9.85 s, including exact-budget complete
+SE/SPGF, baseline rejection at that budget, one-byte-below rejection, changed inputs/
+masks, both output placements and invalid-call recovery. Focused three-control memcheck
+passes, zero errors/leaks. Both before/after-bound cutoff audits match reference matrices
+and keep/drop counts exactly on all 18 adjacent-scale probes at ranks23/28, including
+the row-chunking counterexample. CPU configure omits the experiment. No broad-suite,
+Python/MPI or target qualification of this new schedule is claimed. Evidence:
+[local lifetime record](experiments/block_sparse_cuda/phase_liveness/thinkstationP620_RTXA4000/lifetime-01/README.md).
+
+The tighter N14/r64 host-output OCA bound is still128.154 GiB (rank26:52.081 GiB,
+metadata-only diagnostics), above observed GH20095.58 GiB. This candidate is useful
+for scratch liveness, but does not resolve large-case residency. Next qualify the
+full-shape candidate more broadly and investigate host-backed input blocks separately:
+keep only the source values/coefficient operands needed by the current edge, release
+source storage after its last read, preserve the exact host values and path order,
+and retain complete outputs. Charge transfers/allocation in call latency and include
+host input/output/model peaks. Derive phases before claiming it fits; retained correlator
+fragments need an independent streaming schedule. Use bounded N10 and N14 block/map
+probes before any full physical N14 run. Preserve resident baseline and failed row
+candidate; target hardware/default policy remains a separate gate. No new Arrhenius
+job was used or is justified solely by local sampled peaks.
+
 ## 7. Execution order and deliverables
 
 1. E0 and E1: inventory, reproducible physical fixtures, exact operator export,

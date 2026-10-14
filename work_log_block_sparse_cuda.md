@@ -1,5 +1,60 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Exact-shape liveness and tighter private admission
+
+Previous turn was progress: complete row chunking exposed a cutoff disagreement and
+insufficient N14 capacity. Inspected actual edge/DLR/special/fragment lifetimes and
+implemented a separate LifetimeDiagramEvaluator experiment, preserving production and
+all candidates. Releases previous scratch at edge entry, weighted values after conversion,
+T values after conversion, then executes the unchanged full disjoint convolution with
+the same shapes/operand order. Both coefficient inputs live until completion; drain and
+release scratch before the next vertex. All existing APIs/policies remain in the private
+class, no Python/default/production change. First build found one leftover row-cap
+constructor argument in adapted fixture, removed and rebuilt.
+
+Initial native/library ten controls pass9.44/9.27 s; focused two-control memcheck22.448 s,
+zero errors/leaks. Eighteen adjacent-scale OCA probes at ranks23/28 match production
+matrices and keep/drop counts exactly, including row chunking's counterexample. Initial
+six-case/36-row timing campaign at0580dfb uses shared CPU-screened complete-call fixture,
+three samples, route order alternating, one OMP/BLAS thread, all processes sequential.
+All numerical/replay controls pass; signal/error/structural fields agree offline. Number
+OCA N4/N6/N8/N10, mixed N6 SPGF and dynamic N4 number correlator. N10 median reference/
+lifetime1108.918/1107.885 ms, sampled global device delta343932928/299892736 bytes (-12.8%).
+N8 medians265.659/265.847 ms. Roughly flat latency, no speedup/default/crossover inference.
+Initial timing keeps old conservative bounds; sampled deltas are not continuous or
+process-local peaks and can be zero because of driver caching/granularity.
+
+Then audited and tightened only the private bound: two coefficients + output + four
+DLR scratch tensors = seven temporary rank tensors. Solves at most four, special fallback
+six, vertices/reflection two. Scratch/RHS do not overlap. Correlator rectangular retained
+fragments fit their old two-function reserve by injective map composition/Cauchy bound;
+inputs, outputs, operator/mapped, endpoint/result/trace reserves remain. New admitted-entry
+drain clears scratch left by failures before new caller storage; explicit budget rejects
+first. NCA bounds unchanged. All generic conv/correlator bounds reduced by five maximum
+rank tensors, not a claim that all five were allocated in the baseline's actual peak.
+
+Final eleven controls pass native9.80 s/library9.85 s: exact-budget SE/SPGF, one-byte-below
+rejection, baseline rejection at new budget, NCA bound/recovery, changed G/masks/output
+placements, invalid-input/endpoint recovery. Focused three-control memcheck29.307 s,
+zero errors/leaks. Eighteen cutoff probes remain exact. Library native flags both OFF;
+CPU configure/list omits experiment. All GPU verification/campaigns sequential; builds
+in separate trees. No new broad-suite/Python/MPI or target qualification. All handles
+terminal. Code0580dfb/b549256, evidence3173264; plan/log separate.
+
+N14/r64 host-output OCA phase estimate128.154 GiB remains above actual GH20095.58 GiB;
+rank26 estimate52.081 GiB is metadata only, not physical rank/accuracy/capacity proof.
+Next broader candidate qualification and separate host-backed input/fragment residency
+experiments preserving full-shape arithmetic. Keep complete outputs, include transfer/
+allocation/host peaks, qualify bounded N10/N14 blocks before full physical execution.
+Do not use tighter bounds with unchanged production schedule or infer fit from peak deltas.
+
+Evidence: experiments/block_sparse_cuda/phase_liveness/thinkstationP620_RTXA4000/lifetime-01
+contains command/binary hashes, timing/raw CSVs, both cutoff audits, initial/final tests,
+memcheck, failure/build logs and metadata estimates. Archive-only whitespace normalization
+records original hashes. Goal active; no new Arrhenius GPU time (cumulative .435 nominal
+hours), push/install/supervisor changes. Unrelated user files and all baselines retained.
+GH200-class target, A4000 only local semantic/mechanism screen.
+
 ## 2026-10-14 — Complete row-convolution capacity and cutoff audit
 
 Previous turn was progress: recorded GH200 NCA qualification and a private primitive
