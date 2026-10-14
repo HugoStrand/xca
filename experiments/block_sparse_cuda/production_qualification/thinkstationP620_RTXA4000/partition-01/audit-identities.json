@@ -1,0 +1,33 @@
+{
+  "checked_source_commit": "308dd1c04572e1edf8c16370380bd6811fb6fc36",
+  "production_cxx_and_python_identical_to": "85ecb2d",
+  "frozen_snapshot_matches_origin": true,
+  "new_partition_test_commit": "61996d8",
+  "runtime_file_sha256": {
+    "c++/triqs_xca/block_sparse/cuda/device_ops.cpp": "d6dc5924ce5859470668c679a35c9c70c888aae7cdcb5769fd99bd6ef38535e1",
+    "c++/triqs_xca/block_sparse/cuda/device_ops.hpp": "fac3897b5b23b3aa56bbd1edf1f8d7ee6009eb4f065c3395adf36996131e274c",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.cpp": "3f554f740a708d2ec5f2765100c2d0e840bb8b5c1bad783f53400e78f4b46190",
+    "c++/triqs_xca/block_sparse/cuda/diagram_evaluator.hpp": "4f0db5f9354f6a6c86d9675908e239b540098f5b62281f0c289499577050fd06",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.cpp": "c4ed6b58cc1835583a4960d9cd4ff3799918e943ced6212511f0bad45c9b987e",
+    "c++/triqs_xca/block_sparse/cuda/dlr_ops.hpp": "7f5e6d01d6d4e05402fc6af01c2693943102bdbb0e67dbe7c40559a75f1c7e82",
+    "c++/triqs_xca/block_sparse/cuda/kernels/CMakeLists.txt": "413703b0589a3f10e6303af51b6e07d92ba489dc99205cae4d93cd1d843e87ac",
+    "c++/triqs_xca/block_sparse/cuda/kernels/kernels.cu": "54c900bd531d2ca572c4a8c69b71b7acc1e1e79415402dcb34ef13cd271d8ecc",
+    "c++/triqs_xca/block_sparse/cuda/kernels/kernels.hpp": "acfe7fbbc85249fd2ec8aaa501a7821cfbcd3b73fd271a628ab2f09dfc0e6ecb",
+    "c++/triqs_xca/block_sparse/cuda/kernels/mapped.cu": "2499673ae47ad646b0fe388f7d683f8bf8b2a4cee17c3d1660c90122b6ec177d",
+    "c++/triqs_xca/block_sparse/cuda/kernels/real_nca.cu": "872c79884faaf3c789faff6c5e53231945a44e6e10f34f0cc7f67e4377010ce3",
+    "c++/triqs_xca/block_sparse/cuda/memory.hpp": "f44820c79aa71f6d40407a25c8e6491776d42aea97879df44d72463ffae28b88",
+    "c++/triqs_xca/block_sparse/cuda/operator_column_maps.hpp": "05c4cec23a72e49c72c0f7c6c2dd0c565d96c80415560891393c5a6c356f8828",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.cpp": "cb6a8993dd398cf274cff60fb40f7a7141b632b9efa964ad41934bfbfc1b8b25",
+    "c++/triqs_xca/block_sparse/cuda/operator_model.hpp": "233c0d04eed2d16b5ffa9afd3a740ba32e7cd118a2d14d0c2563ccba627058d5",
+    "c++/triqs_xca/block_sparse/cuda/output_placement.hpp": "b3905db1fa968536b3a72827d74e75166b1770745dac769aa1506562ada282c5",
+    "c++/triqs_xca/block_sparse/cuda/path.cpp": "d5a2b3ae85b59e81809d3adecd62153717604b3dcc1e1d799ce0fad41b2d64b5",
+    "c++/triqs_xca/block_sparse/cuda/path.hpp": "ea0c28a4242bea52f0bf92a7660b226467bdf6c1a69f785d7b0d3017c51a69c2",
+    "c++/triqs_xca/block_sparse/cuda/real_nca.cpp": "cd4896ff1d0afe245a09dfc0b4bfe9c102edffce59fb486910782f8178ec60bf",
+    "c++/triqs_xca/block_sparse/cuda/real_nca.hpp": "f69b9b8ea3b61eb9ead1a9d6e34859795844b2c8b29472d8fc68448ac274dd1b",
+    "c++/triqs_xca/block_sparse/cuda/real_nca_types.hpp": "6f8ed8bbc4e11ba1acb932245feb11be1509e19d0c05e655447a78c205ee33eb",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.cpp": "61766faf7215400413bdcbe9bfe40504a268e4ef248989d5ea66e5498f42ae14",
+    "c++/triqs_xca/block_sparse/cuda/sparse_operator.hpp": "1ed8dbd95dc194ab23bc513b65881af9705d52ccac50cfa56273842886503a84",
+    "c++/triqs_xca/block_sparse/cuda/storage_policy.hpp": "4a05626fb52f471e01810286d6cdbf402a813d7418e5651bcecb6e562434143a"
+  },
+  "basis": "Coverage decisions and scoped evidence are in the final requirement audit in plan_block_sparse_cuda.md; these hashes prove identity, not correctness."
+}

@@ -1,0 +1,13 @@
+{
+  "checked_utc": "2026-10-14T22:41:39.693059+00:00",
+  "command": "ssh arrhenius timeout 30 projinfo",
+  "account": "naiss2026-3-569-gpu",
+  "window": "last 30 days",
+  "reported_project_gpu_hours": 3.73,
+  "reported_current_user_gpu_hours": 3.73,
+  "site_warning": "Arrhenius GPU-hour calculation may not be fully reliable; cross-check precise accounting.",
+  "tracked_task_parent_gpu_seconds": 3384,
+  "tracked_task_nominal_gpu_hours": 0.94,
+  "user_shared_ceiling_gpu_hours_per_month": 100,
+  "scope": "Reported rolling usage is not a precise remaining calendar-month balance. Task tracking includes failed/build parent allocation time; other user work remains separate."
+}
