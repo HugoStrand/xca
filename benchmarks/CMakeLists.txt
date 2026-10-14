@@ -31,3 +31,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/nca_admissi
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/nca_admission)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/topology_reuse
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/topology_reuse)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/output_sectors
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/output_sectors)
