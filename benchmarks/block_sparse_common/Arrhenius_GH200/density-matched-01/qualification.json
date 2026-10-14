@@ -1,0 +1,19 @@
+{
+  "job_id": 3823469,
+  "source_revision": "6987c4d6a401c7f643346cc45e33186556dd67e4",
+  "gpu": "NVIDIA GH200 120GB",
+  "allocated_gpus": 1,
+  "allocated_cpus": 72,
+  "build_workers_cap": 6,
+  "elapsed_seconds": 446,
+  "nominal_gpu_hours": 0.1238888888888889,
+  "cumulative_target_seconds": 747,
+  "cumulative_nominal_gpu_hours": 0.2075,
+  "walltime_cap_seconds": 900,
+  "ctests_passed": 5,
+  "gtests_passed": 38,
+  "ctest_seconds": 57.86,
+  "benchmark_samples": 48,
+  "source_metadata_correction": "Source timestamps normalized to 2000-01-01 after Make future-mtime warnings; contents unchanged",
+  "scope": "Focused C++ correctness and ordinary complete-call matched benchmark; no full suite/Python/MPI/full N14 claim"
+}
