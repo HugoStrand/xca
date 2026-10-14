@@ -153,6 +153,19 @@ This one-GPU job used 446 seconds, nominal 0.12389 GPU-hours; target total is no
 rebuilds; source metadata was normalized without content edits and the recipe now
 prevents recurrence. The source snapshot/build and all previous evidence are retained.
 
+Scoped local profiling checkpoint: a warmed N6 OCA multi-set call spans 25.890ms
+of CUDA runtime trace, with 2.452ms summed kernel intervals and ~.682ms memory
+operations. It makes 272 stream synchronizations, 156 allocations, 115 host-to-device
+copies and many upload-event barriers. Wrapper/export time is not benchmark data;
+API/device intervals can overlap and tracing affects latency. Evidence is retained
+in `experiments/block_sparse_cuda/scalar_sets/thinkstationP620_RTXA4000/profile-01`.
+Source inspection identifies field assignment/parity recomputed inside the DLR-node
+weight loop although constant per lane/operator pair. Next isolate its hoisting and
+compare unchanged GPU/matched CPU inclusive calls; then consider resident immutable
+weight tables and device descriptor packing to reduce uploads/synchronizations.
+Preserve the current candidate/profile as controls and repeat semantic/cutoff gates
+before target timing or promotion. No GH200 inference follows from this local trace.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator

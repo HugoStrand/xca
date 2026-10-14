@@ -1,5 +1,33 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Scoped multi-set CUDA call profiling
+
+Previous turn was progress: GH200 matched controls passed, showing no matched-CPU
+hardware win. Added profile_density_sets frontend, capturing only second/warmed
+complete-call API with cudaProfilerStart/Stop. Explicit fixture remains shared;
+setup/CPU screening outside capture. Local N6 OCA first1/count8 sample passed finite,
+CPU numerical/exact replay. Nsight2026.3.2 CUDA-only capture with profiler-API range,
+sample none/cpuctxsw none. Wrapper~1.73s includes export and is excluded from timing.
+
+Runtime trace span25.890ms, summed runtime intervals9.134ms, GPU kernel intervals
+2.452ms/255events and memory operations~.682ms. Counts: streamSync272, malloc/free
+156/158, memcpy/async/2D117/57/6, eventRecord/streamWait258/258, create/destroy276/276,
+host-to-device115. Sums may overlap and tracing affects intervals; no speedup derived
+by subtraction. TRSM/GEMM dominate arithmetic, small uploads/synchronizations remain
+frequent. Source confirms special weight callback repeats field assignment/parity
+for every rank node despite invariance per lane/operator pair. Setter changes only
+orbital indices. This is the next isolated hoisting experiment, followed by resident
+weight tables/device descriptor packing if measured benefit justifies them.
+
+Compact stats and source/executable/report hashes retained in scalar_sets local
+profile-01. Large /tmp/xca-density-profile-baseline.{nsys-rep,sqlite} may disappear;
+text reports retained. Build/capture handles terminal; no competing GPU work or
+additional target hours. Profiling frontend a0384d7 and evidence6fd19f2 separate
+from plan/log checkpoint. Logs /tmp/xca-bs-density-profile-{configure,build,run,
+stats}.log and stats.csv. No production/default or target inference. Goal active;
+broader numerical, integration, capacity/Python/MPI gates remain. No install/push
+or unrelated-work changes; target total remains .2075 nominal GPU-hours.
+
 ## 2026-10-14 — GH200 matched multi-set qualification
 
 Previous turn was progress: matched host multi-set control qualified and measured.
