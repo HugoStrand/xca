@@ -481,6 +481,25 @@ Do not select a target default or claim all-small-block speedup from these local
 selected-index results. Wider RHS, changed-operator costs, peak capacity, batching
 and GH200 measurements remain open.
 
+Production C++ checkpoint (2026-10-14): `SparseBackend::Ordered` is an
+explicit optional route on `DeviceSparseBlock` and the block-sparse CUDA evaluator;
+`Library` stays the default. `ordered_sparse_available()` reports compiled support.
+`XCA_CUDA_BLOCK_SPARSE=AUTO|ON|OFF` controls native kernel compilation independently
+of dense CUDA-small. AUTO leaves the library route usable with CUDA NDA but no
+CUDA compiler, and CPU builds omit native kernels. The installed/exported static
+kernel target uses ordered complex-double arithmetic with FMA contraction disabled.
+
+This uses the reference's owned CSR/plain-transpose snapshots, budgets, stream/device
+checks, overlap checks and cleanup, with one rank-wide native launch and synchronous
+return. The same eight evaluator tests pass for both production routes, capability/
+budget tests pass, and focused endpoint/cache memcheck reports no errors/leaks.
+A CUDA build with both native families OFF passes library/capability tests and
+rejects ordered requests; CPU guarded compilation passes. The original private
+experiment still builds and passes after constructor adaptation. Python bindings,
+Solver/archive selection, full rebuilt suites, MPI and production-path timings are
+the next qualification step; the private candidate's timings are not substituted
+for a measured production implementation. No target default has been chosen.
+
 ### E4 — Where to batch and where to fuse
 
 Compare one path at a time with bounded batches across output sectors, flat indices

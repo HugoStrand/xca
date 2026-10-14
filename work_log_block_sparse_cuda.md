@@ -951,3 +951,65 @@ candidate code/results; git diff --check passed.
 Logs: /tmp/xca-bs-ordered-{configure,build,test,memcheck,cpu-configure,cpu-targets,
 campaign}.log. Persistent evidence: benchmarks/block_sparse_common/thinkstationP620_RTXA4000/ordered-evaluator-01
 and experiments/block_sparse_cuda/operator_apply. Temporary logs may disappear.
+
+
+### 2026-10-14 — Optional production ordered operator backend
+
+Previous turn made progress by qualifying the private native evaluator and paired
+complete-call evidence. Goal remains active. This turn integrates the qualified
+kernel into production C++, leaving Python/MPI selection for the next integration
+step rather than claiming that promotion is finished.
+
+Code commit 0450ab1 [bs] add ordered CUDA operator backend. Added independent
+XCA_CUDA_BLOCK_SPARSE AUTO/ON/OFF native compilation with CUDA-enabled NDA and
+compiler checks. Kernel static library is linked/exported/installed with the core;
+CUDA standard 17, PIC, FMA contraction disabled. Dense CUDA-small's control remains
+independent. CUDA support itself is still inherited from NDA/TRIQS; this option
+only controls xca's native sparse kernel. AUTO omits native compilation on CPU/no
+compiler; an explicit unsupported ON errors during configure. No installed prefix
+was changed in this work.
+
+Public C++ SparseBackend has Library/Ordered, with ordered_sparse_available() as a
+compiled-capability query. Evaluator and snapshot constructors accept explicit
+selection; existing calls use Library defaults. Invalid enums and unavailable
+Ordered requests reject. The reference's owned CSR/plain-transpose arrays, shared
+owner, device/contiguous/overlap checks, checked budgets and cleanup are reused.
+Native applies launch over all nodes then finish before callers release temporaries.
+All-zero blocks use the existing zero operation. Retained workspace stays zero for
+native applications. CSR descriptors are still constructed with snapshots; production
+constructor cost can differ from the private candidate and must be timed directly.
+No post-submission replay/fallback or performance threshold was introduced.
+
+Added a production native test adapter to run the same eight physics/API tests as
+the library reference. A separate capability/budget test covers invalid enums,
+missing native compilation, exact 200-byte payload versus 199-byte rejection,
+shape errors, native CPU comparison and all-zero output. Native test target initially
+collided with the private experimental library name; corrected to a distinct name
+before building/testing. The isolated prototype snapshot accepts the extra internal
+selection argument so its original experiment remains buildable and available.
+
+Verification: native-enabled CUDA configure/build passed; three focused CTest
+entries passed (library evaluator, native evaluator, capability/budget), 11.67 s.
+These timings overlapped independent build verification and are not benchmark data.
+Native evaluator memory-check/leak-check on two endpoint/cache error/recovery and
+masked-starting-value cases passed with 0 errors, 0 bytes leaked. Library-only CUDA
+configured with XCA_CUDA_SMALL=OFF and XCA_CUDA_BLOCK_SPARSE=OFF, built both
+library/capability executables, and passed 2/2 CTest entries in 7.78 s; its native
+request rejection is exercised. CPU configure/build of the new guarded test passed;
+its CTest entry passes with the no-CUDA case disabled (not GPU qualification).
+The private candidate rebuilt and passed its ten-test CTest entry in 3.83 s after
+production constructor changes. git diff --check passed; unrelated work preserved.
+
+Next: extend consolidated facade/bindings and Solver preferences with explicit
+library/ordered operator selection and archive defaults, including early capability
+rejection. Rebuild complete CPU/CUDA/library-only Python modules and run full suites
+plus two-rank collective failure/recovery checks for native selection. Measure the
+actual production route with matched controls, then progress scalar ready-work
+batching/DLR amortization, wider RHS/peak bounds and target qualification. Existing
+reference and all experiments remain. No Python/MPI qualification, production
+performance result, GH200 run or N=14 full model is asserted here. No install, push
+or supervisor changes. This plan/work-log checkpoint is separate from code.
+
+Temporary logs: /tmp/xca-bs-native-{configure,build,test,memcheck,cpu-configure,
+cpu-build,cpu-test,library-configure,library-build,library-test,experiment-build,
+experiment-test}.log. Build/test artifacts in the three retained cbuild trees.
