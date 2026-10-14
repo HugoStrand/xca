@@ -47,6 +47,17 @@ and output construction. It excludes setup, warm-up and numerical-control calls.
 Use `gh200_qualification/run_cohort.py --cohort density` with a build directory,
 output directory and revision JSON to record four bounded N=4/6/8 cases across
 three routes, three samples each. Revisions/source and binary hashes are retained.
-This CPU control is not an algorithm-matched batched multi-set implementation;
-that comparison and GH200 evidence are promotion gates. Ordinary benchmark screens
+The unchanged CPU frontend is not an algorithm-matched batched implementation;
+use the matched frontend below to separate algorithm and hardware gains. GH200
+evidence remains a promotion gate. Ordinary benchmark screens
 do not replace the cutoff-adjacent and ownership tests.
+
+`block_sparse_cpu_batched_density_sets_benchmark` adds the algorithm-matched host
+control and builds without CUDA. It shares the GPU candidate's lane/cohort discovery,
+ordered special-vertex recipe, packed cached-LU solves, transform reuse, cutoff and
+fan-in order. Host zero/add operations use scalar loops in place of CUDA operations.
+The earlier singleton CPU control retains its eligibility restriction. This matched
+control screens against the original CPU and checks repeated outputs; it does not
+implement the GPU's cutoff uncertainty-band replay. Compare ordinary full calls
+before attributing speedups to GPU hardware. The density recorder now includes this
+fourth route; older three-route campaign evidence is retained.

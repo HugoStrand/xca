@@ -1,6 +1,10 @@
 add_executable(block_sparse_cpu_density_sets_benchmark density_benchmark.cpp)
 target_compile_definitions(block_sparse_cpu_density_sets_benchmark PRIVATE XCA_DENSITY_SETS_CPU)
 target_link_libraries(block_sparse_cpu_density_sets_benchmark PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c ${PROJECT_NAME}_warnings)
+add_executable(block_sparse_cpu_batched_density_sets_benchmark density_benchmark.cpp)
+target_compile_definitions(block_sparse_cpu_batched_density_sets_benchmark PRIVATE XCA_DENSITY_SETS_CPU_BATCHED
+  XCA_EXPERIMENT_SCALAR_SETS XCA_EXPERIMENT_SCALAR_CONSTANTS)
+target_link_libraries(block_sparse_cpu_batched_density_sets_benchmark PRIVATE ${PROJECT_NAME}::${PROJECT_NAME}_c ${PROJECT_NAME}_warnings)
 if(NOT TARGET block_sparse_scalar_constants_evaluator)
   return()
 endif()

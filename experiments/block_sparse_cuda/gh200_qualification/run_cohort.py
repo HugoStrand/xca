@@ -54,6 +54,7 @@ def main():
         experiment = args.build/'benchmarks/experiments/block_sparse_cuda/scalar_sets'
         binaries = {
             'cpu': experiment/'block_sparse_cpu_density_sets_benchmark',
+            'cpu_batched': experiment/'block_sparse_cpu_batched_density_sets_benchmark',
             'general': experiment/'block_sparse_general_density_sets_benchmark',
             'batched': experiment/'block_sparse_scalar_density_sets_benchmark',
         }

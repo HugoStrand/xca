@@ -1,5 +1,7 @@
 #include "../../../benchmarks/block_sparse_common/call_runner.hpp"
-#ifdef XCA_DENSITY_SETS_CPU
+#if defined(XCA_DENSITY_SETS_CPU_BATCHED)
+#include "../scalar_paths/cpu_scheduler.hpp"
+#elif defined(XCA_DENSITY_SETS_CPU)
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #elif defined(XCA_DENSITY_SETS_GENERAL)
 #include <triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>
@@ -25,7 +27,10 @@ int main(int argc, char **argv) {
         || !std::any_of(model.sets().begin(), model.sets().end(), [](auto const &set) { return set.size() > 1; }))
       throw std::runtime_error("Density-set fixture did not produce scalar blocks and a multi-field set");
   };
-#ifdef XCA_DENSITY_SETS_CPU
+#if defined(XCA_DENSITY_SETS_CPU_BATCHED)
+  using Evaluator = scalar_path_experiment::CpuScalarPathEvaluator;
+  constexpr auto backend = "cpu_batched_density_sets";
+#elif defined(XCA_DENSITY_SETS_CPU)
   using Evaluator = triqs_xca::block_sparse::DiagramEvaluator;
   constexpr auto backend = "cpu_density_sets";
 #elif defined(XCA_DENSITY_SETS_GENERAL)
@@ -39,7 +44,7 @@ int main(int argc, char **argv) {
     [&](auto const &ad, auto coeff, auto mesh, auto poles, auto operators, auto dyn) {
       auto model = gpu::export_model(ad, coeff, operators, dyn);
       validate(model);
-#ifdef XCA_DENSITY_SETS_CPU
+#if defined(XCA_DENSITY_SETS_CPU) || defined(XCA_DENSITY_SETS_CPU_BATCHED)
       return std::make_unique<Evaluator>(poles, coeff, mesh, ad, operators, dyn);
 #else
       return std::make_unique<Evaluator>(model, poles, mesh, 1024ULL * 1024 * 1024, 32ULL * 1024 * 1024, gpu::SparseBackend::Ordered);

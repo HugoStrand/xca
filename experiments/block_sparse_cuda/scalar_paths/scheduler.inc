@@ -65,6 +65,10 @@ void scalar_flush(std::vector<Input> const &G, std::vector<Output> &Sigma, std::
     ops->finish();
   };
   auto copy = [&](auto const &from, auto &to) { ops->copy(from, to); };
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+  auto zero_batch = [&](Tensor &target) { ops->zero(target); };
+  auto add_batch = [&](Tensor const &from, Tensor &to) { ops->axpy(1., from, to); };
+#endif
 #include "recipe.inc"
   auto host = nda::to_host(T);
 #ifdef XCA_EXPERIMENT_SCALAR_CUTOFF_REPLAY

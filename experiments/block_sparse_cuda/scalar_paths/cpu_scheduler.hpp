@@ -47,8 +47,12 @@ namespace scalar_path_experiment {
     double beta;
     using ScalarWork = std::pair<Backbone, SelfEnergyPath>;
     bool eligible() const {
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+      return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; });
+#else
       return std::all_of(model.dimensions().begin(), model.dimensions().end(), [](long d) { return d == 1; })
          && std::all_of(model.sets().begin(), model.sets().end(), [](auto const &s) { return s.size() == 1; });
+#endif
     }
     double kernel_prefactor(Backbone &backbone) const {
       double prefactor = 1.;
@@ -86,6 +90,12 @@ namespace scalar_path_experiment {
           for (long t = 0; t < r; ++t) packed.f(t, lane, 0) = G[work[lane].second.propagator_blocks[edge]](t, 0, 0);
       };
       auto copy = [](auto const &from, auto &to) { to = from; };
+#ifdef XCA_EXPERIMENT_SCALAR_SETS
+      auto zero_batch = [](Tensor &target) { target() = 0.; };
+      auto add_batch = [](Tensor const &from, Tensor &to) {
+        for (long i = 0; i < to.size(); ++i) to.data()[i] += from.data()[i];
+      };
+#endif
 #include "recipe.inc"
       for (long lane = 0; lane < count; ++lane) {
         double magnitude = 0;
