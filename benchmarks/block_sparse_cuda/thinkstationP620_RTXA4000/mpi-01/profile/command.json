@@ -1,0 +1,49 @@
+{
+  "command": [
+    "mpirun",
+    "--oversubscribe",
+    "-n",
+    "2",
+    "nsys",
+    "profile",
+    "--trace=cuda",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop",
+    "--output=/tmp/xca-bs-mpi-profile-%p",
+    "/usr/bin/python3",
+    "/home/hugstr/dev/xca/benchmarks/block_sparse_common/mpi_ownership.py",
+    "--ranks",
+    "2",
+    "--backend",
+    "cuda",
+    "--operator-backend",
+    "ordered",
+    "--special-backend",
+    "mapped",
+    "--profile",
+    "--modes",
+    "3",
+    "--partition",
+    "number",
+    "--count",
+    "3",
+    "--samples",
+    "1",
+    "--output",
+    "/tmp/xca-mpi-profile"
+  ],
+  "environment_file": "/home/hugstr/dev/xca/cbuild-cuda/benchmarks/block_sparse_common/mpi_environment.json",
+  "settings": {
+    "python": "/usr/bin/python3",
+    "python_paths": [
+      "/home/hugstr/dev/xca/cbuild-cuda/python",
+      "/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src",
+      "/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src"
+    ]
+  },
+  "PYTHONPATH": "/home/hugstr/dev/xca/cbuild-cuda/python:/home/hugstr/dev/xca/cbuild-cuda/deps/adapol_src/src:/home/hugstr/dev/xca/cbuild-cuda/deps/pyed_src:/home/hugstr/apps/xca-cuda/lib/python3.12/site-packages:/home/hugstr/apps/triqs-cuda/lib/python3.12/site-packages:/home/hugstr/dev/adapol/src/:/home/hugstr/dev/pyed/:/home/hugstr/apps/duperty/lib/python3.12/site-packages:/home/hugstr/apps/clair/lib/python3.12/dist-packages",
+  "timeout_s": 240,
+  "returncode": 0
+}

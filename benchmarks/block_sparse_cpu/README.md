@@ -104,3 +104,14 @@ complete-call timings and measured peaks for performance/admission decisions.
 Keep raw traces, commands, masks, ranks and hashes with the machine report. These
 counts model the reference implementation; eligible optimized kernels can have
 different operation counts.
+
+
+For a larger-matrix threaded CPU control, run the same frontend/scientific window
+with `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`, then with OpenBLAS4threads (where
+OpenBLAS is the linked backend). For example, use `--modes 10 --partition number
+--observable se --order 1 --first 0 --count 1 --samples 3`. Repeat in fresh processes,
+retain actual loaded BLAS/build hashes, setup/RSS, individual samples and affinity,
+and verify that the requested thread setting is effective. This measures a bounded
+NCA window, not complete-order Solver throughput; record the actual maximum block
+size/rank. Thread counts appropriate for one CPU or shape do not set another's
+controls. GPU timing remains separate from profiler/CPU-thread campaigns.

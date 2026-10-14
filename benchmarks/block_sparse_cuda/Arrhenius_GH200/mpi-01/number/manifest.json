@@ -1,0 +1,89 @@
+{
+  "arguments": {
+    "ranks": 2,
+    "backend": "cuda",
+    "operator_backend": "ordered",
+    "special_backend": "mapped",
+    "partition": "number",
+    "modes": 3,
+    "profile": false,
+    "dynamic": false,
+    "first": 0,
+    "count": 3,
+    "samples": 3,
+    "output": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/logs/mpi-phases-3854536/number"
+  },
+  "topologies": [
+    [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  ],
+  "topology_counts": [
+    288,
+    288
+  ],
+  "indexed_jobs": 6,
+  "output_complex_elements": 460,
+  "canonical_ownership_exact": true,
+  "rank_metadata": [
+    {
+      "rank": 0,
+      "host": "n535",
+      "pid": 570364,
+      "extensions": {
+        "_triqs_xca_cuda.so": "cc9126978794beaf86e33b92d2d1f675862b83b1b22941cd8d6d7868be0c39dc",
+        "_triqs_xca.so": "e7a45dd7c4b1e6ae21a4f6bb16804d17830a57826381888fae511bfe606f7562"
+      },
+      "cpu_affinity": [
+        72
+      ],
+      "setup_s": 0.6448968320037238,
+      "cpu_control_s": 0.011871358030475676,
+      "module": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 1,
+      "host": "n535",
+      "pid": 570365,
+      "extensions": {
+        "_triqs_xca_cuda.so": "cc9126978794beaf86e33b92d2d1f675862b83b1b22941cd8d6d7868be0c39dc",
+        "_triqs_xca.so": "e7a45dd7c4b1e6ae21a4f6bb16804d17830a57826381888fae511bfe606f7562"
+      },
+      "cpu_affinity": [
+        73
+      ],
+      "setup_s": 0.6449010880314745,
+      "cpu_control_s": 0.011889756948221475,
+      "module": "/nobackup/proj/disk/naiss2026-3-569/shared/qualification/xca-block-sparse-python-7b5d223/cbuild_cuda/python/triqs_xca/__init__.py"
+    }
+  ],
+  "sources": {
+    "mpi_ownership.py": "eb621c44aa3de3717aeb9b3bd5c8d80f33c231c69dccfb01389fe0f9a07f6121",
+    "mpi_fixture.py": "9f5759d9f7739a662051db4f9ada8290a42f749de0b42654ee7ca4fb32afe85b"
+  }
+}

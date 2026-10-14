@@ -1,0 +1,9 @@
+sample,policy,rank,topology,index,api_s,signal_norm
+0,topology_split,0,0,0,6.391992792487144e-05,0.0
+0,topology_split,0,1,0,7.51209445297718e-05,0.0
+0,flat_cyclic,0,0,0,6.366893649101257e-05,0.0
+1,topology_split,0,0,0,6.253703031688929e-05,0.0
+1,topology_split,0,1,0,6.484100595116615e-05,0.0
+1,flat_cyclic,0,0,0,6.34490279480815e-05,0.0
+0,flat_cyclic,1,1,0,7.278705015778542e-05,0.0
+1,flat_cyclic,1,1,0,7.619301322847605e-05,0.0

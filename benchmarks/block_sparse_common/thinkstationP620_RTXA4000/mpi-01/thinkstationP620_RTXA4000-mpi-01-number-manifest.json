@@ -1,0 +1,91 @@
+{
+  "arguments": {
+    "ranks": 2,
+    "backend": "cuda",
+    "operator_backend": "ordered",
+    "special_backend": "mapped",
+    "partition": "number",
+    "modes": 3,
+    "profile": false,
+    "dynamic": false,
+    "first": 0,
+    "count": 3,
+    "samples": 3,
+    "output": "/tmp/xca-mpi-cuda-final"
+  },
+  "topologies": [
+    [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  ],
+  "topology_counts": [
+    288,
+    288
+  ],
+  "indexed_jobs": 6,
+  "output_complex_elements": 460,
+  "canonical_ownership_exact": true,
+  "rank_metadata": [
+    {
+      "rank": 0,
+      "host": "ThinkStation",
+      "pid": 554708,
+      "extensions": {
+        "_triqs_xca_cuda.so": "5bce472bf41b60e4d1c6f8fae8c8da7ad620671388b01a479a8902f81b3171d5",
+        "_triqs_xca.so": "8ec27daf25448fbd5134f2878f1c837900da4a987e06e4e8d84c4ae746a0116a"
+      },
+      "cpu_affinity": [
+        0,
+        12
+      ],
+      "setup_s": 0.22621345694642514,
+      "cpu_control_s": 0.013818328967317939,
+      "module": "/home/hugstr/dev/xca/cbuild-cuda/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 1,
+      "host": "ThinkStation",
+      "pid": 554709,
+      "extensions": {
+        "_triqs_xca_cuda.so": "5bce472bf41b60e4d1c6f8fae8c8da7ad620671388b01a479a8902f81b3171d5",
+        "_triqs_xca.so": "8ec27daf25448fbd5134f2878f1c837900da4a987e06e4e8d84c4ae746a0116a"
+      },
+      "cpu_affinity": [
+        1,
+        13
+      ],
+      "setup_s": 0.22621408791746944,
+      "cpu_control_s": 0.013841000967659056,
+      "module": "/home/hugstr/dev/xca/cbuild-cuda/python/triqs_xca/__init__.py"
+    }
+  ],
+  "sources": {
+    "mpi_ownership.py": "eb621c44aa3de3717aeb9b3bd5c8d80f33c231c69dccfb01389fe0f9a07f6121",
+    "mpi_fixture.py": "9f5759d9f7739a662051db4f9ada8290a42f749de0b42654ee7ca4fb32afe85b"
+  }
+}

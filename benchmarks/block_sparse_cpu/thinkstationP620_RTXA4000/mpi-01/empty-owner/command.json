@@ -1,0 +1,40 @@
+{
+  "command": [
+    "mpirun",
+    "--oversubscribe",
+    "-n",
+    "4",
+    "/usr/bin/python3",
+    "/home/hugstr/dev/xca/benchmarks/block_sparse_common/mpi_ownership.py",
+    "--ranks",
+    "4",
+    "--backend",
+    "cpu",
+    "--modes",
+    "3",
+    "--partition",
+    "mixed",
+    "--dynamic",
+    "--count",
+    "1",
+    "--samples",
+    "2",
+    "--output",
+    "/tmp/xca-mpi-cpu-tail-final"
+  ],
+  "environment_file": "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_common/mpi_environment.json",
+  "settings": {
+    "python": "/usr/bin/python3",
+    "python_paths": [
+      "/home/hugstr/dev/xca/cbuild/python",
+      "/home/hugstr/dev/xca/cbuild/deps/adapol_src/src",
+      "/home/hugstr/dev/xca/cbuild/deps/pyed_src"
+    ]
+  },
+  "PYTHONPATH": "/home/hugstr/dev/xca/cbuild/python:/home/hugstr/dev/xca/cbuild/deps/adapol_src/src:/home/hugstr/dev/xca/cbuild/deps/pyed_src:/home/hugstr/apps/xca/lib/python3.12/site-packages:/home/hugstr/apps/triqs/lib/python3.12/site-packages:/home/hugstr/dev/adapol/src/:/home/hugstr/dev/pyed/:/home/hugstr/apps/duperty/lib/python3.12/site-packages:/home/hugstr/apps/clair/lib/python3.12/dist-packages",
+  "timeout_s": 240,
+  "returncode": 0,
+  "launcher_pid": 554733,
+  "started_utc": "2026-10-14T22:24:50.205365+00:00",
+  "finished_utc": "2026-10-14T22:24:51.120967+00:00"
+}

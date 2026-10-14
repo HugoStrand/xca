@@ -1,0 +1,21 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+39.5,7633744,303,25193.9,27616.0,15712,27712,4769.9,void cutlass::Kernel2<cutlass_80_tensorop_z884gemm_32x16_16x3_nn_align1>(T1::Params)
+24.9,4811759,69,69735.6,69759.0,69631,69792,39.8,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+7.5,1454775,69,21083.7,21088.0,20960,21152,49.7,"void trsm_left_kernel<int, double2, (int)256, (int)4, (bool)0, (bool)0, (bool)1, (bool)0, (bool)1>(cublasTrsmParams<T1, T2>, T2, const T2 *, int)"
+4.8,927351,128,7244.9,7264.0,6976,7424,112.4,"void laswp_kernel2_reverse<double2, (bool)0, int>(int, T1 *, unsigned long, int, int, const T3 *, int)"
+4.3,823480,43,19150.7,19168.0,18944,19296,81.0,"void trsm_lt_up_kernel<double2, (unsigned int)32, (unsigned int)32, (unsigned int)4, (bool)0, (bool)0>(int, int, const T1 *, int, T1 *, int, T1, const T1 *, int, int *)"
+4.2,808215,256,3157.1,3184.0,2624,3680,410.7,"void transpose_readWrite_alignment_kernel<double2, double2, (int)1, (bool)0, (int)5, (int)4, (int)4>(cublasTransposeParams<T2>, const T1 *, T1 *, const T2 *)"
+2.4,456988,16,28561.8,28576.0,28416,28768,86.8,"void trsv_lt_exec_up<double2, (unsigned int)32, (unsigned int)32, (unsigned int)4, (bool)0, (bool)0>(int, const T1 *, long, T1 *, long, int *)"
+1.8,353438,192,1840.8,1824.0,1600,2112,104.5,"void axpy_kernel_val<double2, double2>(cublasAxpyParamsVal<T1, T1, T2>)"
+1.6,309468,43,7196.9,7232.0,7040,7264,64.3,"void trsm_lt_kernel<double2, (unsigned int)32, (unsigned int)32, (unsigned int)4, (bool)1, (bool)0>(int, int, const T1 *, int, T1 *, int, T1, const T1 *, int, int *)"
+1.5,292032,16,18252.0,18272.0,18176,18304,38.5,"void trsv_lt_exec<double2, (unsigned int)32, (unsigned int)32, (unsigned int)4, (bool)1, (bool)0>(int, const T1 *, long, T1 *, long, int *)"
+1.5,287549,112,2567.4,2592.0,2208,3456,279.6,"void triqs_xca::block_sparse::cuda::native::apply<(bool)0>(const long *, const long *, const double2 *, const double2 *, double2 *, long, long, long, long)"
+1.2,231487,81,2857.9,2848.0,2560,3232,174.7,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, double2, double2, double2, double2, (bool)0, (bool)1, (bool)1, (bool)0, (int)5, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<double2>, double2>>(T13)"
+0.9,180446,48,3759.3,3920.0,3136,4480,462.5,"triqs_xca::block_sparse::cuda::native::weighted_mu_kernel(const double2 *, const long *, const double2 *, const double2 *, double2 *, long, long, long, long, long)"
+0.8,152288,96,1586.3,1568.0,1344,1792,120.9,"void scal_kernel_val<double2, double2>(cublasScalParamsVal<T1, T2>)"
+0.8,151134,128,1180.7,1184.0,1088,1216,36.3,"copy_info_kernel(int, int *)"
+0.8,146304,64,2286.0,2304.0,2208,2368,41.1,"void dgmm_readWrite_alignment_kernel<int, double2, (bool)0, (int)5, (int)4, (int)4>(cublasDgmmParams<T1, T2>, const T2 *, const T2 *, T2 *)"
+0.5,89146,48,1857.2,1856.0,1760,2048,63.3,"void gemmk1_kernel<int, double2, (int)256, (int)5, (bool)0, (bool)0, (bool)0, (bool)0, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<double2>, double2, (int)0>(cublasGemmk1Params<T2, T9, T10, T11, T12, biasType<T11::value_type, T12>::type>)"
+0.4,74400,16,4650.0,4672.0,4576,4672,40.0,"void gemv2T_kernel_val<long, long, double2, double2, double2, double2, (int)128, (int)16, (int)4, (int)4, (bool)0, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<const double2>, cublasGemvTensorStridedBatched<double2>, double2>>(T13, T6, T6)"
+0.4,69759,59,1182.4,1184.0,1120,1216,27.5,dtrsv_init(int *)
+0.4,69568,59,1179.1,1184.0,1120,1216,26.5,"dtrsv_init_up(int *, int)"

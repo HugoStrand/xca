@@ -1,0 +1,53 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Starting run with 2 MPI rank(s) at : 2026-10-15 00:23:10.875260
+Capture range started in the application.
+Capture range started in the application.
+Capture range ended in the application.
+Capture range ended in the application.
+Generating '/tmp/nsys-hugstr/nsys-report-9737.qdstrm'
+Generating '/tmp/nsys-hugstr/nsys-report-2c2e.qdstrm'
+
+[1/1] [0%                          ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [0%                          ] xca-bs-mpi-profile-554556.nsys-repProcessing events...
+
+[1/1] [0%                          ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [1%                          ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [2%                          ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [5%                          ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [6%                          ] xca-bs-mpi-profile-554553.nsys-repProcessing events...
+
+[1/1] [0%                          ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [1%                          ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [2%                          ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [5%                          ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [==19%                       ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [==20%                       ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [6%                          ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [=====================88%    ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [======================90%   ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [=======================96%  ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [========================98% ] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [=15%                        ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [==19%                       ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [========================100%] xca-bs-mpi-profile-554553.nsys-rep
+[1/1] [========================100%] xca-bs-mpi-profile-554553.nsys-rep
+
+[1/1] [==20%                       ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [=====================89%    ] xca-bs-mpi-profile-554556.nsys-repGenerated:
+	/tmp/xca-bs-mpi-profile-554553.nsys-rep
+
+[1/1] [======================91%   ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [=======================96%  ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [========================98% ] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [========================100%] xca-bs-mpi-profile-554556.nsys-rep
+[1/1] [========================100%] xca-bs-mpi-profile-554556.nsys-rep
+Generated:
+	/tmp/xca-bs-mpi-profile-554556.nsys-rep
+MPI ownership passed: 2 ranks, 6 indexed jobs, 1 samples

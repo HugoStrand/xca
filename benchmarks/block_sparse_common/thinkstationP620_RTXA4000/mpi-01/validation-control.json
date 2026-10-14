@@ -1,0 +1,5 @@
+{
+  "duplicate_job_rejected": true,
+  "output_not_written": true,
+  "stderr": "Traceback (most recent call last):\n  File \"/home/hugstr/dev/xca/benchmarks/block_sparse_common/summarize_mpi.py\", line 63, in <module>\n    rows = summarize(args.folder)\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/hugstr/dev/xca/benchmarks/block_sparse_common/summarize_mpi.py\", line 29, in summarize\n    raise ValueError('Missing or multiply-owned indexed job')\nValueError: Missing or multiply-owned indexed job\n"
+}

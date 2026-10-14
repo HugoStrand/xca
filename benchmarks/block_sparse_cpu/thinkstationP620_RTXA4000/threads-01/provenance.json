@@ -1,0 +1,21 @@
+{
+  "source_commit": "2713bb0",
+  "runtime_commit": "85ecb2d",
+  "nominal_threads": [
+    1,
+    4
+  ],
+  "fresh_processes_per_thread_count": 3,
+  "samples_per_process": 3,
+  "medians_ms": {
+    "1": 3798.875615,
+    "4": 2834.872644
+  },
+  "speedup_4_threads": 1.3400515973937346,
+  "files": {
+    "benchmarks/block_sparse_common/call_runner.hpp": "701a81f50bd9f235dc236782bac57a407a5324ad59cff6228f10574def439f3f",
+    "benchmarks/block_sparse_common/fixture.hpp": "db9c9f8884edca96607064f33e10f94e2ab83d5c3e2af8aaab42e56fb72864a9",
+    "benchmarks/block_sparse_cpu/block_sparse_cpu_benchmark.cpp": "6b6137869850404c2cb36bde7e225190565ec768b94b4cb93f50f3c438c12408",
+    "/usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so": "bfc7492adbf84a8f567720a9e1fae2afc18f3d817da233e7f4d453683485308e"
+  }
+}

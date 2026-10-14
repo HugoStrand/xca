@@ -1,0 +1,36 @@
+{
+  "command": [
+    "mpirun",
+    "--oversubscribe",
+    "-n",
+    "2",
+    "/usr/bin/python3",
+    "-c",
+    "import time; time.sleep(30)",
+    "/usr/bin/python3",
+    "/home/hugstr/dev/xca/benchmarks/block_sparse_common/mpi_ownership.py",
+    "--ranks",
+    "2",
+    "--backend",
+    "cpu",
+    "--count",
+    "1",
+    "--output",
+    "/tmp/xca-unused-timeout"
+  ],
+  "environment_file": "/home/hugstr/dev/xca/cbuild/benchmarks/block_sparse_common/mpi_environment.json",
+  "settings": {
+    "python": "/usr/bin/python3",
+    "python_paths": [
+      "/home/hugstr/dev/xca/cbuild/python",
+      "/home/hugstr/dev/xca/cbuild/deps/adapol_src/src",
+      "/home/hugstr/dev/xca/cbuild/deps/pyed_src"
+    ]
+  },
+  "PYTHONPATH": "/home/hugstr/dev/xca/cbuild/python:/home/hugstr/dev/xca/cbuild/deps/adapol_src/src:/home/hugstr/dev/xca/cbuild/deps/pyed_src:/home/hugstr/apps/xca/lib/python3.12/site-packages:/home/hugstr/apps/triqs/lib/python3.12/site-packages:/home/hugstr/dev/adapol/src/:/home/hugstr/dev/pyed/:/home/hugstr/apps/duperty/lib/python3.12/site-packages:/home/hugstr/apps/clair/lib/python3.12/dist-packages",
+  "timeout_s": 1,
+  "returncode": 124,
+  "launcher_pid": 554756,
+  "started_utc": "2026-10-14T22:24:51.158452+00:00",
+  "finished_utc": "2026-10-14T22:24:53.224725+00:00"
+}

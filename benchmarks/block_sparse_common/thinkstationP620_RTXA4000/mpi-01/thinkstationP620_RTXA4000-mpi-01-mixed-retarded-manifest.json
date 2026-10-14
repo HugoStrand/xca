@@ -1,0 +1,75 @@
+{
+  "arguments": {
+    "ranks": 2,
+    "backend": "cuda",
+    "operator_backend": "library",
+    "special_backend": "reference",
+    "partition": "mixed",
+    "modes": 3,
+    "profile": false,
+    "dynamic": true,
+    "first": 0,
+    "count": 1,
+    "samples": 2,
+    "output": "/tmp/xca-mpi-cuda-library"
+  },
+  "topologies": [
+    [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  ],
+  "topology_counts": [
+    800,
+    800
+  ],
+  "indexed_jobs": 2,
+  "output_complex_elements": 276,
+  "canonical_ownership_exact": true,
+  "rank_metadata": [
+    {
+      "rank": 0,
+      "host": "ThinkStation",
+      "pid": 554468,
+      "setup_s": 0.22617155802436173,
+      "cpu_control_s": 0.009719801018945873,
+      "module": "/home/hugstr/dev/xca/cbuild-cuda/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 1,
+      "host": "ThinkStation",
+      "pid": 554469,
+      "setup_s": 0.22617356199771166,
+      "cpu_control_s": 0.009726513992063701,
+      "module": "/home/hugstr/dev/xca/cbuild-cuda/python/triqs_xca/__init__.py"
+    }
+  ],
+  "sources": {
+    "mpi_ownership.py": "1ff4e443f502202a5b5663032beb312241720f81fd550f0801193563c70c4bed",
+    "mpi_fixture.py": "9f5759d9f7739a662051db4f9ada8290a42f749de0b42654ee7ca4fb32afe85b"
+  }
+}

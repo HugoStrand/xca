@@ -1,0 +1,207 @@
+{
+  "arguments": {
+    "ranks": 4,
+    "backend": "cpu",
+    "operator_backend": "library",
+    "special_backend": "reference",
+    "partition": "mixed",
+    "modes": 3,
+    "profile": false,
+    "dynamic": true,
+    "first": 0,
+    "count": 1,
+    "samples": 2,
+    "output": "/tmp/xca-mpi-cpu-tail-final"
+  },
+  "topologies": [
+    [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        3,
+        5
+      ]
+    ]
+  ],
+  "topology_counts": [
+    800,
+    800
+  ],
+  "indexed_jobs": 2,
+  "output_complex_elements": 276,
+  "canonical_ownership_exact": true,
+  "rank_metadata": [
+    {
+      "rank": 0,
+      "host": "ThinkStation",
+      "pid": 554739,
+      "extensions": {
+        "_triqs_xca.so": "7e63e6a64a95f50c49b7b0b216b8548346c486703079206bd554d77785a2b92c"
+      },
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "setup_s": 0.010821326985023916,
+      "cpu_control_s": 0.010034310980699956,
+      "module": "/home/hugstr/dev/xca/cbuild/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 1,
+      "host": "ThinkStation",
+      "pid": 554740,
+      "extensions": {
+        "_triqs_xca.so": "7e63e6a64a95f50c49b7b0b216b8548346c486703079206bd554d77785a2b92c"
+      },
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "setup_s": 0.010822219075635076,
+      "cpu_control_s": 0.010032247053459287,
+      "module": "/home/hugstr/dev/xca/cbuild/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 2,
+      "host": "ThinkStation",
+      "pid": 554741,
+      "extensions": {
+        "_triqs_xca.so": "7e63e6a64a95f50c49b7b0b216b8548346c486703079206bd554d77785a2b92c"
+      },
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "setup_s": 0.010821908013895154,
+      "cpu_control_s": 0.010036605061031878,
+      "module": "/home/hugstr/dev/xca/cbuild/python/triqs_xca/__init__.py"
+    },
+    {
+      "rank": 3,
+      "host": "ThinkStation",
+      "pid": 554742,
+      "extensions": {
+        "_triqs_xca.so": "7e63e6a64a95f50c49b7b0b216b8548346c486703079206bd554d77785a2b92c"
+      },
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "setup_s": 0.010822470067068934,
+      "cpu_control_s": 0.010040873079560697,
+      "module": "/home/hugstr/dev/xca/cbuild/python/triqs_xca/__init__.py"
+    }
+  ],
+  "sources": {
+    "mpi_ownership.py": "eb621c44aa3de3717aeb9b3bd5c8d80f33c231c69dccfb01389fe0f9a07f6121",
+    "mpi_fixture.py": "9f5759d9f7739a662051db4f9ada8290a42f749de0b42654ee7ca4fb32afe85b"
+  }
+}
