@@ -1,5 +1,37 @@
 # Block-sparse CUDA work log
 
+## 2026-10-14 — Adjacent high-order cutoff replay experiment
+
+Previous turn was progress: active order-six/ownership oracle controls passed. Added
+a stricter reference-defined threshold search to adjacent representable amplitudes,
+then probed 17 neighbors around each endpoint. Original constants candidate failed:
+around amplitude .10775810972137165 it discarded a ~1e-16 contribution retained by
+general CUDA. This is a contributing-path semantic mismatch, not ordinary output
+roundoff that can be accepted by a larger tolerance. Retained the failure evidence.
+
+Added separate scalar_cutoff folder/CMake evaluator, preserving earlier candidate
+and production. Experimental band abs(magnitude-1e-16)<=1e-26 triggers general CUDA
+lane recomputation using owned copies of input views and the general vertex/edge/
+special/prefactor sequence. Replaces lane data before normal cutoff and ordered
+fan-in; no CPU evaluation, atomics or reordered accumulation. Extra owned input
+function and returned scalar lane enter admission. Enabled adjacent test only for
+this variant; earlier baseline remains available with known boundary limitation.
+
+Adjacent replay control passed 1.574 s. Final constants/replay CTests passed 8.81/
+9.97 s, total18.79 s (15/16 active cases). Focused replay cutoff/admission memcheck
+passed two tests in12.971 s with zero errors/leaks. After all handles terminated,
+five-sample ordinary N=6 scalar range timings passed CPU screen/exact replay,
+matching 640 accepted paths and error6.381e-17. Median constants/replay7.484/7.327 ms:
+no evident regression in this single screen, no speedup or borderline-cohort cost
+claim. Evidence/hashes retained in scalar_cutoff/thinkstationP620_RTXA4000/replay-01.
+Code fac46e1 and evidence4931846 precede this separate plan/log checkpoint.
+
+Goal active. Fixed band is a diagnostic policy, not a proof for arbitrary rank,
+conditioning, cancellation, shapes or orders. Next stress numerical coverage and
+replay-heavy capacity/cost before promotion; broader scalar sets and Python/MPI/
+target/capacity gates remain. No new Arrhenius jobs; cumulative target allocation
+301 s (.08361 GPU-hours nominal). No install/push or unrelated-work changes.
+
 ## 2026-10-14 — Active high-order scalar arithmetic and ownership
 
 Previous turn was progress: GH200 scalar candidate qualified 14 semantic controls

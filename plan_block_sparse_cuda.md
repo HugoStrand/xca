@@ -80,6 +80,18 @@ cached double constants, so it isolates arithmetic rather than DLR approximation
 ULP-adjacent high-order cutoff behavior, broader poles/topologies/scalar sets and
 target rerun of the new control remain gates before promotion.
 
+Adjacent-cutoff finding: the active order-six fixture has representable amplitudes
+around 0.10775810972137 where batched constants discard a lane retained by general
+CUDA. Preserve that baseline as a known semantic-failing candidate. A separate
+`experiments/block_sparse_cuda/scalar_cutoff` variant replays completed lanes within
+an experimental 1e-26 band around the 1e-16 cutoff through general CUDA arithmetic,
+then applies the existing ordered fan-in. The adjacent probe and full local suite
+pass; replay-owned input copy/lane are charged to admission and focused memcheck
+reports zero errors/leaks. A five-sample ordinary-range screen shows no evident
+regression. The band is not a proven bound for arbitrary conditioning/order or
+cancellation. Broader stress, replay cost/capacity and GH200 qualification remain
+required; production is unchanged.
+
 ## 1. Questions to resolve
 
 The likely useful decomposition is sparse operator application, dense propagator
