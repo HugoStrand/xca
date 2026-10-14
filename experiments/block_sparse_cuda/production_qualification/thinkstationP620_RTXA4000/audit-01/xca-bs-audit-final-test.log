@@ -1,0 +1,13 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 37: block_sparse/cuda_async_failure
+1/2 Test #37: block_sparse/cuda_async_failure ...   Passed    0.98 sec
+    Start 54: block_sparse/sparse_operator
+2/2 Test #54: block_sparse/sparse_operator ......   Passed    0.56 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Label Time Summary:
+cuda_fault_injection    =   0.98 sec*proc (1 test)
+
+Total Test time (real) =   1.54 sec

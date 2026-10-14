@@ -1,0 +1,15 @@
+========= COMPUTE-SANITIZER
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *PermutedSectorStateOrder
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.PermutedSectorStateOrder
+[       OK ] BlockSparseCudaEvaluator.PermutedSectorStateOrder (6005 ms)
+[----------] 1 test from BlockSparseCudaEvaluator (6005 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (6005 ms total)
+[  PASSED  ] 1 test.
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 0 errors

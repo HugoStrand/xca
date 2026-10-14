@@ -1,0 +1,89 @@
+Start testing: Oct 14 23:30 CEST
+----------------------------------------------------------
+39/123 Testing: block_sparse/cuda_diagram_evaluator
+39/123 Test: block_sparse/cuda_diagram_evaluator
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_diagram_evaluator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_diagram_evaluator" start time: Oct 14 23:30 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *PermutedSectorStateOrder
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.PermutedSectorStateOrder
+[       OK ] BlockSparseCudaEvaluator.PermutedSectorStateOrder (848 ms)
+[----------] 1 test from BlockSparseCudaEvaluator (848 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (848 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.14 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_diagram_evaluator" end time: Oct 14 23:30 CEST
+"block_sparse/cuda_diagram_evaluator" time elapsed: 00:00:01
+----------------------------------------------------------
+
+47/123 Testing: block_sparse/cuda_storage_policy
+47/123 Test: block_sparse/cuda_storage_policy
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_storage_policy"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_storage_policy" start time: Oct 14 23:30 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *PermutedSectorStateOrder
+[==========] Running 2 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from HostInputsStorageEvaluator
+[ RUN      ] HostInputsStorageEvaluator.PermutedSectorStateOrder
+[       OK ] HostInputsStorageEvaluator.PermutedSectorStateOrder (784 ms)
+[----------] 1 test from HostInputsStorageEvaluator (784 ms total)
+
+[----------] 1 test from StreamFragmentsStorageEvaluator
+[ RUN      ] StreamFragmentsStorageEvaluator.PermutedSectorStateOrder
+[       OK ] StreamFragmentsStorageEvaluator.PermutedSectorStateOrder (577 ms)
+[----------] 1 test from StreamFragmentsStorageEvaluator (577 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 2 test suites ran. (1361 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   1.62 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_storage_policy" end time: Oct 14 23:30 CEST
+"block_sparse/cuda_storage_policy" time elapsed: 00:00:01
+----------------------------------------------------------
+
+91/123 Testing: block_sparse/ordered_evaluator
+91/123 Test: block_sparse/ordered_evaluator
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse_native_evaluator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++
+"block_sparse/ordered_evaluator" start time: Oct 14 23:30 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *PermutedSectorStateOrder
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.PermutedSectorStateOrder
+[       OK ] BlockSparseCudaEvaluator.PermutedSectorStateOrder (442 ms)
+[----------] 1 test from BlockSparseCudaEvaluator (442 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (442 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.70 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/ordered_evaluator" end time: Oct 14 23:30 CEST
+"block_sparse/ordered_evaluator" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 23:30 CEST

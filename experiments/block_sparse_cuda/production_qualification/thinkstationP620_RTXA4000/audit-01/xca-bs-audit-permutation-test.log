@@ -1,0 +1,12 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild-cuda
+Test project /home/hugstr/dev/xca/cbuild-cuda
+    Start 39: block_sparse/cuda_diagram_evaluator
+1/3 Test #39: block_sparse/cuda_diagram_evaluator ...   Passed    1.14 sec
+    Start 47: block_sparse/cuda_storage_policy
+2/3 Test #47: block_sparse/cuda_storage_policy ......   Passed    1.62 sec
+    Start 91: block_sparse/ordered_evaluator
+3/3 Test #91: block_sparse/ordered_evaluator ........   Passed    0.70 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   3.47 sec

@@ -1,0 +1,10 @@
+Internal ctest changing into directory: /home/hugstr/dev/xca/cbuild
+Test project /home/hugstr/dev/xca/cbuild
+    Start  9: block_sparse/cuda_async_failure
+1/2 Test  #9: block_sparse/cuda_async_failure ...   Passed    0.01 sec
+    Start 26: block_sparse/sparse_operator
+2/2 Test #26: block_sparse/sparse_operator ......   Passed    0.45 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.47 sec

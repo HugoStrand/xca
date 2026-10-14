@@ -1,0 +1,103 @@
+{
+  "source_commit": "2f3191c",
+  "runtime_code_unchanged": "85ecb2d",
+  "new_test_sources": {
+    "test/c++/CMakeLists.txt": "1517dc637be7880c643836c8db92e9e96ce00bb99a88d0bc8a80b89dd1d0367e",
+    "test/c++/block_sparse/cuda_async_failure.cpp": "0999b9881df400871ffafc1108f595d3dea5243dc799e9886897d8d5a466535f",
+    "test/c++/block_sparse/sparse_operator.cpp": "d93404c31393dafc683517589bd777a19235e46f1a6e290217c1de8ddf11062a",
+    "test/c++/block_sparse/cuda_diagram_evaluator.cpp": "38dafb24596027de8b8777c97ed7ffbfe0f58ce6b667d890ea055d1995f6edeb"
+  },
+  "normalization": "LF, trailing whitespace/empty EOF lines removed",
+  "files": [
+    {
+      "file": "xca-bs-audit-cpu-build.log",
+      "original_sha256": "8fcf61b829f50eaed892a46a60e2257de498034bd906de7d2e26be7ecbdd386d",
+      "archive_sha256": "8fcf61b829f50eaed892a46a60e2257de498034bd906de7d2e26be7ecbdd386d"
+    },
+    {
+      "file": "xca-bs-audit-cpu-configure.log",
+      "original_sha256": "17619d66e70c1ff575044e5d3cb06a0510f403468acf372e6d63b958ea6ffa58",
+      "archive_sha256": "b3bc8592bf4ac52c47ef4ed856463b6378ee554ec9fd149debd919bf57de3a07"
+    },
+    {
+      "file": "xca-bs-audit-cpu-test.log",
+      "original_sha256": "9744c906c50eb5510414d539dd41404bd64661568427db5b9da80d5ba0eab3b0",
+      "archive_sha256": "9744c906c50eb5510414d539dd41404bd64661568427db5b9da80d5ba0eab3b0"
+    },
+    {
+      "file": "xca-bs-audit-fault-build.log",
+      "original_sha256": "97de91c995675aad3c066e4dfc72af245100d9ed66ebf004ff0f6b63f34bf87e",
+      "archive_sha256": "97de91c995675aad3c066e4dfc72af245100d9ed66ebf004ff0f6b63f34bf87e"
+    },
+    {
+      "file": "xca-bs-audit-fault-configure.log",
+      "original_sha256": "923e2009ebdd9b0fcbad019de0966981ebc7c0dd072f68166d223c00906d6dc4",
+      "archive_sha256": "198a5fa00527202f8835ac64c7ae262ce392c7f42940df9f7ab2000278a7ef4e"
+    },
+    {
+      "file": "xca-bs-audit-fault-test.log",
+      "original_sha256": "35d7c82d24fd94d62d7b367943bbd9e40e1f6156a3f870c00cacb3a2012b1472",
+      "archive_sha256": "35d7c82d24fd94d62d7b367943bbd9e40e1f6156a3f870c00cacb3a2012b1472"
+    },
+    {
+      "file": "xca-bs-audit-final-LastTest.log",
+      "original_sha256": "bc84f6d3a52e71348b78936c6a3f3fe084b021626f642d40d92ec8ca1a40fe06",
+      "archive_sha256": "30764009fcf2193510119246d9f4349619545708bf9b8d2adfdd8f5cf5e091bc"
+    },
+    {
+      "file": "xca-bs-audit-final-test.log",
+      "original_sha256": "35a054480c2c031388e77ae47255c2ba141bb7d0f2c5bc0d1f9b728673835ef1",
+      "archive_sha256": "35a054480c2c031388e77ae47255c2ba141bb7d0f2c5bc0d1f9b728673835ef1"
+    },
+    {
+      "file": "xca-bs-audit-label-build.log",
+      "original_sha256": "7e4a896a41f03283aee38dce468ef315cef1caec713b661ea244231e98e39fb0",
+      "archive_sha256": "7e4a896a41f03283aee38dce468ef315cef1caec713b661ea244231e98e39fb0"
+    },
+    {
+      "file": "xca-bs-audit-label-test.log",
+      "original_sha256": "cbadabadc8d6d6b167437da1342d727a28d5e1ee0d63db360cd4c3bbd76e4257",
+      "archive_sha256": "cbadabadc8d6d6b167437da1342d727a28d5e1ee0d63db360cd4c3bbd76e4257"
+    },
+    {
+      "file": "xca-bs-audit-library-LastTest.log",
+      "original_sha256": "dd9c56974ee2b5c5a6694a871bb64e5e9e0770da7ffb887cd6e88404b5ecb2d0",
+      "archive_sha256": "fb7a19513153d1cec211f85c869bb8fc6448454ffd7486872fb8a6d476eaab67"
+    },
+    {
+      "file": "xca-bs-audit-library-build.log",
+      "original_sha256": "ce8174da585dd4b63e6de3986e363338c48afea715a2b56c894f3af4d77d1fac",
+      "archive_sha256": "ce8174da585dd4b63e6de3986e363338c48afea715a2b56c894f3af4d77d1fac"
+    },
+    {
+      "file": "xca-bs-audit-library-configure.log",
+      "original_sha256": "16cd303bc65bee82894173c6938bf0b765a15e24fa79501c04a55390796d3aeb",
+      "archive_sha256": "bdabc7103137bbdf96016cbe9f0dd76e93a799c7adc7b85fe547038ddf6faada"
+    },
+    {
+      "file": "xca-bs-audit-library-test.log",
+      "original_sha256": "6f22d6100e267d18f601d168bc9afb0b5d4935fc572292e6d01c48d3c3d00195",
+      "archive_sha256": "6f22d6100e267d18f601d168bc9afb0b5d4935fc572292e6d01c48d3c3d00195"
+    },
+    {
+      "file": "xca-bs-audit-permutation-LastTest.log",
+      "original_sha256": "87ce8e35e75a4777773d67a608a0c9d83d96cdd67357d6652b84573ad14da1aa",
+      "archive_sha256": "87ce8e35e75a4777773d67a608a0c9d83d96cdd67357d6652b84573ad14da1aa"
+    },
+    {
+      "file": "xca-bs-audit-permutation-build.log",
+      "original_sha256": "2ad44b12ed6fe865ce08f07b351cbf86f96e9dd82c98044db7e7efad14fb6a51",
+      "archive_sha256": "00af43f07e19e76fe3c1893b95662a9a3cc64c5b2300d5099c59219a3cff4a3e"
+    },
+    {
+      "file": "xca-bs-audit-permutation-memcheck.log",
+      "original_sha256": "091c65eb0a7c8c3f30d868f80a35f07d4aee36013762157f02722c209962fe40",
+      "archive_sha256": "091c65eb0a7c8c3f30d868f80a35f07d4aee36013762157f02722c209962fe40"
+    },
+    {
+      "file": "xca-bs-audit-permutation-test.log",
+      "original_sha256": "f340c32c436fe199a2fa8d499b2ac1d89facd6b9acddb170c8d3d0e7eda91e86",
+      "archive_sha256": "f340c32c436fe199a2fa8d499b2ac1d89facd6b9acddb170c8d3d0e7eda91e86"
+    }
+  ]
+}

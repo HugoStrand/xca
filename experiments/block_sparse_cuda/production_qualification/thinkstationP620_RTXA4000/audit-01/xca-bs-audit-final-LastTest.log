@@ -1,0 +1,67 @@
+Start testing: Oct 14 23:34 CEST
+----------------------------------------------------------
+37/123 Testing: block_sparse/cuda_async_failure
+37/123 Test: block_sparse/cuda_async_failure
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/cuda_async_failure"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/cuda_async_failure" start time: Oct 14 23:34 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaFailure
+[ RUN      ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback
+[       OK ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback (731 ms)
+[----------] 1 test from BlockSparseCudaFailure (731 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (731 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.98 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_async_failure" end time: Oct 14 23:34 CEST
+"block_sparse/cuda_async_failure" time elapsed: 00:00:00
+----------------------------------------------------------
+
+54/123 Testing: block_sparse/sparse_operator
+54/123 Test: block_sparse/sparse_operator
+Command: "/home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse/sparse_operator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda/test/c++/block_sparse
+"block_sparse/sparse_operator" start time: Oct 14 23:34 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda/deps/GTest_src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SparseOperator
+[ RUN      ] SparseOperator.ComplexMixedBlocksAndAdjoints
+[       OK ] SparseOperator.ComplexMixedBlocksAndAdjoints (0 ms)
+[ RUN      ] SparseOperator.NumberSectorsSignedMapsAndNonCanonicalLabels
+[       OK ] SparseOperator.NumberSectorsSignedMapsAndNonCanonicalLabels (8 ms)
+[ RUN      ] SparseOperator.RealScalarBlocksAndTinyCoefficients
+[       OK ] SparseOperator.RealScalarBlocksAndTinyCoefficients (0 ms)
+[ RUN      ] SparseOperator.CancellationPreservesConnectionsAndFinalProjection
+[       OK ] SparseOperator.CancellationPreservesConnectionsAndFinalProjection (0 ms)
+[ RUN      ] SparseOperator.UnsupportedMappingsAndInvalidMetadata
+[       OK ] SparseOperator.UnsupportedMappingsAndInvalidMetadata (0 ms)
+[ RUN      ] SparseOperator.ExactFockCpuDiagramControlWithDynamicChannels
+[       OK ] SparseOperator.ExactFockCpuDiagramControlWithDynamicChannels (424 ms)
+[----------] 6 tests from SparseOperator (434 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (434 ms total)
+[  PASSED  ] 6 tests.
+<end of output>
+Test time =   0.56 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/sparse_operator" end time: Oct 14 23:34 CEST
+"block_sparse/sparse_operator" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 23:34 CEST
+
+cuda_fault_injection =   0.98 sec*proc

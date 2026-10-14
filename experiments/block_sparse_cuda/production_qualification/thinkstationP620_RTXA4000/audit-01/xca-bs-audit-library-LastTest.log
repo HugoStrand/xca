@@ -1,0 +1,86 @@
+Start testing: Oct 14 23:33 CEST
+----------------------------------------------------------
+24/101 Testing: block_sparse/cuda_async_failure
+24/101 Test: block_sparse/cuda_async_failure
+Command: "/home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse/cuda_async_failure"
+Directory: /home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse
+"block_sparse/cuda_async_failure" start time: Oct 14 23:33 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda-library-api/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *SubmittedFaultPropagatesWithoutFallback:*PermutedSectorStateOrder:*NumberSectorsSignedMapsAndNonCanonicalLabels
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaFailure
+[ RUN      ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback
+[       OK ] BlockSparseCudaFailure.SubmittedFaultPropagatesWithoutFallback (815 ms)
+[----------] 1 test from BlockSparseCudaFailure (815 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (815 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.05 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_async_failure" end time: Oct 14 23:33 CEST
+"block_sparse/cuda_async_failure" time elapsed: 00:00:01
+----------------------------------------------------------
+
+26/101 Testing: block_sparse/cuda_diagram_evaluator
+26/101 Test: block_sparse/cuda_diagram_evaluator
+Command: "/home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse/cuda_diagram_evaluator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse
+"block_sparse/cuda_diagram_evaluator" start time: Oct 14 23:33 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda-library-api/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *SubmittedFaultPropagatesWithoutFallback:*PermutedSectorStateOrder:*NumberSectorsSignedMapsAndNonCanonicalLabels
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockSparseCudaEvaluator
+[ RUN      ] BlockSparseCudaEvaluator.PermutedSectorStateOrder
+[       OK ] BlockSparseCudaEvaluator.PermutedSectorStateOrder (791 ms)
+[----------] 1 test from BlockSparseCudaEvaluator (791 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (791 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   1.05 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/cuda_diagram_evaluator" end time: Oct 14 23:33 CEST
+"block_sparse/cuda_diagram_evaluator" time elapsed: 00:00:01
+----------------------------------------------------------
+
+41/101 Testing: block_sparse/sparse_operator
+41/101 Test: block_sparse/sparse_operator
+Command: "/home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse/sparse_operator"
+Directory: /home/hugstr/dev/xca/cbuild-cuda-library-api/test/c++/block_sparse
+"block_sparse/sparse_operator" start time: Oct 14 23:33 CEST
+Output:
+----------------------------------------------------------
+Running main() from /home/hugstr/dev/xca/cbuild-cuda-library-api/deps/GTest_src/googletest/src/gtest_main.cc
+Note: Google Test filter = *SubmittedFaultPropagatesWithoutFallback:*PermutedSectorStateOrder:*NumberSectorsSignedMapsAndNonCanonicalLabels
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SparseOperator
+[ RUN      ] SparseOperator.NumberSectorsSignedMapsAndNonCanonicalLabels
+[       OK ] SparseOperator.NumberSectorsSignedMapsAndNonCanonicalLabels (8 ms)
+[----------] 1 test from SparseOperator (8 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (8 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.13 sec
+----------------------------------------------------------
+Test Passed.
+"block_sparse/sparse_operator" end time: Oct 14 23:33 CEST
+"block_sparse/sparse_operator" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 14 23:33 CEST
+
+cuda_fault_injection =   1.05 sec*proc
