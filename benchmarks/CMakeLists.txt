@@ -19,3 +19,5 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/operator_ap
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/operator_apply)
 add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_edges
                  ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_edges)
+add_subdirectory(${PROJECT_SOURCE_DIR}/experiments/block_sparse_cuda/scalar_paths
+                 ${CMAKE_CURRENT_BINARY_DIR}/experiments/block_sparse_cuda/scalar_paths)
