@@ -61,3 +61,10 @@ control screens against the original CPU and checks repeated outputs; it does no
 implement the GPU's cutoff uncertainty-band replay. Compare ordinary full calls
 before attributing speedups to GPU hardware. The density recorder now includes this
 fourth route; older three-route campaign evidence is retained.
+
+`profile_density_sets` captures only the second (warmed) complete self-energy call
+with cudaProfilerStart/Stop, using the same explicit fixture. Nsight flags:
+`--capture-range=cudaProfilerApi --capture-range-end=stop --trace=cuda --sample=none --cpuctxsw=none`.
+Setup and CPU screening are outside the range. Wrapper times include profiler export
+and must not enter unprofiled timing comparisons. Preserve API/kernel/memory summaries
+and binary/report hashes in hardware folders; large binary reports remain external.

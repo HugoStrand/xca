@@ -7,6 +7,27 @@
 #include <triqs_xca/block_sparse/cuda/diagram_evaluator.hpp>
 #else
 #include "scalar_evaluator.hpp"
+#ifdef XCA_DENSITY_SETS_PROFILE
+#include <cuda_profiler_api.h>
+class ProfileDensitySets : public triqs_xca::block_sparse::cuda::ScalarPathEvaluator {
+  long calls = 0;
+  public:
+  using ScalarPathEvaluator::ScalarPathEvaluator;
+  auto compute_self_energy_range(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+                                 nda::array_const_view<int, 2> topology, long first, long last) {
+    bool capture = ++calls == 2;
+    if (capture && cudaProfilerStart() != cudaSuccess) throw std::runtime_error("Cannot start scoped profiler");
+    try {
+      auto result = ScalarPathEvaluator::compute_self_energy_range(G, topology, first, last);
+      if (capture && cudaProfilerStop() != cudaSuccess) throw std::runtime_error("Cannot stop scoped profiler");
+      return result;
+    } catch (...) {
+      if (capture) cudaProfilerStop();
+      throw;
+    }
+  }
+};
+#endif
 #endif
 
 int main(int argc, char **argv) {
@@ -37,8 +58,13 @@ int main(int argc, char **argv) {
   using Evaluator = gpu::DiagramEvaluator;
   constexpr auto backend = "cuda_general_density_sets";
 #else
+#ifdef XCA_DENSITY_SETS_PROFILE
+  using Evaluator = ProfileDensitySets;
+  constexpr auto backend = "profile_batched_density_sets";
+#else
   using Evaluator = gpu::ScalarPathEvaluator;
   constexpr auto backend = "cuda_batched_density_sets";
+#endif
 #endif
   return block_sparse_bench::run<Evaluator>(argc, argv, backend,
     [&](auto const &ad, auto coeff, auto mesh, auto poles, auto operators, auto dyn) {
