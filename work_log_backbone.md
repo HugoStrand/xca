@@ -16,7 +16,8 @@
 | 3c | `8ff3717` | Block-sparse arithmetic consumes const assignments; all 69 CTest entries passed |
 | 3d | `6de60bc` | Shared directed interactions and partial-contraction descriptions; all 70 CTest entries passed |
 | Materialization refresh | `5234d69` | Dense coefficient updates replace old bars; all 70 CTest entries passed |
-| 3e–7 | None | Model metadata, operand binding, and remaining planning, policy, and cleanup stages pending |
+| 4a | `984e4bc` | Self-energy operands bound before arithmetic; all 70 CTest entries passed |
+| Remaining 3–7 | None | Model metadata, kernel/observable preparation, policy, and interface cleanup pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -457,3 +458,59 @@ regression passed, followed by all 70 CPU CTest entries (56.94 s). Passing logs:
 Next remains explicit model metadata and prepared operands, followed by the
 block-specific planning, observable, numerical/support-policy, and selection
 cleanup stages. The persistent goal remains active.
+
+
+## Stage 4a — self-energy operand binding (`984e4bc`)
+
+The block-sparse path walker already supplied sector paths, but matrix routines
+still looked up symmetry sets, operator blocks, and endpoint coefficient indices.
+The new binder resolves these before execution. This advances the stage-4
+boundary using the shared interaction meanings from stage 3d; explicit model-family
+metadata and final shared recipe consolidation remain outstanding.
+
+Read [self_energy_contribution.hpp](c++/triqs_xca/block_sparse/self_energy_contribution.hpp)
+and its [binder](c++/triqs_xca/block_sparse/self_energy_contribution.cpp), then
+`eval_self_energy_paths` and `eval_self_energy_contribution` in
+[diagram_evaluator.cpp](c++/triqs_xca/block_sparse/diagram_evaluator.cpp).
+A contribution owns its path metadata and borrows views of each internal operator
+and propagator. Its special arc contains two endpoint lists, their statistics,
+and one coefficient slice per late endpoint. Backward orientation selects the
+opposite coefficient axis during binding. No coefficient values are copied and
+no Cartesian product of endpoint pairs is stored.
+
+The pipeline is now discover path → bind operands → execute → apply output policy.
+The executor reads resolved matrices and the already prepared scalar-kernel
+recipe; it performs no symmetry-set lookup, connectivity search, flat-index
+decoding, backbone mutation, or output-sector discovery. It returns a view into
+its scratch buffer. The caller immediately applies the unchanged `1e-16` cutoff
+and accumulates at the bound destination. Keeping this cutoff in the caller makes
+the later numerical-policy revision independent of matrix arithmetic.
+
+The contribution must be executed with its matching assignment and mesh, while
+the quartet, hybridization, and current propagator remain alive and unchanged.
+Rebinding is required after any owner replacement. The current consumer binds
+and executes inside one walker callback; it retains no numerical cache across
+calls. Metadata copies survive walker workspace reuse. Memory remains linear in
+diagram order and endpoint flavours for one contribution. Per-path allocation
+cost should be assessed during the final CPU timing checks before optimization.
+
+Left-vertex and edge arithmetic is shared with temporary correlator adapters,
+which still perform their own binding. Correlator path discovery and joins remain
+stage 5. Scalar-kernel handles continue to refer to the evaluator's current
+hybridization cache; model/mesh lifetime and shared model metadata consolidation
+remain required. No support regrouping, cutoff removal, or CUDA work occurred.
+
+The additional [prepared evaluator test](test/c++/block_sparse/prepared_evaluator.cpp)
+checks both special-line orientations on a density-interaction model, coefficient
+slice values, endpoint statistics, matrix dimensions, and propagator ownership.
+It binds an independently changed propagator and verifies scaled numerical views,
+then overwrites walker metadata and verifies that a retained contribution keeps
+its own copy. Existing analytic, partition, retarded-interaction, indexing,
+correlator, and complex-basis tests validate the resulting arithmetic.
+
+Validation: CPU configure/build, all 14 focused CTest entries, and all 70 CPU
+CTest entries passed (full suite 56.62 s). Generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-operands-{configure,build,focused,test}.log`.
+Next: finish shared model/kernel preparation and apply the planning/execution
+boundary to correlator fragments and joins. Numerical/support policy and final
+selection/adapter cleanup remain required; the persistent goal is active.
