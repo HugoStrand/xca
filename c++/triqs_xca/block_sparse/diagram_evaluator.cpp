@@ -210,29 +210,15 @@ template DiagramEvaluator::DiagramEvaluator(
 
 void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix, nda::vector_const_view<int> ind_path,
                                             nda::vector_const_view<int> block_dims) {
-  int vct0 = assignment.topology.special_vertex();   // vertex connnected to time zero
-  int o_ix = assignment.vertices[v_ix].orbital; // orbital_index
-  // split backbone orbital index into symmetry set index and orbital index within the symmetry set
-  // i.e. have mapping between backbone orbital index and symmetry set index
-  int q_ix    = static_cast<int>(Fq.sym_set_labels(o_ix)); // symmetry set index
-  int qo_ix   = static_cast<int>(Fq.sym_set_inds(o_ix));   // index within the symmetry set
-  int l_ix    = assignment.poles(assignment.vertices[v_ix].pole_slot);
-  int n_col_r = v_ix < vct0 ? block_dims(1) : block_dims(0); // number of columns in T: depends on whether v_ix is before or after vct0
-  int b_ix    = ind_path(v_ix - 1);                          // block index for the vertex v_ix
+  auto F = bind_vertex_operator(Fq, assignment, v_ix, ind_path(v_ix - 1));
+  multiply_left_vertex(T_buf, assignment, v_ix, F, block_dims);
+}
 
-  // Get the current operator matrix F using the flags and indices of the vertex with index v_ix
-
-  bool has_bar = assignment.vertices[v_ix].barred;
-  bool has_dag = assignment.vertices[v_ix].dagger;
-
-  auto F_selector = [&]() {
-    if (has_bar)
-      return has_dag ? Fq.F_dag_bars[q_ix].get_block(b_ix)(qo_ix, l_ix, _, _) : Fq.F_bars_refl[q_ix].get_block(b_ix)(qo_ix, l_ix, _, _);
-    else
-      return has_dag ? Fq.F_dags[q_ix].get_block(b_ix)(qo_ix, _, _) : Fq.Fs[q_ix].get_block(b_ix)(qo_ix, _, _);
-  };
-
-  nda::array_const_view<dcomplex, 2> F{F_selector()};
+void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix,
+                                            nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
+  int vct0 = assignment.topology.special_vertex();
+  int l_ix = assignment.poles(assignment.vertices[v_ix].pole_slot);
+  int n_col_r = v_ix < vct0 ? block_dims(1) : block_dims(0);
 
   // Get views on temporary storage for input and output
 
@@ -248,12 +234,16 @@ void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, 
 
 void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> ind_path,
                                            nda::vector_const_view<int> block_dims) {
-  int b_ix    = ind_path(e_ix); // block index for the edge e_ix
+  integrate_left_edge(T_buf, Gt.get_block(ind_path(e_ix)), assignment, e_ix, block_dims);
+}
+
+void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
+                                           DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> block_dims) {
   int vct0    = assignment.topology.special_vertex();
   int n_col_r = e_ix < vct0 ? block_dims(1) : block_dims(0);
 
   nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, block_dims(e_ix + 1)), range(0, block_dims(e_ix + 1)));
-  GKt_ep = Gt.get_block(b_ix);
+  GKt_ep = propagator;
 
   hyb.multiply_kernels_on_edge(GKt_ep, assignment, e_ix);
   
@@ -268,55 +258,38 @@ void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Di
 
 // ========== Private self-energy routines ==========
 
-void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, EndpointSum const &sum, int b_ix_0,
-                                                                  int p_kap, int p_mu, nda::vector_const_view<int> ind_path,
-                                                                  nda::vector_const_view<int> block_dims, EndpointSigns const &signs) {
-  int v_ix    = assignment.topology.special_vertex();
-  int b_ix_mu = ind_path(v_ix - 1); // block index for F_mu
-
+void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
+                                                                  nda::vector_const_view<int> block_dims, EndpointOperands const &endpoints) {
   nda::array_view<dcomplex, 3> T_v  = T_buf(_, range(0, block_dims(v_ix)), range(0, block_dims(1)));
   nda::array_view<dcomplex, 3> T_vp = T_buf(_, range(0, block_dims(v_ix + 1)), range(0, block_dims(0)));
-
   nda::array_view<dcomplex, 4> Tkaps_v = Tkaps(_, _, range(0, block_dims(v_ix)), range(0, block_dims(0)));
-  nda::array_view<dcomplex, 3> Tmu_v   = Tmu(_, range(0, block_dims(v_ix)), range(0, block_dims(0)));
+  nda::array_view<dcomplex, 3> Tmu_v = Tmu(_, range(0, block_dims(v_ix)), range(0, block_dims(0)));
 
-  auto F_selector = [&](bool adjoint, int b_ix_ix, int p_ix, int ix) {
-    return adjoint ? Fq.F_dags[p_ix].get_block(b_ix_ix)(ix, _, _) : Fq.Fs[p_ix].get_block(b_ix_ix)(ix, _, _);
-  };
-
-  // Apply F_kap operator at tau = 0 from the right
-  for (int kap = 0; kap < Fq.sym_set_sizes(p_kap); kap++) {
-    auto F_kap = F_selector(sum.line.early_operator(Fq.sym_set_to_orb(p_kap, kap)).adjoint, b_ix_0, p_kap, kap);
-    for (int t = 0; t < r; t++) Tkaps_v(kap, t, _, _) = matmul(T_v(t, _, _), F_kap);
+  for (int kap = 0; kap < endpoints.early.size(); ++kap) {
+    auto const &F_kap = endpoints.early[kap].matrix;
+    for (int t = 0; t < r; ++t) Tkaps_v(kap, t, _, _) = matmul(T_v(t, _, _), F_kap);
   }
-
-  T_vp         = 0; // With intermediate result now in Tkaps, reuse T for final result
-  int hyb_sign = sum.line.reflection_sign(); // block-sparse reflected values have no sign baked in
-
-  for (int mu = 0; mu < Fq.sym_set_sizes(p_mu); mu++) {
+  T_vp = 0;
+  for (int mu_index = 0; mu_index < endpoints.late.size(); ++mu_index) {
+    auto const &mu = endpoints.late[mu_index];
     Tmu_v = 0;
-    // Multiply with hybridization function
-    for (int kap = 0; kap < Fq.sym_set_sizes(p_kap); kap++) {
-      auto [row, column] = sum.line.coefficient_indices(Fq.sym_set_to_orb(p_mu, mu), Fq.sym_set_to_orb(p_kap, kap));
-      nda::array_const_view<dcomplex, 1> hyb_oo = sum.line.reflected() ?
-        hyb.values_reflect(_, row, column) : hyb.values(_, row, column);
-
-      int fermionic_parity = signs(interaction_statistics_[Fq.sym_set_to_orb(p_kap, kap)],
-                                    interaction_statistics_[Fq.sym_set_to_orb(p_mu, mu)]);
-
-      for (int t = 0; t < r; t++) Tmu_v(t, _, _) += fermionic_parity * hyb_sign * hyb_oo(t) * Tkaps_v(kap, t, _, _);
+    for (int kap = 0; kap < endpoints.early.size(); ++kap) {
+      auto const &early = endpoints.early[kap];
+      auto coefficient = endpoints.coefficients[mu_index](_, early.coefficient_index);
+      int sign = endpoints.signs(early.statistics, mu.statistics) * endpoints.reflection_sign;
+      for (int t = 0; t < r; ++t) Tmu_v(t, _, _) += sign * coefficient(t) * Tkaps_v(kap, t, _, _);
     }
-    // Apply F_mu operator from the left at vertex connected to tau = 0
-    auto F_mu = F_selector(sum.line.late_operator(Fq.sym_set_to_orb(p_mu, mu)).adjoint, b_ix_mu, p_mu, mu);
-    for (int t = 0; t < r; t++) T_vp(t, _, _) += matmul(F_mu, Tmu_v(t, _, _));
+    for (int t = 0; t < r; ++t) T_vp(t, _, _) += matmul(mu.matrix, Tmu_v(t, _, _));
   }
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path) {
   auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
-    eval_self_energy_fixed_indices(Gt, assignment, prepared.output_sector, prepared.kap_set, prepared.mu_set,
-                                   prepared.propagator_blocks, prepared.dimensions, signs);
+    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interaction_statistics_, signs);
+    auto result = eval_self_energy_contribution(assignment, contribution);
+    // Preserve the current numerical policy outside the arithmetic executor.
+    if (nda::max_element(nda::abs(result)) > 1e-16) Sigma.add_block(contribution.path.output_sector, result);
   });
 }
 
@@ -340,34 +313,29 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone) 
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
 
-void DiagramEvaluator::eval_self_energy_fixed_indices(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int b_ix, int p_kap, int p_mu, nda::vector_const_view<int> ind_path,
-                                                      nda::vector_const_view<int> block_dims, EndpointSigns const &signs) {
-
+nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contribution(
+  DiagramAssignment const &assignment, SelfEnergyContribution const &contribution) {
+  auto const &block_dims = contribution.path.dimensions;
   int m = assignment.topology.order(), vct0 = assignment.topology.special_vertex(); // vertex connnected to time zero
 
-  T(_, range(0, block_dims(1)), range(0, block_dims(1))) = Gt.get_block(ind_path(0));
+  T(_, range(0, block_dims(1)), range(0, block_dims(1))) = contribution.propagators[0];
   for (int v = 1; v < vct0; v++) {
-    multiply_left_vertex(T, assignment, v, ind_path, block_dims);
-    integrate_left_edge(T, Gt, assignment, v, ind_path, block_dims);
+    multiply_left_vertex(T, assignment, v, contribution.vertices[v], block_dims);
+    integrate_left_edge(T, contribution.propagators[v], assignment, v, block_dims);
   }
 
-  multiply_left_vertex_and_right_zero_vertex(T, assignment, EndpointSum{{assignment.directions(0) == 1}, n}, b_ix, p_kap, p_mu, ind_path, block_dims, signs);
+  multiply_left_vertex_and_right_zero_vertex(T, vct0, block_dims, contribution.endpoints);
 
   for (int v = vct0 + 1; v < 2 * m; v++) {
-    integrate_left_edge(T, Gt, assignment, v - 1, ind_path, block_dims);
-    multiply_left_vertex(T, assignment, v, ind_path, block_dims);
+    integrate_left_edge(T, contribution.propagators[v - 1], assignment, v - 1, block_dims);
+    multiply_left_vertex(T, assignment, v, contribution.vertices[v], block_dims);
   }
 
   multiply_prefactor(T, assignment);
 
-  int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-  if (assignment.directions(0) == 0) diag_order_sign *= -1;
-
   nda::array_view<dcomplex, 3> T_out = T(_, range(0, block_dims(2 * m)), range(0, block_dims(0)));
-  T_out *= diag_order_sign * assignment.prefactor_sign;
-
-  // TODO: temporary fix: have backward pass consider sparsity of hybridization function (hyb) during zero vertex
-  if (nda::max_element(nda::abs(T_out)) > 1e-16) Sigma.add_block(b_ix, T_out);
+  T_out *= contribution.sign;
+  return T_out;
 }
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(

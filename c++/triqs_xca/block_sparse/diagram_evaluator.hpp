@@ -8,7 +8,7 @@
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
-#include "triqs_xca/block_sparse/self_energy_path.hpp"
+#include "triqs_xca/block_sparse/self_energy_contribution.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -46,6 +46,11 @@ class DiagramEvaluator {
   void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix, nda::vector_const_view<int> ind_path,
                             nda::vector_const_view<int> block_dims);
 
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix,
+                            nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims);
+  void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
+                           DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> block_dims);
+
   // integrate edge (e_ix) from the left, in a backbone diagram (for block b_ix)
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> ind_path,
                            nda::vector_const_view<int> block_dims);
@@ -63,17 +68,16 @@ class DiagramEvaluator {
   // routines for self-energy diagrams
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
-  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, EndpointSum const &sum, int b_ix_0, int p_kap,
-                                                  int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
+  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
+                                                  nda::vector_const_view<int> block_dims, EndpointOperands const &endpoints);
 
   void eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path);
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix); // evaluate a particular backbone diagram
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone);           // evaluate a diagram of a given order and topology in block-sparse storage
 
-  // Evaluate a prepared assignment on one block path, including its prefactor.
-  void eval_self_energy_fixed_indices(
-     BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int b_ix, int p_kap, int p_mu,
-     nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
+  // Returns a view into T, valid until the next execution/reset. No output policy is applied.
+  nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
+    DiagramAssignment const &assignment, SelfEnergyContribution const &contribution);
 
 
   
