@@ -328,9 +328,8 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contributi
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) 
   {
-  auto Gt = native_propagator(G_ppsc);
-  return compute_self_energy(Gt, topology);
-  }
+  return compute_self_energy(G_ppsc, topology, 0, get_num_self_energy_backbones(topology));
+}
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology) 
@@ -364,10 +363,9 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   return compute_self_energy(Gt, topology, f_ix);
 }
 
-triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
-  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, 
-  nda::array_const_view<long, 1> f_ix_vec) 
-  {
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
+DiagramEvaluator::compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology,
+                                               AssignmentSelection const &selection) {
   auto Gt = native_propagator(G_ppsc);
 
   // Allocate Sigma and set to zero
@@ -376,9 +374,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 
   DiagramTopology diagram{topology};
 
-  for( auto f_ix : f_ix_vec ) {
-    eval_self_energy(Gt, diagram, f_ix);
-  }
+  selection.for_each([&](long f_ix) { eval_self_energy(Gt, diagram, f_ix); });
 
   // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
   auto sig = Sigma;
@@ -391,8 +387,19 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
     }
   }
   reset();
-  return {sig_blocks};  
-} 
+  return {sig_blocks};
+}
+
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                                    nda::array_const_view<int, 2> topology,
+                                                                                    nda::array_const_view<long, 1> f_ix_vec) {
+  return compute_self_energy_selected(G_ppsc, topology, AssignmentSelection{f_ix_vec});
+}
+
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                                    nda::array_const_view<int, 2> topology, long first, long last) {
+  return compute_self_energy_selected(G_ppsc, topology, AssignmentSelection{first, last, get_num_self_energy_backbones(topology)});
+}
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix) 
@@ -649,8 +656,7 @@ std::vector<BlockOp> DiagramEvaluator::setup_kap_ops_for_single_ptcle_gf() {
 
 nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
-  auto Gt = native_propagator(G_ppsc);
-  return compute_single_ptcle_gf(Gt, topology);
+  return compute_single_ptcle_gf(G_ppsc, topology, 0, get_num_single_ptcle_gf_backbones(topology));
 }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
@@ -679,18 +685,26 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
   return eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix);
 }
 
-nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
-  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec) 
-  {
+nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                           nda::array_const_view<int, 2> topology,
+                                                                           AssignmentSelection const &selection) {
   auto Gt = native_propagator(G_ppsc);
   DiagramTopology diagram{topology};
   auto mu_ops  = setup_mu_ops_for_single_ptcle_gf();
   auto kap_ops = setup_kap_ops_for_single_ptcle_gf();
   nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
-  for( auto f_ix : f_ix_vec ) {
-    correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix);
-  }
+  selection.for_each([&](long f_ix) { correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix); });
   return correlator;
+}
+
+nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                  nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec) {
+  return compute_single_ptcle_gf_selected(G_ppsc, topology, AssignmentSelection{f_ix_vec});
+}
+
+nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                  nda::array_const_view<int, 2> topology, long first, long last) {
+  return compute_single_ptcle_gf_selected(G_ppsc, topology, AssignmentSelection{first, last, get_num_single_ptcle_gf_backbones(topology)});
 }
 
 void DiagramEvaluator::print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology, long f_ix) {
@@ -734,13 +748,11 @@ std::vector<BlockOp> setup_ops_from_triqs_2nd_quant_ops(
   return bops;
 }
 
-template<bool isComplex>
-nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
-    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, 
-    std::vector<triqs::operators::many_body_operator_complex> const & ops_tau, 
-    std::vector<triqs::operators::many_body_operator_complex> const & ops_0, 
-    triqs::atom_diag::atom_diag<isComplex> const &ad,
-    nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec){
+template <bool isComplex>
+nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator_selected(
+   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+   std::vector<triqs::operators::many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<isComplex> const &ad,
+   nda::array_const_view<int, 2> topology, AssignmentSelection const &selection) {
 
   // the statistics is the fermion parity of the operators, not whether they commute, see operator_statistics.hpp
   bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
@@ -759,11 +771,29 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
 
   nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
 
-  for (auto f_ix : f_ix_vec) {
-    correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic);
-  }
+  selection.for_each([&](long f_ix) { correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic); });
 
   return correlator;
+}
+
+template <bool isComplex>
+nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                                      triqs::atom_diag::atom_diag<isComplex> const &ad,
+                                                                      nda::array_const_view<int, 2> topology,
+                                                                      nda::array_const_view<long, 1> f_ix_vec) {
+  return compute_one_time_correlator_selected(G_ppsc, ops_tau, ops_0, ad, topology, AssignmentSelection{f_ix_vec});
+}
+
+template <bool isComplex>
+nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                                      triqs::atom_diag::atom_diag<isComplex> const &ad,
+                                                                      nda::array_const_view<int, 2> topology, long first, long last) {
+  return compute_one_time_correlator_selected(G_ppsc, ops_tau, ops_0, ad, topology,
+                                              AssignmentSelection{first, last, get_num_single_ptcle_gf_backbones(topology)});
 }
 
 template
@@ -783,5 +813,14 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
     triqs::atom_diag::atom_diag<true> const &ad,
     nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
 
+template nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
+   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+   std::vector<triqs::operators::many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<false> const &ad,
+   nda::array_const_view<int, 2> topology, long first, long last);
+
+template nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
+   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+   std::vector<triqs::operators::many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
+   nda::array_const_view<int, 2> topology, long first, long last);
 
 } // namespace triqs_xca::block_sparse

@@ -25,6 +25,7 @@ set(all_tests
   triqs_soehyb/analytic_diagrams
   solver_copy
   api
+  range_selection
   api_one_fermion
   api_two_fermions
   bethe_self_cons

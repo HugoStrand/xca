@@ -6,6 +6,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/kernel_binding.hpp"
 #include "triqs_xca/diagram_assignment.hpp"
+#include "triqs_xca/diagram_selection.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
@@ -99,6 +100,19 @@ class DiagramEvaluator {
   nda::array<dcomplex, 3> Tmu;         // intermediate storage array
 
   private:
+  // Common selection adapters; numerical entry points consume prepared assignments.
+  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                             nda::array_const_view<int, 2> topology,
+                                                                             AssignmentSelection const &selection);
+  nda::array<dcomplex, 3> compute_single_ptcle_gf_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                           nda::array_const_view<int, 2> topology, AssignmentSelection const &selection);
+  template <bool isComplex>
+  nda::array<dcomplex, 3> compute_one_time_correlator_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                               std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                               std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                               triqs::atom_diag::atom_diag<isComplex> const &ad,
+                                                               nda::array_const_view<int, 2> topology, AssignmentSelection const &selection);
+
   InteractionModel interactions_ = hybridization_retarded_model(n_hyb, n_int);
 
   public:
@@ -117,7 +131,11 @@ class DiagramEvaluator {
 
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
+  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                    nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
+  /// Half-open flat-index range [first, last); empty ranges return zero.
+  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                                    nda::array_const_view<int, 2> topology, long first, long last);
 
   void print_self_energy_backbone(nda::array_const_view<int, 2> topology,
                                   long f_ix); // print the diagram corresponding to a given flat index for debugging
@@ -145,6 +163,9 @@ class DiagramEvaluator {
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
   nda::array<dcomplex, 3> compute_single_ptcle_gf(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
+  /// Half-open flat-index range [first, last); empty ranges return zero.
+  nda::array<dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology,
+                                                  long first, long last);
 
   void print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology,
                                       long f_ix); // print the diagram corresponding to a given flat index for debugging
@@ -157,6 +178,13 @@ class DiagramEvaluator {
     std::vector<triqs::operators::many_body_operator_complex> const &ops_0, 
     triqs::atom_diag::atom_diag<isComplex> const &ad,
     nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
+  /// Half-open flat-index range [first, last); empty ranges return zero.
+  template <bool isComplex>
+  nda::array<dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                      triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
+                                                      long first, long last);
 
   /**
    * @brief Constructor for DiagramEvaluator

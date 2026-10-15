@@ -13,6 +13,7 @@
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
+#include "test_utils/evaluators.hpp"
 
 using nda::dcomplex;
 
@@ -166,6 +167,10 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
             1.0e-13 * nda::max_element(nda::abs(S)));
   EXPECT_LE(nda::max_element(nda::abs(test_utils::get_tensor_in_full_hilbert_space(D_bs.compute_self_energy(G_bs, topology, f_sigma_vec), ad) - S)),
             1.0e-13 * nda::max_element(nda::abs(S)));
+  EXPECT_LE(nda::max_element(nda::abs(D_dense.compute_self_energy(G_flat, topology, f_sigma, f_sigma + 1)[0].data() - S)),
+            1.0e-13 * nda::max_element(nda::abs(S)));
+  EXPECT_LE(nda::max_element(nda::abs(test_utils::get_tensor_in_full_hilbert_space(D_bs.compute_self_energy(G_bs, topology, f_sigma, f_sigma + 1), ad) - S)),
+            1.0e-13 * nda::max_element(nda::abs(S)));
   long partner = (f_sigma / n_op) % 2 == 0 ? f_sigma + n_op : f_sigma - n_op;
   auto pair    = nda::make_regular(S + sigma_dense(partner));
   EXPECT_LE(nda::max_element(nda::abs(D_dense.compute_self_energy_by_pairs(G_flat, topology, f_sigma)[0].data() - pair)),
@@ -194,6 +199,84 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   check_g("dense correlator", D_dense.compute_one_time_correlator(G_flat, c_ops, c_dag_ops, ad_flat, topology, f_spgf_vec));
   check_g("block-sparse correlator", D_bs.compute_one_time_correlator(G_bs, c_ops, c_dag_ops, ad, topology, f_spgf_vec));
 
+  check_g("dense spgf range", D_dense.compute_single_ptcle_gf(G_flat, topology, f_spgf, f_spgf + 1));
+  check_g("block-sparse spgf range", D_bs.compute_single_ptcle_gf(G_bs, topology, f_spgf, f_spgf + 1));
+  check_g("dense correlator range", D_dense.compute_one_time_correlator(G_flat, c_ops, c_dag_ops, ad_flat, topology, f_spgf, f_spgf + 1));
+  check_g("block-sparse correlator range", D_bs.compute_one_time_correlator(G_bs, c_ops, c_dag_ops, ad, topology, f_spgf, f_spgf + 1));
+
   EXPECT_THROW(D_dense.compute_self_energy(G_flat, topology, n_sigma), std::invalid_argument);
   EXPECT_THROW(D_bs.compute_single_ptcle_gf(G_bs, topology, n_spgf), std::invalid_argument);
+}
+
+TEST(FlatIndexRange, bounds_stream_without_materializing_the_assignment_space) {
+  using triqs_xca::AssignmentSelection;
+  long count = std::numeric_limits<long>::max();
+  std::vector<long> seen;
+  AssignmentSelection{count - 2, count, count}.for_each([&](long i) { seen.push_back(i); });
+  EXPECT_EQ(seen, (std::vector<long>{count - 2, count - 1}));
+  AssignmentSelection{count, count, count}.for_each([&](long) { FAIL() << "nonempty terminal range"; });
+  AssignmentSelection{0, 0, 0}.for_each([&](long) { FAIL() << "nonempty zero-count range"; });
+  EXPECT_THROW((AssignmentSelection{-1, 0, count}), std::invalid_argument);
+  EXPECT_THROW((AssignmentSelection{2, 1, count}), std::invalid_argument);
+  EXPECT_THROW((AssignmentSelection{0, 2, 1}), std::invalid_argument);
+}
+
+TEST(FlatIndexRange, partitions_preserve_self_energy_pairs_and_observables) {
+  auto model = test_utils::build_eval_model("unequal_sets_nA0");
+  dense::DiagramEvaluator dense_eval(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+  block_sparse::DiagramEvaluator sparse_eval(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
+  auto dense_G = test_utils::subspace_blocks(model.G, model.ad_flat, model.mesh);
+  auto sparse_G = test_utils::subspace_blocks(model.G, model.ad, model.mesh);
+  auto ops = model.dynint_ops; // bosonic observable in a model with both fermionic and retarded interactions
+  auto all_indices = [](long count) {
+    nda::vector<long> indices(count);
+    for (long i = 0; i < count; ++i) indices(i) = i;
+    return indices;
+  };
+  auto check = [](long count, auto const &reference, auto &&evaluate) {
+    double scale = nda::max_element(nda::abs(reference));
+    ASSERT_GT(scale, 1.e-10);
+    auto sum = nda::zeros<dcomplex>(reference.shape());
+    // Splits need not align with a direction digit; include ranks with no assignments.
+    std::vector<long> bounds{0, 0, 1, count / 3, count - 1, count, count};
+    for (int part = 1; part < bounds.size(); ++part) {
+      auto result = evaluate(bounds[part - 1], bounds[part]);
+      if (bounds[part - 1] == bounds[part]) EXPECT_EQ(nda::max_element(nda::abs(result)), 0.0);
+      sum += result;
+    }
+    EXPECT_LT(nda::max_element(nda::abs(sum - reference)), 1.e-12 * scale);
+    EXPECT_THROW(evaluate(-1, 0), std::invalid_argument);
+    EXPECT_THROW(evaluate(2, 1), std::invalid_argument);
+    EXPECT_THROW(evaluate(0, count + 1), std::invalid_argument);
+    EXPECT_THROW(evaluate(count + 1, count + 1), std::invalid_argument);
+    // A rejected request must not contaminate a subsequent valid evaluation.
+    EXPECT_LT(nda::max_element(nda::abs(evaluate(0, count) - reference)), 1.e-12 * scale);
+  };
+  for (auto const &topology : std::vector<nda::array<int, 2>>{{{0, 2}, {1, 3}}, {{0, 2}, {1, 4}, {3, 5}}}) {
+    auto test_evaluator = [&](auto &evaluator, auto &G, auto const &ad) {
+      long n_sigma = evaluator.get_num_self_energy_backbones(topology);
+      long n_corr = evaluator.get_num_single_ptcle_gf_backbones(topology);
+      auto sigma = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology, all_indices(n_sigma)), ad);
+      check(n_sigma, sigma, [&](long first, long last) {
+        return test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology, first, last), ad);
+      });
+      auto spgf = evaluator.compute_single_ptcle_gf(G, topology, all_indices(n_corr));
+      check(n_corr, spgf, [&](long first, long last) { return evaluator.compute_single_ptcle_gf(G, topology, first, last); });
+      auto corr = evaluator.compute_one_time_correlator(G, ops, ops, ad, topology, all_indices(n_corr));
+      check(n_corr, corr, [&](long first, long last) { return evaluator.compute_one_time_correlator(G, ops, ops, ad, topology, first, last); });
+      return sigma;
+    };
+    auto sigma = test_evaluator(dense_eval, dense_G, model.ad_flat);
+    test_evaluator(sparse_eval, sparse_G, model.ad);
+    check(dense_eval.get_num_self_energy_backbones(topology), sigma, [&](long first, long last) {
+      return test_utils::get_tensor_in_full_hilbert_space(dense_eval.compute_self_energy_by_pairs(dense_G, topology, first, last), model.ad_flat);
+    });
+  }
+  // At first order rank 1 owns only a noncanonical seed and contributes zero.
+  nda::array<int, 2> first_order{{0, 1}};
+  auto empty_pair = dense_eval.compute_self_energy_by_pairs(dense_G, first_order, 1, 2);
+  EXPECT_EQ(nda::max_element(nda::abs(empty_pair[0].data())), 0.0);
+  auto pair = dense_eval.compute_self_energy_by_pairs(dense_G, first_order, 0, 1);
+  auto full = dense_eval.compute_self_energy(dense_G, first_order);
+  EXPECT_LT(nda::max_element(nda::abs(pair[0].data() - full[0].data())), 1.e-12);
 }

@@ -26,10 +26,10 @@ def is_root():
 
 
 def scatter_range_over_ranks(n):
-    """ This rank's chunk of range(n), split as np.array_split does, as int64 flat indices; the whole range is never built. """
+    """ Half-open bounds for this rank, with the same partition as np.array_split. """
     chunk, extra = divmod(n, mpi.size)
     start = mpi.rank * chunk + min(mpi.rank, extra)
-    return np.arange(start, start + chunk + (mpi.rank < extra), dtype=np.int64)
+    return start, start + chunk + (mpi.rank < extra)
 
 
 class Solver(object):
@@ -750,15 +750,12 @@ class Solver(object):
 
         order = len(topology)
         n_max = self.d.get_num_self_energy_backbones(topology)
-        # compute_self_energy_by_pairs(f_ix) evaluates both directions of the hybridization line
-        # connected to vertex 0, so pass only the f_ix whose own fb(0) == 0. That bit sits above the
-        # orbital and pole indices in the flat index, with stride n_max // 2**order.
-        n_p = n_max // (2**order)
-        n_vec = scatter_range_over_ranks(n_max)
-        n_vec = n_vec[(n_vec // n_p) % 2 == 0]
+        # The C++ range overload owns only direction-zero seeds within these bounds;
+        # each seed evaluates both directions, even if its partner is on another rank.
+        first, last = scatter_range_over_ranks(n_max)
 
         Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy_by_pairs(G, topology, n_vec)
+        Sigma = self.d.compute_self_energy_by_pairs(G, topology, first, last)
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -774,10 +771,10 @@ class Solver(object):
 
         order = len(topology)
         n_max = self.d.get_num_self_energy_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
+        first, last = scatter_range_over_ranks(n_max)
 
         Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy(G, topology, n_vec)
+        Sigma = self.d.compute_self_energy(G, topology, first, last)
         for bidx, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
@@ -833,10 +830,10 @@ class Solver(object):
     def __eval_single_particle_greens_function_topology_loop(self, G, topology):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
+        first, last = scatter_range_over_ranks(n_max)
 
         spgf = self.get_zero_single_particle_greens_function()
-        spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, n_vec)
+        spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, first, last)
         spgf.data[:] = mpi.all_reduce(spgf.data)
 
         return spgf
@@ -878,10 +875,10 @@ class Solver(object):
     def __inplace_eval_one_time_correlator_topology_loop(self, corr, G, topology, ops_tau, ops_0, prefactor):
 
         n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        n_vec = scatter_range_over_ranks(n_max)
+        first, last = scatter_range_over_ranks(n_max)
 
         corr_arr = prefactor * self.d.compute_one_time_correlator(
-            G, ops_tau, ops_0, self.atom_diag, topology, n_vec)
+            G, ops_tau, ops_0, self.atom_diag, topology, first, last)
         corr.data[:] += mpi.all_reduce(corr_arr)
 
 

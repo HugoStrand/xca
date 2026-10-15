@@ -9,6 +9,7 @@
 #include "triqs_xca/kernel_binding.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/diagram_assignment.hpp"
+#include "triqs_xca/diagram_selection.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
 #include "triqs_xca/atom_diag.hpp"
@@ -56,6 +57,20 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
     private:
+    // Common selection adapters; numerical entry points consume prepared assignments.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                               AssignmentSelection const &selection);
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                                        AssignmentSelection const &selection);
+    nda::array<dcomplex, 3> compute_single_ptcle_gf_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                             AssignmentSelection const &selection);
+    template <bool isComplex>
+    nda::array<dcomplex, 3> compute_one_time_correlator_selected(gf_vt G_ppsc,
+                                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                                 triqs::atom_diag::atom_diag<isComplex> const &ad,
+                                                                 nda::array_const_view<int, 2> topology, AssignmentSelection const &selection);
+
     InteractionModel interactions_ = hybridization_retarded_model(n_hyb, n_int);
     nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
 
@@ -107,16 +122,19 @@ namespace triqs_xca::dense {
     compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for given topology
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                       long f_ix); // compute self-energy for given topology and flat index
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
-    compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                        nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                      nda::array_const_view<long, 1> f_ix_vec);
+    /// Half-open flat-index range [first, last); empty ranges return zero.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
     compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for all pairs of diagrams
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                                long f_ix); // compute self-energy for a single pair
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
-    compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                 nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for a vector of pairs
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
+                                                                               nda::array_const_view<long, 1> f_ix_vec);
+    /// Half-open flat-index range [first, last); empty ranges return zero. Only direction-zero seeds own pairs; their partners may lie outside the range.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first,
+                                                                               long last);
     // get number of backbones for given topology
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
 
@@ -134,6 +152,8 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
     // compute single particle Green's function for given topology and flat index vector
     nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
+    /// Half-open flat-index range [first, last); empty ranges return zero.
+    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
     // get number of backbones for given topology
     long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology);
 
@@ -143,6 +163,12 @@ namespace triqs_xca::dense {
                                                         std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                         triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                         nda::array_const_view<long, 1> f_ix_vec);
+    /// Half-open flat-index range [first, last); empty ranges return zero.
+    template <bool isComplex>
+    nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
+                                                        std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
+                                                        triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
+                                                        long first, long last);
 
     /**
        * @brief Constructor for DiagramEvaluator

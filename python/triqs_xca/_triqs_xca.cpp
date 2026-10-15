@@ -59,11 +59,25 @@ nda::array<dcomplex, 3> triqs_xca::dense::DiagramEvaluator::compute_one_time_cor
     nda::array_const_view<long, 1>);
 
 extern template
+nda::array<dcomplex, 3> triqs_xca::dense::DiagramEvaluator::compute_one_time_correlator<true>(
+    gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    triqs::atom_diag::atom_diag<true> const &, nda::array_const_view<int, 2>,
+    long, long);
+
+extern template
 nda::array<dcomplex, 3> triqs_xca::dense::DiagramEvaluator::compute_one_time_correlator<false>(
     gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &,
     std::vector<triqs::operators::many_body_operator_complex> const &,
     triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>,
     nda::array_const_view<long, 1>);
+
+extern template
+nda::array<dcomplex, 3> triqs_xca::dense::DiagramEvaluator::compute_one_time_correlator<false>(
+    gf_vt, std::vector<triqs::operators::many_body_operator_complex> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>,
+    long, long);
 
 // ==================== block_sparse::DiagramEvaluator ====================
 
@@ -100,12 +114,28 @@ nda::array<dcomplex, 3> triqs_xca::block_sparse::DiagramEvaluator::compute_one_t
     nda::array_const_view<long, 1>);
 
 extern template
+nda::array<dcomplex, 3> triqs_xca::block_sparse::DiagramEvaluator::compute_one_time_correlator<true>(
+    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    triqs::atom_diag::atom_diag<true> const &, nda::array_const_view<int, 2>,
+    long, long);
+
+extern template
 nda::array<dcomplex, 3> triqs_xca::block_sparse::DiagramEvaluator::compute_one_time_correlator<false>(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>,
     std::vector<triqs::operators::many_body_operator_complex> const &,
     std::vector<triqs::operators::many_body_operator_complex> const &,
     triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>,
     nda::array_const_view<long, 1>);
+
+extern template
+nda::array<dcomplex, 3> triqs_xca::block_sparse::DiagramEvaluator::compute_one_time_correlator<false>(
+    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &,
+    triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>,
+    long, long);
 
 // -- Free functions
 
