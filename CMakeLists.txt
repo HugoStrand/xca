@@ -143,6 +143,7 @@ add_subdirectory(c++)
 # Tests
 if(Build_Tests)
   add_subdirectory(test)
+  add_subdirectory(benchmarks/backbone_cpu)
 endif()
 
 # Python

@@ -1,0 +1,13 @@
+model,order,rank,sectors,max_dimension,assignment_count,samples,paths
+unequal_sets_nA0,2,13,6,2,32,32,192
+phase,median_us_per_assignment,min_us_per_assignment,max_us_per_assignment
+flat_preparation,0.217047,0.215246,0.217672
+logical_preparation,0.162297,0.161945,0.181512
+sign_and_kernel_binding,0.505086,0.50325,0.506773
+path_discovery,0.31493,0.314652,0.335902
+paths_and_operand_binding,2.00278,1.99691,2.036
+prepared_self_energy_call,346.828,346.087,347.223
+flat_self_energy_call,346.817,346.595,347.292
+single_particle_range_call,246.753,246.357,246.838
+rss_before_kib,rss_after_kib,range_calls_per_kind,checksum
+21156,21220,2560,38941.8

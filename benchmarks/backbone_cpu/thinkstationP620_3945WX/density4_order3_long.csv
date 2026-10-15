@@ -1,0 +1,13 @@
+model,order,rank,sectors,max_dimension,assignment_count,samples,paths
+density4,3,13,16,1,512,64,200
+phase,median_us_per_assignment,min_us_per_assignment,max_us_per_assignment
+flat_preparation,0.252466,0.247075,0.255694
+logical_preparation,0.17235,0.169933,0.177017
+sign_and_kernel_binding,0.694349,0.69252,0.700361
+path_discovery,0.853153,0.851945,0.856871
+paths_and_operand_binding,2.05987,2.0535,2.06835
+prepared_self_energy_call,301.684,301.13,302.321
+flat_self_energy_call,300.246,300.08,301.049
+single_particle_range_call,401.495,401.01,404.703
+rss_before_kib,rss_after_kib,range_calls_per_kind,checksum
+21188,21260,20480,300392

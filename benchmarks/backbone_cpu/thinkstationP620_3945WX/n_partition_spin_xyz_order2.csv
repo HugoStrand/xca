@@ -1,0 +1,13 @@
+model,order,rank,sectors,max_dimension,assignment_count,samples,paths
+n_partition_spin_xyz,2,13,5,6,56,56,312
+phase,median_us_per_assignment,min_us_per_assignment,max_us_per_assignment
+flat_preparation,0.205699,0.205453,0.220346
+logical_preparation,0.149991,0.147598,0.15281
+sign_and_kernel_binding,0.475134,0.474864,0.483116
+path_discovery,0.237185,0.237118,0.245641
+paths_and_operand_binding,2.38894,2.35996,2.41952
+prepared_self_energy_call,802.972,801.085,805.952
+flat_self_energy_call,804.852,802.871,806.518
+single_particle_range_call,595.923,594.645,597.168
+rss_before_kib,rss_after_kib,range_calls_per_kind,checksum
+21940,22012,4480,65473.3
