@@ -1,6 +1,11 @@
 # Diagram and backbone naming plan
 
-Implementation plan, started 2026-10-15; completed and authorized 2026-10-16 on `dev_backbone`.
+Implementation plan, started 2026-10-15; implemented and validated 2026-10-16 on `dev_backbone`.
+
+All six source stages are complete. See [work_log_backbone_rename.md](work_log_backbone_rename.md)
+for the code-commit review index, separate documentation checkpoints, and validation
+results. The final specification below governs the implementation; earlier sections
+retain the naming discussion and superseded alternatives.
 
 This document records the naming discussion following `plan_backbone.md` and
 `work_log_backbone.md`. It separates agreed concepts from candidate names and
@@ -904,6 +909,8 @@ Adversarial review of the specification resolved these traps:
 8. Self-energy completion is not a postprocessing join: keep its existing
    insertion point and remaining convolutions.
 
-Planning completion: concrete records, ownership/index examples, migration and
-compatibility inventory, staged validation and self-review are now specified.
-Implementation is authorized and tracked separately through the work log below.
+Implementation completion: all six stages are committed, with separate work-log
+checkpoints. Full CPU build and 73/73 CTest entries passed, as did the three-rank
+MPI range-selection check and explicit backbone_cpu target build. Generated Python
+bindings differ from the pre-implementation checkpoint only in two class docstrings.
+See work_log_backbone_rename.md for code hashes, commands and remaining limitations.

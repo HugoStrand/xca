@@ -8,6 +8,24 @@ implementation to the persistent task on 2026-10-16. Use terse code commits,
 with separate plan/work-log commits. No abstract hierarchies, GPU implementation,
 cluster runs, history rewriting or pushes. Preserve unrelated worktree changes.
 
+## Completion and review index
+
+Implemented and validated on 2026-10-16. Read the stages in order; each code commit
+has a separate documentation checkpoint explaining its motivation and validation.
+The initial plan checkpoint is `182640f`.
+
+| Stage | Code commit | Documentation checkpoint | Main review question |
+| --- | --- | --- | --- |
+| 1 | `c4d38f1` | `de385fe` | Are shared diagram concepts easy to find under diagram/? |
+| 2 | `fc511be` | `8d501d0` | Are recipes, numerical owners and bound kernel views distinct? |
+| 3 | `c1522aa` | `2e78d76` | Does one compact path cover both full and partial backbones? |
+| 4 | `73a58a7` | `c00661a` | Are backbone operands separate from endpoint completion? |
+| 5 | `b58aa6b` | `78cc60b` | Is correlator discovery separate from binding and execution? |
+| 6 | `afbc957` | This documentation commit | Are call-site names and public compatibility consistent? |
+
+The full CPU suite passes (73/73), as do three-rank MPI range selection and the
+benchmark caller compile check. No timing experiments were run.
+
 ## 2026-10-16: plan completed
 
 Inspected shared preparation, both evaluators, block paths, correlator discovery
@@ -141,3 +159,76 @@ checks that filtering a path table changes table indices without confusing them
 with sector IDs, and verifies bound operator addresses independently. Logs:
 `/tmp/xca-rename-step5-{configure,build,focused-build,test}.log`.
 Next: final naming cleanup, full CPU/MPI validation and benchmark compile check.
+
+## Stage 6: evaluator naming (`afbc957`)
+
+Evaluator call sites now distinguish raw topology_arr, Topology topology and
+Diagram diagram. ArcData is held as arc_data, the validated arc catalog as
+arc_catalog_, and linear selections as flat_indices. Self-energy discovery uses
+a named workspace; backbone and correlator completion parameters use their
+operand roles. Renamed support helpers to OperatorSupportTable and
+SectorTransition, updated callers, and applied repository formatting to the new
+description/binding/data headers and sources. Existing physical hyb utility and
+manual-reference argument names remain unchanged.
+
+The benchmark caller uses the new types and names, while retaining its existing
+CSV column names so historical results remain readable. Test files keep their
+existing names to make earlier numerical and ownership checks easy to compare.
+No legacy aliases or temporary mixed operand structures remain.
+
+Validation:
+
+- Full CPU build passed with binding regeneration enabled.
+- All 73 CTest entries passed in 59.13 s, using OMP_NUM_THREADS=1,
+  OPENBLAS_NUM_THREADS=1 and CTest parallelism 2. The CPU-only CUDA smoke entry
+  remains disabled internally; this is CPU validation, not GPU qualification.
+- Three-rank MPI range-selection validation passed, including dense paired
+  selection, block-sparse selection, correlators and empty partitions.
+- Explicit backbone_cpu target build passed; no benchmark was executed.
+- The generated _triqs_xca.wrap.cxx was compared against the pre-implementation
+  checkpoint `182640f`: replacing the two class-docstring phrases "immutable
+  diagram assignments" with "immutable diagram descriptions" reproduces the
+  entire current file. Public exports, signatures and keyword names are unchanged.
+- git diff --check passed. Existing build warnings were not addressed here.
+
+Final commands (from the repository root):
+
+```bash
+source ~/env/xca-cpu.sh
+cmake --build cbuild --parallel 6
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  ctest --test-dir cbuild --parallel 2 --output-on-failure
+cmake --build cbuild --target backbone_cpu --parallel 6
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+export PYTHONPATH="$PWD/cbuild/python:$PWD/cbuild/deps/adapol_src/src:$PWD/cbuild/deps/pyed_src:$PYTHONPATH"
+mpiexec -n 3 python3 test/python/range_selection.py
+```
+
+Logs: `/tmp/xca-rename-final-build.log`, `/tmp/xca-rename-final-test.log`,
+`/tmp/xca-rename-final-benchmark-build.log`, `/tmp/xca-rename-final-mpi.log`.
+The MPI launcher emitted local display-authorization notices but exited zero;
+all numerical assertions completed. Temporary logs are not permanent artifacts.
+
+## Final boundaries and future work
+
+The shared diagram/ records prescribe topology, selected vertices and scalar
+kernel placement. block_sparse/diagram/ adds owned sector paths and explicit
+self-energy/correlator completion choices. ArcData/TauKernelValues own numerical
+tables; bind/ and block_sparse/bind/ select numerical views. Existing evaluators
+consume those views using their CPU workspaces and arithmetic order.
+
+The logical records can be retained independently of discovery workspaces.
+Numerical operands still borrow live CPU owners and must be rebound after storage
+replacement. Exact support must be rebuilt after changing operators or barred
+coefficients. Correlator path/result indices belong to the caller's tables for
+one shared Diagram, not a persistent cache. Discovery still reads the current
+operator connectivity and propagator masks. Multitarget execution and concurrent
+use of an evaluator's scratch arrays remain outside this refactor.
+
+A future GPU binding/executor can choose different batching, storage and numerical
+ordering without inheriting the CPU operand representation. This work neither
+implements that executor nor measures a speedup; future optimization targets
+remain high-end devices such as GH200. All task changes are committed on
+dev_backbone, with documentation separate from code. Unrelated initial worktree
+changes were preserved; local Python validation also produced an untracked
+test/python/__pycache__/api.cpython-312.pyc.
