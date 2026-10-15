@@ -12,7 +12,7 @@
 #include "triqs_xca/diagram/sign.hpp"
 #include "triqs_xca/diagram/arc.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
-#include "triqs_xca/block_sparse/self_energy_contribution.hpp"
+#include "triqs_xca/block_sparse/bind/self_energy.hpp"
 #include "triqs_xca/block_sparse/correlator_plan.hpp"
 
 namespace triqs_xca::block_sparse {
@@ -66,7 +66,7 @@ class DiagramEvaluator {
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
-                                                  diagram::BackbonePath const &path, EndpointOperands const &endpoints);
+                                                  diagram::BackbonePath const &path, EndpointSumOperands const &endpoints);
 
   void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &path);
   void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram, long f_ix); // evaluate a particular diagram
@@ -74,11 +74,11 @@ class DiagramEvaluator {
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyContribution const &contribution);
+    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution);
 
 
   nda::array_const_view<dcomplex, 3> eval_correlator_fragment(
-    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment);
+    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment);
   void eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);

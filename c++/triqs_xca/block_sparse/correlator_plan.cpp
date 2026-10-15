@@ -32,22 +32,6 @@ void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::dia
   }
 }
 
-CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                    BlockOpSymQuartet const &operators, diagram::BackbonePath const &path) {
-  CorrelatorFragmentOperands result{path, {}, {}};
-  int n = 2 * assignment.topology.order();
-  result.vertices.reserve(n);
-  result.propagators.reserve(n);
-  for (int v = 0; v < n; ++v) {
-    if (v >= path.first_vertex && v < path.vertex_end)
-      result.vertices.push_back(bind_vertex_operator(operators, assignment, v, path.edge_sector(v - 1)));
-    else result.vertices.emplace_back();
-    if (v >= path.first_edge && v < path.edge_end) result.propagators.push_back(propagator.get_block(path.edge_sector(v)));
-    else result.propagators.emplace_back();
-  }
-  return result;
-}
-
 void visit_correlator_joins(BlockDiagOpFun const &propagator, nda::vector_const_view<int> right_ends,
                            nda::vector_const_view<int> left_ends, std::span<BlockOp const> mu_ops,
                            std::span<BlockOp const> kap_ops, std::function<void(CorrelatorJoin const &)> const &visit) {

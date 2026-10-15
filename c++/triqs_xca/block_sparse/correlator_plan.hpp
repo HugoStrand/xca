@@ -3,19 +3,11 @@
 #include <functional>
 #include "operator_support.hpp"
 #include <span>
-#include "operator_binding.hpp"
+#include "bind/backbone.hpp"
 #include "diagram/backbone_path.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 
 namespace triqs_xca::block_sparse {
-
-/// Borrowed operands: execute before replacing/mutating the propagator or
-/// operator owner, with the matching assignment and mesh. Metadata is owned.
-struct CorrelatorFragmentOperands {
-  diagram::BackbonePath path;
-  std::vector<nda::array_const_view<dcomplex, 2>> vertices;
-  std::vector<nda::array_const_view<dcomplex, 3>> propagators;
-};
 
 /// Discover one side in start-sector order, without matrix arithmetic. Callback
 /// references refer to reusable workspace; copying a path retains its metadata.
@@ -25,9 +17,6 @@ struct CorrelatorFragmentOperands {
 void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                 BlockOpSymQuartet const &operators, OperatorSupports const &support, triqs_xca::diagram::CorrelatorSegment segment,
                                 std::function<void(diagram::BackbonePath const &)> const &visit);
-CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                    BlockOpSymQuartet const &operators, diagram::BackbonePath const &path);
-
 struct CorrelatorTrace {
   int kap; // output column in observable space
   nda::array_const_view<dcomplex, 2> op;

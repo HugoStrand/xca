@@ -248,7 +248,7 @@ void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, n
 // ========== Private self-energy routines ==========
 
 void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
-                                                                  diagram::BackbonePath const &path, EndpointOperands const &endpoints) {
+                                                                  diagram::BackbonePath const &path, EndpointSumOperands const &endpoints) {
   nda::array_view<dcomplex, 3> T_v  = T_buf(_, range(0, path.dimension(v_ix)), range(0, path.dimension(1)));
   nda::array_view<dcomplex, 3> T_vp = T_buf(_, range(0, path.dimension(v_ix + 1)), range(0, path.dimension(0)));
   nda::array_view<dcomplex, 4> Tkaps_v = Tkaps(_, _, range(0, path.dimension(v_ix)), range(0, path.dimension(0)));
@@ -276,10 +276,10 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::dia
   auto const signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
   auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
   triqs_xca::block_sparse::diagram::visit_self_energy_paths(Gt, assignment, Fq, support_, path, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
-    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, support_, hyb, interactions_.statistics(), signs);
+    auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, assignment, prepared, Fq, support_, hyb, interactions_.statistics(), signs);
     if (!select_diagonal_self_energy(contribution)) return;
     auto result = eval_self_energy_contribution(assignment, kernels, contribution);
-    Sigma.add_block(contribution.path.output_sector, result);
+    Sigma.add_block(contribution.output_sector, result);
   });
 }
 
@@ -303,21 +303,21 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contribution(
-  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyContribution const &contribution) {
-  auto const &path = contribution.path.path;
+  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution) {
+  auto const &path = contribution.backbone.path;
   int m = assignment.topology.order(), vct0 = assignment.topology.special_vertex(); // vertex connnected to time zero
 
-  T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = contribution.propagators[0];
+  T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = contribution.backbone.propagator(0);
   for (int v = 1; v < vct0; v++) {
-    multiply_left_vertex(T, assignment, kernels, v, contribution.vertices[v], path);
-    integrate_left_edge(T, contribution.propagators[v], assignment, kernels, v, path);
+    multiply_left_vertex(T, assignment, kernels, v, contribution.backbone.vertex(v), path);
+    integrate_left_edge(T, contribution.backbone.propagator(v), assignment, kernels, v, path);
   }
 
   multiply_left_vertex_and_right_zero_vertex(T, vct0, path, contribution.endpoints);
 
   for (int v = vct0 + 1; v < 2 * m; v++) {
-    integrate_left_edge(T, contribution.propagators[v - 1], assignment, kernels, v - 1, path);
-    multiply_left_vertex(T, assignment, kernels, v, contribution.vertices[v], path);
+    integrate_left_edge(T, contribution.backbone.propagator(v - 1), assignment, kernels, v - 1, path);
+    multiply_left_vertex(T, assignment, kernels, v, contribution.backbone.vertex(v), path);
   }
 
   T *= kernels.prefactor;
@@ -489,13 +489,13 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
-  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment) {
+  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment) {
   auto const &path = fragment.path;
   if (segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
-    T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = fragment.propagators[0];
+    T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = fragment.propagator(0);
     for (int v = path.first_edge + 1; v <= (path.edge_end - 1); ++v) {
-      multiply_left_vertex(T, assignment, kernels, v, fragment.vertices[v], path);
-      integrate_left_edge(T, fragment.propagators[v], assignment, kernels, v, path);
+      multiply_left_vertex(T, assignment, kernels, v, fragment.vertex(v), path);
+      integrate_left_edge(T, fragment.propagator(v), assignment, kernels, v, path);
     }
     T *= kernels.prefactor;
     auto result = T(_, range(0, path.dimension(path.edge_end)), range(0, path.dimension(1)));
@@ -503,10 +503,10 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
     return result;
   }
   int final_dim = path.dimension(path.edge_end);
-  U(_, range(0, final_dim), range(0, final_dim)) = fragment.propagators[(path.edge_end - 1)];
+  U(_, range(0, final_dim), range(0, final_dim)) = fragment.propagator((path.edge_end - 1));
   for (int v = (path.edge_end - 1); v > path.first_edge; --v) {
-    multiply_right_vertex(U, assignment, kernels, v, fragment.vertices[v], path);
-    integrate_right_edge(U, fragment.propagators[v - 1], assignment, kernels, v - 1, path);
+    multiply_right_vertex(U, assignment, kernels, v, fragment.vertex(v), path);
+    integrate_right_edge(U, fragment.propagator(v - 1), assignment, kernels, v - 1, path);
   }
   U = itops.reflect(U);
   return U(_, range(0, final_dim), range(0, path.dimension(path.first_edge + 1)));
@@ -534,7 +534,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
   left_ends = -1;
   for (auto side : {triqs_xca::diagram::CorrelatorSegment::zero_to_tau, triqs_xca::diagram::CorrelatorSegment::tau_to_beta}) {
     visit_correlator_fragments(Gt, assignment, Fq, support_, side, [&](diagram::BackbonePath const &path) {
-      auto operands = bind_correlator_fragment(Gt, assignment, Fq, path);
+      auto operands = triqs_xca::block_sparse::bind::backbone(Gt, assignment, Fq, path);
       auto result = eval_correlator_fragment(assignment, kernels, operands, side);
       if (side == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
         right[path.sector(path.first_vertex)] = result;

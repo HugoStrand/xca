@@ -1,9 +1,9 @@
-#include "operator_binding.hpp"
+#include "vertex.hpp"
 
-namespace triqs_xca::block_sparse {
+namespace triqs_xca::block_sparse::bind {
 namespace { constexpr auto all = nda::range::all; }
 
-nda::array_const_view<dcomplex, 2> bind_vertex_operator(BlockOpSymQuartet const &operators, triqs_xca::diagram::Diagram const &assignment,
+nda::array_const_view<dcomplex, 2> vertex(BlockOpSymQuartet const &operators, triqs_xca::diagram::Diagram const &assignment,
                                                       int vertex, int source_sector) {
   auto const &v = assignment.vertices[vertex];
   int set = operators.sym_set_labels(v.flavour), index = operators.sym_set_inds(v.flavour);
@@ -16,4 +16,4 @@ nda::array_const_view<dcomplex, 2> bind_vertex_operator(BlockOpSymQuartet const 
   return op.get_block(source_sector)(index, all, all);
 }
 
-} // namespace triqs_xca::block_sparse
+} // namespace triqs_xca::block_sparse::bind

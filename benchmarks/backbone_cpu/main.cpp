@@ -10,7 +10,7 @@
 
 #include "test_utils/evaluators.hpp"
 #include <triqs_xca/block_sparse/dynint.hpp>
-#include <triqs_xca/block_sparse/self_energy_contribution.hpp>
+#include <triqs_xca/block_sparse/bind/self_energy.hpp>
 #include <triqs_xca/bind/tau_kernel.hpp>
 
 using namespace triqs_xca;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) try {
   time("paths_and_operand_binding", [&](long i) {
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
     triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) {
-      auto bound = bs::bind_self_energy_contribution(G, assignments[i], path, operators, support, evaluator.hyb, interactions.statistics(), signs);
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignments[i], path, operators, support, evaluator.hyb, interactions.statistics(), signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });
   });
