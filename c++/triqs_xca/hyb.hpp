@@ -4,7 +4,7 @@
 
 #include <triqs/gfs.hpp>
 
-#include "triqs_xca/backbone.hpp"
+#include "triqs_xca/diagram_assignment.hpp"
 
 namespace triqs_xca::hyb {
 
@@ -40,10 +40,6 @@ namespace triqs_xca::hyb {
     void multiply_kernels_on_edge(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int edge);
     void multiply_kernels_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment);
 
-    // Temporary adapters for the block-sparse numerical consumer.
-    void multiply_kernel_on_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix, int l_ix, double sign = 1.0);
-    void multiply_kernels_on_edge(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int e_ix);
-    void multiply_kernels_prefactor(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone);
   };
 
   /**

@@ -39,39 +39,39 @@ class DiagramEvaluator {
 
   // Diagram composition routines
   
-  void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone);
+  void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment);
 
   // multiply vertex (v_ix) from the left, in a backbone diagram (for block b_ix)
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix, nda::vector_const_view<int> ind_path,
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix, nda::vector_const_view<int> ind_path,
                             nda::vector_const_view<int> block_dims);
 
   // integrate edge (e_ix) from the left, in a backbone diagram (for block b_ix)
-  void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, BlockDiagOpFun &Gt, Backbone &backbone, int e_ix, nda::vector_const_view<int> ind_path,
+  void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> ind_path,
                            nda::vector_const_view<int> block_dims);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a backbone diagram (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, CorrelatorBackbone &backbone, int v_ix, nda::vector_const_view<int> ind_path,
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix, nda::vector_const_view<int> ind_path,
                              nda::vector_const_view<int> block_dims);
 
   // integrate edge (e_ix) from the right, in a backbone diagram (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, int e_ix, nda::vector_const_view<int> ind_path,
+  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> ind_path,
                             nda::vector_const_view<int> block_dims);
 
   // routines for self-energy diagrams
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
-  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0, int p_kap,
+  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, bool is_forward, int b_ix_0, int p_kap,
                                                   int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
 
-  void eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path);
+  void eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path);
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix); // evaluate a particular backbone diagram
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone);           // evaluate a diagram of a given order and topology in block-sparse storage
 
-  // evaluate a diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
+  // Evaluate a prepared assignment on one block path, including its prefactor.
   void eval_self_energy_fixed_indices(
-     BlockDiagOpFun &Gt, Backbone &backbone, int b_ix, int p_kap, int p_mu, 
+     BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int b_ix, int p_kap, int p_mu,
      nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
 
 
@@ -107,6 +107,10 @@ class DiagramEvaluator {
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
 
+  // Return one logical assignment's contribution, resetting the accumulator each call.
+  // Assignment indices refer to this evaluator's model and pole tables.
+  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, DiagramAssignment const &assignment);
+
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
@@ -122,6 +126,10 @@ class DiagramEvaluator {
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
     BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
+
+  // Evaluate a logical assignment; indices refer to this evaluator's model and pole tables.
+  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
+    BlockDiagOpFun &Gt, DiagramAssignment const &assignment, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
 
   // compute single particle Green's function for given topology (and flat index)
   C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);

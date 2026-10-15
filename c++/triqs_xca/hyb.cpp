@@ -43,9 +43,6 @@ namespace triqs_xca::hyb {
     }
   };
 
-  void Hybridization::multiply_kernel_on_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix, int l_ix, double sign) {
-    multiply_kernel(T_buf, backbone.get_vertex_Ksign(v_ix), l_ix, sign);
-  }
 
   void Hybridization::multiply_kernel(nda::array_view<dcomplex, 3> T_buf, int kernel_sign, int pole, double reflection) {
     if (kernel_sign != 0) {
@@ -69,41 +66,6 @@ namespace triqs_xca::hyb {
         prefactor *= std::pow(kernel, -exponent);
       }
     }
-    T_buf *= prefactor;
-  }
-
-  void Hybridization::multiply_kernels_on_edge(nda::array_view<dcomplex, 3> Gt, Backbone &backbone, int e_ix) {
-    // Multiply the kernels associated with edge e_ix into T_buf
-
-    int m = backbone.m;
-    int r = tau_mesh.dlr_it().rank();
-
-    for (int x = 0; x < m - 1; x++) {
-      int Ksign = backbone.get_edge(e_ix, x);
-      if (Ksign != 0) {
-        int l = backbone.get_pole_ind(x);
-        auto k_it = (Ksign > 0) ? k_it_p(_, l) : k_it_m(_, l);
-        for (int t = 0; t < r; t++) Gt(t, _, _) *= k_it(t);
-      }
-    }
-  }
-
-  void Hybridization::multiply_kernels_prefactor(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone) {
-    // Multiply the kernels associated with the prefactor into T_buf
-
-    int m            = backbone.m;
-    double prefactor = 1.;
-
-    for (int m_ix = 0; m_ix < m - 1; m_ix++) {     // loop over hybridization indices
-      int exp = backbone.get_prefactor_Kexp(m_ix); // exponent on K for this hybridization index
-      if (exp != 0) {
-        int Ksign = backbone.get_prefactor_Ksign(m_ix); // sign on K for this hybridization index
-        int l = backbone.get_pole_ind(m_ix);
-        auto k_0 = (Ksign > 0) ? k_0_p(l) : k_0_m(l);
-        prefactor *= std::pow(k_0, -exp);
-      }
-    }
-
     T_buf *= prefactor;
   }
 
