@@ -20,7 +20,8 @@
 | 5a | `eff9128` | Correlator fragment and join planning extracted; all 71 CTest entries passed |
 | Shared kernel binding | `18d5cd5` | Scalar factors bound once per assignment; all 71 CTest entries passed |
 | Shared model/observable metadata | `5e7ab02` | Explicit families, flavour lists, and endpoint statistics; all 71 CTest entries passed |
-| 6–7 | None | Numerical/support policy, selection/adapter cleanup, timing checks, and final audit pending |
+| 6a | `0602db2` | Exact-zero masks and untruncated accumulation; all 72 CTest entries passed |
+| 6b–7 | None | Support policy, selection/adapter cleanup, timing checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -678,3 +679,52 @@ atomic-propagator test helper. Independent scaled/cancellation tests must avoid
 inheriting those approximations. Cross-set coefficient tolerance remains a
 separate support-policy issue. Stage 7, CPU timing checks, and the requirement-by-
 requirement completion audit remain outstanding; the persistent goal is active.
+
+## Stage 6a — exact numerical zeros (`0602db2`)
+
+The old `1e-16` policy affected three different boundaries: importing a propagator,
+refreshing an accumulated block's mask, and admitting a self-energy contribution.
+A small input could disappear before traversal, and a cancellation residual could
+be overwritten by the next addition because the accumulator was marked zero.
+This commit deliberately changes that policy after the structural extractions.
+
+Read [numerical_zero.cpp](test/c++/block_sparse/numerical_zero.cpp) first, then
+[block_op.cpp](c++/triqs_xca/block_sparse/block_op.cpp) and
+`DiagramEvaluator::eval_self_energy_paths`. Imported and refreshed masks now mark
+a block zero only if every complex entry equals zero exactly. Direct equality
+also preserves subnormal entries without computing their magnitudes. Every valid
+self-energy path is accumulated, without a magnitude cutoff. Explicit caller
+masks still assert exact structural zeros, including absent storage; a block
+marked active may conservatively contain zeros. Ordinary floating-point rounding
+and DLR approximation remain unchanged.
+
+The new tests use raw tensors and closed-form first-order one-fermion results,
+not masked full-Hilbert-space converters. They check dense and block-sparse
+self-energies and single-particle functions for normal inputs, propagator scale
+`1e-18`, coefficient scale `1e-18`, combined scaling, and exact-zero controls.
+The nonzero analytic comparisons use relative error `2e-11` at DLR tolerance
+`1e-12`, with no absolute floor that could hide lost contributions. Separate
+tests cover subnormal mask entries and exactly representable binary cancellation,
+followed by both `add_block` and `operator+=` and eventual exact cancellation.
+All three new tests failed against the prior implementation; normal-scale
+analytic controls passed.
+
+The reference-helper audit found the same cutoff in `get_hamiltonian_blocks`;
+it now detects exact zeros too. Manual block-sparse routines use the revised
+container masks, while the dense conversion helper respects caller masks.
+The full suite exposed one old `block_diag_op_fun` assertion treating `1e-17`
+as zero. Its expectation now explicitly requires preservation of that value.
+No comparison tolerances were relaxed. Generated bindings are unchanged.
+
+Validation: CPU configure/build, six focused CTest entries, and all 72 CPU CTest
+entries passed (full suite 56.62 s). The first full run passed 71 entries
+and failed only the legacy mask-policy assertion described above.
+Logs: `/tmp/xca-backbone-zero-{configure,build,focused,test-final}.log`;
+pre-change failures: `/tmp/xca-backbone-zero-reproduce.log`.
+
+Next is stage 6b: distinguish individual operator support from group candidate
+paths, characterize/reject or retain cross-set couplings explicitly, and validate
+physical partition assumptions. The existing cross-set tolerance and equal-set
+path restriction are still present and are not justified by this numerical-zero
+change. Stage 7 adapter/selection cleanup, CPU timing checks, and the completion
+audit remain outstanding. The persistent goal is active.
