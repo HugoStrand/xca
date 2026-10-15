@@ -10,6 +10,7 @@
 #include <triqs_xca/hyb.hpp>
 #include <triqs_xca/dense/dynint.hpp>
 #include <triqs_xca/block_sparse/dynint.hpp>
+#include <triqs_xca/block_sparse/operator_support.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/parallel_atom_diag_check.hpp"
@@ -31,7 +32,7 @@ namespace block_sparse = triqs_xca::block_sparse;
  *
  * @brief Tests of the symmetry-set construction with dynamical interactions, block_sparse::dynint::get_operators_and_interactions()
  *
- * @details The interaction operators are grouped into their own symmetry sets by identical connection row, never merged with a fermionic set,
+ * @details The interaction operators are grouped into their own execution sets by compatible connection rows, never merged with a fermionic set,
  * and labeled contiguously after the fermionic ones. The extended coefficients and the concatenated labels go to the BlockOpSymQuartet
  * constructor, whose cross-set guard validates the fermionic and the interaction sets uniformly, and the resulting barred operators must equal
  * the dense ones. Since the dense path requires a single atom_diag subspace, the dense reference is built on a second atom_diag of the same
@@ -158,8 +159,8 @@ TEST(BlockSparseDynintSets, fixtures_have_the_expected_connection_structure) {
     EXPECT_TRUE(block_diagonal) << "N_A should be block diagonal on this partition, got " << conn;
   }
 
-  // (b) spin_flip_atom_diag_helper(2, false): interleaved fermionic labels {0,1,0,1}, and the four n-type operators fall into two dynint
-  //     groups of size two, {n_up0, n_do0} and {n_up1, n_do1}
+  // (b) Interleaved fermionic labels {0,1,0,1}; the four densities have different
+  //     exact connection rows but are compatible members of one candidate group.
   {
     auto ad     = test_utils::spin_flip_atom_diag_helper(2, false);
     auto labels = std::get<1>(block_sparse::atom_diag::get_operators(ad, nda::zeros<dcomplex>(2, 4, 4)));
@@ -169,8 +170,8 @@ TEST(BlockSparseDynintSets, fixtures_have_the_expected_connection_structure) {
     auto up0 = ad.get_op_mat(many_body_operator_complex(n("up", 0))).connection;
     auto do0 = ad.get_op_mat(many_body_operator_complex(n("do", 0))).connection;
     auto up1 = ad.get_op_mat(many_body_operator_complex(n("up", 1))).connection;
-    EXPECT_EQ(up0, do0) << "n(up,0) and n(do,0) must share a connection row to form one dynint set";
-    EXPECT_NE(up0, up1) << "n(up,0) and n(up,1) must differ, or there is only one dynint set";
+    EXPECT_EQ(up0, do0) << "fixture: n(up,0) and n(do,0) have equal support";
+    EXPECT_NE(up0, up1) << "fixture: n(up,0) and n(up,1) have different support";
   }
 
   // (c) sz_resolved_atom_diag_helper(2): S^+ and S^- have distinct, off-block-diagonal, injective connection maps that are each other's inverse
@@ -231,7 +232,7 @@ TEST(BlockSparseDynintSets, dynint_ops_get_their_own_contiguous_symmetry_sets) {
     EXPECT_EQ(Fq.sym_set_sizes, (nda::vector<long>{2, 1, 1}));
   }
 
-  // (b) spin-flip model + four n-type operators forming two dynint groups of size two.
+  // (b) spin-flip model + four n-type operators forming one compatible group of size four.
   {
     auto ad       = test_utils::spin_flip_atom_diag_helper(2, false);
     int n_hyb     = static_cast<int>(ad.get_fops().size());
@@ -245,8 +246,8 @@ TEST(BlockSparseDynintSets, dynint_ops_get_their_own_contiguous_symmetry_sets) {
 
     auto [Fq, labels] = block_sparse::dynint::get_operators_and_interactions(ad, hyb, dynint_coeffs, ops);
 
-    EXPECT_EQ(labels, (nda::vector<long>{0, 1, 0, 1, 2, 2, 3, 3})) << "got " << labels;
-    EXPECT_EQ(Fq.sym_set_sizes, (nda::vector<long>{2, 2, 2, 2}));
+    EXPECT_EQ(labels, (nda::vector<long>{0, 1, 0, 1, 2, 2, 2, 2})) << "got " << labels;
+    EXPECT_EQ(Fq.sym_set_sizes, (nda::vector<long>{2, 2, 4}));
     EXPECT_EQ(nda::max_element(labels) + 1, static_cast<long>(Fq.Fs.size()));
     for (size_t i = 0; i < ops.size(); ++i) EXPECT_GE(labels(n_hyb + i), n_sym_hyb);
 
@@ -292,7 +293,7 @@ TEST(BlockSparseDynintSets, bars_match_dense_with_dynamical_interactions) {
     EXPECT_LE(uf, bar_tol) << "the dense F_bars_refl carry weight outside the declared block pattern";
   }
 
-  // (b) spin-flip model + four n-type operators in two dynint sets of size two
+  // (b) spin-flip model + four n-type operators in one group, with two coefficient subblocks
   {
     auto ad_bs   = test_utils::spin_flip_atom_diag_helper(2, false);
     auto ad_flat = test_utils::spin_flip_atom_diag_helper_single_subspace(2);
@@ -541,4 +542,70 @@ TEST(BlockSparseDynintSets, rejects_non_injective_connection_map) {
     block_sparse::dynint::get_operators_and_interactions(ad, hyb, dynint_coeffs, {O});
     FAIL() << "a non-injective connection map must be rejected";
   } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("non-injective"), std::string::npos) << e.what(); }
+}
+
+TEST(BlockSparseDynintSets, support_is_owned_and_can_describe_multiple_targets) {
+  using block_sparse::OperatorSupport;
+  OperatorSupport support(3, {{0, 2}, {0, 1}, {0, 1}, {2, 0}});
+  auto row = support.targets(0);
+  EXPECT_EQ((std::vector<int>(row.begin(), row.end())), (std::vector<int>{1, 2}));
+  EXPECT_THROW(support.single_target(0), std::invalid_argument);
+  EXPECT_EQ(support.single_target(1), -1);
+  EXPECT_EQ(support.single_target(2), 0);
+  EXPECT_THROW((OperatorSupport(2, {{0, 2}})), std::invalid_argument);
+}
+
+TEST(BlockSparseDynintSets, member_and_barred_support_differ_from_group_candidates) {
+  nda::vector<int> candidate{0, 1};
+  std::vector<nda::array<dcomplex, 3>> blocks(2, nda::zeros<dcomplex>(2, 1, 1));
+  blocks[0](0, 0, 0) = 1.;
+  blocks[1](1, 0, 0) = 1e-18;
+  block_sparse::BlockOpSymSet group(candidate, blocks);
+  auto coefficients = nda::zeros<dcomplex>(1, 2, 2);
+  coefficients(0, 0, 1) = 2.;
+  coefficients(0, 1, 0) = 3.;
+  BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
+  block_sparse::OperatorSupports support(operators);
+  for (int b = 0; b < 2; ++b) EXPECT_EQ(operators.Fs[0].get_block_index(b), b);
+  EXPECT_EQ(support.plain[0].single_target(0), 0);
+  EXPECT_EQ(support.plain[0].single_target(1), -1);
+  EXPECT_EQ(support.plain[1].single_target(0), -1);
+  EXPECT_EQ(support.plain[1].single_target(1), 1); // preserve tiny operator entries
+  EXPECT_EQ(support.barred_adjoint[0].single_target(0), -1);
+  EXPECT_EQ(support.barred_adjoint[0].single_target(1), 1); // contraction changes support
+  EXPECT_EQ(support.barred_adjoint[1].single_target(0), 0);
+  EXPECT_EQ(support.barred_adjoint[1].single_target(1), -1);
+
+  BlockOpSymQuartet zero_bars({group}, {group}, nda::zeros<dcomplex>(1, 2, 2), nda::vector<long>{0, 0});
+  block_sparse::OperatorSupports refreshed(zero_bars);
+  EXPECT_EQ(refreshed.barred_adjoint[0].single_target(1), -1);
+  EXPECT_EQ(support.barred_adjoint[0].single_target(1), 1); // owned metadata stays independent
+}
+
+TEST(BlockSparseDynintSets, density_operators_share_candidates_without_changing_their_zeros) {
+  triqs::atom_diag::fundamental_operator_set fops;
+  fops.insert("x", 0);
+  fops.insert("x", 1);
+  many_body_operator_complex H = 0.3 * n("x", 0) + 0.7 * n("x", 1);
+  triqs::atom_diag::atom_diag<true> ad(H, fops);
+  ASSERT_EQ(ad.n_subspaces(), 4);
+  auto coefficients = nda::ones<dcomplex>(1, 2, 2);
+  auto hyb = nda::zeros<dcomplex>(1, 2, 2);
+  std::vector<many_body_operator_complex> ops{n("x", 0), n("x", 1)};
+  auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(ad, hyb, coefficients, ops);
+  ASSERT_EQ(labels(2), labels(3));
+  block_sparse::OperatorSupports support(operators);
+  int group = labels(2);
+  for (int b = 0; b < 4; ++b) {
+    ASSERT_EQ(ad.get_fock_states(b).size(), 1);
+    auto state = ad.get_fock_states(b)[0];
+    EXPECT_EQ(operators.Fs[group].get_block_index(b), state == 0 ? -1 : b);
+    for (int a = 0; a < 2; ++a) {
+      double occupation = (state >> a) & 1;
+      EXPECT_EQ(support.plain[a + 2].single_target(b), occupation == 0 ? -1 : b);
+      if (state != 0) EXPECT_EQ(operators.Fs[group].get_block(b)(a, 0, 0), dcomplex(occupation));
+      // Both bars equal n0+n1, including where the retained operator is absent.
+      EXPECT_EQ(support.barred_adjoint[a + 2].single_target(b), state == 0 ? -1 : b);
+    }
+  }
 }

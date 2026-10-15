@@ -8,8 +8,15 @@ using namespace triqs_xca::block_sparse;
 struct Ladder {
   nda::vector<int> down{-1, 0, 1}, up{1, 2, -1};
   nda::array<int, 2> down_dims{{0, 1}, {1, 2}, {2, 1}}, up_dims{{2, 1}, {1, 2}, {0, 1}};
-  BlockOpSymQuartet operators{{BlockOpSymSet(1, down, down_dims)}, {BlockOpSymSet(1, up, up_dims)},
-                              nda::zeros<dcomplex>(1, 1, 1), nda::vector<long>{0}};
+  BlockOpSymQuartet make_operators() {
+    BlockOpSymSet F(1, down, down_dims), Fdag(1, up, up_dims);
+    for (int b = 0; b < 3; ++b) {
+      if (down(b) >= 0) F.set_block(b, nda::ones<dcomplex>(1, down_dims(b, 0), down_dims(b, 1)));
+      if (up(b) >= 0) Fdag.set_block(b, nda::ones<dcomplex>(1, up_dims(b, 0), up_dims(b, 1)));
+    }
+    return {{F}, {Fdag}, nda::ones<dcomplex>(1, 1, 1), nda::vector<long>{0}};
+  }
+  BlockOpSymQuartet operators = make_operators();
   BlockOp raising{up, up_dims}, lowering{down, down_dims};
 
   BlockDiagOpFun propagator(nda::vector<int> const &mask = {0, 0, 0}) {
@@ -22,7 +29,7 @@ struct Ladder {
 std::vector<CorrelatorFragment> fragments(BlockDiagOpFun const &G, DiagramAssignment const &assignment,
                                          BlockOpSymQuartet const &operators, CorrelatorSide side) {
   std::vector<CorrelatorFragment> result;
-  visit_correlator_fragments(G, assignment, operators, side, [&](auto const &p) { result.push_back(p); });
+  visit_correlator_fragments(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
   return result;
 }
 }

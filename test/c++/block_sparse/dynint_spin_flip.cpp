@@ -64,7 +64,7 @@ namespace {
    * @brief sz_resolved_atom_diag_helper with dynint_ops = [S-, S+]
    *
    * @details On this fixture S+ and S- are single-target operators, since N_up and N_do are separately conserved, and dynint_coeffs is
-   * diagonal since S- and S+ land in different symmetry sets.
+   * diagonal to encode S+ D S- and S- D S+ separately.
    */
   SpinFlipModel spin_flip_model(int norb) {
     auto ad = test_utils::sz_resolved_atom_diag_helper(norb, true);
@@ -88,7 +88,7 @@ namespace {
 } // namespace
 
 /**
- * @brief Check that S+ and S- land in two distinct symmetry sets of their own and construct an evaluator with the expected n / n_hyb / n_int
+ * @brief Check compatible grouping and exact member support for S+ and S-, and construct an evaluator
  */
 TEST(BlockSparseDynintSpinFlip, spin_flip_ops_construct_a_valid_evaluator) {
 
@@ -101,9 +101,17 @@ TEST(BlockSparseDynintSpinFlip, spin_flip_ops_construct_a_valid_evaluator) {
     auto [Fq, labels] = get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops);
     auto ext          = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
 
-    // S- and S+ have different connection rows and must land in two distinct sets of their own
+    // With one orbital their supports are disjoint and their union is a swap.
+    // With two orbitals the maps disagree on shared sources and must stay separate.
     ASSERT_EQ(labels.size(), n_hyb + 2);
-    EXPECT_NE(labels(n_hyb), labels(n_hyb + 1)) << "S- and S+ share a symmetry set, which would make the cross-set guard blind";
+    if (norb == 1) EXPECT_EQ(labels(n_hyb), labels(n_hyb + 1));
+    else EXPECT_NE(labels(n_hyb), labels(n_hyb + 1));
+    triqs_xca::block_sparse::OperatorSupports support(Fq);
+    for (int a = 0; a < 2; ++a) {
+      auto expected = m.ad.get_op_mat(m.dynint_ops[a]).connection;
+      for (int b = 0; b < m.ad.n_subspaces(); ++b)
+        EXPECT_EQ(support.plain[n_hyb + a].single_target(b), expected(b));
+    }
     for (int i = 0; i < n_hyb; ++i) {
       EXPECT_NE(labels(i), labels(n_hyb)) << "fermionic flavour " << i << " merged with the S- set";
       EXPECT_NE(labels(i), labels(n_hyb + 1)) << "fermionic flavour " << i << " merged with the S+ set";

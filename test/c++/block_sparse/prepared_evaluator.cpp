@@ -95,9 +95,9 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
     std::optional<SelfEnergyContribution> retained;
     nda::vector<int> dimensions;
     int count = 0;
-    visit_self_energy_paths(G, assignment, operators, workspace, [&](auto const &path) {
-      auto bound = bind_self_energy_contribution(G, assignment, path, operators, hybridization, statistics, signs);
-      auto changed = bind_self_energy_contribution(changed_G, assignment, path, operators, hybridization, statistics, signs);
+    visit_self_energy_paths(G, assignment, operators, OperatorSupports(operators), workspace, [&](auto const &path) {
+      auto bound = bind_self_energy_contribution(G, assignment, path, operators, OperatorSupports(operators), hybridization, statistics, signs);
+      auto changed = bind_self_energy_contribution(changed_G, assignment, path, operators, OperatorSupports(operators), hybridization, statistics, signs);
       ++count;
       ASSERT_EQ(bound.vertices.size(), 4);
       ASSERT_EQ(bound.propagators.size(), 3);

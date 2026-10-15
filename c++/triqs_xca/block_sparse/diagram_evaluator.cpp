@@ -273,8 +273,8 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path) {
   auto const signs = prepare_endpoint_signs(assignment, interactions_.statistics());
   auto const kernels = bind_kernels(assignment, hyb);
-  visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
-    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interactions_.statistics(), signs);
+  visit_self_energy_paths(Gt, assignment, Fq, support_, path, [&](SelfEnergyPath const &prepared) {
+    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, support_, hyb, interactions_.statistics(), signs);
     auto result = eval_self_energy_contribution(assignment, kernels, contribution);
     Sigma.add_block(contribution.path.output_sector, result);
   });
@@ -525,7 +525,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Di
   right_ends = -1;
   left_ends = -1;
   for (auto side : {CorrelatorSide::right, CorrelatorSide::left}) {
-    visit_correlator_fragments(Gt, assignment, Fq, side, [&](CorrelatorFragment const &path) {
+    visit_correlator_fragments(Gt, assignment, Fq, support_, side, [&](CorrelatorFragment const &path) {
       auto operands = bind_correlator_fragment(Gt, assignment, Fq, path);
       auto result = eval_correlator_fragment(assignment, kernels, operands);
       if (side == CorrelatorSide::right) {

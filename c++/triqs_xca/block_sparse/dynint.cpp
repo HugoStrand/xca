@@ -140,45 +140,58 @@ namespace triqs_xca::block_sparse::dynint {
         resolved.reserve(n_int);
         for (int i = 0; i < n_int; ++i) resolved.push_back(resolve_dynint_op(ad, dynint_ops[i], i));
 
-        // group the interaction operators by identical connection row, i.e. by sparsity pattern, in order of first appearance
+        // Greedy compatible groups: missing blocks are allowed, conflicting targets are not.
+        // Both orientations must remain single-target; members keep their own exact zeros.
         std::vector<int> group_of_op(n_int, -1);
         std::vector<std::vector<int>> ops_of_group;
+        std::vector<nda::vector<int>> group_forward, group_adjoint;
         for (int i = 0; i < n_int; ++i) {
             for (int g = 0; g < static_cast<int>(ops_of_group.size()) && group_of_op[i] < 0; ++g) {
-                bool same = true;
-                for (int b = 0; b < nb && same; ++b) same = (resolved[i].connection(b) == resolved[ops_of_group[g][0]].connection(b));
-                if (same) {
+                bool compatible = true;
+                auto agrees = [](int a, int b) { return a < 0 || b < 0 || a == b; };
+                for (int b = 0; b < nb && compatible; ++b)
+                    compatible = agrees(resolved[i].connection(b), group_forward[g](b))
+                              && agrees(resolved[i].connection_dag(b), group_adjoint[g](b));
+                if (compatible) {
                     group_of_op[i] = g;
                     ops_of_group[g].push_back(i);
+                    for (int b = 0; b < nb; ++b) {
+                        if (resolved[i].connection(b) >= 0) group_forward[g](b) = resolved[i].connection(b);
+                        if (resolved[i].connection_dag(b) >= 0) group_adjoint[g](b) = resolved[i].connection_dag(b);
+                    }
                 }
             }
             if (group_of_op[i] < 0) {
                 group_of_op[i] = static_cast<int>(ops_of_group.size());
                 ops_of_group.push_back({i});
+                group_forward.push_back(resolved[i].connection);
+                group_adjoint.push_back(resolved[i].connection_dag);
             }
         }
 
-        // one BlockOpSymSet per group, with the operators in increasing orbital order as assumed by BlockOpSymQuartet
-        for (auto const &group : ops_of_group) {
-            int qg          = static_cast<int>(group.size());
-            auto const &rep = resolved[group[0]];
-
+        // Allocate the candidate union, zero-filling each member's missing blocks.
+        auto dimensions = ad.get_subspace_dims();
+        for (int g = 0; g < ops_of_group.size(); ++g) {
+            auto const &group = ops_of_group[g];
+            int qg = group.size();
+            auto const &forward = group_forward[g];
+            auto const &adjoint = group_adjoint[g];
             std::vector<nda::array<dcomplex, 3>> blocks(nb), blocks_dag(nb);
             for (int b = 0; b < nb; ++b) {
-                blocks[b]     = rep.connection(b) == -1 ? nda::zeros<dcomplex>(qg, 1, 1)
-                                                        : nda::zeros<dcomplex>(qg, rep.blocks[b].shape(0), rep.blocks[b].shape(1));
-                blocks_dag[b] = rep.connection_dag(b) == -1 ? nda::zeros<dcomplex>(qg, 1, 1)
-                                                            : nda::zeros<dcomplex>(qg, rep.blocks_dag[b].shape(0), rep.blocks_dag[b].shape(1));
+                blocks[b] = forward(b) < 0 ? nda::zeros<dcomplex>(qg, 1, 1)
+                                          : nda::zeros<dcomplex>(qg, dimensions[forward(b)], dimensions[b]);
+                blocks_dag[b] = adjoint(b) < 0 ? nda::zeros<dcomplex>(qg, 1, 1)
+                                              : nda::zeros<dcomplex>(qg, dimensions[adjoint(b)], dimensions[b]);
             }
             for (int k = 0; k < qg; ++k) {
-                auto const &rk = resolved[group[k]];
+                auto const &member = resolved[group[k]];
                 for (int b = 0; b < nb; ++b) {
-                    if (rep.connection(b) != -1) blocks[b](k, range::all, range::all) = rk.blocks[b];
-                    if (rep.connection_dag(b) != -1) blocks_dag[b](k, range::all, range::all) = rk.blocks_dag[b];
+                    if (member.connection(b) >= 0) blocks[b](k, range::all, range::all) = member.blocks[b];
+                    if (member.connection_dag(b) >= 0) blocks_dag[b](k, range::all, range::all) = member.blocks_dag[b];
                 }
             }
-            sets.Fs.emplace_back(rep.connection, blocks);
-            sets.F_dags.emplace_back(rep.connection_dag, blocks_dag);
+            sets.Fs.emplace_back(forward, blocks);
+            sets.F_dags.emplace_back(adjoint, blocks_dag);
         }
 
         // concatenate the labels, the interaction sets follow the fermionic ones

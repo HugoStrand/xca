@@ -41,7 +41,7 @@ struct SelfEnergyContribution {
 
 /// The path must have been discovered for this assignment and model.
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
-                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators,
+                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                                                      hyb::Hybridization const &hybridization, std::span<Statistics const> statistics,
                                                      EndpointSigns signs);
 

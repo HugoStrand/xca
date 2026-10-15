@@ -187,7 +187,7 @@ namespace triqs_xca::block_sparse {
 
   /**
  * @class BlockOpSymSet (BOSS)
- * @brief Container for (linear combinations of) creation/annihilation operators with the same block-sparse structure
+ * @brief Operators stored on a shared candidate block pattern; individual members may have additional exact zeros
  */
   class BlockOpSymSet : public BlockOp3D {
     public:
@@ -212,7 +212,7 @@ namespace triqs_xca::block_sparse {
 
   /**
  * @class BlockOpSymSetBar
- * @brief Class for block-sparse storage of a set of F^bar operators with the same sparsity pattern
+ * @brief Barred operators stored on a shared candidate block pattern; individual supports depend on the contraction
  */
   class BlockOpSymSetBar {
     protected:

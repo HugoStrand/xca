@@ -15,16 +15,23 @@ EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int set, int i
 
 
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
-                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators,
+                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                                                      hyb::Hybridization const &hybridization, std::span<Statistics const> statistics,
                                                      EndpointSigns signs) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
   InteractionLine line{assignment.directions(0) == 1};
   EndpointOperands endpoints{{}, {}, {}, line.reflection_sign(), signs};
-  for (int i = 0; i < operators.sym_set_sizes(path.kap_set); ++i)
-    endpoints.early.push_back(bind_endpoint(operators, path.kap_set, i, path.output_sector,
-                                            line.early_operator(-1).adjoint, statistics));
+  auto present = [&](int group, int index, int source, bool adjoint) {
+    int flavour = operators.sym_set_to_orb(group, index);
+    return (adjoint ? support.adjoint : support.plain)[flavour].single_target(source) >= 0;
+  };
+  for (int i = 0; i < operators.sym_set_sizes(path.kap_set); ++i) {
+    bool adjoint = line.early_operator(-1).adjoint;
+    if (present(path.kap_set, i, path.output_sector, adjoint))
+      endpoints.early.push_back(bind_endpoint(operators, path.kap_set, i, path.output_sector, adjoint, statistics));
+  }
   for (int i = 0; i < operators.sym_set_sizes(path.mu_set); ++i) {
+    if (!present(path.mu_set, i, path.propagator_blocks(special - 1), line.late_operator(-1).adjoint)) continue;
     endpoints.late.push_back(bind_endpoint(operators, path.mu_set, i, path.propagator_blocks(special - 1),
                                            line.late_operator(-1).adjoint, statistics));
     int flavour = endpoints.late.back().coefficient_index;

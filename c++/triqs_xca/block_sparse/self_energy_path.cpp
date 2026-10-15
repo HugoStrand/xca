@@ -4,7 +4,7 @@
 
 namespace triqs_xca::block_sparse {
 
-void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &assignment, BlockOpSymQuartet const &Fq,
+void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &assignment, BlockOpSymQuartet const &Fq, OperatorSupports const &support,
                              SelfEnergyPath &path, std::function<void(SelfEnergyPath const &)> const &visit) {
 
   int m = assignment.topology.order();
@@ -45,7 +45,7 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &
       int ip = -1; // running block index
 
       for (int w = 0; w < vct0; w++) {
-        ip              = (w == 0) ? F_selector_p_ix(w, p_kap).get_block_index(b_ix) : F_selector(w).get_block_index(ip);
+        ip              = (w == 0) ? F_selector_p_ix(w, p_kap).get_block_index(b_ix) : support.vertex(assignment, w).single_target(ip);
         incomplete_path = is_path_incomplete(w, ip);
         if (incomplete_path) break;
         ind_path(w) = ip;
@@ -74,7 +74,7 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &
         ip = ind_path(vct0 - 1);
 
         for (int w = vct0; w < 2 * m; w++) {
-          ip              = (w == vct0) ? F_selector_p_ix(w, p_mu).get_block_index(ip) : F_selector(w).get_block_index(ip);
+          ip              = (w == vct0) ? F_selector_p_ix(w, p_mu).get_block_index(ip) : support.vertex(assignment, w).single_target(ip);
           incomplete_path = is_path_incomplete(w, ip);
           if (incomplete_path) break;
           if (w < 2 * m - 1) ind_path(w) = ip;

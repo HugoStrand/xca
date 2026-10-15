@@ -76,7 +76,7 @@ namespace {
 
     std::vector<many_body_operator_complex> ops;
     if (n_int > 0) ops.emplace_back(n("A", 0));
-    // n_A0 and n_B0 have different connection rows and land in two singleton dynint sets
+    // n_A0 and n_B0 have different support but compatible diagonal group connectivity
     if (n_int > 1) ops.emplace_back(n("B", 0));
     EXPECT_EQ(static_cast<int>(ops.size()), n_int) << "dynint_model only knows two interaction operators";
 
@@ -122,7 +122,7 @@ namespace {
  */
 TEST(BlockSparseDynintEvaluator, dynint_constructor_contract) {
 
-  auto m    = dynint_model(/*n_int=*/2); // two interaction flavours, in two singleton dynint sets
+  auto m    = dynint_model(/*n_int=*/2); // two interaction flavours with different exact support
   int n_hyb = static_cast<int>(m.ad.get_fops().size());
   int n_int = static_cast<int>(m.dynint_ops.size());
 
@@ -403,5 +403,46 @@ TEST(BlockSparseDynintEvaluator, matches_dense_on_the_interleaved_deep_subspace_
     auto [err, scale] = test_utils::compare_spgf(D.compute_single_ptcle_gf(Gt, topology), spgf_dense);
     ASSERT_GT(scale, 1.0e-3) << "vacuous test: the spgf is too small to compare";
     EXPECT_LE(err, sigma_tol * std::max(1.0, scale)) << "max|spgf_dense| = " << scale << ", max|bs - dense| = " << err;
+  }
+}
+
+TEST(BlockSparseDynintEvaluator, coupled_density_operators_match_dense_on_one_state_sectors) {
+  triqs::atom_diag::fundamental_operator_set fops;
+  fops.insert("x", 0);
+  fops.insert("x", 1);
+  many_body_operator_complex H = 0.3 * n("x", 0) + 0.7 * n("x", 1) + 0.6 * n("x", 0) * n("x", 1);
+  triqs::atom_diag::atom_diag<true> partitioned(H, fops), flat(H, fops, std::vector<many_body_operator_complex>{});
+  ASSERT_EQ(partitioned.n_subspaces(), 4);
+  ASSERT_EQ(flat.n_subspaces(), 1);
+  auto hyb = nda::zeros<dcomplex>(1, 2, 2);
+  hyb(0, 0, 0) = 0.4;
+  hyb(0, 1, 1) = 0.6;
+  auto interaction = nda::zeros<dcomplex>(1, 2, 2);
+  interaction(0, 0, 0) = 0.31;
+  interaction(0, 1, 1) = 0.47;
+  interaction(0, 0, 1) = dcomplex(0.23, 0.07);
+  interaction(0, 1, 0) = dcomplex(0.19, -0.11);
+  std::vector<many_body_operator_complex> operators{n("x", 0), n("x", 1)};
+  nda::vector<double> poles{0.6};
+  auto G = test_utils::ad_to_atom_prop(partitioned, beta, Lambda, eps);
+  auto dense_G = test_utils::ad_to_atom_prop(flat, beta, Lambda, eps);
+  DiagramEvaluator sparse(poles, hyb, G[0].mesh(), partitioned, operators, interaction);
+  dense::DiagramEvaluator dense(poles, hyb, dense_G[0].mesh(), flat, operators, interaction);
+  for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}},
+                         nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}) {
+    SCOPED_TRACE(::testing::Message() << "order=" << topology.extent(0));
+    auto sigma = BlockDiagOpFun(sparse.compute_self_energy(G, topology));
+    auto reference = dense.compute_self_energy(dense_G, topology);
+    auto [error, scale] = test_utils::compare_sigma_with_dense(sigma, reference, partitioned);
+    ASSERT_GT(scale, 1e-7);
+    EXPECT_LE(error, 2e-10 * scale);
+    auto spgf = sparse.compute_single_ptcle_gf(G, topology);
+    auto dense_spgf = dense.compute_single_ptcle_gf(dense_G, topology);
+    EXPECT_LE(nda::max_element(nda::abs(spgf - dense_spgf)), 2e-10 * nda::max_element(nda::abs(dense_spgf)));
+    nda::vector<long> indices(sparse.get_num_single_ptcle_gf_backbones(topology));
+    for (long i = 0; i < indices.size(); ++i) indices(i) = i;
+    auto correlator = sparse.compute_one_time_correlator(G, operators, operators, partitioned, topology, indices);
+    auto dense_correlator = dense.compute_one_time_correlator(dense_G, operators, operators, flat, topology, indices);
+    EXPECT_LE(nda::max_element(nda::abs(correlator - dense_correlator)), 2e-10 * nda::max_element(nda::abs(dense_correlator)));
   }
 }

@@ -3,7 +3,7 @@
 namespace triqs_xca::block_sparse {
 
 void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
-                                BlockOpSymQuartet const &operators, CorrelatorSide side,
+                                BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
                                 std::function<void(CorrelatorFragment const &)> const &visit) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
   int first = side == CorrelatorSide::right ? 0 : special;
@@ -21,7 +21,7 @@ void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignm
     bool incomplete = false;
     path.propagator_blocks(first) = sector;
     for (int v = first + 1; v <= last; ++v) {
-      sector = op(v).get_block_index(sector);
+      sector = support.vertex(assignment, v).single_target(sector);
       incomplete = sector == -1 || propagator.get_zero_block_index(sector) == -1;
       if (incomplete) break;
       path.propagator_blocks(v) = sector;

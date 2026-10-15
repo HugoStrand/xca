@@ -31,6 +31,7 @@ class DiagramEvaluator {
   imtime_ops itops;           // DLR imaginary time object
   nda::vector<double> dlr_it; // DLR imaginary time nodes in relative ordering
   BlockOpSymQuartet Fq;       // BlockOpSymQuartet (field operators with and without bars)
+  OperatorSupports support_ = OperatorSupports(Fq); // immutable model support; no propagator data
   BlockDiagOpFun Sigma;       // array for storing self-energy contribution (final result)
   nda::vector<long> subspace_dims; // dimension of each invariant subspace, i.e. of each block of G_ppsc; -1 where no operator acts
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "operator_support.hpp"
 #include <span>
 #include "operator_binding.hpp"
 
@@ -31,9 +32,9 @@ struct CorrelatorFragmentOperands {
 /// references refer to reusable workspace; copying a path retains its metadata.
 /// Current propagator-mask placement is preserved: the walk checks reached
 /// sectors, with no new starting-edge check. Joins apply their existing endpoint
-/// checks separately. Numerical/support policy is a separate step.
+/// checks separately. Internal vertices use exact support prepared for this quartet.
 void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
-                                BlockOpSymQuartet const &operators, CorrelatorSide side,
+                                BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
                                 std::function<void(CorrelatorFragment const &)> const &visit);
 CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
                                                     BlockOpSymQuartet const &operators, CorrelatorFragment const &path);

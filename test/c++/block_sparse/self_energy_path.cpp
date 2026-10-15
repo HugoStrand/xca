@@ -12,8 +12,8 @@ using triqs_xca::DiagramTopology;
 using triqs_xca::DiagramKind;
 
 // A synthetic ladder of sectors with dimensions 1,2,1. Only connectivity
-// matters here: the operator/propagator entries are zero, but their metadata
-// explicitly marks the allowed blocks. No numerical evaluator is constructed.
+// matters here: operator blocks are ones, and zero propagator storage is explicitly
+// marked active. No numerical evaluator is constructed.
 BlockOpSymQuartet ladder(int sets = 1) {
   nda::vector<int> down{-1, 0, 1}, up{1, 2, -1};
   nda::array<int, 2> down_dims{{0, 1}, {1, 2}, {2, 1}};
@@ -23,9 +23,15 @@ BlockOpSymQuartet ladder(int sets = 1) {
   for (int i = 0; i < sets; ++i) {
     Fs.emplace_back(1, down, down_dims);
     F_dags.emplace_back(1, up, up_dims);
+    for (int b = 0; b < 3; ++b) {
+      if (down(b) >= 0) Fs.back().set_block(b, nda::ones<nda::dcomplex>(1, down_dims(b, 0), down_dims(b, 1)));
+      if (up(b) >= 0) F_dags.back().set_block(b, nda::ones<nda::dcomplex>(1, up_dims(b, 0), up_dims(b, 1)));
+    }
     labels(i) = i;
   }
-  return {Fs, F_dags, nda::zeros<nda::dcomplex>(1, sets, sets), labels};
+  auto coefficients = nda::zeros<nda::dcomplex>(1, sets, sets);
+  for (int i = 0; i < sets; ++i) coefficients(0, i, i) = 1.;
+  return {Fs, F_dags, coefficients, labels};
 }
 
 BlockDiagOpFun propagator(nda::vector<int> const &mask = {0, 0, 0}) {
@@ -46,7 +52,7 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
   auto assignment = prepare_assignment(topology, 2, poles, 0, DiagramKind::self_energy); // creation at vertex 0, annihilation at vertex 1
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
 
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -63,7 +69,7 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
 
   assignment = prepare_assignment(topology, 2, poles, 1, DiagramKind::self_energy); // annihilation first
   std::vector<SelfEnergyPath> reversed;
-  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { reversed.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
   for (int i = 0; i < 4; ++i) {
     EXPECT_EQ(reversed[i].output_sector, i / 2 + 1);
@@ -84,7 +90,7 @@ TEST(SelfEnergyPath, nested_paths_use_every_propagator_mask_but_not_the_output_m
   auto G = propagator();
   std::vector<SelfEnergyPath> paths;
   auto collect = [&](auto const &path) { paths.push_back(path); };
-  visit_self_energy_paths(G, assignment, F, workspace, collect);
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, collect);
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].terminal_sector, 0);
@@ -95,18 +101,18 @@ TEST(SelfEnergyPath, nested_paths_use_every_propagator_mask_but_not_the_output_m
   for (auto mask : {nda::vector<int>{0, -1, 0}, nda::vector<int>{0, 0, -1}}) {
     auto masked = propagator(mask);
     paths.clear();
-    visit_self_energy_paths(masked, assignment, F, workspace, collect);
+    visit_self_energy_paths(masked, assignment, F, OperatorSupports(F), workspace, collect);
     EXPECT_TRUE(paths.empty());
   }
   auto output_zero = propagator({-1, 0, 0});
   paths.clear();
-  visit_self_energy_paths(output_zero, assignment, F, workspace, collect);
+  visit_self_energy_paths(output_zero, assignment, F, OperatorSupports(F), workspace, collect);
   ASSERT_EQ(paths.size(), 1); // no propagator on the external output sector
   EXPECT_EQ(paths[0].output_sector, 0);
 
   // Reusing a workspace of the wrong order must not write past its arrays.
   SelfEnergyPath wrong_order(1);
-  EXPECT_THROW(visit_self_energy_paths(G, assignment, F, wrong_order, collect), std::invalid_argument);
+  EXPECT_THROW(visit_self_energy_paths(G, assignment, F, OperatorSupports(F), wrong_order, collect), std::invalid_argument);
 }
 
 TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
@@ -119,7 +125,7 @@ TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
   auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].terminal_sector, 2);
@@ -133,7 +139,7 @@ TEST(SelfEnergyPath, crossing_path_continues_after_the_special_vertex) {
   auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
   SelfEnergyPath workspace(2);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].special_vertex, 2);
   EXPECT_EQ(paths[0].output_sector, 0);
@@ -149,7 +155,7 @@ TEST(SelfEnergyPath, discovery_is_independent_of_source_backbone_mutation) {
   auto const assignment = B.prepare_assignment(0, nda::vector<double>{1.0});
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) {
+  visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) {
     paths.push_back(path);
     B.reset_all_inds(); // would change the remaining paths if the walker still read B
     B.set_flat_index(1, nda::vector<double>{1.0});
@@ -160,4 +166,33 @@ TEST(SelfEnergyPath, discovery_is_independent_of_source_backbone_mutation) {
     EXPECT_EQ(paths[i].output_sector, i / 2);
     EXPECT_EQ(values(paths[i].propagator_blocks), (std::vector<int>{i / 2 + 1}));
   }
+}
+
+TEST(SelfEnergyPath, internal_member_support_and_barred_support_filter_candidate_paths) {
+  nda::vector<int> candidates{0, 1};
+  std::vector<nda::array<nda::dcomplex, 3>> blocks(2, nda::zeros<nda::dcomplex>(2, 1, 1));
+  blocks[0](0, 0, 0) = 1.;
+  blocks[1](1, 0, 0) = 1.;
+  BlockOpSymSet group(candidates, blocks);
+  auto coefficients = nda::zeros<nda::dcomplex>(1, 2, 2);
+  coefficients(0, 0, 1) = coefficients(0, 1, 0) = 1.;
+  BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
+  std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
+  BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
+  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 2,
+                                      triqs_xca::AssignmentIndices{{0, 0}, {0}, {0}}, nda::vector<double>{1.}, DiagramKind::self_energy);
+  SelfEnergyPath workspace(2);
+  int count = 0;
+  // Internal flavour 0 is nonzero only in sector 0, while its bar is flavour 1,
+  // nonzero only in sector 1. Both sectors are candidates, but no path survives.
+  visit_self_energy_paths(G, assignment, operators, OperatorSupports(operators), workspace, [&](auto const &) { ++count; });
+  EXPECT_EQ(count, 0);
+  coefficients = 0;
+  coefficients(0, 0, 0) = coefficients(0, 1, 1) = 1.;
+  BlockOpSymQuartet diagonal({group}, {group}, coefficients, nda::vector<long>{0, 0});
+  visit_self_energy_paths(G, assignment, diagonal, OperatorSupports(diagonal), workspace, [&](auto const &path) {
+    ++count;
+    EXPECT_EQ(path.output_sector, 0);
+  });
+  EXPECT_EQ(count, 1);
 }
