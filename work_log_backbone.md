@@ -9,7 +9,8 @@
 | Plan review | None | Revised implementation plan ready for execution |
 | 0 | None | CPU configure/build and all 66 CTest entries passed |
 | 1 | `0d70b28` | Self-energy path discovery extracted; all 67 CTest entries passed |
-| 2–7 | None | Not started |
+| 2a | `7695377` | Owned assignment data consumed by path discovery; all 67 CTest entries passed |
+| 2b–7 | None | Preparation rules and remaining stages pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -153,3 +154,41 @@ focused GoogleTests also passed after adding the crossing-path case. Logs:
 `/tmp/xca-backbone-path-focused-{build,test}.log`. Next: stage 2, owned shared
 assignment/topology data, consumed first by the path walker to remove its
 dependency on mutable backbone state.
+
+## Stage 2a — owned diagram assignments (`7695377`)
+
+Path discovery previously read the same mutable backbone as numerical execution.
+It now consumes a const `DiagramAssignment`: topology, vertex selections, arc
+directions, internal pole indices, and the scalar-kernel recipe are owned data.
+`DiagramTopology` carries only arcs. Neither type contains block sectors or
+matrix/workspace storage. `snapshot_assignment` is the temporary bridge from the
+legacy object, called immediately before traversal. Resetting or destroying that
+source no longer invalidates the prepared description.
+
+Read [diagram_assignment.hpp](c++/triqs_xca/diagram_assignment.hpp), its
+[snapshot implementation](c++/triqs_xca/diagram_assignment.cpp), then the changed
+selector inputs in
+[self_energy_path.cpp](c++/triqs_xca/block_sparse/self_energy_path.cpp).
+The evaluator still performs its existing arithmetic through the legacy backbone.
+Special endpoint orbital indices are deliberately unresolved (`-1`) in the
+assignment, even after an earlier contraction has mutated them: they belong to
+the remaining endpoint sum or observable, not the internal assignment.
+
+The hand-derived expectations in
+[backbone_indexing.cpp](test/c++/backbone_indexing.cpp) now also check the snapshot's
+vertices, directions, poles, edge kernels, and prefactors. No existing assertion
+was removed. A correlator case verifies the absent external arc, unresolved
+endpoints, source destruction, and deep copying of every array. The path tests
+were migrated to the new input type and now reset/reassign the old backbone
+inside callbacks to verify that subsequent discovery is independent of it.
+
+Validation: CPU configure/build and the focused indexing/path CTest entries
+passed; all 67 CPU CTest entries passed in 56.80 s. Binding regeneration left
+tracked wrappers unchanged. Logs are
+`/tmp/xca-backbone-assignment-{configure,build,focused,test}.log`.
+
+This step adds a metadata copy per assignment, bounded by diagram order, and
+makes no performance claim. The snapshot bridge is temporary: stage 2b extracts
+decoding and stable-kernel preparation into this shared layer and makes the
+legacy API delegate to those rules. The existing mutable setters and the
+numerical consumers have not yet been replaced. The goal remains active.
