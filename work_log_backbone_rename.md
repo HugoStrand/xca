@@ -77,3 +77,26 @@ covering kernel views/reflection, indices/signs, contractions, prepared evaluato
 retarded interactions and all-evaluator correlators. Generated Python wrappers
 remain unchanged. Logs: `/tmp/xca-rename-step2-{configure,build,test}.log`.
 Next: compact half-open backbone intervals and SelfEnergyDiagram metadata.
+
+## Stage 3: backbone intervals (`c1522aa`)
+
+Added block_sparse::diagram::BackbonePath with explicit half-open vertex/edge
+bounds and compact owned sector/dimension arrays. Global sector-slot accessors
+translate directly to local storage. SelfEnergyDiagram owns one path and keeps
+endpoint symmetry sets/output destination outside it. Correlator paths use the
+same type; the segment role is an explicit shared CorrelatorSegment argument.
+
+The path includes outer self-energy boundary sectors and the correlator's
+trailing edge to beta. Existing mask checks and candidate/exact support ordering
+remain unchanged. Tests retain their hand-written sector/dimension expectations,
+with extra assertions for compact size, full-path boundaries and single-edge
+segments. Numerical helpers now read dimensions through the path.
+
+Temporary adaptation: the old numerical operand containers remain, including
+full-sized correlator view vectors and the self-energy aggregate's `path` field
+holding SelfEnergyDiagram. Stage 4 replaces those containers with BackboneOperands;
+this commit isolates the logical interval change from numerical-view extraction.
+
+Validation: full CPU build passed; six focused path/mask/ownership/numerical and
+all-evaluator correlator tests passed (3.60 s). Logs:
+`/tmp/xca-rename-step3-{configure,build,test}.log`.
