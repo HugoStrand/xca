@@ -1,6 +1,8 @@
 # Backbone and CPU evaluator refactoring
 
-Status: reviewed implementation plan, 2026-10-15.
+Status: implemented and validated, 2026-10-15.
+The completion audit and remaining limitations are recorded at the end of
+`work_log_backbone.md`.
 Base: `dev_backbone`, branched from `origin/dev_hs` commit `2b0fc5c`.
 Progress, commit identities, and validation evidence live in `work_log_backbone.md`.
 

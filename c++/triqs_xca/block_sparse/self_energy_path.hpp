@@ -32,8 +32,8 @@ struct SelfEnergyPath {
 /// The support must describe the supplied quartet, including its current barred operators.
 /// It preserves legacy ordering and equal-set filtering, and records rather than
 /// enforces terminal/output-sector equality. A callback must not change the
-/// assignment, connectivity, or masks. It may freely mutate a legacy backbone
-/// from which the assignment was captured: discovery no longer reads that object.
+/// assignment, connectivity, or masks. Independently owned copies may be
+/// prepared or replaced while a retained assignment is being visited.
 void visit_self_energy_paths(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                              SelfEnergyPath &workspace, std::function<void(SelfEnergyPath const &)> const &visit);
 

@@ -28,7 +28,7 @@
 | 7b | `71a7173` | Mutable backbone adapters removed; all 72 CTest entries passed |
 | 7c | `dffa2b2` | Bounded selections and MPI integration; all 73 CTest entries and a three-rank run passed |
 | CPU cost check | `9d515b8` | Preparation costs and bounded-memory observations recorded |
-| Completion audit | None | Final requirement audit pending |
+| Completion audit | Documentation only | All seven stages implemented; limitations and final validation recorded below |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -1100,3 +1100,105 @@ are retained with the table. Configure/build logs are
 `/tmp/xca-backbone-cost-{configure,build}.log`. The existing 73-test validation and
 three-rank MPI check remain the correctness evidence; timing is kept separate.
 Next: finish the old-to-new owner map and requirement/limitations audit.
+
+
+## Completion audit — 2026-10-15
+
+All seven stages are implemented on `dev_backbone`. The final production code
+checkpoint is `dffa2b2`; the reproducible CPU cost diagnostic is `9d515b8`.
+This audit does not introduce further numerical changes. It also updates the
+path-visitor lifetime comment to remove its obsolete reference to the deleted
+mutable backbone adapter.
+
+### Review map: old responsibility → current owner
+
+| Old location/responsibility | Current owner and suggested reading |
+| --- | --- |
+| `Backbone` topology, direction/orbital/pole setters, reset sequencing | [diagram_assignment.hpp](c++/triqs_xca/diagram_assignment.hpp): `DiagramTopology`, `AssignmentIndices`, and owned `DiagramAssignment`; `prepare_assignment` constructs a complete value without reset state |
+| Flat-index counting and decoding inside `Backbone` | `count_assignments` and `decode_assignment_indices`; [diagram_selection.hpp](c++/triqs_xca/diagram_selection.hpp) streams range/vector selections at the API boundary |
+| `n_int` defaults and external -2/-3 flags used for parity | [diagram_model.hpp](c++/triqs_xca/diagram_model.hpp): explicit families/statistics and `ObservableBoundary`; [diagram_sign.hpp](c++/triqs_xca/diagram_sign.hpp): `prepare_endpoint_signs` |
+| Orientation and barred-operator conventions embedded in constructors/evaluation | [interaction.hpp](c++/triqs_xca/interaction.hpp): directed operator/coefficient references, `BarredOperator`, and the unexpanded `EndpointSum`; dense/block builders materialize their own representations |
+| Pole-dependent vertex/edge factors selected during arithmetic | Shared assignment kernel recipe plus [kernel_binding.hpp](c++/triqs_xca/kernel_binding.hpp); bind numerical views once per assignment, apply selected factors during execution |
+| `find_path_self_energy` mixed with evaluation | [self_energy_path.hpp](c++/triqs_xca/block_sparse/self_energy_path.hpp): `visit_self_energy_paths` with output/terminal sectors and ordered propagator dimensions |
+| Group candidate maps treated as exact per-operator support | [operator_support.hpp](c++/triqs_xca/block_sparse/operator_support.hpp): owned exact support, including materialized barred operators, independent of compatible computational groups |
+| Operator lookup, endpoint sums, and closure inside self-energy arithmetic | [self_energy_contribution.hpp](c++/triqs_xca/block_sparse/self_energy_contribution.hpp): bind operands and endpoint lists, then select supported block-diagonal output before execution |
+| Monolithic block-sparse self-energy evaluator | `eval_self_energy_paths` is the CPU orchestration driver; `eval_self_energy_contribution` consumes resolved operands and returns a workspace view; the driver accumulates it into the prescribed output sector |
+| Connectivity search inside correlator evaluation | [correlator_plan.hpp](c++/triqs_xca/block_sparse/correlator_plan.hpp): fragment discovery/binding and compatible observable joins; `eval_correlator_fragment` and `eval_correlator_join` do arithmetic |
+| Magnitude-based input/output masking and per-contribution dropping | Exact-zero masks/support and untruncated accumulation; unsupported couplings/closure produce explicit errors before arithmetic instead of silently discarding small terms |
+| MPI index-vector construction and Python pair filtering | [solver.py](python/triqs_xca/solver.py): half-open rank bounds; dense paired range selection owns canonical seeds and computes their partners |
+
+The shared diagram/model/interaction/kernel layer contains no block-sector IDs
+or block-path walker. Dense evaluation consumes it directly. Block-specific
+planning enriches the same assignment with support, sectors, operands, and output
+destinations. The current CPU driver still schedules these steps sequentially;
+that is a consumer choice, not a serial task graph encoded in the shared recipe.
+A future GPU consumer can regroup tasks or replace the arithmetic without using
+the legacy linear-index decomposition as its execution schedule.
+
+### Acceptance evidence by stage
+
+| Requirement | Evidence and outcome |
+| --- | --- |
+| 0: reproducible baseline, sign/policy inventory | Initial CPU configure/build and 66 CTest entries passed; baseline sign/reflection, partitioning, and mask ownership are recorded above |
+| 1: explicit bounded paths, dense unaffected | Owned path metadata, workspace-copy tests, hand-built crossing/nested/direction fixtures, and explicit terminal-sector characterization; code `0d70b28` |
+| 2: owned shared assignments, decoder kept at boundary | Codes `7695377`/`4f05c6e`; hand-derived indexing rules retained through final adapter removal, large indices/overflow and lifetime tests, logical preparation beyond representable flat counts |
+| 3: explicit interactions/statistics, dense and sparse consumers | Codes `e932ea1`, `3832492`, `8ff3717`, `6de60bc`, `5e7ab02`; parity table, wrong-statistics negative controls, both directions, paired evaluation, complex mixed/retarded models, and shared analytic evaluator tests |
+| 4: resolved self-energy operands before arithmetic | Code `984e4bc`, with common kernel binding `18d5cd5`; borrowed-view and owned-metadata tests, changed-propagator rebinding, endpoint-selection and numerical agreement checks |
+| 5: observable fragments/joins separate from execution | Code `eff9128`; single-particle and general fermionic/bosonic correlators, empty-fragment regression, trace closure and external-statistics checks |
+| 6: numerical policy and support changes separately reviewable | Codes `0602db2`, `a7b1956`, `fa44a50`, `3456087`; independent tiny/scaled/cancellation references, explicit cross-set rejection, grouped density supports, and an independent nonclosing-sector regression with a coarser-partition reference |
+| 7: adapters removed, bounds and MPI coverage | Codes `0a39662`, `71a7173`, `dffa2b2`; no mutable backbone implementation remains; prepared APIs coexist with scalar/vector/range boundaries, uneven/empty partitions and pair ownership tested in C++ and with three MPI ranks |
+| CPU overhead and bounded-memory observations | Code/data `9d515b8`; eight recorded local cases, fixed sample cap, component costs and repeated self-energy/correlator range RSS measurements, including a fourfold longer run |
+| Reviewable development history | Each implementation/benchmark code commit is followed by its separate work-log documentation commit; no squashing, remote pushes, CUDA changes, or cluster experiments were performed in this goal |
+
+Final correctness checkpoint: CPU configure/build and **73/73 CTest entries
+passed**, 59.36 s, at the final production implementation. The additional
+three-rank Python range/reduction check passed. Logs and reproduction commands
+are in stage 7c. The later benchmark-only target was separately configured,
+built, and exercised on all eight cases; CTest still lists 73 entries. No timing
+threshold is used as a correctness assertion. The latest source audit finds no
+remaining magnitude cutoff in the block-sparse evaluator/operator/manual paths
+and no source/test dependency on the removed backbone classes.
+
+### Deliberate limitations and subsequent work
+
+- Block-sparse execution still requires single-target operators and a compatible
+  block-diagonal physical partition. Logical support can describe multiple
+  targets, but the current numerical operator builder/executor rejects them.
+  General multi-component operator execution is subsequent work.
+- Retarded operator grouping shares compatible candidate maps with exact member
+  support, but is greedy and not an optimal partitioner. Fermionic grouping is
+  unchanged. A nonzero coefficient outside a representable group is rejected,
+  even if tiny; no epsilon is added to a physical operator to alter its group.
+- Closure is established per indexed self-energy contribution. Contributions
+  with nonclosing sectors and nonzero endpoint couplings require a coarser
+  partition. Cancellation across separate indexed contributions is not used to
+  infer physical block diagonality. This is an explicit supported-model boundary,
+  not a claim that all such cancellations are mathematically impossible.
+- Owned recipes and support metadata survive workspace reuse. Bound numerical
+  views require the matching live, unchanged owners; model/pole/mesh/propagator
+  changes require rebinding, and operator changes require support reconstruction.
+  There is no automatic cache/version-invalidation framework. The CPU evaluator
+  owns mutable numerical scratch and is not a concurrently callable executor.
+- C++ scalar/vector compatibility APIs remain intentionally. Full range selection
+  still decodes one flat index at a time; prepared logical assignment entry points
+  are available for a different scheduler. Count overflow is diagnosed rather
+  than expanding the integer API. Dense paired range ownership differs from the
+  explicit scalar/vector seed contract, as documented in stage 7c.
+- Numerical storage/layouts, eager barred-operator materialization, per-call
+  allocations/conversions, repeated mask scans, and serial reduction order are
+  retained CPU implementation choices. Correlator fragments are cached only for
+  one assignment and can still consume memory proportional to sector dimensions.
+  Allocation reuse, compact shared topology storage, earlier exact-coefficient
+  pruning, cohorting, memoization across assignments/topologies, and sparse
+  physical-operator representations should each be separately motivated and
+  measured. No bitwise-output constraint is imposed on those later changes.
+- The cost check covers small CPU models, one topology per order, and bounded
+  samples. It is not an old/new regression benchmark, a large-sector study, or a
+  predictor of GPU performance. A future GPU implementation should target GH200
+  or comparable high-end hardware and can replace the archived CUDA design.
+  Large physical sectors and productive high-order cohorts need separate tests;
+  Arrhenius GPU allocation was not used here.
+
+The plan is complete within these boundaries. The next development objective
+would be optimization or a new consumer of the separated preparation/planning
+layers, with its own experiments and review units.
