@@ -317,111 +317,27 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
   }
 }
 
-void DiagramEvaluator::find_path_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, nda::vector_view<int> ind_path, nda::vector_view<int> block_dims) {
-
-  int m = backbone.m; // Diagram order
-  int vct0 = backbone.get_topology(0, 1); // vertex connected to zero
-
-  backbone.set_flat_index(f_ix, hyb.poles); // set directions, pole indices, and orbital indices from a single integer index
-
-  /*  Example of block_dims for m = 2 (OCA): each number is an index of block_dims, and each square represents a block of a matrix 
-          3            3            2            2            1            1            0
-      --------     --------     --------     --------     --------     --------     --------
-    4 |   F  |   3 |   G  |   3 |   F  |   2 |   G  |   2 |   F  |   1 |   G  |   1 |   F  |
-      |      |     |      |     |      |     |      |     |      |     |      |     |      |
-      --------     --------     --------     --------     --------     --------     --------
-  */
-
-  auto F_selector_p_ix = [&](int w, int p_ix) { return backbone.has_vertex_dag(w) ? Fq.F_dags[p_ix] : Fq.Fs[p_ix]; };
-  auto F_selector      = [&](int w) { return F_selector_p_ix(w, Fq.sym_set_labels(backbone.get_orb_ind(w))); };
-
-  bool incomplete_path    = false;
-  auto is_path_incomplete = [&](int w, int ip) { return (ip == -1 || (w < 2 * m - 1 && Gt.get_zero_block_index(ip) == -1)); };
-
-  for (int b_ix = 0; b_ix < Gt.get_num_block_cols(); b_ix++) { // loop over blocks of self-energy
-
-    for (int p_kap = 0; p_kap < q; p_kap++) { // loop over symmetry sets on the zero vertex
-
-      // traverse factors in two halves
-      // -----------------------------------------------------------------------------------
-      // first half: all vertices before vertex connected to zero
-
-      // ind_path setup 1
-
-      int ip = -1; // running block index
-
-      for (int w = 0; w < vct0; w++) {
-        ip              = (w == 0) ? F_selector_p_ix(w, p_kap).get_block_index(b_ix) : F_selector(w).get_block_index(ip);
-        incomplete_path = is_path_incomplete(w, ip);
-        if (incomplete_path) break;
-        ind_path(w) = ip;
-      }
-
-      if (incomplete_path) continue;
-
-      // block_dims setup 1
-
-      block_dims(0) = F_selector_p_ix(0, p_kap).get_block_size(b_ix, 1);
-      block_dims(1) = F_selector_p_ix(0, p_kap).get_block_size(b_ix, 0);
-
-      for (int w = 0; w < vct0 - 1; w++) { block_dims(w + 2) = F_selector(w + 1).get_block_size(ind_path(w), 0); }
-
-      // -----------------------------------------------------------------------------------
-      // second half: vertex connected to zero and above
-
-      for (int p_mu = 0; p_mu < q; p_mu++) { // loop over symmetry sets on the vertex connected to vertex 0
-
-        // Only the diagonal (p_kap, p_mu) pairs contribute, since every coefficient array reaching an evaluator has passed
-        // check_sym_set_block_diagonal. The cross-set remainder below sym_set_coupling_tol is not harmless: its T_out need not return to
-        // block b_ix and would be accumulated into a block of the wrong shape, so it is skipped here rather than by the absolute guard below
-        if (p_mu != p_kap) continue;
-
-        // ind_path setup 2
-
-        ip = ind_path(vct0 - 1);
-
-        for (int w = vct0; w < 2 * m; w++) {
-          ip              = (w == vct0) ? F_selector_p_ix(w, p_mu).get_block_index(ip) : F_selector(w).get_block_index(ip);
-          incomplete_path = is_path_incomplete(w, ip);
-          if (incomplete_path) break;
-          if (w < 2 * m - 1) ind_path(w) = ip;
-        }
-
-        if (incomplete_path) continue;
-
-        // block_dims setup 2
-
-        block_dims(vct0 + 1) = F_selector_p_ix(vct0, p_mu).get_block_size(ind_path(vct0 - 1), 0);
-
-        for (int w = vct0; w < 2 * m - 1; w++) { block_dims(w + 2) = F_selector(w + 1).get_block_size(ind_path(w), 0); }
-
-        // evaluate the diagram with these directions, poles, and orbital indices
-        // b_ix is the block index for the first edge
-        eval_self_energy_fixed_indices(Gt, backbone, b_ix, p_kap, p_mu, ind_path, block_dims);
-      }
-    }
-  }
-  backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
+void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path) {
+  backbone.set_flat_index(f_ix, hyb.poles);
+  visit_self_energy_paths(Gt, backbone, Fq, path, [&](SelfEnergyPath const &prepared) {
+    eval_self_energy_fixed_indices(Gt, backbone, prepared.output_sector, prepared.kap_set, prepared.mu_set,
+                                   prepared.propagator_blocks, prepared.dimensions);
+  });
+  backbone.reset_all_inds();
 }
 
 void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix) {
-  int m = backbone.m;
-
-  nda::vector<int> ind_path(2 * m - 1);   // tracks block indices of factors for computing a particular block of the self-energy
-  nda::vector<int> block_dims(2 * m + 1); // tracks the dimensions of the blocks in these factors
-
-  find_path_self_energy(Gt, backbone, f_ix, ind_path, block_dims);
+  SelfEnergyPath path(backbone.m);
+  eval_self_energy_paths(Gt, backbone, f_ix, path);
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
 
 void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone) {
-  int m = backbone.m;
-  nda::vector<int> ind_path(2 * m - 1);   // tracks block indices of factors for computing a particular block of the self-energy
-  nda::vector<int> block_dims(2 * m + 1); // tracks the dimensions of the blocks in these factors
+  SelfEnergyPath path(backbone.m);
 
   // loop over all flat indices
   long f_ix_max = backbone.num_flat_indices(hyb.poles.size());
-  for (long f_ix = 0; f_ix < f_ix_max; f_ix++) { find_path_self_energy(Gt, backbone, f_ix, ind_path, block_dims); }
+  for (long f_ix = 0; f_ix < f_ix_max; f_ix++) { eval_self_energy_paths(Gt, backbone, f_ix, path); }
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
 

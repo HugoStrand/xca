@@ -6,6 +6,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
+#include "triqs_xca/block_sparse/self_energy_path.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -63,7 +64,7 @@ class DiagramEvaluator {
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0, int p_kap,
                                                   int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims);
 
-  void find_path_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, nda::vector_view<int> ind_path, nda::vector_view<int> block_dims);
+  void eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path);
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix); // evaluate a particular backbone diagram
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone);           // evaluate a diagram of a given order and topology in block-sparse storage
 
