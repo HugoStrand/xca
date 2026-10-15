@@ -142,9 +142,11 @@ TEST(Backbone, indexing) {
       }
       ASSERT_EQ(X.prefactor_sign, exp_psign);
 
-      // The owned preparation value must satisfy the same hand-derived rules,
-      // not merely compare equal to another production representation.
-      auto const assignment = triqs_xca::snapshot_assignment(X);
+      // Direct logical preparation must satisfy the same hand-derived rules,
+      // independently of the legacy setters and the linear-index decoder.
+      auto const assignment = triqs_xca::prepare_assignment(
+        triqs_xca::DiagramTopology{topology}, n, triqs_xca::AssignmentIndices{fb, pole_inds, {orb_inds(1), orb_inds(3)}}, dlr_rf,
+        triqs_xca::DiagramKind::self_energy);
       EXPECT_EQ(assignment.topology.order(), m);
       EXPECT_EQ(assignment.topology.special_vertex(), topology(0, 1));
       for (int a = 0; a < m; ++a) {
@@ -201,9 +203,8 @@ TEST(Backbone, indexing) {
 TEST(DiagramAssignment, correlator_data_survives_its_source_and_copies_are_independent) {
   auto assignment = [] {
     CorrelatorBackbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 2);
-    B.set_flat_index(7, nda::vector<double>{-1.0, 2.0}); // orbital 1, pole 1, forward internal arc
+    auto result = B.prepare_assignment(7, nda::vector<double>{-1.0, 2.0}); // orbital 1, pole 1, forward internal arc
     B.set_orb_inds_of_0_and_vct0(-3, -3); // legacy observable mutation is not part of the internal assignment
-    auto result = triqs_xca::snapshot_assignment(B);
     B.reset_all_inds();
     return result;
   }();
@@ -309,4 +310,85 @@ TEST(Backbone, flat_indices_beyond_int) {
   EXPECT_THROW(Backbone(crossing(18), 14), std::overflow_error);
   EXPECT_THROW(Backbone(crossing(14), 2).num_flat_indices(40), std::overflow_error);
   EXPECT_THROW(Backbone(crossing(17), 14).num_flat_indices(40), std::overflow_error);
+}
+
+TEST(DiagramAssignment, logical_and_flat_selections_have_explicit_semantics) {
+  using namespace triqs_xca;
+  DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 4}, {3, 5}}};
+  nda::vector<double> poles{-1.0, 2.0};
+  // Orbital digits 2,1 -> 5; pole digits 1,0 -> 1; direction digits 1,0,1 -> 5.
+  // f = 5 + 3^2 * (1 + 2^2 * 5) = 194.
+  auto decoded = decode_assignment_indices(3, 3, 2, 194, DiagramKind::self_energy);
+  EXPECT_EQ((std::vector<int>(decoded.directions.begin(), decoded.directions.end())), (std::vector<int>{1, 0, 1}));
+  EXPECT_EQ((std::vector<int>(decoded.poles.begin(), decoded.poles.end())), (std::vector<int>{1, 0}));
+  EXPECT_EQ((std::vector<int>(decoded.orbitals.begin(), decoded.orbitals.end())), (std::vector<int>{2, 1}));
+  EXPECT_EQ(count_assignments(3, 3, 2, DiagramKind::self_energy), 288);
+  EXPECT_EQ(count_assignments(3, 3, 2, DiagramKind::correlator), 144);
+  auto logical = prepare_assignment(topology, 3, AssignmentIndices{{1, 0, 1}, {1, 0}, {2, 1}}, poles, DiagramKind::self_energy);
+  auto flat = prepare_assignment(topology, 3, poles, 194, DiagramKind::self_energy);
+  for (auto const *a : {&logical, &flat}) {
+    EXPECT_EQ(a->vertices[1].orbital, 2);
+    EXPECT_EQ(a->vertices[3].orbital, 1);
+    EXPECT_EQ(a->vertices[1].kernel_sign, 1);
+    EXPECT_EQ(a->vertices[4].kernel_sign, -1);
+    EXPECT_EQ(a->vertices[3].kernel_sign, -1);
+    EXPECT_EQ(a->vertices[5].kernel_sign, 1);
+    EXPECT_EQ(a->prefactor_sign, -1);
+    EXPECT_EQ(nda::sum(nda::abs(a->edge_kernels)), 0);
+  }
+  EXPECT_EQ(logical.flat_index, -1); // logical preparation does not prescribe enumeration
+  EXPECT_EQ(flat.flat_index, 194);
+  auto correlator = prepare_assignment(topology, 3, poles, 86, DiagramKind::correlator);
+  EXPECT_EQ(correlator.directions(0), -1);
+  EXPECT_EQ(correlator.directions(1), 0);
+  EXPECT_EQ(correlator.directions(2), 1);
+  EXPECT_EQ(correlator.vertices[1].orbital, 2);
+  EXPECT_THROW(prepare_assignment(topology, 3, poles, 288, DiagramKind::self_energy), std::invalid_argument);
+  EXPECT_THROW(prepare_assignment(topology, 3, poles, -1, DiagramKind::self_energy), std::invalid_argument);
+  EXPECT_THROW(prepare_assignment(topology, 3, AssignmentIndices{{1, 0, 1}, {2, 0}, {2, 1}}, poles, DiagramKind::self_energy), std::invalid_argument);
+  EXPECT_THROW(prepare_assignment(topology, 3, AssignmentIndices{{1, 0, 1}, {1, 0}, {3, 1}}, poles, DiagramKind::self_energy), std::invalid_argument);
+}
+
+TEST(DiagramAssignment, zero_poles_use_vertex_kernels_in_both_directions) {
+  using namespace triqs_xca;
+  DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  for (int direction : {0, 1}) {
+    auto a = prepare_assignment(topology, 1, AssignmentIndices{{0, direction}, {0}, {0}}, nda::vector<double>{0.0}, DiagramKind::self_energy);
+    EXPECT_EQ(a.vertices[1].kernel_sign, direction == 0 ? 1 : -1);
+    EXPECT_EQ(a.vertices[3].kernel_sign, direction == 0 ? -1 : 1);
+    EXPECT_EQ(a.prefactor_kernel_exponents(0), 1);
+    EXPECT_EQ(nda::sum(nda::abs(a.edge_kernels)), 0);
+  }
+}
+
+TEST(Backbone, complete_assignment_does_not_require_a_reset) {
+  Backbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 1);
+  nda::vector<double> poles{-1.0, 2.0};
+  B.set_flat_index(1, poles); // backward internal arc with positive pole: vertex kernels, negative prefactor
+  B.set_flat_index(5, poles); // forward internal arc with positive pole: edge kernels, positive prefactor
+  EXPECT_EQ(B.prefactor_sign, 1);
+  EXPECT_EQ(B.get_vertex_Ksign(1), 0);
+  EXPECT_EQ(B.get_vertex_Ksign(3), 0);
+  EXPECT_EQ(B.get_edge(1, 0), 1);
+  EXPECT_EQ(B.get_edge(2, 0), 1);
+  EXPECT_THROW(B.set_flat_index(8, poles), std::invalid_argument);
+  EXPECT_EQ(B.get_flat_index(), 5);
+  EXPECT_EQ(B.prefactor_sign, 1);
+  EXPECT_EQ(B.get_edge(1, 0), 1);
+}
+
+TEST(DiagramAssignment, logical_preparation_does_not_require_a_representable_flat_count) {
+  using namespace triqs_xca;
+  constexpr int order = 18, flavours = 14;
+  nda::array<int, 2> arcs(order, 2);
+  for (int a = 0; a < order; ++a) arcs(a, nda::range::all) = nda::vector<int>{a, a + order};
+  AssignmentIndices indices{nda::vector<int>(order, 1), nda::vector<int>(order - 1, 0), nda::vector<int>(order - 1, 13)};
+  EXPECT_THROW(count_assignments(order, flavours, 1, DiagramKind::self_energy), std::overflow_error);
+  auto assignment = prepare_assignment(DiagramTopology{arcs}, flavours, indices, nda::vector<double>{-1.0}, DiagramKind::self_energy);
+  EXPECT_EQ(assignment.flat_index, -1);
+  ASSERT_EQ(assignment.vertices.size(), 2 * order);
+  EXPECT_EQ(assignment.vertices[1].orbital, 13);
+  EXPECT_EQ(assignment.vertices[order + 1].orbital, 13);
+  EXPECT_EQ(assignment.vertices[1].kernel_sign, -1);
+  EXPECT_EQ(assignment.vertices[order + 1].kernel_sign, 1);
 }

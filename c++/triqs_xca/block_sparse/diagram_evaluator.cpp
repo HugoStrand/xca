@@ -318,8 +318,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path) {
-  backbone.set_flat_index(f_ix, hyb.poles);
-  auto const assignment = snapshot_assignment(backbone);
+  auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
     eval_self_energy_fixed_indices(Gt, backbone, prepared.output_sector, prepared.kap_set, prepared.mu_set,
                                    prepared.propagator_blocks, prepared.dimensions);

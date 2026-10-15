@@ -1,5 +1,6 @@
 #pragma once
 #include <nda/nda.hpp>
+#include "diagram_assignment.hpp"
 
 namespace triqs_xca::backbone {
 
@@ -97,7 +98,9 @@ namespace triqs_xca::backbone {
     nda::vector<int> orb_inds;  // orbital indices on the vertices, i.e., values of lambda, mu, ...
 
     protected:
-    nda::array<int, 2> topology;
+    DiagramTopology topology;
+    DiagramKind kind = DiagramKind::self_energy;
+    Backbone(DiagramTopology topology, int n, int n_int);
     nda::vector<int> fb; // directions of the hybridization lines, 0 for backward, 1 for forward
     long f_ix;           // flat index
 
@@ -128,6 +131,8 @@ namespace triqs_xca::backbone {
                    nda::vector_const_view<double> hyb_poles); // set directions, pole indices, and orbital indices from a single integer index.
     // In terms of fb_ix, p_ix, and o_ix, f_ix = o_ix + n^(m-1) * p_ix + (n * r)^(m-1) * fb_ix, where r is the number of hybridization indices.
     // Throws std::invalid_argument for a flat index outside [0, number of backbones).
+    // Temporary arithmetic adapter: prepare independently, then load the legacy fields.
+    DiagramAssignment prepare_assignment(long flat_ix, nda::vector_const_view<double> hyb_poles);
     void reverse_hyb_line_zero(); // reverse the direction of the hybridization line connected to vertex 0
     void reset_all_inds();
 

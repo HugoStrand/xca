@@ -39,12 +39,12 @@ namespace test_utils   = triqs_xca::test_utils;
 
 namespace {
 
-  // the call throws std::invalid_argument from Backbone::set_flat_index, not from another check
+  // Reject the invalid selection with a relevant diagnostic, independent of the internal validation function.
   template <typename F> void expect_flat_index_rejected(F &&call) {
     try {
       call();
       ADD_FAILURE() << "no exception for an out-of-range flat index";
-    } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("set_flat_index"), std::string::npos) << e.what(); }
+    } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("flat index"), std::string::npos) << e.what(); }
   }
 
 } // namespace

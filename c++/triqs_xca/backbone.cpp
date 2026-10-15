@@ -37,7 +37,10 @@ namespace triqs_xca::backbone {
   void BackboneVertex::set_orb(int i) { orb = i; }
 
   Backbone::Backbone(nda::array<int, 2> topology, int n, int n_int)
-     : m(topology.extent(0)),
+    : Backbone(DiagramTopology{std::move(topology)}, n, n_int) {}
+
+  Backbone::Backbone(DiagramTopology topology, int n, int n_int)
+     : m(topology.order()),
        n(n),
        n_hyb(n - n_int), // number of hybridization operators is total number of operators minus number of interaction operators
        n_int(n_int),
@@ -48,59 +51,16 @@ namespace triqs_xca::backbone {
        prefactor_Ksigns(nda::vector<int>(m - 1, 0)),
        prefactor_Kexps(nda::vector<int>(m - 1, 0)),
        edges(nda::zeros<int>(2 * m - 1, m - 1)),
-       topology(topology),
+       topology(std::move(topology)),
        fb(nda::vector<int>(m, 0)),
-       f_ix(0) {
-
-    for (int i = 0; i < m - 1; i++) {
-      if (topology(i + 1, 0) <= topology(i, 0)) { throw std::invalid_argument("first pair indices must be in increasing order"); }
-    }
-
-    for (int i = 0; i < m; i++) {
-      if (topology(i, 0) >= topology(i, 1)) { throw std::invalid_argument("first row of topology must contain smaller-numbered vertices"); }
-    }
-
-    if (topology(0, 0) != 0) throw std::invalid_argument("topology(0,0) must be 0");
-
-    // Test that sorts all indices and compares to range(0, 2*m)
-    // to check that all vertices are present and there are no duplicates.
-    std::vector<int> vertices_sorted(2 * m);
-    for (int i = 0; i < m; i++) {
-      vertices_sorted[2 * i]     = topology(i, 0);
-      vertices_sorted[2 * i + 1] = topology(i, 1);
-    }
-    std::ranges::sort(vertices_sorted);
-    for (int i = 0; i < 2 * m; i++) {
-      if (vertices_sorted[i] != i) { throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once"); }
-    }
-  }
+       f_ix(0) {}
 
   void Backbone::set_directions(nda::vector_const_view<int> fb_vec) {
-
-    this->fb = fb_vec;
-    if (m != fb_vec.size()) { throw std::invalid_argument("topology and fb must have same # of vertices"); }
-
-    // set operator flags for each vertex, depending on fb
-    vertices[0].set_bar(false);              // operator on vertex 0 has no bar
-    vertices[topology(0, 1)].set_bar(false); // operator on vertex connected to 0 has no bar
-    if (fb_vec(0) == 1) {
-      vertices[0].set_dag(false);             // annihilation operator on vertex 0
-      vertices[topology(0, 1)].set_dag(true); // creation operator on vertex connected to 0
-    } else {
-      vertices[0].set_dag(true);               // creation operator on vertex 0
-      vertices[topology(0, 1)].set_dag(false); // annihilation operator on vertex connected to 0
-    }
-
-    for (int i = 1; i < m; i++) {
-      vertices[topology(i, 0)].set_bar(false); // operator on vertex i has no bar
-      vertices[topology(i, 1)].set_bar(true);  // operator on vertex connected to i has a bar
-      if (fb_vec(i) == 1) {
-        vertices[topology(i, 0)].set_dag(false); // annihilation operator on vertex i
-        vertices[topology(i, 1)].set_dag(true);  // creation operator on vertex i
-      } else {
-        vertices[topology(i, 0)].set_dag(true);  // creation operator on vertex i
-        vertices[topology(i, 1)].set_dag(false); // annihilation operator on vertex i
-      }
+    auto prepared = prepare_vertices(topology, fb_vec, DiagramKind::self_energy);
+    fb = fb_vec;
+    for (int v = 0; v < 2 * m; ++v) {
+      vertices[v].set_bar(prepared[v].barred);
+      vertices[v].set_dag(prepared[v].dagger);
     }
   }
 
@@ -123,57 +83,15 @@ namespace triqs_xca::backbone {
   }
 
   void Backbone::set_pole_inds(nda::vector_const_view<int> pole_inds_vec, nda::vector_const_view<double> hyb_poles) {
-
-    this->pole_inds = pole_inds_vec; // values of l, l`, etc.
-    for (int i = 1; i < m; i++) {
-      if (fb(i) == 1) { // line i is forward
-        if (hyb_poles(pole_inds(i - 1)) <= 0) {
-          // step 4(a)
-          // place K^-_l F_nu at the right vertex
-          vertices[topology(i, 0)].set_hyb_ind(i - 1);
-          vertices[topology(i, 0)].set_Ksign(-1);
-          // place K^+_l F^bar^dag_nu_l at the left vertex
-          vertices[topology(i, 1)].set_hyb_ind(i - 1);
-          vertices[topology(i, 1)].set_Ksign(1);
-          // divide by K^-_l(0)
-          prefactor_Ksigns(i - 1) = -1;
-          prefactor_Kexps(i - 1)  = 1;
-        } else {
-          // step 4(b)
-          // no K's on vertices, but F bar on left vertex
-          vertices[topology(i, 1)].set_hyb_ind(i - 1);
-          // place K^+_l on each edge between the two vertices
-          for (int j = topology(i, 0); j < topology(i, 1); j++) edges(j, i - 1) = 1;
-          // divide by (K^+_l(0))^(# edges between vertices - 1)
-          prefactor_Ksigns(i - 1) = 1;
-          prefactor_Kexps(i - 1)  = topology(i, 1) - topology(i, 0) - 1;
-        }
-      } else { // line i is backward
-        if (hyb_poles(pole_inds(i - 1)) >= 0) {
-          // step 4(a)
-          // place K^+_l F^dag_pi at the right vertex
-          vertices[topology(i, 0)].set_hyb_ind(i - 1);
-          vertices[topology(i, 0)].set_Ksign(1);
-          // place K^-_l F^bar_pi_l at the left vertex
-          vertices[topology(i, 1)].set_hyb_ind(i - 1);
-          vertices[topology(i, 1)].set_Ksign(-1);
-          // divide by -K^-+l(0)
-          prefactor_sign *= -1;
-          prefactor_Ksigns(i - 1) = 1;
-          prefactor_Kexps(i - 1)  = 1;
-        } else {
-          // step 4(b)
-          // no K's on vertices, but F bar on left vertex
-          vertices[topology(i, 1)].set_hyb_ind(i - 1);
-          // place K^-_l on each edge between the two vertices
-          for (int j = topology(i, 0); j < topology(i, 1); j++) edges(j, i - 1) = -1;
-          // divide by (-K^-_l(0))^(# edges between vertices - 1)
-          prefactor_sign *= -1;
-          // if ((topology(i,1) - topology(i,0) - 1) % 2 == 1) prefactor_sign *= -1;
-          prefactor_Ksigns(i - 1) = -1;
-          prefactor_Kexps(i - 1)  = topology(i, 1) - topology(i, 0) - 1;
-        }
-      }
+    auto prepared = prepare_kernel_factors(topology, fb, pole_inds_vec, hyb_poles);
+    pole_inds = pole_inds_vec;
+    edges = std::move(prepared.edges);
+    prefactor_Ksigns = std::move(prepared.signs);
+    prefactor_Kexps = std::move(prepared.exponents);
+    prefactor_sign = prepared.sign;
+    for (int v = 0; v < 2 * m; ++v) {
+      vertices[v].set_hyb_ind(prepared.vertices[v].pole_slot);
+      vertices[v].set_Ksign(prepared.vertices[v].sign);
     }
   }
 
@@ -206,7 +124,7 @@ namespace triqs_xca::backbone {
     // right to left, excluding the ones associated with the special vertex
     this->orb_inds = orb_inds_vec;
     for (int i = 0; i < 2 * m; i++) {
-      if (i != 0 && i != topology(0, 1)) { vertices[i].set_orb(orb_inds_vec(i)); }
+      if (i != 0 && i != topology.arcs(0, 1)) { vertices[i].set_orb(orb_inds_vec(i)); }
     }
   }
 
@@ -214,10 +132,10 @@ namespace triqs_xca::backbone {
     // set orbital indices from a single integer index
     auto orb_inds_vec            = nda::vector<int>(2 * m);
     orb_inds_vec(0)              = -1;
-    orb_inds_vec(topology(0, 1)) = -1; // special vertex 0 and the one connected to it have no orbital indices explicitly summed over
+    orb_inds_vec(topology.arcs(0, 1)) = -1; // special vertex 0 and the one connected to it have no orbital indices explicitly summed over
     for (int i = 1; i < m; i++) {      // loop over lines, skipping the one connected to vertex 0
-      orb_inds_vec(topology(i, 0)) = o_ix % n;
-      orb_inds_vec(topology(i, 1)) = o_ix % n;
+      orb_inds_vec(topology.arcs(i, 0)) = o_ix % n;
+      orb_inds_vec(topology.arcs(i, 1)) = o_ix % n;
       // orbital indices on vertices connected by a line are the same
       o_ix /= n;
     }
@@ -231,7 +149,7 @@ namespace triqs_xca::backbone {
   void Backbone::set_orb_inds_of_0_and_vct0(int orb_ind_0, int orb_ind_vct0) {
     // set the orbital indices of vertex 0 and the vertex connected to it, which are not included in orb_inds
     vertices[0].set_orb(orb_ind_0);
-    vertices[topology(0, 1)].set_orb(orb_ind_vct0);
+    vertices[topology.arcs(0, 1)].set_orb(orb_ind_vct0);
   }
 
   int Backbone::get_parity() {
@@ -240,7 +158,7 @@ namespace triqs_xca::backbone {
     // based on the topology and orbital indices
 
     assert(vertices[0].get_orb() != -1);              // make sure orbital index of vertex 0 is set
-    assert(vertices[topology(0, 1)].get_orb() != -1); // make sure orbital index of vertex connected to 0 is set
+    assert(vertices[topology.arcs(0, 1)].get_orb() != -1); // make sure orbital index of vertex connected to 0 is set
 
     // loop over orbital indices and check which ones are fermionic by checking i < n_hyb
     // put the result in a boolean vector of size m, where true means the line is fermionic
@@ -269,47 +187,45 @@ namespace triqs_xca::backbone {
     std::cout << "is_fermionic = " << is_fermionic << std::endl;
     */
 
-    auto fermionic_topology = topology::fermionic_topology(topology, is_fermionic);
+    auto fermionic_topology = topology::fermionic_topology(topology.arcs, is_fermionic);
     int fermionic_parity    = topology::topology_parity(fermionic_topology);
 
     return fermionic_parity;
   }
 
-  long Backbone::num_flat_indices(long p) const {
-    long n_flat   = 0;
-    bool overflow = __builtin_mul_overflow(fb_ix_max, o_ix_max, &n_flat);
-    for (int i = 0; i < m - 1 && !overflow; ++i) overflow = __builtin_mul_overflow(n_flat, p, &n_flat);
-    if (overflow)
-      throw std::overflow_error("Backbone: the number of backbones of order " + std::to_string(m) + " with " + std::to_string(n) + " flavours and "
-                                + std::to_string(p) + " poles does not fit in a long");
-    return n_flat;
+  long Backbone::num_flat_indices(long p) const { return count_assignments(m, n, p, kind); }
+
+  DiagramAssignment Backbone::prepare_assignment(long flat_ix, nda::vector_const_view<double> hyb_poles) {
+    auto prepared = triqs_xca::prepare_assignment(topology, n, hyb_poles, flat_ix, kind);
+    // Commit a complete assignment only after validation/preparation succeeds.
+    f_ix = flat_ix;
+    fb = prepared.directions;
+    pole_inds = prepared.poles;
+    edges = prepared.edge_kernels;
+    prefactor_Ksigns = prepared.prefactor_kernel_signs;
+    prefactor_Kexps = prepared.prefactor_kernel_exponents;
+    prefactor_sign = prepared.prefactor_sign;
+    orb_inds.resize(2 * m);
+    for (int v = 0; v < 2 * m; ++v) {
+      auto const &vertex = prepared.vertices[v];
+      vertices[v].set_bar(vertex.barred);
+      vertices[v].set_dag(vertex.dagger);
+      vertices[v].set_hyb_ind(vertex.pole_slot);
+      vertices[v].set_Ksign(vertex.kernel_sign);
+      // The legacy numerical API uses zero before supplying its special endpoints.
+      vertices[v].set_orb(vertex.orbital < 0 ? 0 : vertex.orbital);
+      orb_inds(v) = vertex.orbital;
+    }
+    return prepared;
   }
 
   void Backbone::set_flat_index(long flat_ix, nda::vector_const_view<double> hyb_poles) {
-    // set directions, pole indices, and orbital indices from a single integer index.
-    // In terms of fb_ix, p_ix, and o_ix,
-    // f_ix = o_ix + n^(m-1) * p_ix + (n * r)^(m-1) * fb_ix, where r is the number of hybridization indices.
-
-    long n_flat = num_flat_indices(hyb_poles.size());
-    if (flat_ix < 0 || flat_ix >= n_flat)
-      throw std::invalid_argument("set_flat_index: flat index " + std::to_string(flat_ix) + " is out of range [0, " + std::to_string(n_flat) + ")");
-
-    this->f_ix    = flat_ix;
-    long p_ix_max = n_flat / (fb_ix_max * o_ix_max);
-    long rem      = flat_ix;
-    long o_ix     = rem % o_ix_max; // orbital indices
-    rem /= o_ix_max;
-    long p_ix  = rem % p_ix_max; // pole indices
-    long fb_ix = rem / p_ix_max; // directions
-
-    set_directions(fb_ix);
-    set_pole_inds(p_ix, hyb_poles);
-    set_orb_inds(o_ix);
+    prepare_assignment(flat_ix, hyb_poles);
   }
 
   void Backbone::reverse_hyb_line_zero() {
     fb(0)    = 1 - fb(0);
-    int vct0 = topology(0, 1);
+    int vct0 = topology.arcs(0, 1);
     vertices[0].set_dag(!vertices[0].has_dag());
     vertices[vct0].set_dag(!vertices[vct0].has_dag());
   }
@@ -328,8 +244,8 @@ namespace triqs_xca::backbone {
   int Backbone::get_vertex_Ksign(int i) { return vertices[i].get_Ksign(); }
   int Backbone::get_vertex_orb(int i) { return vertices[i].get_orb(); }
   int Backbone::get_edge(int num, int pole_ind) { return edges(num, pole_ind); }
-  int Backbone::get_topology(int i, int j) { return topology(i, j); }
-  const nda::array<int, 2> Backbone::get_topology() const { return topology; }
+  int Backbone::get_topology(int i, int j) { return topology.arcs(i, j); }
+  const nda::array<int, 2> Backbone::get_topology() const { return topology.arcs; }
 
   int Backbone::get_pole_ind(int i) { return pole_inds(i); }
   int Backbone::get_fb(int i) { return fb(i); }
@@ -337,6 +253,7 @@ namespace triqs_xca::backbone {
   long Backbone::get_flat_index() { return f_ix; }
 
   CorrelatorBackbone::CorrelatorBackbone(nda::array<int, 2> topology, int n, int n_int) : Backbone(topology, n, n_int) {
+    kind = DiagramKind::correlator;
     fb_ix_max = checked_pow(2, m - 1);
   }
 
@@ -351,27 +268,12 @@ namespace triqs_xca::backbone {
   }
 
   void CorrelatorBackbone::set_directions(nda::vector_const_view<int> fb_vec) {
-    // @param[in] fb forward/backward line information
-    // same logic as the Backbone method, but no line connected to vertex 0 -- just the "for loop" part
-
-    if (m - 1 != fb_vec.size()) { throw std::invalid_argument("fb must have m - 1 elements"); }
-    this->fb(nda::range(1, m)) = fb_vec;
-    this->fb(0)                = -1; // no line connected to vertex 0
-
-    vertices[topology(0, 0)].set_bar(false); // operator on vertex 0 has no bar
-    vertices[topology(0, 1)].set_bar(false); // operator on vertex connected to 0 has no bar
-    vertices[topology(0, 0)].set_dag(true);  // creation operator on vertex 0
-    vertices[topology(0, 1)].set_dag(false); // annihilation operator on vertex connected to 0
-    for (int i = 1; i < m; i++) {
-      vertices[topology(i, 0)].set_bar(false); // operator on vertex i has no bar
-      vertices[topology(i, 1)].set_bar(true);  // operator on vertex connected to i has a bar
-      if (fb(i) == 1) {
-        vertices[topology(i, 0)].set_dag(false); // annihilation operator on vertex i
-        vertices[topology(i, 1)].set_dag(true);  // creation operator on vertex i
-      } else {
-        vertices[topology(i, 0)].set_dag(true);  // creation operator on vertex i
-        vertices[topology(i, 1)].set_dag(false); // annihilation operator on vertex i
-      }
+    auto prepared = prepare_vertices(topology, fb_vec, DiagramKind::correlator);
+    fb(nda::range(1, m)) = fb_vec;
+    fb(0) = -1;
+    for (int v = 0; v < 2 * m; ++v) {
+      vertices[v].set_bar(prepared[v].barred);
+      vertices[v].set_dag(prepared[v].dagger);
     }
   }
 

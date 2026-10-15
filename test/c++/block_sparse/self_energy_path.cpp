@@ -7,7 +7,9 @@ namespace {
 
 using namespace triqs_xca::block_sparse;
 using triqs_xca::backbone::Backbone;
-using triqs_xca::snapshot_assignment;
+using triqs_xca::prepare_assignment;
+using triqs_xca::DiagramTopology;
+using triqs_xca::DiagramKind;
 
 // A synthetic ladder of sectors with dimensions 1,2,1. Only connectivity
 // matters here: the operator/propagator entries are zero, but their metadata
@@ -39,12 +41,12 @@ std::vector<int> values(nda::vector<int> const &v) { return {v.begin(), v.end()}
 TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
   auto F = ladder(2);
   auto G = propagator();
-  Backbone B(nda::array<int, 2>{{0, 1}}, 2);
+  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
   nda::vector<double> poles{1.0};
-  B.set_flat_index(0, poles); // creation at vertex 0, annihilation at vertex 1
+  auto assignment = prepare_assignment(topology, 2, poles, 0, DiagramKind::self_energy); // creation at vertex 0, annihilation at vertex 1
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, snapshot_assignment(B), F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
 
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -59,17 +61,16 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(values(path.dimensions), (i / 2 == 0 ? std::vector<int>{1, 2, 1} : std::vector<int>{2, 1, 2}));
   }
 
-  B.reset_all_inds();
-  B.set_flat_index(1, poles); // annihilation first
+  assignment = prepare_assignment(topology, 2, poles, 1, DiagramKind::self_energy); // annihilation first
   std::vector<SelfEnergyPath> reversed;
-  visit_self_energy_paths(G, snapshot_assignment(B), F, workspace, [&](auto const &path) { reversed.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
   for (int i = 0; i < 4; ++i) {
     EXPECT_EQ(reversed[i].output_sector, i / 2 + 1);
     EXPECT_EQ(reversed[i].terminal_sector, i / 2 + 1);
     EXPECT_EQ(values(reversed[i].propagator_blocks), (std::vector<int>{i / 2}));
   }
-  EXPECT_EQ(B.get_flat_index(), 1); // the walker neither resets nor decodes
+  EXPECT_EQ(assignment.flat_index, 1); // the walker neither resets nor decodes
   EXPECT_EQ(paths[0].flat_index, 0); // copies survive workspace and backbone reuse
   EXPECT_EQ(values(paths[0].propagator_blocks), (std::vector<int>{1}));
   EXPECT_EQ(values(paths[0].dimensions), (std::vector<int>{1, 2, 1}));
@@ -77,13 +78,13 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
 
 TEST(SelfEnergyPath, nested_paths_use_every_propagator_mask_but_not_the_output_mask) {
   auto F = ladder();
-  Backbone B(nda::array<int, 2>{{0, 3}, {1, 2}}, 1);
-  B.set_flat_index(0, nda::vector<double>{1.0});
+  DiagramTopology topology{nda::array<int, 2>{{0, 3}, {1, 2}}};
+  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
   SelfEnergyPath workspace(2);
   auto G = propagator();
   std::vector<SelfEnergyPath> paths;
   auto collect = [&](auto const &path) { paths.push_back(path); };
-  visit_self_energy_paths(G, snapshot_assignment(B), F, workspace, collect);
+  visit_self_energy_paths(G, assignment, F, workspace, collect);
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].terminal_sector, 0);
@@ -94,18 +95,18 @@ TEST(SelfEnergyPath, nested_paths_use_every_propagator_mask_but_not_the_output_m
   for (auto mask : {nda::vector<int>{0, -1, 0}, nda::vector<int>{0, 0, -1}}) {
     auto masked = propagator(mask);
     paths.clear();
-    visit_self_energy_paths(masked, snapshot_assignment(B), F, workspace, collect);
+    visit_self_energy_paths(masked, assignment, F, workspace, collect);
     EXPECT_TRUE(paths.empty());
   }
   auto output_zero = propagator({-1, 0, 0});
   paths.clear();
-  visit_self_energy_paths(output_zero, snapshot_assignment(B), F, workspace, collect);
+  visit_self_energy_paths(output_zero, assignment, F, workspace, collect);
   ASSERT_EQ(paths.size(), 1); // no propagator on the external output sector
   EXPECT_EQ(paths[0].output_sector, 0);
 
   // Reusing a workspace of the wrong order must not write past its arrays.
   SelfEnergyPath wrong_order(1);
-  EXPECT_THROW(visit_self_energy_paths(G, snapshot_assignment(B), F, wrong_order, collect), std::invalid_argument);
+  EXPECT_THROW(visit_self_energy_paths(G, assignment, F, wrong_order, collect), std::invalid_argument);
 }
 
 TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
@@ -114,11 +115,11 @@ TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
   // This characterizes discovery only, not a physically admissible evaluator.
   F.Fs = F.F_dags;
   auto G = propagator();
-  Backbone B(nda::array<int, 2>{{0, 1}}, 1);
-  B.set_flat_index(0, nda::vector<double>{1.0});
+  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
+  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, snapshot_assignment(B), F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].terminal_sector, 2);
@@ -128,11 +129,11 @@ TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
 TEST(SelfEnergyPath, crossing_path_continues_after_the_special_vertex) {
   auto F = ladder();
   auto G = propagator();
-  Backbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 1);
-  B.set_flat_index(0, nda::vector<double>{1.0});
+  DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
   SelfEnergyPath workspace(2);
   std::vector<SelfEnergyPath> paths;
-  visit_self_energy_paths(G, snapshot_assignment(B), F, workspace, [&](auto const &path) { paths.push_back(path); });
+  visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].special_vertex, 2);
   EXPECT_EQ(paths[0].output_sector, 0);
@@ -145,8 +146,7 @@ TEST(SelfEnergyPath, discovery_is_independent_of_source_backbone_mutation) {
   auto F = ladder(2);
   auto G = propagator();
   Backbone B(nda::array<int, 2>{{0, 1}}, 2);
-  B.set_flat_index(0, nda::vector<double>{1.0});
-  auto const assignment = snapshot_assignment(B);
+  auto const assignment = B.prepare_assignment(0, nda::vector<double>{1.0});
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, workspace, [&](auto const &path) {

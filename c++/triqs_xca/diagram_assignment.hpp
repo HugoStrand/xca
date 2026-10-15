@@ -4,15 +4,13 @@
 
 #include <nda/nda.hpp>
 
-namespace triqs_xca::backbone {
-class Backbone;
-}
-
 namespace triqs_xca {
 
 /// Diagram connectivity, independent of operator representation and sector layout.
 struct DiagramTopology {
   nda::array<int, 2> arcs;
+
+  DiagramTopology(nda::array<int, 2> arcs);
 
   int order() const { return static_cast<int>(arcs.extent(0)); }
   int special_vertex() const { return arcs(0, 1); }
@@ -43,10 +41,41 @@ struct DiagramAssignment {
   int prefactor_sign;
 };
 
-/// Temporary migration bridge: capture a fully assigned legacy backbone.
-/// The two special endpoint orbitals remain unresolved even if an earlier
-/// numerical contraction has assigned them in the mutable backbone. This bridge
-/// will be replaced by preparation directly from topology and logical indices.
-DiagramAssignment snapshot_assignment(backbone::Backbone &source);
+enum class DiagramKind { self_energy, correlator };
+
+/// Logical indices: one direction per interaction arc (the external correlator
+/// arc is absent), one pole and one orbital per internal arc. No linear index
+/// or execution order is needed to prepare these assignments.
+struct AssignmentIndices {
+  nda::vector<int> directions;
+  nda::vector<int> poles;
+  nda::vector<int> orbitals;
+};
+
+/// The legacy flat-index convention lives at the selection boundary.
+long count_assignments(int order, int flavours, long pole_count, DiagramKind kind);
+AssignmentIndices decode_assignment_indices(int order, int flavours, long pole_count, long flat_index, DiagramKind kind);
+DiagramAssignment prepare_assignment(DiagramTopology const &topology, int flavours, AssignmentIndices const &indices,
+                                     nda::vector_const_view<double> poles, DiagramKind kind);
+DiagramAssignment prepare_assignment(DiagramTopology const &topology, int flavours, nda::vector_const_view<double> poles,
+                                     long flat_index, DiagramKind kind);
+
+// Shared preparation pieces used by the temporary mutable Backbone adapter.
+// They return fresh values: no previous assignment or reset is required.
+std::vector<VertexAssignment> prepare_vertices(DiagramTopology const &topology, nda::vector_const_view<int> directions, DiagramKind kind);
+
+struct VertexKernel {
+  int pole_slot = 0;
+  int sign = 0;
+};
+struct KernelFactors {
+  std::vector<VertexKernel> vertices;
+  nda::array<int, 2> edges;
+  nda::vector<int> signs;
+  nda::vector<int> exponents;
+  int sign = 1;
+};
+KernelFactors prepare_kernel_factors(DiagramTopology const &topology, nda::vector_const_view<int> full_directions,
+                                    nda::vector_const_view<int> pole_indices, nda::vector_const_view<double> poles);
 
 } // namespace triqs_xca
