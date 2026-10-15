@@ -14,7 +14,8 @@
 | 3a | `e932ea1` | Explicit statistics and prepared permutation signs; all 67 CTest entries passed |
 | 3b | `3832492` | Dense arithmetic consumes const assignments; all 68 CTest entries passed |
 | 3c | `8ff3717` | Block-sparse arithmetic consumes const assignments; all 69 CTest entries passed |
-| 3d–7 | None | Interaction bindings and remaining planning, policy, and cleanup stages pending |
+| 3d | `6de60bc` | Shared directed interactions and partial-contraction descriptions; all 70 CTest entries passed |
+| 3e–7 | None | Model metadata, operand binding, and remaining planning, policy, and cleanup stages pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -378,3 +379,48 @@ connectivity discovery still occurs in its evaluation routine; extracting its
 fragments and joins remains stage 5. Completing stage 3, numerical/support policy,
 selection consolidation, and final adapter cleanup remain required. The persistent
 goal is active.
+
+
+## Stage 3d — interaction contractions (`6de60bc`)
+
+Direction previously had several independent meanings embedded in loops:
+operator adjoints, coefficient-index ordering, reflection, and the sign absorbed
+into a reflected bar. [interaction.hpp](c++/triqs_xca/interaction.hpp) now owns
+these meanings in `InteractionLine`. `BarredOperator` describes a partial sum
+with a retained earlier-vertex flavour and fixed pole; each term names the later
+operator, coefficient indices, and sign. `EndpointSum` describes the unexpanded
+two-flavour sum of the special self-energy arc. None contains matrix storage or
+block connectivity, and none requires Cartesian-product materialization.
+
+Read that header first, then the two materialization loops in
+[dense/fset.cpp](c++/triqs_xca/dense/fset.cpp) and
+[block_sparse/block_op.cpp](c++/triqs_xca/block_sparse/block_op.cpp), followed by
+the special endpoint contraction in each evaluator. Vertex preparation also
+uses the common direction rules. Dense and block-sparse bars retain their
+existing storage and summation order. The block-sparse materializer still limits
+its sum to one symmetry set; changing that policy remains a separate stage.
+
+Reversing an interaction transposes coefficient indices; it does not conjugate
+coefficients. The operator adjoint is independent of this transpose. The dense
+hybridization cache already includes the reflection sign in reflected time
+values, while block-sparse evaluation applies it explicitly. These representation
+conventions are now documented at the consumers. Permutation statistics and
+diagram-order signs remain separate factors.
+
+[interaction_contractions.cpp](test/c++/interaction_contractions.cpp) checks the
+directed-line rules and compares both materialized representations with explicitly
+written complex, nonsymmetric two-flavour sums. This avoids relying solely on
+agreement between two consumers of the same new helper. Existing complex-basis,
+retarded-interaction, parity, and correlator tests remain unchanged.
+
+Validation: CPU configure/build, all 11 focused CTest entries, and all 70 CPU
+CTest entries passed (full suite 56.60 s). Tracked generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-contractions-{configure,build,focused,test}.log`.
+
+The shared mathematical meanings are explicit, but this is not completion of
+the planning/execution split. Model-family metadata still enters through the
+legacy model adapter, vertex operands are still bound inside arithmetic, and
+block correlator paths/joins still need extraction. Stages 4–7 remain required.
+Review also identified that `FSet::update_hybridization` does not clear bars when
+the pole count is unchanged; verify and correct this refresh/lifetime defect in
+a separate code/log pair before relying on model updates.
