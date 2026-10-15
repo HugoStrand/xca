@@ -1,4 +1,5 @@
 #include "triqs_xca/dense/fset.hpp"
+#include "triqs_xca/interaction.hpp"
 
 namespace triqs_xca::dense {
 
@@ -30,8 +31,12 @@ namespace triqs_xca::dense {
     for (int l = 0; l < p; l++) {
       for (int nu = 0; nu < n; nu++) {
         for (int lam = 0; lam < n; lam++) {
-          F_bars_refl(nu, l, _, _) -= hyb_coeffs(l, nu, lam) * Fs(lam, _, _);
-          F_dag_bars(nu, l, _, _) += hyb_coeffs(l, lam, nu) * F_dags(lam, _, _);
+          auto backward = BarredOperator{{false}, nu, l}.term(lam);
+          auto forward = BarredOperator{{true}, nu, l}.term(lam);
+          F_bars_refl(nu, l, _, _) += backward.sign * hyb_coeffs(backward.pole, backward.coefficient_row, backward.coefficient_column)
+                                    * get_operator(backward.op.adjoint, backward.op.flavour);
+          F_dag_bars(nu, l, _, _) += forward.sign * hyb_coeffs(forward.pole, forward.coefficient_row, forward.coefficient_column)
+                                   * get_operator(forward.op.adjoint, forward.op.flavour);
         }
       }
     }

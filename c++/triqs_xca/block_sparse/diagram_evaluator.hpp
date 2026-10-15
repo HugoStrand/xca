@@ -6,6 +6,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/diagram_sign.hpp"
+#include "triqs_xca/interaction.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/self_energy_path.hpp"
 
@@ -62,7 +63,7 @@ class DiagramEvaluator {
   // routines for self-energy diagrams
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
-  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, bool is_forward, int b_ix_0, int p_kap,
+  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, EndpointSum const &sum, int b_ix_0, int p_kap,
                                                   int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
 
   void eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path);

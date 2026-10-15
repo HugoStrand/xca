@@ -9,6 +9,7 @@
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/diagram_sign.hpp"
+#include "triqs_xca/interaction.hpp"
 #include "triqs_xca/atom_diag.hpp"
 
 namespace triqs_xca::dense {
@@ -70,7 +71,7 @@ namespace triqs_xca::dense {
     // routines for self-energy diagrams
 
     // multiply by the zero vertex and the vertex connected to zero
-    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, bool is_forward, EndpointSigns const &signs);
+    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, EndpointSum const &sum, EndpointSigns const &signs);
 
     // routines for correlator diagrams
 

@@ -1,3 +1,4 @@
+#include "triqs_xca/interaction.hpp"
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -573,15 +574,17 @@ namespace triqs_xca::block_sparse {
           for (int nu = 0; nu < sym_set_sizes(p_set); nu++) {
             long lam_orb = sym_set_to_orb(p_set, lam);
             long nu_orb  = sym_set_to_orb(p_set, nu);
+            auto forward = BarredOperator{{true}, static_cast<int>(lam_orb), l}.term(nu_orb);
+            auto backward = BarredOperator{{false}, static_cast<int>(nu_orb), l}.term(lam_orb);
             for (int b = 0; b < F_dags[p_set].get_num_block_cols(); b++) {
               if (F_dags[p_set].get_block_index(b) != -1) {
-                F_dag_bars[p_set].add_block(b, lam, l, nda::make_regular(hyb_coeffs(l, nu_orb, lam_orb) * F_dags[p_set].get_block(b)(nu, _, _)));
+                F_dag_bars[p_set].add_block(b, lam, l, nda::make_regular(forward.sign * hyb_coeffs(forward.pole, forward.coefficient_row, forward.coefficient_column) * F_dags[p_set].get_block(b)(nu, _, _)));
               }
             }
             for (int b = 0; b < Fs[p_set].get_num_block_cols(); b++) {
               if (Fs[p_set].get_block_index(b) != -1) {
                 F_bars_refl[p_set].add_block(
-                   b, nu, l, nda::make_regular(-hyb_coeffs(l, nu_orb, lam_orb) * Fs[p_set].get_block(b)(lam, _, _))); // Add -1 sign for reflected F
+                   b, nu, l, nda::make_regular(backward.sign * hyb_coeffs(backward.pole, backward.coefficient_row, backward.coefficient_column) * Fs[p_set].get_block(b)(lam, _, _))); // Add -1 sign for reflected F
               }
             }
           }

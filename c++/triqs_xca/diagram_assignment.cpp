@@ -1,4 +1,5 @@
 #include "diagram_assignment.hpp"
+#include "interaction.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -71,8 +72,9 @@ std::vector<VertexAssignment> prepare_vertices(DiagramTopology const &topology, 
   for (int a = first; a < m; ++a) {
     int direction = directions(a - first);
     if (direction != 0 && direction != 1) throw std::invalid_argument("arc direction must be zero or one");
-    result[topology.arcs(a, 0)].dagger = direction == 0;
-    result[topology.arcs(a, 1)].dagger = direction == 1;
+    InteractionLine line{direction == 1};
+    result[topology.arcs(a, 0)].dagger = line.early_operator(-1).adjoint;
+    result[topology.arcs(a, 1)].dagger = line.late_operator(-1).adjoint;
     result[topology.arcs(a, 1)].barred = a != 0;
   }
   return result;

@@ -210,33 +210,32 @@ namespace triqs_xca::dense {
     hyb.multiply_kernels_prefactor(T_buf, assignment);
   }
 
-  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, bool is_forward, EndpointSigns const &signs) {
+  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, EndpointSum const &sum, EndpointSigns const &signs) {
 
-    nda::array_const_view<dcomplex, 3> hyb_too = is_forward ? hyb.values : hyb.values_reflect;
+    // Dense values_reflect already contains the interaction reflection sign.
+    nda::array_const_view<dcomplex, 3> hyb_too = sum.line.reflected() ? hyb.values_reflect : hyb.values;
 
     // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
     // at the cost of storing an n x r x N x N array (Tkaps) instead of an r x N x N array
 
-    for (int kap = 0; kap < n; kap++) {
-      nda::array_const_view<dcomplex, 2> F_kap = Fset.get_operator(!is_forward, kap);
+    for (int kap = 0; kap < sum.flavours; kap++) {
+      nda::array_const_view<dcomplex, 2> F_kap = Fset.get_operator(sum.line.early_operator(kap).adjoint, kap);
       for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
     }
 
     T_buf = 0;
 
-    for (int mu = 0; mu < n; mu++) {
+    for (int mu = 0; mu < sum.flavours; mu++) {
       Tmu = 0;
-      for (int kap = 0; kap < n; kap++) {
-        // The backward branch transposes the coefficient index, as the barred operators of the interior lines do: forward is
-        // F_dag(mu) ... F(kap) with the daggered index first, backward is F(mu) ... F_dag(kap) and needs (kap, mu). Reading (mu, kap) on
-        // both branches breaks unitary invariance under a complex basis rotation, which the legacy path avoids by transposing at construction
-        nda::array_const_view<dcomplex, 1> hyb_t = is_forward ? hyb_too(_, mu, kap) : hyb_too(_, kap, mu);
+      for (int kap = 0; kap < sum.flavours; kap++) {
+        auto [row, column] = sum.line.coefficient_indices(mu, kap);
+        nda::array_const_view<dcomplex, 1> hyb_t = hyb_too(_, row, column);
 
         int fermionic_parity = signs(interaction_statistics_[kap], interaction_statistics_[mu]);
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += fermionic_parity * hyb_t(t) * Tkaps(kap, t, _, _);
       }
-      nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(is_forward, mu);
+      nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(sum.line.late_operator(mu).adjoint, mu);
       for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
     }
   }
@@ -287,8 +286,8 @@ namespace triqs_xca::dense {
       integrate_left_edge(T, Gt, assignment, v);
     }
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, assignment.directions(0) == 1, signs);
-    multiply_left_vertex_and_right_zero_vertex(U, assignment.directions(0) != 1, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, EndpointSum{{assignment.directions(0) == 1}, n}, signs);
+    multiply_left_vertex_and_right_zero_vertex(U, EndpointSum{{assignment.directions(0) != 1}, n}, signs);
     T = T - U;
 
     for (int v = vct0 + 1; v < 2 * m; v++) {
@@ -325,7 +324,7 @@ namespace triqs_xca::dense {
 
     // 2. For each kappa, multiply by F_kappa(^dag). Then for each mu, kappa, multiply by Delta_{mu kappa}, and sum over kappa. Finally for each mu,
     // multiply F_mu[^dag] and sum over mu.
-    multiply_left_vertex_and_right_zero_vertex(T, assignment.directions(0) == 1, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, EndpointSum{{assignment.directions(0) == 1}, n}, signs);
 
     // 3. Continue right to left until the final vertex multiplication is complete.
     for (int v = vct0 + 1; v < 2 * m; v++) { // loop from the special vertex to the last vertex

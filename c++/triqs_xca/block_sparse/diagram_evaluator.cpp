@@ -268,7 +268,7 @@ void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Di
 
 // ========== Private self-energy routines ==========
 
-void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, bool is_forward, int b_ix_0,
+void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, EndpointSum const &sum, int b_ix_0,
                                                                   int p_kap, int p_mu, nda::vector_const_view<int> ind_path,
                                                                   nda::vector_const_view<int> block_dims, EndpointSigns const &signs) {
   int v_ix    = assignment.topology.special_vertex();
@@ -280,28 +280,26 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
   nda::array_view<dcomplex, 4> Tkaps_v = Tkaps(_, _, range(0, block_dims(v_ix)), range(0, block_dims(0)));
   nda::array_view<dcomplex, 3> Tmu_v   = Tmu(_, range(0, block_dims(v_ix)), range(0, block_dims(0)));
 
-  auto F_selector = [&](bool is_forward, int b_ix_ix, int p_ix, int ix) {
-    return is_forward ? Fq.Fs[p_ix].get_block(b_ix_ix)(ix, _, _) : Fq.F_dags[p_ix].get_block(b_ix_ix)(ix, _, _);
+  auto F_selector = [&](bool adjoint, int b_ix_ix, int p_ix, int ix) {
+    return adjoint ? Fq.F_dags[p_ix].get_block(b_ix_ix)(ix, _, _) : Fq.Fs[p_ix].get_block(b_ix_ix)(ix, _, _);
   };
 
   // Apply F_kap operator at tau = 0 from the right
   for (int kap = 0; kap < Fq.sym_set_sizes(p_kap); kap++) {
-    auto F_kap = F_selector(is_forward, b_ix_0, p_kap, kap);
+    auto F_kap = F_selector(sum.line.early_operator(Fq.sym_set_to_orb(p_kap, kap)).adjoint, b_ix_0, p_kap, kap);
     for (int t = 0; t < r; t++) Tkaps_v(kap, t, _, _) = matmul(T_v(t, _, _), F_kap);
   }
 
   T_vp         = 0; // With intermediate result now in Tkaps, reuse T for final result
-  int hyb_sign = is_forward ? +1. : -1.;
+  int hyb_sign = sum.line.reflection_sign(); // block-sparse reflected values have no sign baked in
 
   for (int mu = 0; mu < Fq.sym_set_sizes(p_mu); mu++) {
     Tmu_v = 0;
     // Multiply with hybridization function
     for (int kap = 0; kap < Fq.sym_set_sizes(p_kap); kap++) {
-      // The backward branch transposes the coefficient index, as the barred operators do for the interior lines, see dense/diagram_evaluator.cpp.
-      // Reading the same order on both branches breaks unitary invariance under a complex basis rotation
-      nda::array_const_view<dcomplex, 1> hyb_oo = is_forward ?
-        hyb.values(_, Fq.sym_set_to_orb(p_mu, mu), Fq.sym_set_to_orb(p_kap, kap)) :
-        hyb.values_reflect(_, Fq.sym_set_to_orb(p_kap, kap), Fq.sym_set_to_orb(p_mu, mu));
+      auto [row, column] = sum.line.coefficient_indices(Fq.sym_set_to_orb(p_mu, mu), Fq.sym_set_to_orb(p_kap, kap));
+      nda::array_const_view<dcomplex, 1> hyb_oo = sum.line.reflected() ?
+        hyb.values_reflect(_, row, column) : hyb.values(_, row, column);
 
       int fermionic_parity = signs(interaction_statistics_[Fq.sym_set_to_orb(p_kap, kap)],
                                     interaction_statistics_[Fq.sym_set_to_orb(p_mu, mu)]);
@@ -309,7 +307,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
       for (int t = 0; t < r; t++) Tmu_v(t, _, _) += fermionic_parity * hyb_sign * hyb_oo(t) * Tkaps_v(kap, t, _, _);
     }
     // Apply F_mu operator from the left at vertex connected to tau = 0
-    auto F_mu = F_selector(!is_forward, b_ix_mu, p_mu, mu);
+    auto F_mu = F_selector(sum.line.late_operator(Fq.sym_set_to_orb(p_mu, mu)).adjoint, b_ix_mu, p_mu, mu);
     for (int t = 0; t < r; t++) T_vp(t, _, _) += matmul(F_mu, Tmu_v(t, _, _));
   }
 }
@@ -353,7 +351,7 @@ void DiagramEvaluator::eval_self_energy_fixed_indices(BlockDiagOpFun &Gt, Diagra
     integrate_left_edge(T, Gt, assignment, v, ind_path, block_dims);
   }
 
-  multiply_left_vertex_and_right_zero_vertex(T, assignment, (not assignment.vertices[0].dagger), b_ix, p_kap, p_mu, ind_path, block_dims, signs);
+  multiply_left_vertex_and_right_zero_vertex(T, assignment, EndpointSum{{assignment.directions(0) == 1}, n}, b_ix, p_kap, p_mu, ind_path, block_dims, signs);
 
   for (int v = vct0 + 1; v < 2 * m; v++) {
     integrate_left_edge(T, Gt, assignment, v - 1, ind_path, block_dims);
