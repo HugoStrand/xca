@@ -13,7 +13,8 @@
 | 2b | `4f05c6e` | Shared preparation owns diagram rules; all 67 CTest entries passed |
 | 3a | `e932ea1` | Explicit statistics and prepared permutation signs; all 67 CTest entries passed |
 | 3b | `3832492` | Dense arithmetic consumes const assignments; all 68 CTest entries passed |
-| 3c–7 | None | Interaction bindings, block-sparse migration, and remaining stages pending |
+| 3c | `8ff3717` | Block-sparse arithmetic consumes const assignments; all 69 CTest entries passed |
+| 3d–7 | None | Interaction bindings and remaining planning, policy, and cleanup stages pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -330,3 +331,50 @@ interaction contractions and block-sparse operand binding remain to be made
 explicit. Legacy hybridization overloads remain for block-sparse arithmetic and
 must be removed after that migration. Stages 4–7, including support/numerical
 policy and final adapter cleanup, remain required.
+
+
+## Stage 3c — block-sparse prepared evaluation (`8ff3717`)
+
+Block-sparse numerical routines now consume the same const `DiagramAssignment`
+as self-energy path discovery. Previously discovery read the prepared value but
+the arithmetic still read the mutable backbone used to create it. Vertex, edge,
+prefactor, special-endpoint, and correlator routines now use the value directly.
+No evaluator numerical routine needs backbone selection, reset, or reversal.
+The remaining backbone use is in selection/count adapters and diagnostic printing.
+
+Read the prepared `compute_self_energy` and `eval_correlator` overloads in
+[block_sparse/diagram_evaluator.cpp](c++/triqs_xca/block_sparse/diagram_evaluator.cpp),
+then `eval_self_energy_paths` and the vertex/edge helpers. Indexed calls prepare
+an assignment and delegate; whole-diagram loops reuse their path workspace.
+The prepared self-energy entry returns one contribution and resets its accumulator
+each call. The correlator entry returns its contribution directly. Both use the
+current propagator; assignment indices refer to this evaluator's model/pole tables.
+
+With both numerical consumers migrated, the temporary backbone overloads in
+[hyb.cpp](c++/triqs_xca/hyb.cpp) were removed, together with that header's backbone
+dependency. There is now one implementation of the shared edge/prefactor kernel
+operations. Backward coefficient transposition, reflected-kernel conventions,
+path traversal, masks, endpoint signs, accumulation order, and cutoffs are unchanged.
+This step makes no numerical-policy or grouping change.
+
+The new [block-sparse prepared tests](test/c++/block_sparse/prepared_evaluator.cpp)
+compare logical and indexed calls for a density-interaction model and reuse the
+same assignment with G scaled by 1.1. The self-energy scales by 1.1^3 and the
+identity-operator correlator by 1.1^4 at order two. These tests check selection and
+lifetime behavior; the existing analytic and cross-evaluator tests continue to
+check the diagram calculation itself. The old direct-backbone tests still work
+through the compatibility adapters.
+
+Validation: CPU configure/build, all 14 focused CTest entries, and all 69 CPU
+CTest entries passed (full suite 56.93 s). Tracked generated bindings are
+unchanged; new prepared C++ methods are excluded from wrapping. Logs:
+`/tmp/xca-backbone-bs-assignment-{configure,build,focused,test}.log`.
+Source review found no remaining numerical backbone-state reads or callers of
+the removed kernel overloads. No CUDA work or benchmarking was performed.
+
+Next: make the shared interaction/partial-contraction and endpoint-sum meanings
+explicit, then resolve block-specific operands before arithmetic. Correlator
+connectivity discovery still occurs in its evaluation routine; extracting its
+fragments and joins remains stage 5. Completing stage 3, numerical/support policy,
+selection consolidation, and final adapter cleanup remain required. The persistent
+goal is active.
