@@ -3,12 +3,13 @@
 #include <gtest/gtest.h>
 
 #include <triqs_xca/backbone.hpp>
+#include <triqs_xca/diagram_sign.hpp>
 #include <triqs_xca/topology.hpp>
 
 /**
  * @file backbone_parity.cpp
  *
- * @brief Tests of Backbone::get_parity(), the only place where the statistics of a line enters the diagram
+ * @brief Tests of explicit diagram sign preparation and the Backbone::get_parity compatibility adapter
  *
  * @details A vertex is fermionic iff its orbital index is smaller than n_hyb = n - n_int, with -2 and -3 as the external-operator sentinels of
  * the correlator path. The pairs containing a bosonic vertex are dropped by topology::fermionic_topology() and the permutation parity of the
@@ -41,7 +42,14 @@ namespace {
     orb(crossing3(2, 1)) = orb2;
     B.set_orb_inds(orb);
     B.set_orb_inds_of_0_and_vct0(orb_kap, orb_mu);
-    return B.get_parity();
+    auto assignment = triqs_xca::prepare_assignment(
+      triqs_xca::DiagramTopology{crossing3}, n_ext, triqs_xca::AssignmentIndices{fb, {0, 0}, {orb1, orb2}}, nda::vector<double>{1.0},
+      triqs_xca::DiagramKind::self_energy);
+    auto statistics = triqs_xca::fermion_boson_statistics(n_ext - n_int_arg, n_int_arg);
+    auto signs = triqs_xca::prepare_endpoint_signs(assignment, statistics);
+    int prepared = signs(statistics[orb_kap], statistics[orb_mu]);
+    EXPECT_EQ(B.get_parity(), prepared) << "legacy statistics translation";
+    return prepared; // the hand-derived table checks explicit preparation directly
   }
 
 } // namespace
@@ -150,4 +158,43 @@ TEST(BackboneParity, an_unset_orbital_index_is_rejected) {
     B.get_parity();
     FAIL() << "expected std::invalid_argument for an unset orbital index";
   } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("is not set"), std::string::npos) << e.what(); }
+}
+
+TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
+  using namespace triqs_xca;
+  constexpr auto F = Statistics::fermionic, B = Statistics::bosonic;
+  std::vector<Statistics> interactions{B, F, B, F};
+  auto assignment = prepare_assignment(DiagramTopology{crossing3}, 4, AssignmentIndices{{1, 0, 1}, {0, 0}, {1, 0}},
+                                      nda::vector<double>{1.0}, DiagramKind::self_energy);
+  auto signs = prepare_endpoint_signs(assignment, interactions);
+  // Internal line 1 is fermionic, line 2 bosonic: retaining external line 0
+  // gives the crossing {{0,2},{1,3}}, while omitting it leaves a single arc.
+  EXPECT_EQ(signs(F, F), -1);
+  EXPECT_EQ(signs(B, F), 1);
+  EXPECT_EQ(signs(F, B), 1);
+  EXPECT_EQ(signs(B, B), 1);
+  EXPECT_EQ(assignment.vertices[0].orbital, -1);
+  EXPECT_EQ(assignment.vertices[2].orbital, -1);
+
+  auto correlator = prepare_assignment(DiagramTopology{crossing3}, 4, AssignmentIndices{{0, 1}, {0, 0}, {1, 0}},
+                                      nda::vector<double>{1.0}, DiagramKind::correlator);
+  auto external = prepare_endpoint_signs(correlator, interactions);
+  EXPECT_EQ(external(F, F), -1);
+  EXPECT_EQ(external(B, B), 1);
+
+  interactions[0] = F;
+  interactions[1] = B;
+  EXPECT_EQ(prepare_endpoint_signs(assignment, interactions)(F, F), 1); // now internal line 1 is omitted
+  EXPECT_EQ(signs(F, F), -1); // prepared signs retain no borrowed catalogue data
+  assignment.vertices[1].orbital = -1;
+  EXPECT_THROW(prepare_endpoint_signs(assignment, interactions), std::invalid_argument);
+}
+
+TEST(DiagramSigns, first_order_has_no_internal_statistics) {
+  using namespace triqs_xca;
+  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 1}}}, 0, AssignmentIndices{{0}, {}, {}},
+                                      nda::vector<double>{}, DiagramKind::self_energy);
+  auto signs = prepare_endpoint_signs(assignment, {});
+  EXPECT_EQ(signs(Statistics::fermionic, Statistics::fermionic), 1);
+  EXPECT_EQ(signs(Statistics::bosonic, Statistics::bosonic), 1);
 }

@@ -5,6 +5,7 @@
 
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/backbone.hpp"
+#include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/self_energy_path.hpp"
 
@@ -62,7 +63,7 @@ class DiagramEvaluator {
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0, int p_kap,
-                                                  int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims);
+                                                  int p_mu, nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
 
   void eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path);
   void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix); // evaluate a particular backbone diagram
@@ -71,7 +72,7 @@ class DiagramEvaluator {
   // evaluate a diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
   void eval_self_energy_fixed_indices(
      BlockDiagOpFun &Gt, Backbone &backbone, int b_ix, int p_kap, int p_mu, 
-     nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims); 
+     nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims, EndpointSigns const &signs);
 
 
   
@@ -93,6 +94,10 @@ class DiagramEvaluator {
   nda::array<dcomplex, 4> Tkaps;       // intermediate storage array
   nda::array<dcomplex, 3> Tmu;         // intermediate storage array
 
+  private:
+  std::vector<Statistics> interaction_statistics_ = fermion_boson_statistics(n_hyb, n_int);
+
+  public:
   // routines for any diagram
   void reset(); // reset all arrays to zero
 

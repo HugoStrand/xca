@@ -212,7 +212,7 @@ namespace triqs_xca::dense {
     hyb.multiply_kernels_prefactor(T_buf, backbone);
   }
 
-  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0) {
+  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0, EndpointSigns const &signs) {
 
     bool is_forward                            = backbone.has_vertex_dag(vct0);
     nda::array_const_view<dcomplex, 3> hyb_too = is_forward ? hyb.values : hyb.values_reflect;
@@ -235,11 +235,7 @@ namespace triqs_xca::dense {
         // both branches breaks unitary invariance under a complex basis rotation, which the legacy path avoids by transposing at construction
         nda::array_const_view<dcomplex, 1> hyb_t = is_forward ? hyb_too(_, mu, kap) : hyb_too(_, kap, mu);
 
-        // set the orbital indices of the vertex connected to zero
-        // and compute the fermionic permutation parity of the resulting diagram.
-
-        backbone.set_orb_inds_of_0_and_vct0(kap, mu);
-        int fermionic_parity = backbone.get_parity();
+        int fermionic_parity = signs(interaction_statistics_[kap], interaction_statistics_[mu]);
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += fermionic_parity * hyb_t(t) * Tkaps(kap, t, _, _);
       }
@@ -282,7 +278,8 @@ namespace triqs_xca::dense {
     int m    = backbone.m;
     int vct0 = backbone.get_topology(0, 1);
 
-    backbone.set_flat_index(f_ix, hyb.poles);
+    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -290,9 +287,9 @@ namespace triqs_xca::dense {
       integrate_left_edge(T, Gt, backbone, v);
     }
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0);
+    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0, signs);
     backbone.reverse_hyb_line_zero();
-    multiply_left_vertex_and_right_zero_vertex(U, backbone, vct0);
+    multiply_left_vertex_and_right_zero_vertex(U, backbone, vct0, signs);
     backbone.reverse_hyb_line_zero();
     T = T - U;
 
@@ -314,7 +311,8 @@ namespace triqs_xca::dense {
     int m    = backbone.m;
     int vct0 = backbone.get_topology(0, 1); // Vertex Connected To zero
 
-    backbone.set_flat_index(f_ix, hyb.poles); // set directions, pole indices, and orbital indices from a single integer index
+    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -327,7 +325,7 @@ namespace triqs_xca::dense {
 
     // 2. For each kappa, multiply by F_kappa(^dag). Then for each mu, kappa, multiply by Delta_{mu kappa}, and sum over kappa. Finally for each mu,
     // multiply F_mu[^dag] and sum over mu.
-    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0);
+    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0, signs);
 
     // 3. Continue right to left until the final vertex multiplication is complete.
     for (int v = vct0 + 1; v < 2 * m; v++) { // loop from the special vertex to the last vertex
@@ -382,7 +380,8 @@ namespace triqs_xca::dense {
 
     int m = backbone.m;
 
-    backbone.set_flat_index(f_ix, hyb.poles); // set directions, pole indices, and orbital indices from a single integer index
+    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
@@ -419,21 +418,8 @@ namespace triqs_xca::dense {
       }
     }
 
-    // use special orbital index values to indicate whether the vertex connected to zero
-    // is fermionic or bosonic, since this affects the fermionic parity calculation.
-    // -2 for fermionic, -3 for bosonic
-
-    int orb_idx_flag = is_fermionic ? -2 : -3;
-    backbone.set_orb_inds_of_0_and_vct0(orb_idx_flag, orb_idx_flag);
-    int fermionic_sign = backbone.get_parity();
-    correlator *= fermionic_sign;
-
-    /*
-    std::cout << "n = " << n << ", n_int = " << n_int << std::endl;
-    std::cout << "f_ix = " << f_ix << ", fermionic_sign = " << fermionic_sign << std::endl;
-    //std::cout << "topology = " << backbone.get_topology() << std::endl;
-    std::cout << "orb_idx_flag = " << orb_idx_flag << " is_fermionic = " << is_fermionic << std::endl;
-    */
+    auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
+    correlator *= signs(external, external);
 
     backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
 

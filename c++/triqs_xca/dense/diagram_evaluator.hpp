@@ -8,6 +8,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/backbone.hpp"
+#include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/atom_diag.hpp"
 
 namespace triqs_xca::dense {
@@ -53,6 +54,7 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
     private:
+    std::vector<Statistics> interaction_statistics_ = fermion_boson_statistics(n_hyb, n_int);
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
     nda::array_const_view<dcomplex, 3> native_propagator(gf_vt G_ppsc) const;
 
@@ -68,7 +70,7 @@ namespace triqs_xca::dense {
     // routines for self-energy diagrams
 
     // multiply by the zero vertex and the vertex connected to zero
-    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0);
+    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0, EndpointSigns const &signs);
 
     // routines for correlator diagrams
 

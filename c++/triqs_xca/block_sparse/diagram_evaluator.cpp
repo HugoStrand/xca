@@ -270,7 +270,7 @@ void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Ba
 
 void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, bool is_forward, int b_ix_0,
                                                                   int p_kap, int p_mu, nda::vector_const_view<int> ind_path,
-                                                                  nda::vector_const_view<int> block_dims) {
+                                                                  nda::vector_const_view<int> block_dims, EndpointSigns const &signs) {
   int v_ix    = backbone.get_topology(0, 1);
   int b_ix_mu = ind_path(v_ix - 1); // block index for F_mu
 
@@ -303,11 +303,8 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
         hyb.values(_, Fq.sym_set_to_orb(p_mu, mu), Fq.sym_set_to_orb(p_kap, kap)) :
         hyb.values_reflect(_, Fq.sym_set_to_orb(p_kap, kap), Fq.sym_set_to_orb(p_mu, mu));
 
-      // set the orbital indices of the vertex connected to zero
-      // and compute the fermionic permutation parity of the resulting diagram.
-
-      backbone.set_orb_inds_of_0_and_vct0(Fq.sym_set_to_orb(p_kap, kap), Fq.sym_set_to_orb(p_mu, mu));
-      int fermionic_parity = backbone.get_parity();
+      int fermionic_parity = signs(interaction_statistics_[Fq.sym_set_to_orb(p_kap, kap)],
+                                    interaction_statistics_[Fq.sym_set_to_orb(p_mu, mu)]);
 
       for (int t = 0; t < r; t++) Tmu_v(t, _, _) += fermionic_parity * hyb_sign * hyb_oo(t) * Tkaps_v(kap, t, _, _);
     }
@@ -319,9 +316,10 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix, SelfEnergyPath &path) {
   auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+  auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
     eval_self_energy_fixed_indices(Gt, backbone, prepared.output_sector, prepared.kap_set, prepared.mu_set,
-                                   prepared.propagator_blocks, prepared.dimensions);
+                                   prepared.propagator_blocks, prepared.dimensions, signs);
   });
   backbone.reset_all_inds();
 }
@@ -342,7 +340,7 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone) 
 }
 
 void DiagramEvaluator::eval_self_energy_fixed_indices(BlockDiagOpFun &Gt, Backbone &backbone, int b_ix, int p_kap, int p_mu, nda::vector_const_view<int> ind_path,
-                                                      nda::vector_const_view<int> block_dims) {
+                                                      nda::vector_const_view<int> block_dims, EndpointSigns const &signs) {
 
   int m = backbone.m, vct0 = backbone.get_topology(0, 1); // vertex connnected to time zero
 
@@ -352,7 +350,7 @@ void DiagramEvaluator::eval_self_energy_fixed_indices(BlockDiagOpFun &Gt, Backbo
     integrate_left_edge(T, Gt, backbone, v, ind_path, block_dims);
   }
 
-  multiply_left_vertex_and_right_zero_vertex(T, backbone, (not backbone.has_vertex_dag(0)), b_ix, p_kap, p_mu, ind_path, block_dims);
+  multiply_left_vertex_and_right_zero_vertex(T, backbone, (not backbone.has_vertex_dag(0)), b_ix, p_kap, p_mu, ind_path, block_dims, signs);
 
   for (int v = vct0 + 1; v < 2 * m; v++) {
     integrate_left_edge(T, Gt, backbone, v - 1, ind_path, block_dims);
@@ -555,7 +553,8 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Co
 
   nda::vector<int> ind_path_end(3), block_dims_end(4);
 
-  backbone.set_flat_index(f_ix, hyb.poles); // set directions, pole indices, and orbital indices from a single integer index
+  auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+  auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
   /*  Example of block_dims for m = 2 (OCA): each number is an index of block_dims, and each square represents a block of a matrix 
             4            3            3            2            2            1            1            0
@@ -710,14 +709,8 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Co
     }
   }
   
-  // use special orbital index values to indicate whether the vertex connected to zero
-  // is fermionic or bosonic, since this affects the fermionic parity calculation.
-  // -2 for fermionic, -3 for bosonic
-
-  int orb_idx_flag = is_fermionic ? -2 : -3;
-  backbone.set_orb_inds_of_0_and_vct0(orb_idx_flag, orb_idx_flag);
-  int fermionic_sign = backbone.get_parity();
-  correlator *= fermionic_sign;
+  auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
+  correlator *= signs(external, external);
 
   backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
 

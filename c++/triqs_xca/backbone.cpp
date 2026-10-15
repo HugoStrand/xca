@@ -3,7 +3,7 @@
 #include <string>
 
 #include "triqs_xca/backbone.hpp"
-#include "triqs_xca/topology.hpp"
+#include "triqs_xca/diagram_sign.hpp"
 
 namespace triqs_xca::backbone {
 
@@ -153,44 +153,16 @@ namespace triqs_xca::backbone {
   }
 
   int Backbone::get_parity() {
-
-    // get the fermionic permutation parity of the diagram represented by this backbone,
-    // based on the topology and orbital indices
-
-    assert(vertices[0].get_orb() != -1);              // make sure orbital index of vertex 0 is set
-    assert(vertices[topology.arcs(0, 1)].get_orb() != -1); // make sure orbital index of vertex connected to 0 is set
-
-    // loop over orbital indices and check which ones are fermionic by checking i < n_hyb
-    // put the result in a boolean vector of size m, where true means the line is fermionic
-    nda::vector<bool> is_fermionic(2 * m);
-    //nda::vector<int> orb_inds_ref(2 * m); // DEBUG
-
-    for (auto vertex_idx : range(0, 2 * m)) {
-      int orb_ind = vertices[vertex_idx].get_orb();
-      //orb_inds_ref(vertex_idx) = orb_ind; // DEBUG
-      if (orb_ind >= 0) {
-        is_fermionic[vertex_idx] = orb_ind < n_hyb; // fermionic vertex when orbital index is less than n_hyb
-      } else if (orb_ind == -2) {
-        is_fermionic[vertex_idx] = true; // if orbital index is -2, it's a fermionic vertex
-      } else if (orb_ind == -3) {
-        is_fermionic[vertex_idx] = false; // if orbital index is -3, it's a bosonic vertex
-      } else {
-        throw std::invalid_argument("Orbital index of vertex " + std::to_string(vertex_idx) + " is not set");
-      }
+    // Compatibility translation only: explicit statistics own the sign rule.
+    std::vector<Statistics> statistics(2 * m);
+    for (int v = 0; v < 2 * m; ++v) {
+      int orbital = vertices[v].get_orb();
+      if (orbital >= 0) statistics[v] = orbital < n_hyb ? Statistics::fermionic : Statistics::bosonic;
+      else if (orbital == -2) statistics[v] = Statistics::fermionic;
+      else if (orbital == -3) statistics[v] = Statistics::bosonic;
+      else throw std::invalid_argument("Orbital index of vertex " + std::to_string(v) + " is not set");
     }
-
-    /*
-    std::cout << "n = " << n << ", n_hyb = " << n_hyb << ", n_int = " << n_int << std::endl;
-    std::cout << "topology =" << topology << std::endl;
-    std::cout << "orb_inds     = " << orb_inds << std::endl;
-    std::cout << "orb_inds_ref = " << orb_inds_ref << std::endl;
-    std::cout << "is_fermionic = " << is_fermionic << std::endl;
-    */
-
-    auto fermionic_topology = topology::fermionic_topology(topology.arcs, is_fermionic);
-    int fermionic_parity    = topology::topology_parity(fermionic_topology);
-
-    return fermionic_parity;
+    return permutation_sign(topology, statistics);
   }
 
   long Backbone::num_flat_indices(long p) const { return count_assignments(m, n, p, kind); }
