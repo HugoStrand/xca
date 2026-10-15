@@ -15,6 +15,7 @@
 | 3b | `3832492` | Dense arithmetic consumes const assignments; all 68 CTest entries passed |
 | 3c | `8ff3717` | Block-sparse arithmetic consumes const assignments; all 69 CTest entries passed |
 | 3d | `6de60bc` | Shared directed interactions and partial-contraction descriptions; all 70 CTest entries passed |
+| Materialization refresh | `5234d69` | Dense coefficient updates replace old bars; all 70 CTest entries passed |
 | 3e–7 | None | Model metadata, operand binding, and remaining planning, policy, and cleanup stages pending |
 
 ## Planning checkpoint — 2026-10-15
@@ -424,3 +425,35 @@ block correlator paths/joins still need extraction. Stages 4–7 remain required
 Review also identified that `FSet::update_hybridization` does not clear bars when
 the pole count is unchanged; verify and correct this refresh/lifetime defect in
 a separate code/log pair before relying on model updates.
+
+
+## Materialization refresh — replace old contractions (`5234d69`)
+
+Review of the new contraction boundary exposed a pre-existing lifetime defect:
+`FSet::update_hybridization` only zeroed barred operators when the pole count
+changed. A same-size update added the new contraction to the old one; repeated
+updates added it repeatedly. This conflicts with the plan's requirement that
+numerical materializations not survive incompatible model updates.
+
+Read the refresh test in
+[interaction_contractions.cpp](test/c++/interaction_contractions.cpp), then the
+three added lines in [dense/fset.cpp](c++/triqs_xca/dense/fset.cpp). After checking
+coefficient dimensions and allocating any resized storage, refresh clears both
+bar arrays before accumulating the replacement contraction. Invalid dimensions
+are still rejected before changing the valid arrays.
+
+The regression was run before the fix and failed, with retained old contributions
+producing matrix errors of order one. It now passes for changed same-size complex
+coefficients, repeated identical updates, rejected invalid dimensions, and growing
+then shrinking the pole count. Expectations are explicit one-operator contractions,
+not another call to the refresh implementation. This is a bounded lifetime fix;
+it does not introduce evaluator-level model updates or change cutoff policies.
+
+Validation: regression failure recorded in
+`/tmp/xca-backbone-refresh-reproduce{,-build}.log`; corrected CPU build and focused
+regression passed, followed by all 70 CPU CTest entries (56.94 s). Passing logs:
+`/tmp/xca-backbone-refresh-{build,focused,test}.log`. Generated bindings are unchanged.
+
+Next remains explicit model metadata and prepared operands, followed by the
+block-specific planning, observable, numerical/support-policy, and selection
+cleanup stages. The persistent goal remains active.
