@@ -37,10 +37,11 @@ namespace triqs_xca::dense {
     }
   }
 
-  nda::array_const_view<dcomplex, 2> FSet::get_operator(Backbone &backbone, int v_ix, int o_ix, int l_ix) const {
+  nda::array_const_view<dcomplex, 2> FSet::get_operator(VertexAssignment const &vertex, int l_ix) const {
 
-    bool has_bar = backbone.has_vertex_bar(v_ix);
-    bool has_dag = backbone.has_vertex_dag(v_ix);
+    bool has_bar = vertex.barred;
+    int o_ix = vertex.orbital;
+    bool has_dag = vertex.dagger;
 
     if (has_bar)
       return has_dag ? F_dag_bars(o_ix, l_ix, _, _) : F_bars_refl(o_ix, l_ix, _, _);
@@ -48,8 +49,7 @@ namespace triqs_xca::dense {
       return has_dag ? F_dags(o_ix, _, _) : Fs(o_ix, _, _);
   }
 
-  nda::array_const_view<dcomplex, 2> FSet::get_operator(Backbone &backbone, int v_ix, int o_ix) const {
-    bool is_dag = backbone.has_vertex_dag(v_ix);
+  nda::array_const_view<dcomplex, 2> FSet::get_operator(bool is_dag, int o_ix) const {
     return is_dag ? F_dags(o_ix, _, _) : Fs(o_ix, _, _);
   }
 

@@ -191,37 +191,34 @@ namespace triqs_xca::dense {
     return std::vector{sigma_gf};
   }
 
-  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix) {
-    int o_ix = backbone.get_vertex_orb(v_ix); // orbital index
-    int l_ix = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v_ix));
-    // backbone.get_vertex_hyb_ind(v_ix) = i, where i is the # of primes on l
-    // l_ix = value of l with i primes
-    auto F = Fset.get_operator(backbone, v_ix, o_ix, l_ix);
+  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix) {
+    auto const &vertex = assignment.vertices[v_ix];
+    int l_ix = assignment.poles(vertex.pole_slot);
+    auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    hyb.multiply_kernel_on_vertex(T_buf, backbone, v_ix, l_ix);
+    hyb.multiply_kernel(T_buf, vertex.kernel_sign, l_ix);
   }
 
-  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone,
+  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
                                                   int e_ix) {
     GKt = Gt;
-    hyb.multiply_kernels_on_edge(GKt, backbone, e_ix);
+    hyb.multiply_kernels_on_edge(GKt, assignment, e_ix);
     T_buf = itops.convolve(beta, itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
   }
 
-  void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone) {
-    hyb.multiply_kernels_prefactor(T_buf, backbone);
+  void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment) {
+    hyb.multiply_kernels_prefactor(T_buf, assignment);
   }
 
-  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0, EndpointSigns const &signs) {
+  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, bool is_forward, EndpointSigns const &signs) {
 
-    bool is_forward                            = backbone.has_vertex_dag(vct0);
     nda::array_const_view<dcomplex, 3> hyb_too = is_forward ? hyb.values : hyb.values_reflect;
 
     // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
     // at the cost of storing an n x r x N x N array (Tkaps) instead of an r x N x N array
 
     for (int kap = 0; kap < n; kap++) {
-      nda::array_const_view<dcomplex, 2> F_kap = Fset.get_operator(backbone, 0, kap);
+      nda::array_const_view<dcomplex, 2> F_kap = Fset.get_operator(!is_forward, kap);
       for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
     }
 
@@ -239,7 +236,7 @@ namespace triqs_xca::dense {
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += fermionic_parity * hyb_t(t) * Tkaps(kap, t, _, _);
       }
-      nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(backbone, vct0, mu);
+      nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(is_forward, mu);
       for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
     }
   }
@@ -275,43 +272,46 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix) {
-    int m    = backbone.m;
-    int vct0 = backbone.get_topology(0, 1);
+    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::self_energy);
+    eval_self_energy_pair(Gt, assignment);
+  }
 
-    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment) {
+    int m = assignment.topology.order();
+    int vct0 = assignment.topology.special_vertex();
     auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
-      multiply_left_vertex(T, backbone, v);
-      integrate_left_edge(T, Gt, backbone, v);
+      multiply_left_vertex(T, assignment, v);
+      integrate_left_edge(T, Gt, assignment, v);
     }
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0, signs);
-    backbone.reverse_hyb_line_zero();
-    multiply_left_vertex_and_right_zero_vertex(U, backbone, vct0, signs);
-    backbone.reverse_hyb_line_zero();
+    multiply_left_vertex_and_right_zero_vertex(T, assignment.directions(0) == 1, signs);
+    multiply_left_vertex_and_right_zero_vertex(U, assignment.directions(0) != 1, signs);
     T = T - U;
 
     for (int v = vct0 + 1; v < 2 * m; v++) {
-      integrate_left_edge(T, Gt, backbone, v - 1);
-      multiply_left_vertex(T, backbone, v);
+      integrate_left_edge(T, Gt, assignment, v - 1);
+      multiply_left_vertex(T, assignment, v);
     }
 
-    multiply_prefactor(T, backbone);
+    multiply_prefactor(T, assignment);
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (backbone.get_fb(0) == 0) diag_order_sign *= -1;
-    T *= diag_order_sign * backbone.prefactor_sign;
+    if (assignment.directions(0) == 0) diag_order_sign *= -1;
+    T *= diag_order_sign * assignment.prefactor_sign;
     Sigma += T;
 
-    backbone.reset_all_inds();
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix) {
-    int m    = backbone.m;
-    int vct0 = backbone.get_topology(0, 1); // Vertex Connected To zero
+    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::self_energy);
+    eval_self_energy(Gt, assignment);
+  }
 
-    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment) {
+    int m = assignment.topology.order();
+    int vct0 = assignment.topology.special_vertex();
     auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
@@ -319,43 +319,40 @@ namespace triqs_xca::dense {
     T = Gt;
     // T is initialized to Gt, which is always the function at the rightmost edge
     for (int v = 1; v < vct0; v++) { // loop from the first vertex to before the special vertex
-      multiply_left_vertex(T, backbone, v);
-      integrate_left_edge(T, Gt, backbone, v);
+      multiply_left_vertex(T, assignment, v);
+      integrate_left_edge(T, Gt, assignment, v);
     }
 
     // 2. For each kappa, multiply by F_kappa(^dag). Then for each mu, kappa, multiply by Delta_{mu kappa}, and sum over kappa. Finally for each mu,
     // multiply F_mu[^dag] and sum over mu.
-    multiply_left_vertex_and_right_zero_vertex(T, backbone, vct0, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, assignment.directions(0) == 1, signs);
 
     // 3. Continue right to left until the final vertex multiplication is complete.
     for (int v = vct0 + 1; v < 2 * m; v++) { // loop from the special vertex to the last vertex
-      integrate_left_edge(T, Gt, backbone, v - 1);
-      multiply_left_vertex(T, backbone, v);
+      integrate_left_edge(T, Gt, assignment, v - 1);
+      multiply_left_vertex(T, assignment, v);
     }
 
-    multiply_prefactor(T, backbone);
+    multiply_prefactor(T, assignment);
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (backbone.get_fb(0) == 0) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
-    T *= diag_order_sign * backbone.prefactor_sign;
+    if (assignment.directions(0) == 0) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
+    T *= diag_order_sign * assignment.prefactor_sign;
     Sigma += T;
 
-    backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
   }
 
-  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, Backbone &backbone, int v_ix) {
-    int o_ix = backbone.get_vertex_orb(v_ix); // orbital index
-    int l_ix = backbone.get_pole_ind(backbone.get_vertex_hyb_ind(v_ix));
-    // backbone.get_vertex_hyb_ind(v_ix) = i, where i is the # of primes on l
-    // l_ix = value of l with i primes
-    auto F = Fset.get_operator(backbone, v_ix, o_ix, l_ix);
+  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix) {
+    auto const &vertex = assignment.vertices[v_ix];
+    int l_ix = assignment.poles(vertex.pole_slot);
+    auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    hyb.multiply_kernel_on_vertex(U_buf, backbone, v_ix, l_ix, -1.0);
+    hyb.multiply_kernel(U_buf, vertex.kernel_sign, l_ix, -1.0);
   }
 
-  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone,
+  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
                                                    int e_ix) {
     GKt = Gt;
-    hyb.multiply_kernels_on_edge(GKt, backbone, e_ix);
+    hyb.multiply_kernels_on_edge(GKt, assignment, e_ix);
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
@@ -378,9 +375,13 @@ namespace triqs_xca::dense {
                                                             nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, long f_ix,
                                                             bool is_fermionic) {
 
-    int m = backbone.m;
+    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::correlator);
+    return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), is_fermionic);
+  }
 
-    auto const assignment = backbone.prepare_assignment(f_ix, hyb.poles);
+  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
+                                                          nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic) {
+    int m = assignment.topology.order();
     auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
@@ -389,25 +390,25 @@ namespace triqs_xca::dense {
     // annihilation matrices at the end points. the result is an N x N matrix-valued function of tau.
     T = Gt;
     // T is initialized to Gt, which is always the function at the rightmost edge
-    for (int v = 1; v < backbone.get_topology(0, 1); ++v) { // loop from the first vertex to before the special vertex
-      multiply_left_vertex(T, backbone, v);
-      integrate_left_edge(T, Gt, backbone, v);
+    for (int v = 1; v < assignment.topology.special_vertex(); ++v) { // loop from the first vertex to before the special vertex
+      multiply_left_vertex(T, assignment, v);
+      integrate_left_edge(T, Gt, assignment, v);
     }
 
     // evaluate the second sequence of backbone products and convolutions from tau to beta, using a change of variables to perform convolutions. the
     // result is another N x N matrix-valued function of tau.
     U = Gt;
 
-    for (int v = 2 * m - 1; v > backbone.get_topology(0, 1); v--) {
-      multiply_right_vertex(U, backbone, v);
-      integrate_right_edge(U, Gt, backbone, v - 1);
+    for (int v = 2 * m - 1; v > assignment.topology.special_vertex(); v--) {
+      multiply_right_vertex(U, assignment, v);
+      integrate_right_edge(U, Gt, assignment, v - 1);
     }
 
     U = itops.reflect(U);
 
-    multiply_prefactor(T, backbone);
+    multiply_prefactor(T, assignment);
     int diag_order_sign = 1; // (m % 2 == 1) ? -1 : 1;
-    T *= diag_order_sign * backbone.prefactor_sign;
+    T *= diag_order_sign * assignment.prefactor_sign;
 
     nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
 
@@ -421,7 +422,6 @@ namespace triqs_xca::dense {
     auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
     correlator *= signs(external, external);
 
-    backbone.reset_all_inds(); // reset directions, pole indices, and orbital indices for the next iteration
 
     return correlator;
   }

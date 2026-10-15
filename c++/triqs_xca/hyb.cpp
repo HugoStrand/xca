@@ -44,16 +44,32 @@ namespace triqs_xca::hyb {
   };
 
   void Hybridization::multiply_kernel_on_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix, int l_ix, double sign) {
-    // Multiply the kernel associated with vertex v_ix and pole index l_ix into T_buf
-    // sign is expected to be +1 or -1 (used only to select +/- pole cache).
+    multiply_kernel(T_buf, backbone.get_vertex_Ksign(v_ix), l_ix, sign);
+  }
 
-    int r     = tau_mesh.dlr_it().rank();
-    int Ksign = backbone.get_vertex_Ksign(v_ix);
-
-    if (Ksign != 0) {
-      auto k_it = (sign * Ksign > 0) ? k_it_p(_, l_ix) : k_it_m(_, l_ix);
-      for (int t = 0; t < r; t++) T_buf(t, _, _) *= k_it(t);
+  void Hybridization::multiply_kernel(nda::array_view<dcomplex, 3> T_buf, int kernel_sign, int pole, double reflection) {
+    if (kernel_sign != 0) {
+      auto kernel = reflection * kernel_sign > 0 ? k_it_p(_, pole) : k_it_m(_, pole);
+      for (int t = 0; t < tau_mesh.dlr_it().rank(); ++t) T_buf(t, _, _) *= kernel(t);
     }
+  }
+
+  void Hybridization::multiply_kernels_on_edge(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int edge) {
+    for (int p = 0; p < assignment.poles.size(); ++p)
+      multiply_kernel(T_buf, assignment.edge_kernels(edge, p), assignment.poles(p));
+  }
+
+  void Hybridization::multiply_kernels_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment) {
+    double prefactor = 1.0;
+    for (int p = 0; p < assignment.poles.size(); ++p) {
+      int exponent = assignment.prefactor_kernel_exponents(p);
+      if (exponent != 0) {
+        int pole = assignment.poles(p);
+        double kernel = assignment.prefactor_kernel_signs(p) > 0 ? k_0_p(pole) : k_0_m(pole);
+        prefactor *= std::pow(kernel, -exponent);
+      }
+    }
+    T_buf *= prefactor;
   }
 
   void Hybridization::multiply_kernels_on_edge(nda::array_view<dcomplex, 3> Gt, Backbone &backbone, int e_ix) {

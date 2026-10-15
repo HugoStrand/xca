@@ -61,26 +61,33 @@ namespace triqs_xca::dense {
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a backbone diagram using dense storage
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int v_ix);
+    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix);
     // convolve with a single edge, e_ix, in a backbone diagram using dense storage
-    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, int e_ix);
+    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment, int e_ix);
     // multiply by the prefactor associated with the backbone
-    void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone);
+    void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment);
 
     // routines for self-energy diagrams
 
     // multiply by the zero vertex and the vertex connected to zero
-    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone &backbone, int vct0, EndpointSigns const &signs);
+    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, bool is_forward, EndpointSigns const &signs);
 
     // routines for correlator diagrams
 
     // multiply by a single vertex, v_ix, on the tau-beta side of a correlator backbone diagram using dense storage
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, Backbone &backbone, int v_ix);
+    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix);
     // convolve with a single edge, e_ix, on the tau-beta side of a correlator backbone diagram using dense storage
-    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, int e_ix);
+    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment, int e_ix);
 
     public:
     void reset(); // reset all arrays to zero
+
+    // Prepared numerical entry points. Self-energy calls add into Sigma; correlators return their contribution.
+    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment);
+    C2PY_IGNORE void eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment);
+    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
+      nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
+      nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic = true);
 
     // evaluate a diagram of a given order and topology in dense storage
     // (i.e., evaluate and sum all backbones with different orbital indices, poles, and hybridization line directions)
