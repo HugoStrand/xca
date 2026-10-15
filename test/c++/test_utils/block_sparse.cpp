@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <triqs/operators/many_body_operator.hpp>
 
 #include "test_utils/block_sparse.hpp"
@@ -500,12 +501,8 @@ std::tuple<std::vector<nda::array<dcomplex, 2>>, nda::vector<long>> get_hamilton
     nda::array<dcomplex, 2> H_block = triqs_xca::atom_diag::get_hamiltonian_block(ad, s);
     H_blocks.push_back(H_block);
 
-    // Check if block is zero
-    double max_elem = 0.0;
-    for (int i = 0; i < H_block.extent(0); ++i) {
-      for (int j = 0; j < H_block.extent(1); ++j) { max_elem = std::max(max_elem, std::abs(H_block(i, j))); }
-    }
-    H_block_inds(s) = (max_elem < 1e-16) ? -1 : 0;
+    // Reference helpers must not silently discard small Hamiltonian entries.
+    H_block_inds(s) = std::all_of(H_block.begin(), H_block.end(), [](dcomplex z) { return z == dcomplex{}; }) ? -1 : 0;
   }
   return std::make_tuple(H_blocks, H_block_inds);
 }

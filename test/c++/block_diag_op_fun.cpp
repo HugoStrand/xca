@@ -116,7 +116,8 @@ TEST(BlockDiagOpFun, block_gf_to_BDOF) {
   ASSERT_EQ(BDOF.get_num_block_cols(), 2);
   ASSERT_EQ(BDOF.get_block_size(0), 2);
   ASSERT_EQ(BDOF.get_block_size(1), 3);
-  ASSERT_EQ(BDOF.get_zero_block_index(0), -1); // first block is zero
+  ASSERT_EQ(BDOF.get_zero_block_index(0), 0); // small nonzero entries must remain active
+  ASSERT_EQ(BDOF.get_block(0)(0, 0, 0), dcomplex(1e-17));
   ASSERT_EQ(BDOF.get_zero_block_index(1), 0);
 }
 

@@ -276,8 +276,7 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignm
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
     auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interactions_.statistics(), signs);
     auto result = eval_self_energy_contribution(assignment, kernels, contribution);
-    // Preserve the current numerical policy outside the arithmetic executor.
-    if (nda::max_element(nda::abs(result)) > 1e-16) Sigma.add_block(contribution.path.output_sector, result);
+    Sigma.add_block(contribution.path.output_sector, result);
   });
 }
 

@@ -23,6 +23,7 @@ namespace triqs_xca::block_sparse {
     private:
     std::vector<nda::array<dcomplex, 3>> blocks;
     int num_block_cols;
+    // -1 asserts an exactly zero block; 0 conservatively means potentially nonzero.
     nda::vector<int> zero_block_indices;
 
     public:
@@ -30,7 +31,7 @@ namespace triqs_xca::block_sparse {
     BlockDiagOpFun &operator*=(const dcomplex scalar);
     void set_blocks(std::vector<nda::array<dcomplex, 3>> &new_blocks);
     void set_block(int i, nda::array_const_view<dcomplex, 3> block);
-    void set_zero_block_indices(); // set zero_block_indices according to current blocks
+    void set_zero_block_indices(); // mark only blocks whose entries are all exactly zero
     const std::vector<nda::array<dcomplex, 3>> &get_blocks() const;
     nda::array_const_view<dcomplex, 3> get_block(int i) const;
     nda::vector<int> get_block_sizes() const;
@@ -55,7 +56,7 @@ namespace triqs_xca::block_sparse {
     /**
    * @brief Constructor for BlockDiagOpFun
    * @param[in] blocks vector of diagonal blocks
-   * @param[in] zero_block_indices if i-th entry is -1, then blocks(i) = 0
+   * @param[in] zero_block_indices -1 asserts an exactly zero block (possibly empty storage); 0 leaves the block active
    */
     BlockDiagOpFun(std::vector<nda::array<dcomplex, 3>> &blocks, nda::vector_const_view<int> zero_block_indices);
 

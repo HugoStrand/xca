@@ -1,4 +1,5 @@
 #include "triqs_xca/interaction.hpp"
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -31,7 +32,7 @@ namespace triqs_xca::block_sparse {
   }
 
   BlockDiagOpFun::BlockDiagOpFun(const triqs::gfs::block_gf<triqs::mesh::dlr_imtime> &bgf) : num_block_cols(bgf.size()) {
-    // TODO set block to just a single zero if the block gf is numerically zero
+    // Imported masks describe exact zeros; small nonzero blocks remain active.
     blocks.resize(num_block_cols);
     zero_block_indices = nda::zeros<int>(num_block_cols);
     int r              = bgf[0].mesh().size();
@@ -44,7 +45,7 @@ namespace triqs_xca::block_sparse {
 
       for (int t = 0; t < r; t++) { blocks[i](t, _, _) = gf(t); }
 
-      if (nda::max_element(nda::abs(blocks[i])) < 1e-16) {
+      if (std::all_of(blocks[i].begin(), blocks[i].end(), [](dcomplex z) { return z == dcomplex{}; })) {
         zero_block_indices(i) = -1;
       } else {
         zero_block_indices(i) = 0;
@@ -94,7 +95,7 @@ namespace triqs_xca::block_sparse {
   void BlockDiagOpFun::set_zero_block_indices() {
     // Set zero_block_indices according to current blocks
     for (int i = 0; i < num_block_cols; i++) {
-      if (nda::max_element(nda::abs(blocks[i])) < 1e-16) {
+      if (std::all_of(blocks[i].begin(), blocks[i].end(), [](dcomplex z) { return z == dcomplex{}; })) {
         zero_block_indices(i) = -1; // mark block as zero
       } else {
         zero_block_indices(i) = 0; // mark block as non-zero
