@@ -30,7 +30,7 @@ struct Ladder {
 std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
                                          BlockOpSymQuartet const &operators, triqs_xca::diagram::CorrelatorSegment side) {
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
-  triqs_xca::block_sparse::diagram::visit_correlator_paths(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
+  triqs_xca::block_sparse::diagram::visit_correlator_paths(G, assignment, operators, OperatorSupportTable(operators), side, [&](auto const &p) { result.push_back(p); });
   return result;
 }
 }

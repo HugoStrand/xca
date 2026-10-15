@@ -71,8 +71,8 @@ TEST(EvaluatorAPI, OCA_constructor_equivalence) {
   BlockDiagOpFun OCA_result_2(DDE.compute_self_energy(Gt, topology));
 
   // the two constructors must assemble the same hybridization ...
-  ASSERT_LE(nda::max_element(nda::abs(D.hyb.values - DDE.hyb.values)), 1.0e-15);
-  ASSERT_EQ(D.hyb.poles, DDE.hyb.poles);
+  ASSERT_LE(nda::max_element(nda::abs(D.arc_data.values - DDE.arc_data.values)), 1.0e-15);
+  ASSERT_EQ(D.arc_data.poles, DDE.arc_data.poles);
 
   // ... and hence the same self-energy, block by block
   ASSERT_EQ(OCA_result.get_num_block_cols(), OCA_result_2.get_num_block_cols());
@@ -118,8 +118,8 @@ TEST(EvaluatorAPI, gf_constructor_equivalence) {
   auto OCA_gf_2 = D2.compute_single_ptcle_gf(Gt, topology);
 
   // the two constructors must assemble the same hybridization ...
-  ASSERT_LE(nda::max_element(nda::abs(D.hyb.values - D2.hyb.values)), 1.0e-15);
-  ASSERT_EQ(D.hyb.poles, D2.hyb.poles);
+  ASSERT_LE(nda::max_element(nda::abs(D.arc_data.values - D2.arc_data.values)), 1.0e-15);
+  ASSERT_EQ(D.arc_data.poles, D2.arc_data.poles);
 
   // ... and hence the same Green's function
   EXPECT_LE(nda::max_element(nda::abs(OCA_gf - OCA_gf_2)), 1.0e-15);

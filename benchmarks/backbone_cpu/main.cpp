@@ -47,8 +47,8 @@ int main(int argc, char **argv) try {
   auto bgf = tu::subspace_blocks(model.G, model.ad, model.mesh);
   bs::BlockDiagOpFun G(bgf);
   auto [operators, labels] = bs::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
-  bs::OperatorSupports support(operators);
-  auto interactions = triqs_xca::diagram::hybridization_retarded_catalog(model.n_hyb(), model.n_int());
+  bs::OperatorSupportTable support(operators);
+  auto arc_catalog = triqs_xca::diagram::hybridization_retarded_catalog(model.n_hyb(), model.n_int());
   nda::array<int, 2> arcs(order, 2);
   for (int a = 0; a < order; ++a) arcs(a, nda::range::all) = nda::vector<int>{a, a + order};
   triqs_xca::diagram::Topology topology{arcs};
@@ -56,7 +56,7 @@ int main(int argc, char **argv) try {
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
   std::vector<triqs_xca::diagram::Indices> logical;
-  std::vector<triqs_xca::diagram::Diagram> assignments;
+  std::vector<triqs_xca::diagram::Diagram> diagrams;
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
   std::mt19937_64 random{1789};
   for (long i = 0; i < samples; ++i) {
@@ -64,13 +64,13 @@ int main(int argc, char **argv) try {
     long last  = (count / samples) * (i + 1) + (count % samples) * (i + 1) / samples;
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
     logical.push_back(triqs_xca::diagram::decode_indices(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
-    assignments.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
+    diagrams.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
   }
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(order);
   double checksum = 0;
   long paths      = 0;
-  for (auto const &assignment : assignments)
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, operators, support, workspace, [&](auto const &) { ++paths; });
+  for (auto const &diagram : diagrams)
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagram, operators, support, workspace, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
             << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
             << ',' << paths << '\n';
@@ -96,22 +96,22 @@ int main(int argc, char **argv) try {
     checksum += a.direction_sign;
   });
   time("sign_and_kernel_binding", [&](long i) {
-    auto signs   = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
-    auto kernels = triqs_xca::bind::tau_kernels(assignments[i].kernel_placement, assignments[i].pole_indices, evaluator.hyb.kernel_values);
+    auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
+    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].kernel_placement, diagrams[i].pole_indices, evaluator.arc_data.kernel_values);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
-    auto signs = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignments[i], path, operators, support, evaluator.hyb, interactions.statistics(), signs);
+    auto signs = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) {
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, diagrams[i], path, operators, support, evaluator.arc_data, arc_catalog.statistics(), signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });
   });
   time("prepared_self_energy_call", [&](long i) {
-    auto result = evaluator.compute_self_energy(G, assignments[i]);
+    auto result = evaluator.compute_self_energy(G, diagrams[i]);
     checksum += nda::sum(nda::abs(result[0].data()));
   });
   time("flat_self_energy_call", [&](long i) {

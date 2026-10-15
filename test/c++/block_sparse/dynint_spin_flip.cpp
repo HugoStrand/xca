@@ -106,7 +106,7 @@ TEST(BlockSparseDynintSpinFlip, spin_flip_ops_construct_a_valid_evaluator) {
     ASSERT_EQ(labels.size(), n_hyb + 2);
     if (norb == 1) EXPECT_EQ(labels(n_hyb), labels(n_hyb + 1));
     else EXPECT_NE(labels(n_hyb), labels(n_hyb + 1));
-    triqs_xca::block_sparse::OperatorSupports support(Fq);
+    triqs_xca::block_sparse::OperatorSupportTable support(Fq);
     for (int a = 0; a < 2; ++a) {
       auto expected = m.ad.get_op_mat(m.dynint_ops[a]).connection;
       for (int b = 0; b < m.ad.n_subspaces(); ++b)

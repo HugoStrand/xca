@@ -59,14 +59,14 @@ namespace triqs_xca::diagram::topology {
 
 namespace triqs_xca::diagram {
 
-/// Diagram connectivity, independent of operator representation and sector layout.
-struct Topology {
-  nda::array<int, 2> arcs;
+  /// Diagram connectivity, independent of operator representation and sector layout.
+  struct Topology {
+    nda::array<int, 2> arcs;
 
-  explicit Topology(nda::array<int, 2> arcs);
+    explicit Topology(nda::array<int, 2> topology_arr);
 
-  int order() const { return static_cast<int>(arcs.extent(0)); }
-  int special_vertex() const { return arcs(0, 1); }
-};
+    int order() const { return static_cast<int>(arcs.extent(0)); }
+    int special_vertex() const { return arcs(0, 1); }
+  };
 
 } // namespace triqs_xca::diagram

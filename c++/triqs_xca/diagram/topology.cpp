@@ -30,8 +30,8 @@ namespace triqs_xca::diagram::topology {
     int n_transpositions = 0;
     for (int i = 0; i < n; ++i) {
       if (visited[i]) continue;
-      int j           = i;
-      int cycle_len   = 0;
+      int j         = i;
+      int cycle_len = 0;
       while (!visited[j]) {
         visited[j] = true;
         j          = perm(j);
@@ -50,8 +50,8 @@ namespace triqs_xca::diagram::topology {
 
   nda::array<int, 2> fermionic_topology(nda::array_const_view<int, 2> topology, nda::array_const_view<bool, 1> fermionic) {
 
-    int n_rows = topology.extent(0);
-    int n_cols = topology.extent(1);
+    int n_rows  = topology.extent(0);
+    int n_cols  = topology.extent(1);
     long n_elem = topology.size();
 
     if (fermionic.extent(0) != n_elem) {
@@ -106,19 +106,19 @@ namespace triqs_xca::diagram::topology {
 
 namespace triqs_xca::diagram {
 
-Topology::Topology(nda::array<int, 2> input) : arcs(std::move(input)) {
-  int m = order();
-  if (m < 1 || arcs.extent(1) != 2) throw std::invalid_argument("topology must contain at least one pair of vertices");
-  std::vector<int> vertices(2 * m);
-  for (int a = 0; a < m; ++a) {
-    if (a > 0 && arcs(a, 0) <= arcs(a - 1, 0)) throw std::invalid_argument("first pair indices must be in increasing order");
-    if (arcs(a, 0) >= arcs(a, 1)) throw std::invalid_argument("first row of topology must contain smaller-numbered vertices");
-    vertices[2 * a] = arcs(a, 0);
-    vertices[2 * a + 1] = arcs(a, 1);
+  Topology::Topology(nda::array<int, 2> topology_arr) : arcs(std::move(topology_arr)) {
+    int m = order();
+    if (m < 1 || arcs.extent(1) != 2) throw std::invalid_argument("topology must contain at least one pair of vertices");
+    std::vector<int> vertices(2 * m);
+    for (int a = 0; a < m; ++a) {
+      if (a > 0 && arcs(a, 0) <= arcs(a - 1, 0)) throw std::invalid_argument("first pair indices must be in increasing order");
+      if (arcs(a, 0) >= arcs(a, 1)) throw std::invalid_argument("first row of topology must contain smaller-numbered vertices");
+      vertices[2 * a]     = arcs(a, 0);
+      vertices[2 * a + 1] = arcs(a, 1);
+    }
+    std::ranges::sort(vertices);
+    for (int v = 0; v < 2 * m; ++v)
+      if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
   }
-  std::ranges::sort(vertices);
-  for (int v = 0; v < 2 * m; ++v)
-    if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
-}
 
 } // namespace triqs_xca::diagram

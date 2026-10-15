@@ -24,7 +24,7 @@ using cppdlr::imtime_ops;
 /**
  * @class DiagramEvaluator
  * @brief Class for evaluating a diagram of a given order and topology in block-sparse storage
- * This class is used to evaluate all the diagram decompositions of a given order and topology. It consumes immutable diagram assignments
+ * This class is used to evaluate all the diagram decompositions of a given order and topology. It consumes immutable diagram descriptions
  * and contains the Green's functions and creation/annihilation operators needed to actually compute the diagram. It also contains temporary 
  * data structures required for computation.
  */
@@ -34,7 +34,7 @@ class DiagramEvaluator {
   imtime_ops itops;           // DLR imaginary time object
   nda::vector<double> dlr_it; // DLR imaginary time nodes in relative ordering
   BlockOpSymQuartet Fq;       // BlockOpSymQuartet (field operators with and without bars)
-  OperatorSupports support_ = OperatorSupports(Fq); // immutable model support; no propagator data
+  OperatorSupportTable support_ = OperatorSupportTable(Fq); // immutable model support; no propagator data
   BlockDiagOpFun Sigma;       // array for storing self-energy contribution (final result)
   nda::vector<long> subspace_dims; // dimension of each invariant subspace, i.e. of each block of G_ppsc; -1 where no operator acts
 
@@ -47,19 +47,19 @@ class DiagramEvaluator {
   // Diagram composition routines
 
   // Compose already resolved vertices and propagator edges.
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
                             nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path);
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, diagram::BackbonePath const &path);
+                           triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, diagram::BackbonePath const &path);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a diagram (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
                              diagram::BackbonePath const &path);
 
   // integrate edge (e_ix) from the right, in a diagram (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
+  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
                             diagram::BackbonePath const &path);
 
   // routines for self-energy diagrams
@@ -68,18 +68,18 @@ class DiagramEvaluator {
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
                                                   diagram::BackbonePath const &path, EndpointSumOperands const &endpoints);
 
-  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &path);
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram, long f_ix); // evaluate a particular diagram
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram);           // evaluate a diagram of a given order and topology in block-sparse storage
+  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace);
+  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix); // evaluate a particular diagram
+  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology);           // evaluate a diagram of a given order and topology in block-sparse storage
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution);
+    triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution);
 
 
   nda::array_const_view<dcomplex, 3> eval_backbone_segment(
-    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment);
-  void eval_correlator_completion(CorrelatorOperands const &join, nda::array_const_view<dcomplex, 3> left,
+    triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &backbone, triqs_xca::diagram::CorrelatorSegment segment);
+  void eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);
 
@@ -94,7 +94,7 @@ class DiagramEvaluator {
   int n_int;                           // number of dynamical-interaction flavours
   int q;                               // number of symmetry sets
   int Nmax;                            // maximum block size in the Green's function
-  C2PY_IGNORE triqs_xca::ArcData hyb; // Hybridization object containing hyb and related information
+  C2PY_IGNORE triqs_xca::ArcData arc_data; // Numerical coefficients, time functions and scalar kernels for all arc families
   nda::array<dcomplex, 3> T;           // array for storing intermediate result
   nda::array<dcomplex, 3> U;           // array for storing intermediate result (tau-beta side of correlator diagram)
   nda::array<dcomplex, 3> GKt;         // array for storing result of edge computation
@@ -102,20 +102,20 @@ class DiagramEvaluator {
   nda::array<dcomplex, 3> Tmu;         // intermediate storage array
 
   private:
-  // Common selection adapters; numerical entry points consume prepared assignments.
+  // Common selection adapters; numerical entry points consume prepared diagrams.
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                                              nda::array_const_view<int, 2> topology,
-                                                                             FlatIndexSelection const &selection);
+                                                                             FlatIndexSelection const &flat_indices);
   nda::array<dcomplex, 3> compute_single_ptcle_gf_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                           nda::array_const_view<int, 2> topology, FlatIndexSelection const &selection);
+                                                           nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
   template <bool isComplex>
   nda::array<dcomplex, 3> compute_one_time_correlator_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                                triqs::atom_diag::atom_diag<isComplex> const &ad,
-                                                               nda::array_const_view<int, 2> topology, FlatIndexSelection const &selection);
+                                                               nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
 
-  triqs_xca::diagram::ArcCatalog interactions_ = triqs_xca::diagram::hybridization_retarded_catalog(n_hyb, n_int);
+  triqs_xca::diagram::ArcCatalog arc_catalog_ = triqs_xca::diagram::hybridization_retarded_catalog(n_hyb, n_int);
 
   public:
   // routines for any diagram
@@ -127,9 +127,9 @@ class DiagramEvaluator {
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
 
-  // Return one logical assignment's contribution, resetting the accumulator each call.
+  // Return one prepared diagram's contribution, resetting the accumulator each call.
   // Assignment indices refer to this evaluator's model and pole tables.
-  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment);
+  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram);
 
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
@@ -146,14 +146,14 @@ class DiagramEvaluator {
   long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology); // get number of backbones for given topology
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
 
-  // Evaluate a logical assignment; indices refer to this evaluator's model and pole tables.
+  // Evaluate a prepared diagram; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics boundary = {});
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
   // compute single particle Green's function for given topology (and flat index)
   C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);

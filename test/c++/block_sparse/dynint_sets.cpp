@@ -565,7 +565,7 @@ TEST(BlockSparseDynintSets, member_and_barred_support_differ_from_group_candidat
   coefficients(0, 0, 1) = 2.;
   coefficients(0, 1, 0) = 3.;
   BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
-  block_sparse::OperatorSupports support(operators);
+  block_sparse::OperatorSupportTable support(operators);
   for (int b = 0; b < 2; ++b) EXPECT_EQ(operators.Fs[0].get_block_index(b), b);
   EXPECT_EQ(support.plain[0].single_target(0), 0);
   EXPECT_EQ(support.plain[0].single_target(1), -1);
@@ -577,7 +577,7 @@ TEST(BlockSparseDynintSets, member_and_barred_support_differ_from_group_candidat
   EXPECT_EQ(support.barred_adjoint[1].single_target(1), -1);
 
   BlockOpSymQuartet zero_bars({group}, {group}, nda::zeros<dcomplex>(1, 2, 2), nda::vector<long>{0, 0});
-  block_sparse::OperatorSupports refreshed(zero_bars);
+  block_sparse::OperatorSupportTable refreshed(zero_bars);
   EXPECT_EQ(refreshed.barred_adjoint[0].single_target(1), -1);
   EXPECT_EQ(support.barred_adjoint[0].single_target(1), 1); // owned metadata stays independent
 }
@@ -594,7 +594,7 @@ TEST(BlockSparseDynintSets, density_operators_share_candidates_without_changing_
   std::vector<many_body_operator_complex> ops{n("x", 0), n("x", 1)};
   auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(ad, hyb, coefficients, ops);
   ASSERT_EQ(labels(2), labels(3));
-  block_sparse::OperatorSupports support(operators);
+  block_sparse::OperatorSupportTable support(operators);
   int group = labels(2);
   for (int b = 0; b < 4; ++b) {
     ASSERT_EQ(ad.get_fock_states(b).size(), 1);

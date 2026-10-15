@@ -5,12 +5,11 @@
 #include "backbone.hpp"
 
 namespace triqs_xca::block_sparse::bind {
-EndpointSumOperands endpoint_sum(triqs_xca::diagram::Diagram const &diagram,
-    block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
-    OperatorSupports const &support, ArcData const &arc_data,
-    std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
-SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram,
-    block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
-    OperatorSupports const &support, ArcData const &arc_data,
-    std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
+  EndpointSumOperands endpoint_sum(triqs_xca::diagram::Diagram const &diagram, block_sparse::diagram::SelfEnergyDiagram const &prepared,
+                                   BlockOpSymQuartet const &operators, OperatorSupportTable const &support, ArcData const &arc_data,
+                                   std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
+  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram,
+                                 block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
+                                 OperatorSupportTable const &support, ArcData const &arc_data,
+                                 std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
 } // namespace triqs_xca::block_sparse::bind
