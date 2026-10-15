@@ -24,7 +24,8 @@
 | 6b coefficient policy | `a7b1956` | Reject unrepresented cross-set coefficients; all 72 CTest entries passed |
 | 6b operator support | `fa44a50` | Owned exact support and compatible retarded groups; all 72 CTest entries passed |
 | 6b output closure | `3456087` | Validate indexed diagonal-output closure; all 72 CTest entries passed |
-| 7 | None | Selection/adapter cleanup, timing/memory checks, and final audit pending |
+| 7a | `0a39662` | Production selection uses immutable topology; all 72 CTest entries passed |
+| 7 remaining | None | Legacy class/test removal, ranges/MPI coverage, timing/memory checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -905,3 +906,55 @@ support, compatible groups, and output-partition validation. Stage 7 remains:
 consolidate selection interfaces, preserve MPI coverage and paired-direction
 semantics, remove the legacy mutable backbone adapters, and finish CPU timing/
 memory checks and the final requirements audit. The persistent goal is active.
+
+## Stage 7a — production selection without mutable backbones (`0a39662`)
+
+The numerical routines already consumed prepared assignments, but public
+self-energy/correlator calls still constructed mutable `Backbone` objects to
+carry a topology and obtain counts. Production selection now takes
+`DiagramTopology const &` and calls the shared count/assignment preparation
+functions directly. Read the selection overloads in
+[dense/diagram_evaluator.cpp](c++/triqs_xca/dense/diagram_evaluator.cpp), then the
+corresponding block-sparse overloads. Neither evaluator includes `backbone.hpp`
+or constructs a `Backbone` or `CorrelatorBackbone` anymore.
+
+This is a data-flow refactoring. Public Python scalar/vector/all-assignment calls,
+index order, exceptional-input checks, and accumulation order remain unchanged.
+Dense paired evaluation still visits only the seeds whose first direction bit
+is zero in its all-assignment overload; explicit scalar/vector selections still
+evaluate both partners of each supplied index. Its direction stride is derived
+from the shared counts rather than a mutable backbone field. Interaction and
+observable statistics continue to come from the already-separated model/boundary
+metadata.
+
+The C++ topology selection overloads now require an explicitly constructed
+`DiagramTopology`. The constructor is marked `explicit` to prevent ambiguity
+between NDA array-to-view conversion and conversion to topology. Existing array
+APIs continue to accept NDA arrays normally. Prepared numerical overloads are
+unchanged. These topology overloads are still excluded from Python wrapping.
+
+The two public debug-print methods keep their names and index validation, but
+print the immutable assignment directly. Its diagnostic lists topology,
+directions, poles, vertex recipes, edge factors, and scalar-prefactor recipes.
+This removes the last production need for the legacy mutable printer; the text
+layout is deliberately changed rather than retaining an adapter solely for it.
+The generated Python wrapper changed only in the two evaluator class docstrings,
+which now describe immutable assignments instead of a Backbone object.
+
+Direct evaluator tests for sparsity invariance, the empty correlator fragment,
+and forced observable statistics now pass an immutable topology. Their numerical
+comparisons and negative controls are unchanged. The prepared block-sparse test
+compares its logical entry point with the topology/index entry point. The direct
+legacy indexing/parity tests, one sign-sensitivity helper, and the source-backbone
+mutation test still use the old classes and are the next migration unit; they
+must be rewritten around their semantic assertions before the classes are deleted.
+
+Validation: full CPU build and all 72 CPU CTest entries passed (56.92 s).
+Logs: `/tmp/xca-backbone-topology-{build,test}.log`. The build caught and resolved
+the NDA overload ambiguity described above; the last source edits after compilation
+only removed duplicated words in comments. No numerical or test tolerance changes.
+
+Next: remove the remaining direct-test dependencies and legacy implementation,
+then consolidate bounded range selections and MPI/paired coverage. Targeted CPU
+timing/memory checks and the final completion audit remain required. The goal
+remains active.
