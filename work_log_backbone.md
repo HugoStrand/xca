@@ -23,7 +23,8 @@
 | 6a | `0602db2` | Exact-zero masks and untruncated accumulation; all 72 CTest entries passed |
 | 6b coefficient policy | `a7b1956` | Reject unrepresented cross-set coefficients; all 72 CTest entries passed |
 | 6b operator support | `fa44a50` | Owned exact support and compatible retarded groups; all 72 CTest entries passed |
-| 6b closure / 7 | None | Physical-partition closure, selection/adapter cleanup, timing checks, and final audit pending |
+| 6b output closure | `3456087` | Validate indexed diagonal-output closure; all 72 CTest entries passed |
+| 7 | None | Selection/adapter cleanup, timing/memory checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -851,3 +852,56 @@ Next: complete the physical-partition closure check at the orchestration boundar
 then stage 7's selection interfaces and removal of legacy backbone adapters.
 CPU timing/memory checks and the requirement-by-requirement completion audit
 remain outstanding. The persistent goal remains active.
+
+## Stage 6b — self-energy output closure (`3456087`)
+
+Path discovery records both the starting/output sector and terminal sector, but
+previously the evaluator accumulated every result into the starting diagonal
+block. Shape checking caught unequal dimensions; equal-sized sectors silently
+accepted a matrix belonging to an off-diagonal block.
+
+Read the new `nonclosing_paths_require_a_coarser_output_partition` test in
+[prepared_evaluator.cpp](test/c++/block_sparse/prepared_evaluator.cpp), then
+`select_diagonal_self_energy` in
+[self_energy_contribution.cpp](c++/triqs_xca/block_sparse/self_energy_contribution.cpp)
+and its call in `eval_self_energy_paths`. The selector belongs to orchestration,
+after binding and before numerical execution. Discovery can still describe
+rectangular or nonclosing paths for another consumer; the arithmetic executor
+has no output-partition decisions.
+
+The regression uses self-adjoint permutations `A=(01)` and `B=(12)` on three
+one-state sectors. Each interaction separately closes at first order, but the
+crossed word `BABA` cycles between sectors. For constant identity propagators,
+zero-frequency scalar kernels, and a fixed second-order bosonic assignment, the
+coarse-block answer is `-tau^2/8 * (BABA + I)`. The test checks every entry against
+that formula, including off-diagonal values larger than `0.1`. Before this change,
+that analytic check passed while the fine-partition rejection check failed:
+the fine evaluator silently accumulated into the wrong diagonal blocks.
+
+The diagonal-output consumer now requires each active indexed contribution to
+close. On a nonclosing candidate, it inspects only the already-bound input
+coefficient views: if all endpoint couplings are exactly zero, the candidate is
+skipped; otherwise it reports the source/terminal sectors and requests a coarser
+partition. No magnitude threshold or computed-result decision is introduced.
+A second control removes the A coupling and checks the remaining B-only result,
+so unused candidate connectivity cannot cause a false rejection. The test also
+checks a valid first-order call after rejection to detect stale accumulation.
+
+This is a structural requirement on the current indexed, block-diagonal output
+API. It does not attempt to establish diagonal output through cancellations
+between distinct contributions, nor prove that every structurally possible
+matrix product is numerically nonzero. Supporting such cases would require a
+consumer that can represent the intervening off-diagonal work. General-correlator
+joins already prescribe trace closure and are unchanged.
+
+Validation: full CPU build and all 72 CPU CTest entries passed (56.16 s).
+Generated bindings are unchanged. Logs:
+`/tmp/xca-backbone-closure-{build,test}.log`; pre-change regression:
+`/tmp/xca-backbone-closure-reproduce.log`.
+
+This completes stage 6's numerical/support-policy units: exact numerical zeros,
+explicit handling of unrepresented coefficient couplings, distinct member/group
+support, compatible groups, and output-partition validation. Stage 7 remains:
+consolidate selection interfaces, preserve MPI coverage and paired-direction
+semantics, remove the legacy mutable backbone adapters, and finish CPU timing/
+memory checks and the final requirements audit. The persistent goal is active.
