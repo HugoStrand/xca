@@ -8,7 +8,7 @@
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/kernel_binding.hpp"
 #include "triqs_xca/dense/fset.hpp"
-#include "triqs_xca/backbone.hpp"
+#include "triqs_xca/diagram_assignment.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
 #include "triqs_xca/atom_diag.hpp"
@@ -22,8 +22,8 @@ namespace triqs_xca::dense {
   /**
      * @class DiagramEvaluator
      * @brief Class for evaluating a diagram of a given order and topology
-     * This class is used to evaluate all the backbone decompositions of a given
-     * order and topology. It reads the information from a Backbone object and
+     * This class is used to evaluate all the diagram decompositions of a given
+     * order and topology. It consumes immutable diagram assignments and
      * contains the Green's functions and creation/annihilation operators needed to
      * actually compute the diagram. It also contains temporary arrays required for
      * computation. 
@@ -64,9 +64,9 @@ namespace triqs_xca::dense {
 
     // routines for any diagram
 
-    // multiply by a single vertex, v_ix, in a backbone diagram using dense storage
+    // multiply by a single vertex, v_ix, in a diagram using dense storage
     void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix);
-    // convolve with a single edge, e_ix, in a backbone diagram using dense storage
+    // convolve with a single edge, e_ix, in a diagram using dense storage
     void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
 
     // routines for self-energy diagrams
@@ -76,9 +76,9 @@ namespace triqs_xca::dense {
 
     // routines for correlator diagrams
 
-    // multiply by a single vertex, v_ix, on the tau-beta side of a correlator backbone diagram using dense storage
+    // multiply by a single vertex, v_ix, on the tau-beta side of a correlator diagram using dense storage
     void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix);
-    // convolve with a single edge, e_ix, on the tau-beta side of a correlator backbone diagram using dense storage
+    // convolve with a single edge, e_ix, on the tau-beta side of a correlator diagram using dense storage
     void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
 
     public:
@@ -93,15 +93,15 @@ namespace triqs_xca::dense {
 
     // evaluate a diagram of a given order and topology in dense storage
     // (i.e., evaluate and sum all backbones with different orbital indices, poles, and hybridization line directions)
-    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone);
+    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram);
     // evaluate a diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE void eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix);
+    C2PY_IGNORE void eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram, long f_ix);
     // evaluate a pair of diagrams differing only in the direction of the line connected to the zero vertex
-    C2PY_IGNORE void eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix);
+    C2PY_IGNORE void eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram, long f_ix);
     // evaluate all pairs of diagrams for given topology
-    C2PY_IGNORE void eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone);
+    C2PY_IGNORE void eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram);
     // get number of backbones for given topology
-    C2PY_IGNORE long get_num_self_energy_backbones(Backbone &backbone);
+    C2PY_IGNORE long get_num_self_energy_backbones(DiagramTopology const &diagram);
 
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
     compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for given topology
@@ -121,10 +121,10 @@ namespace triqs_xca::dense {
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
 
     // evaluate the mu, kap entries of a correlator for a diagram of a given order and topology in dense storage
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, CorrelatorBackbone &backbone,
+    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram,
                                                         nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic = true);
     // evaluate a correlator diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, CorrelatorBackbone &backbone,
+    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram,
                                                         nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, long f_ix,
                                                         bool is_fermionic = true);
 

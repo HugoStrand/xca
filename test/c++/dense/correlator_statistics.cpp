@@ -7,7 +7,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
-#include <triqs_xca/backbone.hpp>
+#include <triqs_xca/diagram_assignment.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/topology.hpp>
 
@@ -66,7 +66,7 @@ namespace {
                                                std::vector<many_body_operator_complex> const &ops_tau,
                                                std::vector<many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
                                                nda::array_const_view<int, 2> topology, bool is_fermionic) {
-    CorrelatorBackbone backbone(topology, D.n, D.n_int);
+    triqs_xca::DiagramTopology diagram{topology};
     int N                           = D.N;
     auto U                          = ad.get_unitary_matrix(0);
     nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
@@ -78,7 +78,7 @@ namespace {
 
     nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.r, mu_ops.extent(0), kap_ops.extent(0));
     long nb                      = D.get_num_single_ptcle_gf_backbones(topology);
-    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), backbone, mu_ops, kap_ops, f_ix, is_fermionic);
+    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), diagram, mu_ops, kap_ops, f_ix, is_fermionic);
     return corr;
   }
 

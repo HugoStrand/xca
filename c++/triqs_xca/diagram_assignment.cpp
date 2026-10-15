@@ -2,6 +2,7 @@
 #include "interaction.hpp"
 
 #include <algorithm>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 
@@ -142,6 +143,17 @@ DiagramAssignment prepare_assignment(DiagramTopology const &topology, int flavou
   auto result = prepare_assignment(topology, flavours, indices, poles, kind);
   result.flat_index = flat_index;
   return result;
+}
+
+std::ostream &operator<<(std::ostream &out, DiagramAssignment const &assignment) {
+  out << "Topology:\n" << assignment.topology.arcs << "\nFlat index: " << assignment.flat_index
+      << "\nDirections: " << assignment.directions << "\nPoles: " << assignment.poles << "\nVertices (orbital, dagger, bar, pole slot, kernel sign):\n";
+  for (int v = 0; v < assignment.vertices.size(); ++v) {
+    auto const &vertex = assignment.vertices[v];
+    out << v << ": " << vertex.orbital << ' ' << vertex.dagger << ' ' << vertex.barred << ' ' << vertex.pole_slot << ' ' << vertex.kernel_sign << '\n';
+  }
+  return out << "Edge kernels:\n" << assignment.edge_kernels << "\nPrefactor: " << assignment.prefactor_sign
+             << ", kernel signs " << assignment.prefactor_kernel_signs << ", exponents " << assignment.prefactor_kernel_exponents << '\n';
 }
 
 } // namespace triqs_xca

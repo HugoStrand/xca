@@ -128,8 +128,8 @@ namespace triqs_xca::dense {
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
     reset(); // a previous call that threw may have left a partial sum in Sigma
-    Backbone backbone(topology, n, n_int);
-    eval_self_energy(Gt, backbone);
+    DiagramTopology diagram{topology};
+    eval_self_energy(Gt, diagram);
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -139,8 +139,8 @@ namespace triqs_xca::dense {
                                                                                       long f_ix) {
     auto Gt = native_propagator(G_ppsc);
     reset();
-    Backbone backbone(topology, n, n_int);
-    eval_self_energy_fixed_indices(Gt, backbone, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
+    DiagramTopology diagram{topology};
+    eval_self_energy_fixed_indices(Gt, diagram, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -150,9 +150,9 @@ namespace triqs_xca::dense {
                                                                                       nda::array_const_view<long, 1> f_ix_vec) {
     auto Gt = native_propagator(G_ppsc);
     reset();
-    Backbone backbone(topology, n, n_int);
+    DiagramTopology diagram{topology};
     for (long f_ix : f_ix_vec)
-      eval_self_energy_fixed_indices(Gt, backbone, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
+      eval_self_energy_fixed_indices(Gt, diagram, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -162,8 +162,8 @@ namespace triqs_xca::dense {
                                                                                                     nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
     reset();
-    Backbone backbone(topology, n, n_int);
-    eval_self_energy_by_pairs(Gt, backbone);
+    DiagramTopology diagram{topology};
+    eval_self_energy_by_pairs(Gt, diagram);
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -173,8 +173,8 @@ namespace triqs_xca::dense {
                                                                                                long f_ix) {
     auto Gt = native_propagator(G_ppsc);
     reset();
-    Backbone backbone(topology, n, n_int);
-    eval_self_energy_fixed_index_pair(Gt, backbone, f_ix);
+    DiagramTopology diagram{topology};
+    eval_self_energy_fixed_index_pair(Gt, diagram, f_ix);
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -184,8 +184,8 @@ namespace triqs_xca::dense {
                                                                                                nda::array_const_view<long, 1> f_ix_vec) {
     auto Gt = native_propagator(G_ppsc);
     reset();
-    Backbone backbone(topology, n, n_int);
-    for (long f_ix : f_ix_vec) eval_self_energy_fixed_index_pair(Gt, backbone, f_ix);
+    DiagramTopology diagram{topology};
+    for (long f_ix : f_ix_vec) eval_self_energy_fixed_index_pair(Gt, diagram, f_ix);
     auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
@@ -239,37 +239,37 @@ namespace triqs_xca::dense {
   }
 
   long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) {
-    Backbone backbone(topology, n, n_int);
-    return get_num_self_energy_backbones(backbone);
+    DiagramTopology diagram{topology};
+    return get_num_self_energy_backbones(diagram);
   }
 
-  long DiagramEvaluator::get_num_self_energy_backbones(Backbone &backbone) {
-    long f_ix_max = backbone.num_flat_indices(hyb.poles.size());
+  long DiagramEvaluator::get_num_self_energy_backbones(DiagramTopology const &diagram) {
+    long f_ix_max = count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::self_energy);
     return f_ix_max;
   }
 
-  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone) {
+  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram) {
     // loop over all flat indices
-    long f_ix_max = get_num_self_energy_backbones(backbone);
+    long f_ix_max = get_num_self_energy_backbones(diagram);
     for (long f_ix = 0; f_ix < f_ix_max; f_ix++) {
-      eval_self_energy_fixed_indices(Gt, backbone, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
+      eval_self_energy_fixed_indices(Gt, diagram, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
     }
   }
 
-  void DiagramEvaluator::eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone) {
+  void DiagramEvaluator::eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram) {
     // eval_self_energy_fixed_index_pair(f_ix) evaluates both values of fb(0) (the direction of the
     // hybridization line connected to vertex 0) for the (orbital, pole, fb(1), ...) combination
     // encoded by f_ix. To cover every diagram exactly once, only call it for f_ix whose own
     // fb(0) == 0, i.e. fb_ix = f_ix / (o_ix_max * p_ix_max) is even.
-    long f_ix_max = get_num_self_energy_backbones(backbone);
-    long n_p      = f_ix_max / backbone.fb_ix_max; // o_ix_max * p_ix_max
+    long f_ix_max = get_num_self_energy_backbones(diagram);
+    long n_p      = f_ix_max / count_assignments(diagram.order(), 1, 1, DiagramKind::self_energy); // o_ix_max * p_ix_max
     for (long f_ix = 0; f_ix < f_ix_max; ++f_ix) {
-      if ((f_ix / n_p) % 2 == 0) { eval_self_energy_fixed_index_pair(Gt, backbone, f_ix); }
+      if ((f_ix / n_p) % 2 == 0) { eval_self_energy_fixed_index_pair(Gt, diagram, f_ix); }
     }
   }
 
-  void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix) {
-    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::self_energy);
+  void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram, long f_ix) {
+    auto assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::self_energy);
     eval_self_energy_pair(Gt, assignment);
   }
 
@@ -302,8 +302,8 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, Backbone &backbone, long f_ix) {
-    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::self_energy);
+  void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram, long f_ix) {
+    auto assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::self_energy);
     eval_self_energy(Gt, assignment);
   }
 
@@ -355,26 +355,26 @@ namespace triqs_xca::dense {
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, CorrelatorBackbone &backbone,
+  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram,
                                                                  nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic) {
-    long f_ix_max = backbone.num_flat_indices(hyb.poles.size());
+    long f_ix_max = count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::correlator);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
     // loop over all flat indices
     for (long f_ix = 0; f_ix < f_ix_max; ++f_ix) {
       correlator +=
-         eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic); // evaluate the diagram with these directions, poles, and orbital indices
+         eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic); // evaluate the diagram with these directions, poles, and orbital indices
     }
 
     return correlator;
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, CorrelatorBackbone &backbone,
+  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramTopology const &diagram,
                                                             nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, long f_ix,
                                                             bool is_fermionic) {
 
-    auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::correlator);
+    auto assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::correlator);
     return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), uniform_observable(is_fermionic));
   }
 
@@ -386,7 +386,7 @@ namespace triqs_xca::dense {
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    // evaluate the first sequence of backbone products and convolutions from tau_1 to tau, proceeding right to left, not inculding the creation and
+    // evaluate the first sequence of diagram products and convolutions from tau_1 to tau, proceeding right to left, not inculding the creation and
     // annihilation matrices at the end points. the result is an N x N matrix-valued function of tau.
     T = Gt;
     // T is initialized to Gt, which is always the function at the rightmost edge
@@ -395,7 +395,7 @@ namespace triqs_xca::dense {
       integrate_left_edge(T, Gt, kernels, v);
     }
 
-    // evaluate the second sequence of backbone products and convolutions from tau to beta, using a change of variables to perform convolutions. the
+    // evaluate the second sequence of diagram products and convolutions from tau to beta, using a change of variables to perform convolutions. the
     // result is another N x N matrix-valued function of tau.
     U = Gt;
 
@@ -433,13 +433,13 @@ namespace triqs_xca::dense {
   }
 
   long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) {
-    CorrelatorBackbone backbone(topology, n, n_int);
-    return backbone.num_flat_indices(hyb.poles.size());
+    DiagramTopology diagram{topology};
+    return count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::correlator);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
-    CorrelatorBackbone backbone(topology, n, n_int);
+    DiagramTopology diagram{topology};
 
     // the external legs are the fermionic flavours only, not the dynamical-interaction operators appended to Fset
     auto mu_ops  = single_particle_operators(false);
@@ -447,44 +447,44 @@ namespace triqs_xca::dense {
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
-        tau_mesh, eval_correlator(backbone, mu_ops, kap_ops));
+        tau_mesh, eval_correlator(diagram, mu_ops, kap_ops));
       return correlator;
       */
 
-    return eval_correlator(Gt, backbone, std::move(mu_ops), std::move(kap_ops));
+    return eval_correlator(Gt, diagram, std::move(mu_ops), std::move(kap_ops));
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long f_ix) {
     auto Gt = native_propagator(G_ppsc);
-    CorrelatorBackbone backbone(topology, n, n_int);
+    DiagramTopology diagram{topology};
     auto mu_ops  = single_particle_operators(false);
     auto kap_ops = single_particle_operators(true);
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
-        tau_mesh, eval_correlator(backbone, mu_ops, kap_ops, f_ix));
+        tau_mesh, eval_correlator(diagram, mu_ops, kap_ops, f_ix));
       return correlator;
       */
 
-    return eval_correlator(Gt, backbone, std::move(mu_ops), std::move(kap_ops), f_ix);
+    return eval_correlator(Gt, diagram, std::move(mu_ops), std::move(kap_ops), f_ix);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                     nda::array_const_view<long, 1> f_ix_vec) {
     auto Gt = native_propagator(G_ppsc);
-    CorrelatorBackbone backbone(topology, n, n_int);
+    DiagramTopology diagram{topology};
     auto mu_ops  = single_particle_operators(false);
     auto kap_ops = single_particle_operators(true);
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
-        tau_mesh, eval_correlator(backbone, mu_ops, kap_ops, f_ix));
+        tau_mesh, eval_correlator(diagram, mu_ops, kap_ops, f_ix));
       return correlator;
       */
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    for (auto f_ix : f_ix_vec) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix); }
+    for (auto f_ix : f_ix_vec) { correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix); }
 
     return correlator;
   }
@@ -504,7 +504,7 @@ namespace triqs_xca::dense {
     // gives a zero operator an empty matrix
     bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
 
-    CorrelatorBackbone backbone(topology, n, n_int);
+    DiagramTopology diagram{topology};
 
     // The operator matrices are read from subspace 0 only
     if (ad.n_subspaces() != 1)
@@ -531,7 +531,7 @@ namespace triqs_xca::dense {
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    for (auto f_ix : f_ix_vec) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic); }
+    for (auto f_ix : f_ix_vec) { correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic); }
 
     return correlator;
   }

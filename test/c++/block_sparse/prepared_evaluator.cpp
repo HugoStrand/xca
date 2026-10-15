@@ -60,9 +60,8 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   int n = evaluator.n;
   auto const assignment = prepare_assignment(topology, n, AssignmentIndices{{1}, {1}, {n - 1}}, evaluator.hyb.poles, DiagramKind::correlator);
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
-  CorrelatorBackbone legacy(topology.arcs, n, evaluator.n_int);
   auto op = identity(G);
-  auto expected = evaluator.eval_correlator(G, legacy, {op}, {op}, f, false);
+  auto expected = evaluator.eval_correlator(G, topology, {op}, {op}, f, false);
   auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, ObservableBoundary{Statistics::bosonic, Statistics::bosonic});
   expect_close(actual, expected);
 

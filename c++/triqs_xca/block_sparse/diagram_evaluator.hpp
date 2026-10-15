@@ -5,7 +5,7 @@
 
 #include "triqs_xca/hyb.hpp"
 #include "triqs_xca/kernel_binding.hpp"
-#include "triqs_xca/backbone.hpp"
+#include "triqs_xca/diagram_assignment.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
@@ -21,7 +21,7 @@ using cppdlr::imtime_ops;
 /**
  * @class DiagramEvaluator
  * @brief Class for evaluating a diagram of a given order and topology in block-sparse storage
- * This class is used to evaluate all the backbone decompositions of a given order and topology. It reads the information from a Backbone object
+ * This class is used to evaluate all the diagram decompositions of a given order and topology. It consumes immutable diagram assignments
  * and contains the Green's functions and creation/annihilation operators needed to actually compute the diagram. It also contains temporary 
  * data structures required for computation.
  */
@@ -51,11 +51,11 @@ class DiagramEvaluator {
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
-  // multiply vertex (v_ix) from the right, in a backbone diagram (for block b_ix)
+  // multiply vertex (v_ix) from the right, in a diagram (for block b_ix)
   void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
                              nda::vector_const_view<int> block_dims);
 
-  // integrate edge (e_ix) from the right, in a backbone diagram (for block b_ix)
+  // integrate edge (e_ix) from the right, in a diagram (for block b_ix)
   void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, BoundKernels const &kernels, int e_ix,
                             nda::vector_const_view<int> block_dims);
 
@@ -66,8 +66,8 @@ class DiagramEvaluator {
                                                   nda::vector_const_view<int> block_dims, EndpointOperands const &endpoints);
 
   void eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path);
-  void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix); // evaluate a particular backbone diagram
-  void eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone);           // evaluate a diagram of a given order and topology in block-sparse storage
+  void eval_self_energy(BlockDiagOpFun &Gt, DiagramTopology const &diagram, long f_ix); // evaluate a particular diagram
+  void eval_self_energy(BlockDiagOpFun &Gt, DiagramTopology const &diagram);           // evaluate a diagram of a given order and topology in block-sparse storage
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
@@ -120,16 +120,16 @@ class DiagramEvaluator {
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec); // compute self-energy for given topology and flat index vector
 
   void print_self_energy_backbone(nda::array_const_view<int, 2> topology,
-                                  long f_ix); // print the backbone corresponding to a given flat index for debugging
+                                  long f_ix); // print the diagram corresponding to a given flat index for debugging
 
   // routines for correlator diagrams
   long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology); // get number of backbones for given topology
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, DiagramTopology const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, DiagramTopology const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
 
   // Evaluate a logical assignment; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
@@ -147,7 +147,7 @@ class DiagramEvaluator {
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
 
   void print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology,
-                                      long f_ix); // print the backbone corresponding to a given flat index for debugging
+                                      long f_ix); // print the diagram corresponding to a given flat index for debugging
  
   // compute one time correlator for given operators
   template<bool isComplex>

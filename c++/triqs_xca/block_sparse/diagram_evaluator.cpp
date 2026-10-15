@@ -281,21 +281,20 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignm
   });
 }
 
-void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone, long f_ix) {
-  SelfEnergyPath path(backbone.m);
-  auto const assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::self_energy);
+void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, DiagramTopology const &diagram, long f_ix) {
+  SelfEnergyPath path(diagram.order());
+  auto const assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::self_energy);
   eval_self_energy_paths(Gt, assignment, path);
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
 
-void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone) {
-  SelfEnergyPath path(backbone.m);
+void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, DiagramTopology const &diagram) {
+  SelfEnergyPath path(diagram.order());
 
   // loop over all flat indices
-  long f_ix_max = backbone.num_flat_indices(hyb.poles.size());
-  DiagramTopology topology{backbone.get_topology()};
+  long f_ix_max = count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::self_energy);
   for (long f_ix = 0; f_ix < f_ix_max; f_ix++) {
-    auto const assignment = prepare_assignment(topology, n, hyb.poles, f_ix, DiagramKind::self_energy);
+    auto const assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::self_energy);
     eval_self_energy_paths(Gt, assignment, path);
   }
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
@@ -341,8 +340,8 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   Sigma = Gt; 
   Sigma *= 0;
 
-  Backbone backbone(topology, n, n_int);
-  eval_self_energy(Gt, backbone);
+  DiagramTopology diagram{topology};
+  eval_self_energy(Gt, diagram);
 
   // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
   auto sig = Sigma;
@@ -375,10 +374,10 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   Sigma = Gt;
   Sigma *= 0;
 
-  Backbone backbone(topology, n, n_int);
+  DiagramTopology diagram{topology};
 
   for( auto f_ix : f_ix_vec ) {
-    eval_self_energy(Gt, backbone, f_ix);
+    eval_self_energy(Gt, diagram, f_ix);
   }
 
   // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
@@ -461,22 +460,22 @@ void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, 
   U_e = itops.convolve(beta, itops.vals2coefs(U_e), itops.vals2coefs(GKt_ep), cppdlr::TIME_ORDERED);
 }
 
-nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, CorrelatorBackbone &backbone,
+nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramTopology const &diagram,
     std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
   check_propagator(Gt);
 
-  long f_ix_max = backbone.num_flat_indices(hyb.poles.size());
+  long f_ix_max = count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::correlator);
 
   nda::array<dcomplex, 3> correlator(r, mu_ops.size(), kap_ops.size()), Tmuop(r, Nmax, Nmax);
   correlator = 0;
 
-  for (long f_ix = 0; f_ix < f_ix_max; ++f_ix) { correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic); }
+  for (long f_ix = 0; f_ix < f_ix_max; ++f_ix) { correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic); }
   return correlator;
 }
 
-nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
+nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramTopology const &diagram, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
                                                           long f_ix, bool is_fermionic) {
-  auto const assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::correlator);
+  auto const assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::correlator);
   return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), uniform_observable(is_fermionic));
 }
 
@@ -590,20 +589,20 @@ void DiagramEvaluator::reset() {
 }
 
 long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology) {
-  Backbone backbone(topology, n, n_int);
-  return backbone.num_flat_indices(hyb.poles.size());
+  DiagramTopology diagram{topology};
+  return count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::self_energy);
 }
 
 void DiagramEvaluator::print_self_energy_backbone(nda::array_const_view<int, 2> topology, long f_ix) {
-  Backbone backbone(topology, n, n_int);
-  backbone.set_flat_index(f_ix, hyb.poles);
-  std::cout << "Self-energy backbone for f_ix = " << f_ix << ":\n";
-  std::cout << backbone << std::endl;
+  DiagramTopology diagram{topology};
+  auto const assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::self_energy);
+  std::cout << "Self-energy diagram for f_ix = " << f_ix << ":\n";
+  std::cout << assignment << std::endl;
 }
 
 long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) {
-  CorrelatorBackbone backbone(topology, n, n_int);
-  return backbone.num_flat_indices(hyb.poles.size());
+  DiagramTopology diagram{topology};
+  return count_assignments(diagram.order(), n, hyb.poles.size(), DiagramKind::correlator);
 }
 
 // Order the operators by orbital index, not by symmetry set, since they index the external legs of the single-particle Green's function
@@ -658,10 +657,10 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology) 
   {
   check_propagator(Gt);
-  CorrelatorBackbone backbone(topology, n, n_int);
+  DiagramTopology diagram{topology};
   auto mu_ops  = setup_mu_ops_for_single_ptcle_gf();
   auto kap_ops = setup_kap_ops_for_single_ptcle_gf();
-  return eval_correlator(Gt, backbone, mu_ops, kap_ops);
+  return eval_correlator(Gt, diagram, mu_ops, kap_ops);
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
@@ -674,31 +673,31 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix) 
   {
   check_propagator(Gt);
-  CorrelatorBackbone backbone(topology, n, n_int);
+  DiagramTopology diagram{topology};
   auto mu_ops  = setup_mu_ops_for_single_ptcle_gf();
   auto kap_ops = setup_kap_ops_for_single_ptcle_gf();
-  return eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix);
+  return eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix);
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
   triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec) 
   {
   auto Gt = native_propagator(G_ppsc);
-  CorrelatorBackbone backbone(topology, n, n_int);
+  DiagramTopology diagram{topology};
   auto mu_ops  = setup_mu_ops_for_single_ptcle_gf();
   auto kap_ops = setup_kap_ops_for_single_ptcle_gf();
   nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   for( auto f_ix : f_ix_vec ) {
-    correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix);
+    correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix);
   }
   return correlator;
 }
 
 void DiagramEvaluator::print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology, long f_ix) {
-  CorrelatorBackbone backbone(topology, n, n_int);
-  backbone.set_flat_index(f_ix, hyb.poles);
-  std::cout << "Single-particle Green's function backbone for f_ix = " << f_ix << ":\n";
-  std::cout << backbone << std::endl;
+  DiagramTopology diagram{topology};
+  auto const assignment = prepare_assignment(diagram, n, hyb.poles, f_ix, DiagramKind::correlator);
+  std::cout << "Single-particle Green's function diagram for f_ix = " << f_ix << ":\n";
+  std::cout << assignment << std::endl;
 }
 
 template<bool isComplex>
@@ -747,7 +746,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
   bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
 
   auto Gt = native_propagator(G_ppsc);
-  CorrelatorBackbone backbone(topology, n, n_int);
+  DiagramTopology diagram{topology};
 
   // the operator blocks are placed by the subspaces of ad, which have to be those of the evaluator
   auto ad_dims = subspace_dims_of(ad);
@@ -761,7 +760,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
   nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
 
   for (auto f_ix : f_ix_vec) {
-    correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix, is_fermionic);
+    correlator += eval_correlator(Gt, diagram, mu_ops, kap_ops, f_ix, is_fermionic);
   }
 
   return correlator;

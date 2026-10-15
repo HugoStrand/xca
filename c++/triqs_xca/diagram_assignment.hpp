@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iosfwd>
 
 #include <nda/nda.hpp>
 
@@ -10,7 +11,7 @@ namespace triqs_xca {
 struct DiagramTopology {
   nda::array<int, 2> arcs;
 
-  DiagramTopology(nda::array<int, 2> arcs);
+  explicit DiagramTopology(nda::array<int, 2> arcs);
 
   int order() const { return static_cast<int>(arcs.extent(0)); }
   int special_vertex() const { return arcs(0, 1); }
@@ -40,6 +41,8 @@ struct DiagramAssignment {
   nda::vector<int> prefactor_kernel_exponents;
   int prefactor_sign;
 };
+
+std::ostream &operator<<(std::ostream &out, DiagramAssignment const &assignment);
 
 enum class DiagramKind { self_energy, correlator };
 
