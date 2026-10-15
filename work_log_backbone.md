@@ -8,7 +8,8 @@
 | Test dependency review | None | Backbone coupling inventoried in the plan |
 | Plan review | None | Revised implementation plan ready for execution |
 | 0 | None | CPU configure/build and all 66 CTest entries passed |
-| 1–7 | None | Not started |
+| 1 | `0d70b28` | Self-energy path discovery extracted; all 67 CTest entries passed |
+| 2–7 | None | Not started |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -109,3 +110,46 @@ as `/tmp/xca-backbone-baseline-{configure,build,test}.log`. The untracked CUDA s
 test remains present and registers its disabled CPU case; this is not GPU
 validation. The baseline includes the existing local test files discovered by
 CMake, and unrelated worktree changes were preserved.
+
+## Stage 1 — self-energy paths (`0d70b28`)
+
+Previously `DiagramEvaluator::find_path_self_energy` decoded a flat index,
+searched sector paths, and immediately performed each contraction. Connectivity
+could not be inspected without entering the evaluator. Now
+`visit_self_energy_paths` discovers metadata and calls a consumer with an owned
+`SelfEnergyPath`. The evaluator's `eval_self_energy_paths` is the small bridge:
+decode the assignment, visit paths, call the existing arithmetic, reset the
+backbone. This is the first responsibility transfer, not a replacement evaluator.
+
+Read [SelfEnergyPath](c++/triqs_xca/block_sparse/self_energy_path.hpp), then
+[visit_self_energy_paths](c++/triqs_xca/block_sparse/self_energy_path.cpp), then
+`eval_self_energy_paths` in
+[diagram_evaluator.cpp](c++/triqs_xca/block_sparse/diagram_evaluator.cpp).
+The arrays store successive propagator sectors and vertex dimensions, with
+separate output/terminal sectors and special endpoint symmetry sets. One path
+workspace is reused; copies retain their own arrays. The walker reads operator
+sets through const references and performs no diagram contractions.
+
+The four [path tests](test/c++/block_sparse/self_energy_path.cpp) use explicit
+synthetic connectivity with sector dimensions 1,2,1. For example, two creation
+vertices followed by two annihilation vertices traverse 0→1→2→1→0, giving
+propagator sectors [1,2,1] and dimensions [1,2,1,2,1]. They check both first-order
+directions, symmetry-set ordering, retained copies, masked propagators, an empty
+output block, crossing/nested paths, and workspace dimensions. A deliberately
+non-adjoint connectivity fixture verifies that terminal sectors are reported
+without adding a new closure filter; it is not a valid physical model.
+
+No existing test assertion or public evaluator API changed. Numerical operations,
+traversal order, equal-set restrictions, and cutoff decisions are retained.
+The walker still reads the legacy backbone and quartet, so this descriptor is
+not yet a self-contained numerical task. The evaluator callback still mutates
+special endpoint indices, which are not walker traversal inputs; stages 2–4
+remove that coupling. Broader support/closure policy remains stage 6 work.
+
+Validation: CPU configure/build succeeded with binding regeneration unchanged.
+All 67 CTest entries passed in 56.53 s with the baseline thread settings. All four
+focused GoogleTests also passed after adding the crossing-path case. Logs:
+`/tmp/xca-backbone-path-{configure,build,test}.log` and
+`/tmp/xca-backbone-path-focused-{build,test}.log`. Next: stage 2, owned shared
+assignment/topology data, consumed first by the path walker to remove its
+dependency on mutable backbone state.
