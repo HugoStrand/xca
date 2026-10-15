@@ -39,6 +39,13 @@ struct SelfEnergyContribution {
   int sign; // order, first-line direction, and scalar-kernel sign
 };
 
+/// Select a bound contribution for a block-diagonal output. A nonclosing path
+/// with only exact-zero endpoint couplings contributes nothing and returns false.
+/// Other nonclosing paths require a coarser partition and throw before execution.
+/// This consumer requires closure per indexed contribution; cancellations between
+/// different contributions are not used to establish a block-diagonal result.
+bool select_diagonal_self_energy(SelfEnergyContribution const &contribution);
+
 /// The path must have been discovered for this assignment and model.
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
                                                      SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,

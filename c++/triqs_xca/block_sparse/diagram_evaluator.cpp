@@ -275,6 +275,7 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignm
   auto const kernels = bind_kernels(assignment, hyb);
   visit_self_energy_paths(Gt, assignment, Fq, support_, path, [&](SelfEnergyPath const &prepared) {
     auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, support_, hyb, interactions_.statistics(), signs);
+    if (!select_diagonal_self_energy(contribution)) return;
     auto result = eval_self_energy_contribution(assignment, kernels, contribution);
     Sigma.add_block(contribution.path.output_sector, result);
   });

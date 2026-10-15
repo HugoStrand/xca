@@ -1,6 +1,10 @@
 #include "self_energy_contribution.hpp"
 #include "triqs_xca/interaction.hpp"
 
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+
 namespace triqs_xca::block_sparse {
 namespace {
 constexpr auto all = nda::range::all;
@@ -11,6 +15,26 @@ EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int set, int i
   auto const &op = adjoint ? operators.F_dags[set] : operators.Fs[set];
   return {op.get_block(source_sector)(index, all, all), flavour, statistics[flavour]};
 }
+}
+
+
+bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
+  auto const &path = contribution.path;
+  if (path.terminal_sector == path.output_sector) return true;
+  // Inspect already-bound input coefficients, never the evaluated result. A
+  // candidate group path can be inactive even though its internal vertices exist.
+  auto const &endpoints = contribution.endpoints;
+  for (int late = 0; late < endpoints.late.size(); ++late) {
+    for (auto const &early : endpoints.early) {
+      auto values = endpoints.coefficients[late](all, early.coefficient_index);
+      if (std::any_of(values.begin(), values.end(), [](dcomplex z) { return z != dcomplex{}; }))
+        throw std::invalid_argument("block_sparse self-energy: path from sector " + std::to_string(path.output_sector)
+                                    + " ends in sector " + std::to_string(path.terminal_sector)
+                                    + "; this partition does not close the indexed self-energy contribution. "
+                                      "Use a coarser Hilbert-space partition for block-diagonal output.");
+    }
+  }
+  return false;
 }
 
 
