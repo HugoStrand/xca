@@ -18,7 +18,8 @@
 | Materialization refresh | `5234d69` | Dense coefficient updates replace old bars; all 70 CTest entries passed |
 | 4a | `984e4bc` | Self-energy operands bound before arithmetic; all 70 CTest entries passed |
 | 5a | `eff9128` | Correlator fragment and join planning extracted; all 71 CTest entries passed |
-| Remaining 3–7 | None | Shared model/observable metadata, kernel preparation, policy, and interface cleanup pending |
+| Shared kernel binding | `18d5cd5` | Scalar factors bound once per assignment; all 71 CTest entries passed |
+| Remaining 3–7 | None | Shared model/observable metadata, numerical/support policy, and interface cleanup pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -573,3 +574,51 @@ numerical/support policy and consolidate selection interfaces. The block-specifi
 fragment/join extraction is complete, but the overall stage-3/5 common metadata
 boundary, stage 6, final adapter removal, CPU timing checks, and completion audit
 remain required. The persistent goal stays active.
+
+
+## Shared scalar-kernel binding (`18d5cd5`)
+
+Vertex/edge arithmetic still selected pole tables from `Hybridization`, and
+block-sparse paths repeatedly computed the same scalar prefactor. The shared
+[kernel_binding.hpp](c++/triqs_xca/kernel_binding.hpp) now describes these operands
+explicitly. Read its [binder and numerical application](c++/triqs_xca/kernel_binding.cpp),
+then the calls to `bind_kernels` at the prepared evaluator entry points.
+
+`BoundKernels` borrows ordinary and reflected vertex-kernel views, holds ordered
+lists of edge factors, and stores the scalar prefactor. Binding occurs once per
+assignment. Block-sparse self-energy paths and correlator fragments reuse that
+binding; dense ordinary/paired self-energy and correlators use the same interface.
+Arithmetic applies supplied factors without reading pole indices or selecting
+sign-dependent kernel tables. The old multiplication methods and diagram-assignment
+dependency were removed from `Hybridization`, along with redundant evaluator
+prefactor helpers.
+
+Edge factors retain their pole order; they are not pre-multiplied into a new
+numerical table. This preserves the existing operation order while allowing a
+future executor to choose another materialization. Reflection is prepared for
+vertex factors only, exactly as before; correlator edge-kernel and convolution
+conventions remain unchanged. The scalar prefactor excludes the separate discrete
+assignment, permutation, observable, and diagram-order signs.
+
+Bound views require the original mesh/pole tables to remain alive and unchanged.
+They are local to the prepared call, contain no propagator values, and must be
+rebound after model/mesh replacement. A logical recipe can retain its pole indices
+when pole magnitudes change without changing the sign-based placement rules, but
+its numerical views cannot be reused for the replacement owner.
+
+The additional [hybridization tests](test/c++/hyb.cpp) specify a negative-pole
+vertex decomposition and an overlapping positive-pole edge decomposition directly
+using scalar `cppdlr::k_it` values. They check reflected factors, absent-factor
+identity behavior, ordered edge views, scalar prefactors, and independent bindings
+to changed pole tables. Existing hand-derived preparation tests and analytic
+whole-diagram suites remain intact.
+
+Validation: CPU configure/build, all nine focused CTest entries, and all 71 CPU
+CTest entries passed (full suite 56.91 s). Generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-kernels-{configure,build,focused,test}.log`.
+
+Next: complete shared model-family and observable metadata, then numerical/support
+policy and final selection-interface consolidation. The scalar-kernel boundary
+now complements resolved matrix operands and block-specific path/join plans.
+The legacy backbone adapters and cutoff/mask behavior still require their planned
+cleanup; CPU timing checks and the full completion audit remain outstanding.
