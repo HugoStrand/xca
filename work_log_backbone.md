@@ -25,7 +25,8 @@
 | 6b operator support | `fa44a50` | Owned exact support and compatible retarded groups; all 72 CTest entries passed |
 | 6b output closure | `3456087` | Validate indexed diagonal-output closure; all 72 CTest entries passed |
 | 7a | `0a39662` | Production selection uses immutable topology; all 72 CTest entries passed |
-| 7 remaining | None | Legacy class/test removal, ranges/MPI coverage, timing/memory checks, and final audit pending |
+| 7b | `71a7173` | Mutable backbone adapters removed; all 72 CTest entries passed |
+| 7 remaining | None | Ranges/MPI coverage, timing/memory checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -958,3 +959,42 @@ Next: remove the remaining direct-test dependencies and legacy implementation,
 then consolidate bounded range selections and MPI/paired coverage. Targeted CPU
 timing/memory checks and the final completion audit remain required. The goal
 remains active.
+
+
+## Stage 7b — remove mutable preparation adapters
+
+Code: `71a7173` (`[backbone] remove mutable preparation adapters`).
+
+The production evaluators already consumed owned assignments. This commit moves
+its remaining test clients and deletes `backbone.hpp/.cpp`, including mutable
+vertex setters, reset sequencing, external-statistics sentinels, and duplicate
+counting/printing interfaces. The redundant `fermion_boson_statistics` adapter
+is also gone; tests use the explicit interaction model catalogue.
+
+Read `test/c++/backbone_indexing.cpp` first: both logical and flat selections now
+run against the existing hand-derived third-order expectations for every line
+direction. Large counts, mixed digits beyond `INT_MAX`, overflow, invalid indices,
+zero poles, and owned-copy checks remain. The old reset/reuse test becomes an
+independent-preparation test: vertex-kernel and edge-kernel assignments retain
+their different recipes after later preparation, including a rejected request.
+
+Then read `test/c++/backbone_parity.cpp`. The complete hand-derived parity table
+and the deliberately incorrect all-fermionic catalogue remain. Explicit
+observable statistics replace the old -2/-3 sentinels. The old rejection of an
+unresolved *external* orbital is intentionally removed: external endpoints are
+now resolved separately. The existing explicit-statistics test still rejects an
+unset *internal* orbital and verifies that unresolved external endpoints work.
+The correlator integration test retains its independently computed filtered
+topology parity, rather than borrowing the production endpoint-sign result.
+Finally, the path-discovery ownership test now mutates a separate source
+assignment while visiting a retained copy.
+
+Test filenames remain unchanged so their history and CTest labels are easy to
+follow. Comments referring to the deleted API were updated. Numerical evaluator
+algorithms and tolerances did not change; generated bindings did not change.
+
+Validation: CPU reconfiguration, full rebuild, and all 72 CTest entries passed
+(56.40 s). Logs: `/tmp/xca-backbone-adapter-{configure,build,test}.log`.
+An include/type search finds no remaining uses of the removed classes in source,
+Python, or tests. Next are bounded ranges and MPI/paired coverage, followed by
+CPU timing/memory measurements and the completion audit. The goal stays active.
