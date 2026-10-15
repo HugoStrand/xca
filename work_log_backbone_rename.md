@@ -120,3 +120,24 @@ and the single-edge tau-to-beta propagator. Retained numerical-view ownership
 and hand-written shape/reference comparisons remain. Logs:
 `/tmp/xca-rename-step4-{configure,build,focused-build,test}.log`.
 Next: separate correlator completion metadata from its bound external operators.
+
+## Stage 5: correlator preparation (`b58aa6b`)
+
+Replaced the mixed correlator_plan file with diagram/correlator descriptions and
+bind/correlator numerical selection. CorrelatorDiagram contains caller-local
+path-table indices and external-operator choices. CorrelatorOperands replaces
+the old join structure: it binds external matrices only; computed segment results
+remain separate inputs. No extra enclosing aggregate or class hierarchy.
+
+The evaluator retains compact paths/results for one shared Diagram, evaluates
+each segment once, and streams compatible completions in the existing order.
+The preparation visitor reads connectivity/masks but returns no numerical views.
+Binding needs the prepared record, retained paths and operator owners; it does
+not require an otherwise unused shared Diagram argument.
+
+Validation: full CPU build passed; four focused metadata/binding, prepared and
+all-evaluator correlator tests passed (3.61 s). The synthetic completion test now
+checks that filtering a path table changes table indices without confusing them
+with sector IDs, and verifies bound operator addresses independently. Logs:
+`/tmp/xca-rename-step5-{configure,build,focused-build,test}.log`.
+Next: final naming cleanup, full CPU/MPI validation and benchmark compile check.
