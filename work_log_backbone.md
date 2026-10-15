@@ -10,7 +10,8 @@
 | 0 | None | CPU configure/build and all 66 CTest entries passed |
 | 1 | `0d70b28` | Self-energy path discovery extracted; all 67 CTest entries passed |
 | 2a | `7695377` | Owned assignment data consumed by path discovery; all 67 CTest entries passed |
-| 2b–7 | None | Preparation rules and remaining stages pending |
+| 2b | `4f05c6e` | Shared preparation owns diagram rules; all 67 CTest entries passed |
+| 3–7 | None | Pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -192,3 +193,54 @@ makes no performance claim. The snapshot bridge is temporary: stage 2b extracts
 decoding and stable-kernel preparation into this shared layer and makes the
 legacy API delegate to those rules. The existing mutable setters and the
 numerical consumers have not yet been replaced. The goal remains active.
+
+## Stage 2b — shared diagram preparation (`4f05c6e`)
+
+The snapshot bridge has been removed. Preparation now starts with a validated
+`DiagramTopology` and logical `AssignmentIndices` (directions, poles, and internal
+orbitals), or uses a separate flat-index decoder to obtain those selections.
+`prepare_vertices` and `prepare_kernel_factors` own the direction/bar/dagger and
+stable scalar-kernel rules previously embedded in the mutable backbone setters.
+Both direct preparation and the legacy setters call those functions. The
+block-sparse path walker consumes the resulting description directly.
+
+Read the public functions in
+[diagram_assignment.hpp](c++/triqs_xca/diagram_assignment.hpp), then
+[diagram_assignment.cpp](c++/triqs_xca/diagram_assignment.cpp), then
+`Backbone::prepare_assignment` in [backbone.cpp](c++/triqs_xca/backbone.cpp).
+The last function is a temporary arithmetic adapter: prepare the description,
+load the old fields, and return the description. Numerical consumers still use
+the old fields until stages 3–5 migrate them. It does not implement a second set
+of diagram rules. The legacy component-index setters remain compatibility APIs;
+their eventual removal is still stage 7 work.
+
+Logical preparation has no requirement that all assignments fit in a `long`.
+A new test prepares one order-18, 14-flavour assignment even though counting
+its full flat enumeration overflows. Flat selections retain their existing
+orbital/pole/direction digit order, bounds checks, and overflow protection.
+Logical descriptions use `flat_index = -1` to indicate that no enumeration
+identity was assigned. First-order and correlator cases retain their respective
+direction counts; special endpoint orbitals remain unresolved.
+
+One intentional behavioral improvement follows from complete value preparation:
+calling `set_flat_index` again no longer needs a preceding reset to avoid stale
+edge kernels or a stale prefactor sign. A regression checks vertex-to-edge
+placement on reassignment and preservation after invalid input. Existing
+evaluators already reset between assignments, so their diagram sums are
+unchanged. Numerical cutoff and support policies have not changed.
+
+Test migration: the hand-derived indexing expectations now exercise direct
+logical preparation, not a snapshot of legacy state. Path tests prepare their
+inputs directly; the lifetime case retains the arithmetic adapter explicitly.
+New checks cover mixed-radix decoding, zero poles in both orientations, invalid
+logical indices, and unrepresentable enumeration counts. The assertion requiring
+`set_flat_index` in exception text was deliberately replaced by a relevant
+`flat index` diagnostic check; rejection and call-recovery tests remain intact.
+
+Validation: CPU build and all four focused CTest entries passed. All 67 CTest
+entries passed in 57.07 s. After adding the enumeration-overflow independence
+case, all eight indexing/preparation GoogleTests passed. Binding regeneration
+left tracked wrappers unchanged. Logs:
+`/tmp/xca-backbone-preparation-{build,focused-build,focused,indexing,test}.log`.
+Next: explicit interaction/observable statistics and sign preparation, followed
+by dense numerical consumer migration. Stages 3–7 remain required.
