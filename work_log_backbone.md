@@ -19,7 +19,8 @@
 | 4a | `984e4bc` | Self-energy operands bound before arithmetic; all 70 CTest entries passed |
 | 5a | `eff9128` | Correlator fragment and join planning extracted; all 71 CTest entries passed |
 | Shared kernel binding | `18d5cd5` | Scalar factors bound once per assignment; all 71 CTest entries passed |
-| Remaining 3–7 | None | Shared model/observable metadata, numerical/support policy, and interface cleanup pending |
+| Shared model/observable metadata | `5e7ab02` | Explicit families, flavour lists, and endpoint statistics; all 71 CTest entries passed |
+| 6–7 | None | Numerical/support policy, selection/adapter cleanup, timing checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -622,3 +623,58 @@ policy and final selection-interface consolidation. The scalar-kernel boundary
 now complements resolved matrix operands and block-specific path/join plans.
 The legacy backbone adapters and cutoff/mask behavior still require their planned
 cleanup; CPU timing checks and the full completion audit remain outstanding.
+
+
+## Shared model and observable metadata (`5e7ab02`)
+
+The two evaluators previously reconstructed statistics from an implicit prefix
+of fermionic flavours and selected single-particle external operators from the
+same prefix. [diagram_model.hpp](c++/triqs_xca/diagram_model.hpp) now describes
+interaction families, their statistics, and their logical flavour lists.
+Its [implementation](c++/triqs_xca/diagram_model.cpp) validates that each flavour
+belongs to exactly one family and preserves explicit external flavour order.
+A flavour continues to identify its operator and scalar-coefficient axes; the
+metadata owns no matrix, pole, mesh, or block-symmetry data.
+
+Read those files, then the `interactions_` members and single-particle operator
+selection in the dense and block-sparse evaluators. Both consume the model's
+statistics for sign preparation and its hybridization flavour list for external
+single-particle operators. The current atom-diag builder still stores hybridization
+operators before retarded ones, but this layout is translated by
+`hybridization_retarded_model` once per evaluator. The legacy statistics-vector
+helper delegates to that adapter. Metadata itself permits noncontiguous flavour
+lists; this change does not introduce a new public model-construction API.
+
+`ObservableBoundary` names the statistics at zero and tau. Prepared correlator
+entry points now take that boundary instead of a boolean, and both evaluators
+apply the prepared endpoint sign using it. Existing backbone/indexed entry points
+translate their uniform-statistics boolean through `uniform_observable`.
+The public many-body-operator API retains its validation of homogeneous operator
+statistics; expanding that API is not part of this structural change. Prepared
+C++ tests were updated explicitly, while old direct-backbone statistics tests
+continue to exercise the compatibility route.
+
+The new model tests in
+[interaction_contractions.cpp](test/c++/interaction_contractions.cpp) cover owned
+metadata, interleaved bosonic/fermionic flavours, external order `{3,1}`, missing,
+duplicate, and out-of-range membership, and the atom-diag adapter. A hand-specified
+crossing diagram checks fermionic, bosonic, and mixed endpoint boundaries against
+known permutation signs. Existing single-particle tests with retarded operators
+check that the physical output excludes retarded-interaction flavours.
+
+Validation: CPU configure/build, all nine focused CTest entries, and all 71 CPU
+CTest entries passed (full suite 56.61 s). Generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-model-{configure,build,focused,test}.log`.
+
+This supplies the remaining common model/observable descriptions for the stage-3
+and stage-5 extractions. Shared preparation, block-specific path/join planning,
+and numerical consumers are connected; final consolidation still requires removal
+of the legacy backbone and selection scaffolding.
+
+Next is stage 6, in two review units: numerical zero policy, then support/grouping
+semantics. The initial audit found magnitude masks in `BlockDiagOpFun` import and
+mask refresh, the self-energy contribution cutoff, and a similar mask in the
+atomic-propagator test helper. Independent scaled/cancellation tests must avoid
+inheriting those approximations. Cross-set coefficient tolerance remains a
+separate support-policy issue. Stage 7, CPU timing checks, and the requirement-by-
+requirement completion audit remain outstanding; the persistent goal is active.
