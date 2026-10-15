@@ -21,7 +21,7 @@ EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int set, int i
 
 bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
   auto const &path = contribution.path;
-  if (path.terminal_sector == path.output_sector) return true;
+  if (path.path.sector(path.path.vertex_end) == path.output_sector) return true;
   // Inspect already-bound input coefficients, never the evaluated result. A
   // candidate group path can be inactive even though its internal vertices exist.
   auto const &endpoints = contribution.endpoints;
@@ -30,7 +30,7 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
       auto values = endpoints.coefficients[late](all, early.coefficient_index);
       if (std::any_of(values.begin(), values.end(), [](dcomplex z) { return z != dcomplex{}; }))
         throw std::invalid_argument("block_sparse self-energy: path from sector " + std::to_string(path.output_sector)
-                                    + " ends in sector " + std::to_string(path.terminal_sector)
+                                    + " ends in sector " + std::to_string(path.path.sector(path.path.vertex_end))
                                     + "; this partition does not close the indexed self-energy contribution. "
                                       "Use a coarser Hilbert-space partition for block-diagonal output.");
     }
@@ -40,7 +40,7 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
 
 
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
+                                                     triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                                                      triqs_xca::ArcData const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
                                                      triqs_xca::diagram::PermutationSigns signs) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
@@ -50,14 +50,14 @@ SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propa
     int flavour = operators.sym_set_to_orb(group, index);
     return (adjoint ? support.adjoint : support.plain)[flavour].single_target(source) >= 0;
   };
-  for (int i = 0; i < operators.sym_set_sizes(path.kap_set); ++i) {
+  for (int i = 0; i < operators.sym_set_sizes(path.early_symmetry_set); ++i) {
     bool adjoint = line.early_operator(-1).adjoint;
-    if (present(path.kap_set, i, path.output_sector, adjoint))
-      endpoints.early.push_back(bind_endpoint(operators, path.kap_set, i, path.output_sector, adjoint, statistics));
+    if (present(path.early_symmetry_set, i, path.output_sector, adjoint))
+      endpoints.early.push_back(bind_endpoint(operators, path.early_symmetry_set, i, path.output_sector, adjoint, statistics));
   }
-  for (int i = 0; i < operators.sym_set_sizes(path.mu_set); ++i) {
-    if (!present(path.mu_set, i, path.propagator_blocks(special - 1), line.late_operator(-1).adjoint)) continue;
-    endpoints.late.push_back(bind_endpoint(operators, path.mu_set, i, path.propagator_blocks(special - 1),
+  for (int i = 0; i < operators.sym_set_sizes(path.late_symmetry_set); ++i) {
+    if (!present(path.late_symmetry_set, i, path.path.edge_sector(special - 1), line.late_operator(-1).adjoint)) continue;
+    endpoints.late.push_back(bind_endpoint(operators, path.late_symmetry_set, i, path.path.edge_sector(special - 1),
                                            line.late_operator(-1).adjoint, statistics));
     int flavour = endpoints.late.back().coefficient_index;
     if (line.reflected()) endpoints.coefficients.emplace_back(hybridization.values_reflect(all, all, flavour));
@@ -70,9 +70,10 @@ SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propa
   result.propagators.reserve(2 * m - 1);
   for (int v = 0; v < 2 * m; ++v) {
     if (v == 0 || v == special) result.vertices.emplace_back();
-    else result.vertices.push_back(bind_vertex_operator(operators, assignment, v, path.propagator_blocks(v - 1)));
+    else result.vertices.push_back(bind_vertex_operator(operators, assignment, v, path.path.edge_sector(v - 1)));
   }
-  for (int b : path.propagator_blocks) result.propagators.push_back(propagator.get_block(b));
+  for (int e = path.path.first_edge; e < path.path.edge_end; ++e)
+    result.propagators.push_back(propagator.get_block(path.path.edge_sector(e)));
   return result;
 }
 

@@ -4,26 +4,15 @@
 #include "operator_support.hpp"
 #include <span>
 #include "operator_binding.hpp"
+#include "diagram/backbone_path.hpp"
+#include "triqs_xca/diagram/correlator.hpp"
 
 namespace triqs_xca::block_sparse {
-
-enum class CorrelatorSide { right, left }; // [0,tau] and [tau,beta]
-
-/// Owned path metadata for one fragment. Only the inclusive edge interval and
-/// its adjacent dimensions are populated. An interval of one edge has no
-/// internal vertices and is a valid fragment, not an incomplete path.
-struct CorrelatorFragment {
-  CorrelatorSide side;
-  int first_edge, last_edge;
-  int start_sector = -1, end_sector = -1;
-  nda::vector<int> propagator_blocks;
-  nda::vector<int> dimensions;
-};
 
 /// Borrowed operands: execute before replacing/mutating the propagator or
 /// operator owner, with the matching assignment and mesh. Metadata is owned.
 struct CorrelatorFragmentOperands {
-  CorrelatorFragment path;
+  diagram::BackbonePath path;
   std::vector<nda::array_const_view<dcomplex, 2>> vertices;
   std::vector<nda::array_const_view<dcomplex, 3>> propagators;
 };
@@ -34,10 +23,10 @@ struct CorrelatorFragmentOperands {
 /// sectors, with no new starting-edge check. Joins apply their existing endpoint
 /// checks separately. Internal vertices use exact support prepared for this quartet.
 void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
-                                std::function<void(CorrelatorFragment const &)> const &visit);
+                                BlockOpSymQuartet const &operators, OperatorSupports const &support, triqs_xca::diagram::CorrelatorSegment segment,
+                                std::function<void(diagram::BackbonePath const &)> const &visit);
 CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                    BlockOpSymQuartet const &operators, CorrelatorFragment const &path);
+                                                    BlockOpSymQuartet const &operators, diagram::BackbonePath const &path);
 
 struct CorrelatorTrace {
   int kap; // output column in observable space

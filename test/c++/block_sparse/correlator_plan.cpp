@@ -26,9 +26,9 @@ struct Ladder {
   }
 };
 
-std::vector<CorrelatorFragment> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
-                                         BlockOpSymQuartet const &operators, CorrelatorSide side) {
-  std::vector<CorrelatorFragment> result;
+std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
+                                         BlockOpSymQuartet const &operators, triqs_xca::diagram::CorrelatorSegment side) {
+  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
   visit_correlator_fragments(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
   return result;
 }
@@ -39,37 +39,41 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
                                        triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
-  auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 2);
   for (int i = 0; i < 2; ++i) {
+    EXPECT_EQ(right[i].sectors.size(), 2);
+    EXPECT_EQ(left[i].sectors.size(), 2);
+    EXPECT_EQ(right[i].first_vertex, 1);
+    EXPECT_EQ(left[i].first_vertex, 3);
     EXPECT_EQ(right[i].first_edge, 0);
-    EXPECT_EQ(right[i].last_edge, 1);
-    EXPECT_EQ(right[i].start_sector, i + 1);
-    EXPECT_EQ(right[i].end_sector, i);
-    EXPECT_EQ(right[i].propagator_blocks(0), i + 1);
-    EXPECT_EQ(right[i].propagator_blocks(1), i);
+    EXPECT_EQ((right[i].edge_end - 1), 1);
+    EXPECT_EQ(right[i].sector(right[i].first_vertex), i + 1);
+    EXPECT_EQ(right[i].sector(right[i].vertex_end), i);
+    EXPECT_EQ(right[i].edge_sector(0), i + 1);
+    EXPECT_EQ(right[i].edge_sector(1), i);
     EXPECT_EQ(left[i].first_edge, 2);
-    EXPECT_EQ(left[i].last_edge, 3);
-    EXPECT_EQ(left[i].start_sector, i);
-    EXPECT_EQ(left[i].end_sector, i + 1);
-    EXPECT_EQ(left[i].propagator_blocks(2), i);
-    EXPECT_EQ(left[i].propagator_blocks(3), i + 1);
+    EXPECT_EQ((left[i].edge_end - 1), 3);
+    EXPECT_EQ(left[i].sector(left[i].first_vertex), i);
+    EXPECT_EQ(left[i].sector(left[i].vertex_end), i + 1);
+    EXPECT_EQ(left[i].edge_sector(2), i);
+    EXPECT_EQ(left[i].edge_sector(3), i + 1);
   }
   auto bound = bind_correlator_fragment(G, assignment, model.operators, right[0]);
   EXPECT_EQ(bound.propagators[0].data(), G.get_block(1).data());
   EXPECT_EQ(bound.vertices[1].extent(0), 1);
   EXPECT_EQ(bound.vertices[1].extent(1), 2);
-  right[0].dimensions = -99;
-  EXPECT_EQ(bound.path.dimensions(1), 2);
-  EXPECT_EQ(bound.path.dimensions(2), 1);
+  right[0].sector_dimensions = -99;
+  EXPECT_EQ(bound.path.dimension(1), 2);
+  EXPECT_EQ(bound.path.dimension(2), 1);
 
   auto masked = model.propagator({-1, 0, 0});
-  auto surviving = fragments(masked, assignment, model.operators, CorrelatorSide::right);
+  auto surviving = fragments(masked, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
   ASSERT_EQ(surviving.size(), 1);
-  EXPECT_EQ(surviving[0].start_sector, 2);
-  EXPECT_EQ(surviving[0].end_sector, 1);
+  EXPECT_EQ(surviving[0].sector(surviving[0].first_vertex), 2);
+  EXPECT_EQ(surviving[0].sector(surviving[0].vertex_end), 1);
 }
 
 TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
@@ -79,14 +83,16 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
   // fails at its last starting sector; that must not poison the empty side.
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
                                        triqs_xca::diagram::Indices{{0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
-  auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 3);
   for (int i = 0; i < 3; ++i) {
-    EXPECT_EQ(left[i].first_edge, left[i].last_edge);
-    EXPECT_EQ(left[i].start_sector, i);
-    EXPECT_EQ(left[i].end_sector, i);
+    EXPECT_EQ(left[i].sectors.size(), 1);
+    EXPECT_EQ(left[i].first_vertex, left[i].vertex_end);
+    EXPECT_EQ(left[i].first_edge, (left[i].edge_end - 1));
+    EXPECT_EQ(left[i].sector(left[i].first_vertex), i);
+    EXPECT_EQ(left[i].sector(left[i].vertex_end), i);
   }
 }
 
@@ -95,8 +101,8 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
                                        triqs_xca::diagram::Indices{{}, {}, {}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
-  auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
   ASSERT_EQ(right.size(), 3);
   ASSERT_EQ(left.size(), 3);
   nda::vector<int> right_ends{0, 1, 2}, left_ends{0, 1, 2};

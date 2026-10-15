@@ -3,14 +3,12 @@
 namespace triqs_xca::block_sparse {
 
 void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
-                                std::function<void(CorrelatorFragment const &)> const &visit) {
+                                BlockOpSymQuartet const &operators, OperatorSupports const &support, triqs_xca::diagram::CorrelatorSegment segment,
+                                std::function<void(diagram::BackbonePath const &)> const &visit) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
-  int first = side == CorrelatorSide::right ? 0 : special;
-  int last = side == CorrelatorSide::right ? special - 1 : 2 * m - 1;
-  CorrelatorFragment path{side, first, last, -1, -1, nda::vector<int>(2 * m), nda::vector<int>(2 * m + 1)};
-  path.propagator_blocks = -1;
-  path.dimensions = 0;
+  int first = segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau ? 0 : special;
+  int last = segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau ? special - 1 : 2 * m - 1;
+  diagram::BackbonePath path(first + 1, last + 1, first, last + 1);
   auto op = [&](int vertex) -> BlockOpSymSet const & {
     auto const &v = assignment.vertices[vertex];
     int set = operators.sym_set_labels(v.flavour);
@@ -19,34 +17,32 @@ void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::dia
   for (int start = 0; start < propagator.get_num_block_cols(); ++start) {
     int sector = start;
     bool incomplete = false;
-    path.propagator_blocks(first) = sector;
+    path.edge_sector(first) = sector;
     for (int v = first + 1; v <= last; ++v) {
       sector = support.vertex(assignment, v).single_target(sector);
       incomplete = sector == -1 || propagator.get_zero_block_index(sector) == -1;
       if (incomplete) break;
-      path.propagator_blocks(v) = sector;
+      path.edge_sector(v) = sector;
     }
     if (incomplete) continue;
-    path.start_sector = start;
-    path.end_sector = sector;
-    path.dimensions(first + 1) = propagator.get_block_size(start);
+    path.dimension(first + 1) = propagator.get_block_size(start);
     for (int v = first + 1; v <= last; ++v)
-      path.dimensions(v + 1) = op(v).get_block_size(path.propagator_blocks(v - 1), 0);
+      path.dimension(v + 1) = op(v).get_block_size(path.edge_sector(v - 1), 0);
     visit(path);
   }
 }
 
 CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                    BlockOpSymQuartet const &operators, CorrelatorFragment const &path) {
+                                                    BlockOpSymQuartet const &operators, diagram::BackbonePath const &path) {
   CorrelatorFragmentOperands result{path, {}, {}};
   int n = 2 * assignment.topology.order();
   result.vertices.reserve(n);
   result.propagators.reserve(n);
   for (int v = 0; v < n; ++v) {
-    if (v > path.first_edge && v <= path.last_edge)
-      result.vertices.push_back(bind_vertex_operator(operators, assignment, v, path.propagator_blocks(v - 1)));
+    if (v >= path.first_vertex && v < path.vertex_end)
+      result.vertices.push_back(bind_vertex_operator(operators, assignment, v, path.edge_sector(v - 1)));
     else result.vertices.emplace_back();
-    if (v >= path.first_edge && v <= path.last_edge) result.propagators.push_back(propagator.get_block(path.propagator_blocks(v)));
+    if (v >= path.first_edge && v < path.edge_end) result.propagators.push_back(propagator.get_block(path.edge_sector(v)));
     else result.propagators.emplace_back();
   }
   return result;

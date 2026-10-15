@@ -1,7 +1,7 @@
 #pragma once
 #include "triqs_xca/arc_data.hpp"
 
-#include "self_energy_path.hpp"
+#include "diagram/self_energy.hpp"
 #include "operator_binding.hpp"
 #include "triqs_xca/diagram/sign.hpp"
 #include "triqs_xca/hyb.hpp"
@@ -33,7 +33,7 @@ struct EndpointOperands {
 /// not a cache. Copies retain metadata independently of walker workspace reuse.
 /// Storage is O(order + endpoint flavours), not O(number of paths or pairs).
 struct SelfEnergyContribution {
-  SelfEnergyPath path;
+  triqs_xca::block_sparse::diagram::SelfEnergyDiagram path;
   std::vector<nda::array_const_view<dcomplex, 2>> vertices; // special endpoints have empty views
   std::vector<nda::array_const_view<dcomplex, 3>> propagators;
   EndpointOperands endpoints;
@@ -49,7 +49,7 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution);
 
 /// The path must have been discovered for this assignment and model.
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
-                                                     SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
+                                                     triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                                                      triqs_xca::ArcData const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
                                                      triqs_xca::diagram::PermutationSigns signs);
 

@@ -1,20 +1,21 @@
-#include "self_energy_path.hpp"
+#include "self_energy.hpp"
 
 #include <stdexcept>
 
-namespace triqs_xca::block_sparse {
+namespace triqs_xca::block_sparse::diagram {
 
 void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagram const &assignment, BlockOpSymQuartet const &Fq, OperatorSupports const &support,
-                             SelfEnergyPath &path, std::function<void(SelfEnergyPath const &)> const &visit) {
+                             SelfEnergyDiagram &path, std::function<void(SelfEnergyDiagram const &)> const &visit) {
 
   int m = assignment.topology.order();
   int vct0 = assignment.topology.special_vertex();
 
-  if (path.propagator_blocks.size() != 2 * m - 1 || path.dimensions.size() != 2 * m + 1)
+  if (path.path.first_vertex != 0 || path.path.vertex_end != 2 * m || path.path.first_edge != 0
+      || path.path.edge_end != 2 * m - 1 || path.path.sectors.size() != 2 * m + 1
+      || path.path.sector_dimensions.size() != 2 * m + 1)
     throw std::invalid_argument("visit_self_energy_paths: workspace does not match diagram order");
-  path.special_vertex = vct0;
-  auto &ind_path = path.propagator_blocks;
-  auto &block_dims = path.dimensions;
+  auto ind_path = [&](int edge) -> int & { return path.path.edge_sector(edge); };
+  auto &block_dims = path.path.sector_dimensions;
   int q = static_cast<int>(Fq.Fs.size());
 
   /*  Example of block_dims for m = 2 (OCA): each number is an index of block_dims, and each square represents a block of a matrix
@@ -88,13 +89,14 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagr
         for (int w = vct0; w < 2 * m - 1; w++) { block_dims(w + 2) = F_selector(w + 1).get_block_size(ind_path(w), 0); }
 
         path.output_sector = b_ix;
-        path.terminal_sector = ip;
-        path.kap_set = p_kap;
-        path.mu_set = p_mu;
+        path.path.sector(0) = b_ix;
+        path.path.sector(2 * m) = ip;
+        path.early_symmetry_set = p_kap;
+        path.late_symmetry_set = p_mu;
         visit(path);
       }
     }
   }
 }
 
-} // namespace triqs_xca::block_sparse
+} // namespace triqs_xca::block_sparse::diagram

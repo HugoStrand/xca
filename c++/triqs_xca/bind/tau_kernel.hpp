@@ -23,6 +23,6 @@ struct TauKernelViews {
   double prefactor = 1; // excludes the discrete assignment/permutation signs
 };
 
-TauKernelViews tau_kernels(diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices, TauKernelValues const &values);
+TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices, TauKernelValues const &values);
 
 } // namespace triqs_xca::bind

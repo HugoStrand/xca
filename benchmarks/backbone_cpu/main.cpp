@@ -66,11 +66,11 @@ int main(int argc, char **argv) try {
     logical.push_back(triqs_xca::diagram::decode_indices(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
     assignments.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
   }
-  bs::SelfEnergyPath workspace(order);
+  triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(order);
   double checksum = 0;
   long paths      = 0;
   for (auto const &assignment : assignments)
-    bs::visit_self_energy_paths(G, assignment, operators, support, workspace, [&](auto const &) { ++paths; });
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, operators, support, workspace, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
             << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
             << ',' << paths << '\n';
@@ -101,11 +101,11 @@ int main(int argc, char **argv) try {
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
-    bs::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
-    bs::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) {
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) {
       auto bound = bs::bind_self_energy_contribution(G, assignments[i], path, operators, support, evaluator.hyb, interactions.statistics(), signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });

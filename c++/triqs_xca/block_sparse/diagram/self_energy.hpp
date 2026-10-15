@@ -1,27 +1,16 @@
 #pragma once
-
 #include <functional>
-#include "operator_support.hpp"
+#include "backbone_path.hpp"
+#include "triqs_xca/block_sparse/operator_support.hpp"
 
-#include "triqs_xca/diagram/diagram.hpp"
-#include "triqs_xca/block_sparse/block_op.hpp"
-
-namespace triqs_xca::block_sparse {
-
-/// Sector metadata for one self-energy contribution. Arrays are owned; copying
-/// a path retains it independently of the walker's next callback.
-/// This is not yet a complete numerical task: operator/pole assignments still
-/// belong to the caller's diagram assignment and quartet.
-struct SelfEnergyPath {
+namespace triqs_xca::block_sparse::diagram {
+/// One block realization of a shared Diagram. Endpoint sets and output policy
+/// belong here, not in the generic sector path.
+struct SelfEnergyDiagram {
+  BackbonePath path;
+  int early_symmetry_set = 0, late_symmetry_set = 0;
   int output_sector = 0;
-  int terminal_sector = 0;
-  int kap_set = 0;
-  int mu_set = 0;
-  int special_vertex = 0;
-  nda::vector<int> propagator_blocks; // edge order, length 2*m-1
-  nda::vector<int> dimensions;        // sectors before/after each vertex, length 2*m+1
-
-  explicit SelfEnergyPath(int order) : propagator_blocks(2 * order - 1), dimensions(2 * order + 1) {}
+  explicit SelfEnergyDiagram(int order) : path(0, 2 * order, 0, 2 * order - 1) {}
 };
 
 /// Discover paths for an immutable diagram assignment, without evaluating diagrams.
@@ -34,6 +23,6 @@ struct SelfEnergyPath {
 /// assignment, connectivity, or masks. Independently owned copies may be
 /// prepared or replaced while a retained assignment is being visited.
 void visit_self_energy_paths(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment, BlockOpSymQuartet const &operators, OperatorSupports const &support,
-                             SelfEnergyPath &workspace, std::function<void(SelfEnergyPath const &)> const &visit);
+                             SelfEnergyDiagram &workspace, std::function<void(SelfEnergyDiagram const &)> const &visit);
 
-} // namespace triqs_xca::block_sparse
+} // namespace triqs_xca::block_sparse::diagram

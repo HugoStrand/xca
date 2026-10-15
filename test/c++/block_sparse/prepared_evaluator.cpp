@@ -91,23 +91,23 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   for (int direction : {0, 1}) {
     auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Indices{{direction, 1}, {1}, {n - 1}}, hybridization.poles, triqs_xca::diagram::Kind::self_energy);
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
-    SelfEnergyPath workspace(2);
+    triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
     std::optional<SelfEnergyContribution> retained;
     nda::vector<int> dimensions;
     int count = 0;
-    visit_self_energy_paths(G, assignment, operators, OperatorSupports(operators), workspace, [&](auto const &path) {
+    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, operators, OperatorSupports(operators), workspace, [&](auto const &path) {
       auto bound = bind_self_energy_contribution(G, assignment, path, operators, OperatorSupports(operators), hybridization, statistics, signs);
       auto changed = bind_self_energy_contribution(changed_G, assignment, path, operators, OperatorSupports(operators), hybridization, statistics, signs);
       ++count;
       ASSERT_EQ(bound.vertices.size(), 4);
       ASSERT_EQ(bound.propagators.size(), 3);
       for (int e = 0; e < 3; ++e) {
-        EXPECT_EQ(bound.propagators[e].data(), G.get_block(path.propagator_blocks(e)).data());
+        EXPECT_EQ(bound.propagators[e].data(), G.get_block(path.path.edge_sector(e)).data());
         expect_close(tensor(changed.propagators[e]), nda::make_regular(1.3 * bound.propagators[e]));
       }
       for (int v : {1, 3}) {
-        EXPECT_EQ(bound.vertices[v].extent(0), path.dimensions(v + 1));
-        EXPECT_EQ(bound.vertices[v].extent(1), path.dimensions(v));
+        EXPECT_EQ(bound.vertices[v].extent(0), path.path.dimension(v + 1));
+        EXPECT_EQ(bound.vertices[v].extent(1), path.path.dimension(v));
       }
       EXPECT_EQ(bound.endpoints.coefficients.size(), bound.endpoints.late.size());
       for (int mu = 0; mu < bound.endpoints.late.size(); ++mu) {
@@ -122,14 +122,14 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
         }
       }
       if (!retained) {
-        dimensions = path.dimensions;
+        dimensions = path.path.sector_dimensions;
         retained.emplace(bound);
       }
     });
     ASSERT_GT(count, 0);
-    workspace.dimensions = -99;
+    workspace.path.sector_dimensions = -99;
     ASSERT_TRUE(retained);
-    EXPECT_EQ(retained->path.dimensions, dimensions);
+    EXPECT_EQ(retained->path.path.sector_dimensions, dimensions);
     EXPECT_EQ(retained->endpoints.reflection_sign, direction == 1 ? 1 : -1);
   }
 }

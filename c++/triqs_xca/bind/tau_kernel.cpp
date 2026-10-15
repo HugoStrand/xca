@@ -3,7 +3,7 @@
 
 namespace triqs_xca::bind {
 
-TauKernelViews tau_kernels(diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices, TauKernelValues const &values) {
+TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices, TauKernelValues const &values) {
   constexpr auto all = nda::range::all;
   TauKernelViews result;
   auto select = [&](int sign, int pole) -> KernelView {

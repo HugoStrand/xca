@@ -48,27 +48,27 @@ class DiagramEvaluator {
 
   // Compose already resolved vertices and propagator edges.
   void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
-                            nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims);
+                            nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path);
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, nda::vector_const_view<int> block_dims);
+                           triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, diagram::BackbonePath const &path);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a diagram (for block b_ix)
   void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
-                             nda::vector_const_view<int> block_dims);
+                             diagram::BackbonePath const &path);
 
   // integrate edge (e_ix) from the right, in a diagram (for block b_ix)
   void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
-                            nda::vector_const_view<int> block_dims);
+                            diagram::BackbonePath const &path);
 
   // routines for self-energy diagrams
   
   // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
-                                                  nda::vector_const_view<int> block_dims, EndpointOperands const &endpoints);
+                                                  diagram::BackbonePath const &path, EndpointOperands const &endpoints);
 
-  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, SelfEnergyPath &path);
+  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &path);
   void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram, long f_ix); // evaluate a particular diagram
   void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &diagram);           // evaluate a diagram of a given order and topology in block-sparse storage
 
@@ -78,7 +78,7 @@ class DiagramEvaluator {
 
 
   nda::array_const_view<dcomplex, 3> eval_correlator_fragment(
-    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment);
+    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment);
   void eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);
