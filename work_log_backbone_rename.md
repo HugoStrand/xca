@@ -35,3 +35,25 @@ AGENTS files, CUDA smoke test, Python exp_order_conv and tools; leave it alone.
 The goal tracker initially covers planning only. Its API cannot edit an active
 objective; after completing that planning milestone, create the authorized
 implementation goal immediately and continue without waiting for user input.
+
+## Stage 1: shared descriptions (`c4d38f1`)
+
+Moved shared topology, indices, diagram, arc/catalog, correlator statistics and
+sign descriptions under `triqs_xca::diagram`. Consolidated the existing topology
+utilities there and applied the agreed type/function names. FlatIndexSelection
+remains at the root compatibility boundary. Updated in-tree C++ tests and the
+benchmark caller directly; no permanent legacy aliases were added.
+
+This stage deliberately retains the old member layouts (including flat identity
+and kernel fields) so namespace/file movement can be reviewed separately from
+extraction. Fully qualified shared names make the upcoming block_sparse::diagram
+namespace unambiguous; local naming cleanup remains stage 6.
+
+Validation: initial CPU build and all 73 tests passed (59.08 s). Reconfigured and
+built after the move; six focused topology/indexing/parity/contraction/prepared
+execution tests passed. Python binding regeneration introduced no tracked changes.
+Logs: `/tmp/xca-rename-baseline-{build,test}.log` and
+`/tmp/xca-rename-step1-{configure,build,test}.log`.
+
+Next: extract ArcData/TauKernelValues, explicit TauKernelPlacement and the bind
+namespace, preserving discrete signs and barred-operator pole selection.
