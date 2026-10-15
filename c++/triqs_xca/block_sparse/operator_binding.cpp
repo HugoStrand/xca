@@ -1,0 +1,19 @@
+#include "operator_binding.hpp"
+
+namespace triqs_xca::block_sparse {
+namespace { constexpr auto all = nda::range::all; }
+
+nda::array_const_view<dcomplex, 2> bind_vertex_operator(BlockOpSymQuartet const &operators, DiagramAssignment const &assignment,
+                                                      int vertex, int source_sector) {
+  auto const &v = assignment.vertices[vertex];
+  int set = operators.sym_set_labels(v.orbital), index = operators.sym_set_inds(v.orbital);
+  if (v.barred) {
+    int pole = assignment.poles(v.pole_slot);
+    auto const &op = v.dagger ? operators.F_dag_bars[set] : operators.F_bars_refl[set];
+    return op.get_block(source_sector)(index, pole, all, all);
+  }
+  auto const &op = v.dagger ? operators.F_dags[set] : operators.Fs[set];
+  return op.get_block(source_sector)(index, all, all);
+}
+
+} // namespace triqs_xca::block_sparse

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "self_energy_path.hpp"
+#include "operator_binding.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/hyb.hpp"
 
@@ -37,10 +38,6 @@ struct SelfEnergyContribution {
   EndpointOperands endpoints;
   int sign; // order, first-line direction, and scalar-kernel sign
 };
-
-/// Resolve one internal vertex in a known path; no connectivity search occurs.
-nda::array_const_view<dcomplex, 2> bind_vertex_operator(BlockOpSymQuartet const &operators, DiagramAssignment const &assignment,
-                                                      int vertex, int source_sector);
 
 /// The path must have been discovered for this assignment and model.
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,

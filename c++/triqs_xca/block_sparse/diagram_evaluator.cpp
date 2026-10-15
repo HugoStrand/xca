@@ -208,11 +208,6 @@ template DiagramEvaluator::DiagramEvaluator(
 
 // ----------- Private routines for any diagram ==========
 
-void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix, nda::vector_const_view<int> ind_path,
-                                            nda::vector_const_view<int> block_dims) {
-  auto F = bind_vertex_operator(Fq, assignment, v_ix, ind_path(v_ix - 1));
-  multiply_left_vertex(T_buf, assignment, v_ix, F, block_dims);
-}
 
 void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix,
                                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
@@ -232,10 +227,6 @@ void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, 
   hyb.multiply_kernel(T_vp, assignment.vertices[v_ix].kernel_sign, l_ix);
 }
 
-void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> ind_path,
-                                           nda::vector_const_view<int> block_dims) {
-  integrate_left_edge(T_buf, Gt.get_block(ind_path(e_ix)), assignment, e_ix, block_dims);
-}
 
 void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
                                            DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> block_dims) {
@@ -443,30 +434,9 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 // ========== Private correlator routines ==========
 
 void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix,
-                                             nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims) {
-
-  int o_ix = assignment.vertices[v_ix].orbital; // orbital_index
-  // split backbone orbital index into symmetry set index and orbital index within the symmetry set
-  // i.e. have mapping between backbone orbital index and symmetry set index
-  int q_ix    = static_cast<int>(Fq.sym_set_labels(o_ix)); // symmetry set index
-  int qo_ix   = static_cast<int>(Fq.sym_set_inds(o_ix));   // index within the symmetry set
-  int l_ix    = assignment.poles(assignment.vertices[v_ix].pole_slot);
-  int n_row_l = block_dims(2 * assignment.topology.order()); // number of rows for the left-hand side of the diagram
-  int b_ix    = ind_path(v_ix - 1);         // block index for the vertex v_ix
-
-  // Get the current operator matrix F using the flags and indices of the vertex with index v_ix
-
-  bool has_bar = assignment.vertices[v_ix].barred;
-  bool has_dag = assignment.vertices[v_ix].dagger;
-
-  auto F_selector = [&]() {
-    if (has_bar)
-      return has_dag ? Fq.F_dag_bars[q_ix].get_block(b_ix)(qo_ix, l_ix, _, _) : Fq.F_bars_refl[q_ix].get_block(b_ix)(qo_ix, l_ix, _, _);
-    else
-      return has_dag ? Fq.F_dags[q_ix].get_block(b_ix)(qo_ix, _, _) : Fq.Fs[q_ix].get_block(b_ix)(qo_ix, _, _);
-  };
-
-  nda::array_const_view<dcomplex, 2> F{F_selector()};
+                                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
+  int l_ix = assignment.poles(assignment.vertices[v_ix].pole_slot);
+  int n_row_l = block_dims(2 * assignment.topology.order());
 
   // Get views on temporary storage for input and output
 
@@ -479,15 +449,14 @@ void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf,
   hyb.multiply_kernel(U_v, assignment.vertices[v_ix].kernel_sign, l_ix, -1.0);
 }
 
-void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, BlockDiagOpFun &Gt, DiagramAssignment const &assignment, int e_ix,
-                                            nda::vector_const_view<int> ind_path, nda::vector_const_view<int> block_dims) {
+void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, int e_ix,
+                                            nda::vector_const_view<int> block_dims) {
 
-  int b_ix    = ind_path(e_ix);             // block index for the edge e_ix
   int n_row_l = block_dims(2 * assignment.topology.order()); // number of rows for the left-hand side of the diagram
 
   nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, block_dims(e_ix + 1)), range(0, block_dims(e_ix + 1)));
 
-  GKt_ep = Gt.get_block(b_ix);
+  GKt_ep = propagator;
 
   hyb.multiply_kernels_on_edge(GKt_ep, assignment, e_ix);
 
@@ -515,185 +484,69 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Co
   return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), is_fermionic);
 }
 
-nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
-                                                          bool is_fermionic) {
-  check_propagator(Gt);
-  int m = assignment.topology.order();
-  int vct0 = assignment.topology.special_vertex();
-
-  nda::vector<int> ind_path(2 * m);       // tracks block indices of factors for computing a particular block's contribution to the correlator
-  nda::vector<int> block_dims(2 * m + 1); // tracks the dimensions of the blocks in these factors
-  
-  nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
-  nda::array<dcomplex, 3> Tmuop      = nda::zeros<dcomplex>(r, Nmax, Nmax);
-
-  // blocks and block indices for intermediate storage
-  std::vector<nda::array<dcomplex, 3>> right(Gt.get_num_block_cols(), nda::array<dcomplex, 3>(r, Nmax, Nmax));
-  std::vector<nda::array<dcomplex, 3>> left(Gt.get_num_block_cols(), nda::array<dcomplex, 3>(r, Nmax, Nmax));  
-
-  auto right_inds = nda::vector<int>(Gt.get_num_block_cols());
-  auto left_inds  = nda::vector<int>(Gt.get_num_block_cols());
-
-  nda::vector<int> ind_path_end(3), block_dims_end(4);
-
-  auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
-
-  /*  Example of block_dims for m = 2 (OCA): each number is an index of block_dims, and each square represents a block of a matrix 
-            4            3            3            2            2            1            1            0
-        --------     --------     --------     --------     --------     --------     --------     --------
-      4 |   G  |   4 |   F  |   3 |   G  |   3 |   F  |   2 |   G  |   2 |   F  |   1 |   G  |   1 |   F  |
-        |      |     |      |     |      |     |      |     |      |     |      |     |      |     |      |
-        --------     --------     --------     --------     --------     --------     --------     --------
-    */
-
-  auto F_selector_p_ix = [&](int w, int p_ix) { return assignment.vertices[w].dagger ? Fq.F_dags[p_ix] : Fq.Fs[p_ix]; };
-  auto F_selector      = [&](int w) { return F_selector_p_ix(w, Fq.sym_set_labels(assignment.vertices[w].orbital)); };
-
-  auto is_path_incomplete = [&](int ip) { return (ip == -1 || Gt.get_zero_block_index(ip) == -1); };
-
-  right_inds = -1;
-  left_inds  = -1;
-
-  // -- Right-hand side of diagram, with vertices on [tau, 0]
-  
-  for (int b_ix = 0; b_ix < Gt.get_num_block_cols(); ++b_ix) { // loop over blocks of right-hand side of diagram
-
-    // Each block loop owns its flag: the walk is empty when vct0 == 1 here and when vct0 == 2m-1 in the [beta, tau] loop, and a shared
-    // flag would carry the previous loop's last block into the next one, dropping the whole [beta, tau] side
-    bool incomplete_path = false;
-
-    // ind_path setup (right)
-    
-    int ip = b_ix;
-    ind_path(0) = ip;
-    
-    for(int w = 1; w < vct0; w++) {
-      ip = F_selector(w).get_block_index(ip);
-      incomplete_path = is_path_incomplete(ip);
-      if (incomplete_path) break;
-      ind_path(w) = ip;
-    }
-
-    if (incomplete_path) continue;
-
-    // block_dims setup (right)
-
-    // block_dims(0) = ?? // Not initalized, is block_dims(0) unused ??
-    block_dims(1) = Gt.get_block_size(b_ix);
-    for(int w = 1; w < vct0; w++) block_dims(w + 1) = F_selector(w).get_block_size(ind_path(w - 1), 0);    
-
-    // Evaluate: right-hand side edges and vertices (to buffer T)
-    
-    T(_, range(0, block_dims(1)), range(0, block_dims(1))) = Gt.get_block(ind_path(0)); // first edge at 0
-    
-    for (int v = 1; v < vct0; v++) {
-      multiply_left_vertex(T, assignment, v, ind_path, block_dims);
-      integrate_left_edge(T, Gt, assignment, v, ind_path, block_dims);
+nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
+  DiagramAssignment const &assignment, CorrelatorFragmentOperands const &fragment) {
+  auto const &path = fragment.path;
+  auto const &dims = path.dimensions;
+  if (path.side == CorrelatorSide::right) {
+    T(_, range(0, dims(1)), range(0, dims(1))) = fragment.propagators[0];
+    for (int v = path.first_edge + 1; v <= path.last_edge; ++v) {
+      multiply_left_vertex(T, assignment, v, fragment.vertices[v], dims);
+      integrate_left_edge(T, fragment.propagators[v], assignment, v, dims);
     }
     multiply_prefactor(T, assignment);
-
-    nda::array_view<dcomplex, 3> T_out = T(_, range(0, block_dims(vct0)), range(0, block_dims(1)));
-    T_out *= assignment.prefactor_sign; // include sign from diag order and prefactor
-
-    // Store result in T to the "right" buffer
-    right[b_ix] = T_out;
-    right_inds(b_ix) = ind_path(vct0 - 1);
+    auto result = T(_, range(0, dims(path.last_edge + 1)), range(0, dims(1)));
+    result *= assignment.prefactor_sign;
+    return result;
   }
-
-  // -- Left-hand side of diagram, with vertices on [beta, tau]
-
-  for (int b_ix = 0; b_ix < Gt.get_num_block_cols(); ++b_ix) {
-
-    bool incomplete_path = false; // per block; see the [tau, 0] loop above
-
-    // ind_path setup (left)
-    
-    int ip = b_ix;
-    ind_path(vct0) = ip; // store block index for vertex connected to vertex 0
-
-    for(int w = vct0 + 1; w < 2 * m; w++) {
-      ip = F_selector(w).get_block_index(ip);
-      incomplete_path = is_path_incomplete(ip);
-      if (incomplete_path) break;
-      ind_path(w) = ip;
-    }
-
-    if (incomplete_path) continue;
-    
-    // block_dims setup (left)
-
-    block_dims(vct0 + 1) = Gt.get_block_size(b_ix);
-    for(int w = vct0 + 1; w < 2 * m; w++) block_dims(w + 1) = F_selector(w).get_block_size(ind_path(w - 1), 0);
-
-    // Evaluate: left-hand side edges and vertices (to buffer U) going from beta to tau 
-
-    nda::array_view<dcomplex, 3> U_beta = U(_, range(0, block_dims(2 * m)), range(0, block_dims(2 * m)));
-
-    U_beta = Gt.get_block(ind_path(2 * m - 1));
-
-    for (int v = 2 * m - 1; v > vct0; v--) {
-      multiply_right_vertex(U, assignment, v, ind_path, block_dims);
-      integrate_right_edge(U, Gt, assignment, v - 1, ind_path, block_dims);
-    }
-
-    U = itops.reflect(U); // Reflect result to account for outer [beta, tau] integral order
-    
-    // Store result in U to the "left" buffer
-    left[ind_path(vct0)] = U(_, range(0, block_dims(2 * m)), range(0, block_dims(vct0 + 1)));
-    left_inds(b_ix)      = ind_path(2 * m - 1);
+  int final_dim = dims(path.last_edge + 1);
+  U(_, range(0, final_dim), range(0, final_dim)) = fragment.propagators[path.last_edge];
+  for (int v = path.last_edge; v > path.first_edge; --v) {
+    multiply_right_vertex(U, assignment, v, fragment.vertices[v], dims);
+    integrate_right_edge(U, fragment.propagators[v - 1], assignment, v - 1, dims);
   }
+  U = itops.reflect(U);
+  return U(_, range(0, final_dim), range(0, dims(path.first_edge + 1)));
+}
 
-  for (int mu = 0; mu < mu_ops.size(); ++mu) {
-    for (int b_ix = 0; b_ix < Gt.get_num_block_cols(); ++b_ix) { // loop over blocks of right product
+void DiagramEvaluator::eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
+                                           nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
+                                           nda::array_view<dcomplex, 3> correlator) {
+  auto product = scratch(_, range(0, left.extent(1)), range(0, right.extent(2)));
+  for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(join.mu_op, right(t, _, _)));
+  for (auto const &closing : join.traces)
+    for (int t = 0; t < r; ++t) correlator(t, join.mu, closing.kap) += trace(matmul(product(t, _, _), closing.op));
+}
 
-      // setup ind_path_end
-
-      int ip = right_inds(b_ix);
-      if (is_path_incomplete(ip)) continue;
-      ind_path_end(0) = ip;
-      
-      ip = mu_ops[mu].get_block_index(ip);
-      if (is_path_incomplete(ip)) continue;
-      ind_path_end(1) = ip;
-      
-      ip = left_inds(ip);
-      if (is_path_incomplete(ip)) continue;
-      ind_path_end(2) = ip;      
-      
-      // setup block_dims_end
-
-      block_dims_end(0) = right[b_ix].shape(2); // Is this ever different from Nmax?
-      block_dims_end(1) = right[b_ix].shape(1); // Is this ever different from Nmax?
-      block_dims_end(2) = mu_ops[mu].get_block_size(ind_path_end(0), 0);
-      block_dims_end(3) = left[ind_path_end(1)].shape(1);
-      
-      // Evaluate: product trace, correlator = Tr[left O_mu right O_kap]
-
-      nda::array_const_view<dcomplex, 3> left_b = left[ind_path_end(1)](_, range(0, block_dims_end(3)), range(0, block_dims_end(2)));
-      nda::array_const_view<dcomplex, 2> O_mu_b = mu_ops[mu].get_block(ind_path_end(0));
-      nda::array_const_view<dcomplex, 3> right_b = right[b_ix](_, range(0, block_dims_end(1)), range(0, block_dims_end(0)));
-
-      nda::array_view<dcomplex, 3> Tmuop_b = Tmuop(_, range(0, block_dims_end(3)), range(0, block_dims_end(0)));
-
-      for (int t = 0; t < r; ++t) Tmuop_b(t, _, _) = matmul(left_b(t, _, _), matmul(O_mu_b, right_b(t, _, _)));
-      
-      // the block index of the kap operator is fixed by the end of the path, which is_path_incomplete(ip) above has checked
-      int const c_ix = ind_path_end(2);
-      for (int kap = 0; kap < kap_ops.size(); ++kap) {
-        if (kap_ops[kap].get_block_index(c_ix) == b_ix) {
-
-          nda::array_const_view<dcomplex, 2> O_kap_b = kap_ops[kap].get_block(c_ix);
-
-          for (int t = 0; t < r; ++t) correlator(t, mu, kap) += trace(matmul(Tmuop_b(t, _, _), O_kap_b));
-        }
+nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramAssignment const &assignment,
+  std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
+  check_propagator(Gt);
+  auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
+  auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
+  int sectors = Gt.get_num_block_cols();
+  std::vector<nda::array<dcomplex, 3>> right(sectors), left(sectors);
+  nda::vector<int> right_ends(sectors), left_ends(sectors);
+  right_ends = -1;
+  left_ends = -1;
+  for (auto side : {CorrelatorSide::right, CorrelatorSide::left}) {
+    visit_correlator_fragments(Gt, assignment, Fq, side, [&](CorrelatorFragment const &path) {
+      auto operands = bind_correlator_fragment(Gt, assignment, Fq, path);
+      auto result = eval_correlator_fragment(assignment, operands);
+      if (side == CorrelatorSide::right) {
+        right[path.start_sector] = result;
+        right_ends(path.start_sector) = path.end_sector;
+      } else {
+        left[path.start_sector] = result;
+        left_ends(path.start_sector) = path.end_sector;
       }
-      
-    }
+    });
   }
-  
+  visit_correlator_joins(Gt, right_ends, left_ends, mu_ops, kap_ops, [&](CorrelatorJoin const &join) {
+    eval_correlator_join(join, left[join.left_start], right[join.right_start], scratch, correlator);
+  });
+  auto signs = prepare_endpoint_signs(assignment, interaction_statistics_);
   auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
   correlator *= signs(external, external);
-
   return correlator;
 }
 
