@@ -12,7 +12,8 @@
 | 2a | `7695377` | Owned assignment data consumed by path discovery; all 67 CTest entries passed |
 | 2b | `4f05c6e` | Shared preparation owns diagram rules; all 67 CTest entries passed |
 | 3a | `e932ea1` | Explicit statistics and prepared permutation signs; all 67 CTest entries passed |
-| 3b–7 | None | Numerical consumer migration and remaining stages pending |
+| 3b | `3832492` | Dense arithmetic consumes const assignments; all 68 CTest entries passed |
+| 3c–7 | None | Interaction bindings, block-sparse migration, and remaining stages pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -285,3 +286,47 @@ Logs: `/tmp/xca-backbone-signs-{configure,build,focused,test}.log`. No benchmark
 or numerical-policy change was performed. Next: migrate dense operator/kernel
 consumption to the prepared assignment; the remaining mutable numerical reads,
 block-path orchestration, support policy, and adapter cleanup are still required.
+
+## Stage 3b — dense prepared evaluation (`3832492`)
+
+Dense matrix/convolution routines now read `DiagramAssignment const &` rather
+than mutable backbone getters. The prepared entry points accept logical
+assignments without a flat index or backbone object. Existing entry points
+remain selection adapters: they prepare an assignment from topology/index and
+call the numerical routine. Dense evaluation no longer sets, resets, or reverses
+a backbone, including in its correlator and paired paths.
+
+Read the prepared `eval_self_energy`, `eval_self_energy_pair`, and
+`eval_correlator` overloads in
+[dense/diagram_evaluator.cpp](c++/triqs_xca/dense/diagram_evaluator.cpp), then
+the vertex binding in [dense/fset.cpp](c++/triqs_xca/dense/fset.cpp) and the
+assignment-consuming kernel overloads in [hyb.cpp](c++/triqs_xca/hyb.cpp).
+An internal vertex selects its dense operator from the prepared bar/dagger,
+orbital, and pole data. Special endpoint operators are selected by an explicit
+orientation. The paired routine applies both orientations to its shared
+intermediate without mutating the assignment. Kernel multiplication order,
+convolution orientation, reflected correlator kernels, and prefactors are
+unchanged.
+
+The new [prepared evaluator tests](test/c++/dense/prepared_evaluator.cpp) use a
+model with a density interaction. They compare logical execution with indexed
+selection, a paired contribution with two ordinary contributions, and retained
+assignments with changed propagators. Scaling G by 1.1 scales the order-two
+self-energy by 1.1^3 and the correlator by 1.1^4, checking that preparation does
+not retain numerical propagator data. These are interface/lifetime checks;
+independent diagram accuracy still comes from the existing analytic suites.
+Prepared calls accumulate self-energy into Sigma or return a correlator, as
+documented in the header. Their indices must refer to this evaluator's model and
+pole tables. Existing direct-backbone tests continue through the adapters.
+
+Validation: CPU configure/build, six focused CTest entries, and all 68 CPU CTest
+entries passed (full suite 56.92 s). No tracked binding changes. Logs:
+`/tmp/xca-backbone-dense-{configure,build,focused,test}.log`. Source inspection
+also confirms no dense numerical reads of backbone vertex/pole/kernel state.
+
+This is the dense consumer migration, not completion of stage 3. Matrix operand
+binding still interprets the prepared vertex forms; the common description of
+interaction contractions and block-sparse operand binding remain to be made
+explicit. Legacy hybridization overloads remain for block-sparse arithmetic and
+must be removed after that migration. Stages 4–7, including support/numerical
+policy and final adapter cleanup, remain required.
