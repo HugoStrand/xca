@@ -27,7 +27,8 @@
 | 7a | `0a39662` | Production selection uses immutable topology; all 72 CTest entries passed |
 | 7b | `71a7173` | Mutable backbone adapters removed; all 72 CTest entries passed |
 | 7c | `dffa2b2` | Bounded selections and MPI integration; all 73 CTest entries and a three-rank run passed |
-| Completion audit | None | Timing/memory checks and requirement audit pending |
+| CPU cost check | `9d515b8` | Preparation costs and bounded-memory observations recorded |
+| Completion audit | None | Final requirement audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -1060,3 +1061,42 @@ mpiexec -n 3 python3 test/python/range_selection.py
 Its log is `/tmp/xca-backbone-ranges-mpi.log`. This run is additional local
 validation; CTest registers the same script in serial. Remaining work is the
 planned CPU preparation/memory measurements and final requirement audit.
+
+
+## CPU preparation and memory check
+
+Code/data: `9d515b8` (`[bench] measure CPU diagram preparation`).
+
+The optional `backbone_cpu` target makes the final cost check reproducible. Read
+[its description](benchmarks/backbone_cpu/README.md), then
+[the machine-specific table](benchmarks/backbone_cpu/thinkstationP620_3945WX/README.md).
+It uses existing test fixtures, plus a four-fermion density model with sixteen
+1x1 sectors. Other cases have unequal symmetry sets/retarded density coupling or
+total-number symmetry with sectors up to dimension six and retarded spin coupling.
+It is excluded from the default build and is not a timing-based correctness test.
+
+Component measurements separate flat/logical preparation, signs and kernel
+binding, path discovery, and path/operand binding. Complete prepared and indexed
+self-energy calls and public single-particle range calls provide context. At most
+64 fixed-seed, stratified assignments are retained for the component experiment;
+production range calls continue to stream one assignment at a time. Both public
+range paths are warmed before the RSS stress loop. The large-count example has
+2,097,152 possible assignments and only ten candidate paths across its sample,
+which limits what its faster mean call time says about useful high-order work.
+
+On this CPU, shared preparation took 0.15–0.33 microseconds per sample, below 1%
+of the measured complete prepared self-energy calls. This is not a comparison
+with the pre-refactoring evaluator, and prepared/indexed complete-call differences
+are within measurement noise. RSS increased 64–76 KiB after warm-up; increasing
+the order-three stress-loop length fourfold retained the same 72 KiB increase.
+This supports the bounded-streaming design on these fixtures, not a universal
+memory bound. Input/model storage and per-assignment correlator caches still
+scale with sectors, dimensions, and poles. No caching or numerical optimization
+was introduced in response to the timings.
+
+Validation: configured the CPU tree, explicitly built `backbone_cpu`, and ran all
+eight recorded cases with one OpenMP/OpenBLAS thread. Commands and raw results
+are retained with the table. Configure/build logs are
+`/tmp/xca-backbone-cost-{configure,build}.log`. The existing 73-test validation and
+three-rank MPI check remain the correctness evidence; timing is kept separate.
+Next: finish the old-to-new owner map and requirement/limitations audit.
