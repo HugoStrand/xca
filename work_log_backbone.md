@@ -21,7 +21,8 @@
 | Shared kernel binding | `18d5cd5` | Scalar factors bound once per assignment; all 71 CTest entries passed |
 | Shared model/observable metadata | `5e7ab02` | Explicit families, flavour lists, and endpoint statistics; all 71 CTest entries passed |
 | 6a | `0602db2` | Exact-zero masks and untruncated accumulation; all 72 CTest entries passed |
-| 6b–7 | None | Support policy, selection/adapter cleanup, timing checks, and final audit pending |
+| 6b coefficient policy | `a7b1956` | Reject unrepresented cross-set coefficients; all 72 CTest entries passed |
+| 6b support / 7 | None | Individual support/grouping, selection/adapter cleanup, timing checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -728,3 +729,54 @@ physical partition assumptions. The existing cross-set tolerance and equal-set
 path restriction are still present and are not justified by this numerical-zero
 change. Stage 7 adapter/selection cleanup, CPU timing checks, and the completion
 audit remain outstanding. The persistent goal is active.
+
+## Stage 6b — cross-set coefficient policy (`a7b1956`)
+
+This is the first support-policy review unit. Before changing grouping, it resolves
+what the previous `1e-12 * max|coefficients|` exception actually discarded.
+Read the closed-form two-fermion test in
+[sym_set_mask.cpp](test/c++/block_sparse/sym_set_mask.cpp), then
+`check_sym_set_block_diagonal` in
+[block_op.cpp](c++/triqs_xca/block_sparse/block_op.cpp).
+
+In the explicit Fock basis `|00>, |10>, |01>, |11>`, a zero-frequency pole gives
+`Delta=-C/2`. With a cross-flavour coefficient `delta`, the first-order
+self-energy has `Sigma(1,2)=-delta/2*(G00-G33)`. Constant diagonal propagators
+`G00=s`, `G33=3s` therefore give `Sigma(1,2)=delta*s`. The test uses
+`delta=1e-14`, below the old acceptance threshold, and scales `s=1` and `1e8`.
+Dense and coarse-block evaluators both reproduce the nonzero `1e-14` and `1e-6`
+entries within relative error `2e-11`, without an absolute tolerance floor.
+A representation with four separate one-state sectors cannot store that entry.
+Thus a small coefficient is neither an exact structural zero nor a general
+bound on diagram error. This example passed before the guard change too.
+
+The current grouped bars contract only within one group. The guard now rejects
+all nonzero cross-group coefficients, including imaginary subnormal values,
+with a message identifying the coefficient and groups and suggesting compatible
+grouping or a coarser physical partition. Representable within-group terms have
+no new magnitude restriction. Both quartet construction and the evaluator's
+quartet-only constructor apply the guard. The obsolete public tolerance constant
+is removed. This explicitly rejects unsupported input instead of returning a
+silently truncated model; it does not claim that every rejected grouping is a
+fundamental physical restriction.
+
+The same audit found that the old `std::max` reduction did not detect NaNs as
+intended. Finiteness is now checked on each real and imaginary component, within
+and between groups. The tests exercise those cases, zero cross-set controls,
+coefficient scales `1` and `1e6`, and unchanged sensitivity to tiny allowed
+within-set terms. Prior tests requiring a tiny cross-set perturbation to leave
+Sigma identically unchanged have been replaced by explicit rejection checks.
+The new rejection/NaN checks failed before the implementation change.
+
+Validation: full CPU build, all six focused CTest entries, and all 72 CPU CTest
+entries passed (full suite 56.94 s). Generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-support-{build,focused,test}.log`;
+pre-change evidence: `/tmp/xca-backbone-support-reproduce.log`.
+
+The rest of stage 6b remains required: individual exact operator support must
+be distinct from candidate group connectivity, compatible density operators with
+different support must be groupable without epsilon terms, and physical partition
+closure must be validated. General operators can need multiple block components;
+the single-target numerical storage must not silently redefine their support.
+Stage 7 selection/adapter removal, CPU timing checks, and the final audit are
+also pending. The persistent goal remains active.
