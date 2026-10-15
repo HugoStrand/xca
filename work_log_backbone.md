@@ -11,7 +11,8 @@
 | 1 | `0d70b28` | Self-energy path discovery extracted; all 67 CTest entries passed |
 | 2a | `7695377` | Owned assignment data consumed by path discovery; all 67 CTest entries passed |
 | 2b | `4f05c6e` | Shared preparation owns diagram rules; all 67 CTest entries passed |
-| 3–7 | None | Pending |
+| 3a | `e932ea1` | Explicit statistics and prepared permutation signs; all 67 CTest entries passed |
+| 3b–7 | None | Numerical consumer migration and remaining stages pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -244,3 +245,43 @@ left tracked wrappers unchanged. Logs:
 `/tmp/xca-backbone-preparation-{build,focused-build,focused,indexing,test}.log`.
 Next: explicit interaction/observable statistics and sign preparation, followed
 by dense numerical consumer migration. Stages 3–7 remain required.
+
+## Stage 3a — prepared permutation signs (`e932ea1`)
+
+Both evaluators previously changed special endpoint orbital indices inside the
+matrix evaluation to ask `Backbone::get_parity` for a sign. They now prepare two
+signs before the contractions: one with the special arc in the fermionic
+topology, and one without it. The endpoint loop selects the first only when both
+endpoint operators are fermionic. This captures all endpoint statistics without
+expanding the orbital-pair sum or recalculating parity for every pair/path.
+
+Read [diagram_sign.hpp](c++/triqs_xca/diagram_sign.hpp), its
+[implementation](c++/triqs_xca/diagram_sign.cpp), then the special endpoint
+contractions in the [dense](c++/triqs_xca/dense/diagram_evaluator.cpp) and
+[block-sparse](c++/triqs_xca/block_sparse/diagram_evaluator.cpp) evaluators.
+`Statistics` is explicit metadata; preparation accepts arbitrary flavour order.
+The current model boundary still constructs that metadata from its existing
+hybridization-then-interaction layout. General interaction/operand preparation
+remains subsequent work; this is not yet a full interaction catalogue.
+
+Neither evaluator now calls `get_parity` or writes the special endpoint indices.
+Correlators select their prepared sign from explicit external statistics rather
+than `-2`/`-3` sentinels. The old `get_parity` method remains a compatibility
+translation for direct callers/tests and delegates the sign calculation to the
+same shared function. Order, first-line direction, scalar-kernel, reflection,
+and Python observable prefactors are unchanged and remain separate factors.
+
+The hand-derived table in
+[backbone_parity.cpp](test/c++/backbone_parity.cpp) now checks explicit preparation
+directly and also verifies the legacy translation. Sentinel/default-constructor
+checks remain while that adapter exists. Additional cases verify interleaved
+statistics, mixed endpoint statistics, correlator external statistics, invalid
+internal selections, and first order with no internal flavours. The existing
+forced-statistics negative controls in the dense correlator tests were retained.
+
+Validation: CPU configure/build, five sign-focused CTest entries, and all 67
+CPU CTest entries passed (full suite 56.71 s). No tracked binding changes.
+Logs: `/tmp/xca-backbone-signs-{configure,build,focused,test}.log`. No benchmarking
+or numerical-policy change was performed. Next: migrate dense operator/kernel
+consumption to the prepared assignment; the remaining mutable numerical reads,
+block-path orchestration, support policy, and adapter cleanup are still required.
