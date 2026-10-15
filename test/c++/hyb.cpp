@@ -4,6 +4,8 @@
 #include <triqs/gfs.hpp>
 
 #include <triqs_xca/hyb.hpp>
+#include <triqs_xca/kernel_binding.hpp>
+#include <cppdlr/dlr_kernels.hpp>
 
 /**
  * @file hyb.cpp
@@ -47,4 +49,72 @@ TEST(Hybridization, strided_coefficients) {
     EXPECT_EQ(nda::max_element(nda::abs(H_view.values - H_contiguous.values)), 0.0);
     EXPECT_EQ(nda::max_element(nda::abs(H_view.values_reflect - H_contiguous.values_reflect)), 0.0);
   }
+}
+
+
+TEST(Hybridization, bound_vertex_kernels_include_reflection_and_identity) {
+  using namespace triqs_xca;
+  double beta = 2.;
+  auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, 20., 1e-10, false);
+  hyb::Hybridization H(mesh, nda::vector<double>{-0.8}, nda::zeros<dcomplex>(1, 1, 1));
+  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
+                                       AssignmentIndices{{1, 1}, {0}, {0}}, H.poles, DiagramKind::self_energy);
+  auto bound = bind_kernels(assignment, H);
+  ASSERT_EQ(bound.vertices.size(), 4);
+  EXPECT_FALSE(bound.vertices[0]);
+  EXPECT_FALSE(bound.vertices[2]);
+  ASSERT_TRUE(bound.vertices[1]);
+  ASSERT_TRUE(bound.vertices[3]);
+  ASSERT_TRUE(bound.reflected_vertices[1]);
+  ASSERT_TRUE(bound.reflected_vertices[3]);
+  EXPECT_EQ(bound.vertices[1]->data(), H.k_it_m(range::all, 0).data());
+  auto nodes = mesh.dlr_it().get_itnodes();
+  // Forward internal line with a negative pole: K(-pole) on the earlier
+  // vertex and K(+pole) on the later one. Reflection exchanges those tables.
+  for (int t = 0; t < nodes.size(); ++t) {
+    EXPECT_DOUBLE_EQ((*bound.vertices[1])(t), cppdlr::k_it(nodes(t), 0.8 * beta));
+    EXPECT_DOUBLE_EQ((*bound.vertices[3])(t), cppdlr::k_it(nodes(t), -0.8 * beta));
+    EXPECT_DOUBLE_EQ((*bound.reflected_vertices[1])(t), cppdlr::k_it(nodes(t), -0.8 * beta));
+    EXPECT_DOUBLE_EQ((*bound.reflected_vertices[3])(t), cppdlr::k_it(nodes(t), 0.8 * beta));
+  }
+  EXPECT_DOUBLE_EQ(bound.prefactor, std::pow(cppdlr::k_it(0., 0.8 * beta), -1));
+  for (auto const &edge : bound.edges) EXPECT_TRUE(edge.empty());
+  auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
+  apply_kernel(values, bound.vertices[0]);
+  EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
+  apply_kernel(values, bound.reflected_vertices[1]);
+  for (int t = 0; t < nodes.size(); ++t) EXPECT_EQ(values(t, 0, 0), dcomplex(cppdlr::k_it(nodes(t), -0.8 * beta)));
+}
+
+TEST(Hybridization, bound_edge_products_preserve_factors_and_rebind_to_new_tables) {
+  using namespace triqs_xca;
+  auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-10, false);
+  nda::vector<double> poles{0.7, 1.3};
+  hyb::Hybridization H(mesh, poles, nda::zeros<dcomplex>(2, 1, 1));
+  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, 1,
+                                       AssignmentIndices{{1, 1, 1}, {0, 1}, {0, 0}}, H.poles, DiagramKind::self_energy);
+  auto bound = bind_kernels(assignment, H);
+  ASSERT_EQ(bound.edges.size(), 5);
+  EXPECT_TRUE(bound.edges[0].empty());
+  EXPECT_EQ(bound.edges[1].size(), 1);
+  ASSERT_EQ(bound.edges[2].size(), 2);
+  EXPECT_EQ(bound.edges[3].size(), 2);
+  EXPECT_EQ(bound.edges[4].size(), 1);
+  EXPECT_EQ(bound.edges[2][0].data(), H.k_it_p(range::all, 0).data());
+  EXPECT_EQ(bound.edges[2][1].data(), H.k_it_p(range::all, 1).data());
+  auto nodes = mesh.dlr_it().get_itnodes();
+  auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
+  apply_kernel_product(values, bound.edges[2]);
+  for (int t = 0; t < nodes.size(); ++t)
+    EXPECT_EQ(values(t, 0, 0), dcomplex(cppdlr::k_it(nodes(t), 1.4) * cppdlr::k_it(nodes(t), 2.6)));
+  EXPECT_DOUBLE_EQ(bound.prefactor, std::pow(cppdlr::k_it(0., 1.4), -2) * std::pow(cppdlr::k_it(0., 2.6), -2));
+
+  // The recipe stays valid when positive poles change magnitude, but numerical
+  // operands must be rebound. The old binding still refers to its original owner.
+  hyb::Hybridization changed(mesh, nda::vector<double>{0.9, 1.5}, nda::zeros<dcomplex>(2, 1, 1));
+  auto rebound = bind_kernels(assignment, changed);
+  EXPECT_NE(rebound.edges[2][0].data(), bound.edges[2][0].data());
+  EXPECT_EQ(rebound.edges[2][0].data(), changed.k_it_p(range::all, 0).data());
+  EXPECT_DOUBLE_EQ(rebound.edges[2][0](0), cppdlr::k_it(nodes(0), 1.8));
+  EXPECT_DOUBLE_EQ(bound.edges[2][0](0), cppdlr::k_it(nodes(0), 1.4));
 }

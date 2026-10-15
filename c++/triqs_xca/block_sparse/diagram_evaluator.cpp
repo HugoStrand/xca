@@ -209,10 +209,9 @@ template DiagramEvaluator::DiagramEvaluator(
 // ----------- Private routines for any diagram ==========
 
 
-void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix,
+void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix,
                                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
   int vct0 = assignment.topology.special_vertex();
-  int l_ix = assignment.poles(assignment.vertices[v_ix].pole_slot);
   int n_col_r = v_ix < vct0 ? block_dims(1) : block_dims(0);
 
   // Get views on temporary storage for input and output
@@ -224,28 +223,25 @@ void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, 
   for (int t = 0; t < r; t++) T_vp(t, _, _) = matmul(F, T_v(t, _, _));
 
   // Multiply with scalar K(\tau) factor of the pole with index l_ix
-  hyb.multiply_kernel(T_vp, assignment.vertices[v_ix].kernel_sign, l_ix);
+  apply_kernel(T_vp, kernels.vertices[v_ix]);
 }
 
 
 void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                                           DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> block_dims) {
+                                           DiagramAssignment const &assignment, BoundKernels const &kernels, int e_ix, nda::vector_const_view<int> block_dims) {
   int vct0    = assignment.topology.special_vertex();
   int n_col_r = e_ix < vct0 ? block_dims(1) : block_dims(0);
 
   nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, block_dims(e_ix + 1)), range(0, block_dims(e_ix + 1)));
   GKt_ep = propagator;
 
-  hyb.multiply_kernels_on_edge(GKt_ep, assignment, e_ix);
+  apply_kernel_product(GKt_ep, kernels.edges[e_ix]);
   
   nda::array_view<dcomplex, 3> T_ep = T_buf(_, range(0, block_dims(e_ix + 1)), range(0, n_col_r));
   T_ep = itops.convolve(beta, itops.vals2coefs(GKt_ep), itops.vals2coefs(T_ep), cppdlr::TIME_ORDERED);
 }
 
-void DiagramEvaluator::multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment) {
-  // Apply total prefactor comprised of inverse powers of the kernel evaluated at tau=0 and the current hybridization poles
-  hyb.multiply_kernels_prefactor(T_buf, assignment);
-}
+
 
 // ========== Private self-energy routines ==========
 
@@ -276,9 +272,10 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path) {
   auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
+  auto const kernels = bind_kernels(assignment, hyb);
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
     auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interaction_statistics_, signs);
-    auto result = eval_self_energy_contribution(assignment, contribution);
+    auto result = eval_self_energy_contribution(assignment, kernels, contribution);
     // Preserve the current numerical policy outside the arithmetic executor.
     if (nda::max_element(nda::abs(result)) > 1e-16) Sigma.add_block(contribution.path.output_sector, result);
   });
@@ -305,24 +302,24 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, Backbone &backbone) 
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contribution(
-  DiagramAssignment const &assignment, SelfEnergyContribution const &contribution) {
+  DiagramAssignment const &assignment, BoundKernels const &kernels, SelfEnergyContribution const &contribution) {
   auto const &block_dims = contribution.path.dimensions;
   int m = assignment.topology.order(), vct0 = assignment.topology.special_vertex(); // vertex connnected to time zero
 
   T(_, range(0, block_dims(1)), range(0, block_dims(1))) = contribution.propagators[0];
   for (int v = 1; v < vct0; v++) {
-    multiply_left_vertex(T, assignment, v, contribution.vertices[v], block_dims);
-    integrate_left_edge(T, contribution.propagators[v], assignment, v, block_dims);
+    multiply_left_vertex(T, assignment, kernels, v, contribution.vertices[v], block_dims);
+    integrate_left_edge(T, contribution.propagators[v], assignment, kernels, v, block_dims);
   }
 
   multiply_left_vertex_and_right_zero_vertex(T, vct0, block_dims, contribution.endpoints);
 
   for (int v = vct0 + 1; v < 2 * m; v++) {
-    integrate_left_edge(T, contribution.propagators[v - 1], assignment, v - 1, block_dims);
-    multiply_left_vertex(T, assignment, v, contribution.vertices[v], block_dims);
+    integrate_left_edge(T, contribution.propagators[v - 1], assignment, kernels, v - 1, block_dims);
+    multiply_left_vertex(T, assignment, kernels, v, contribution.vertices[v], block_dims);
   }
 
-  multiply_prefactor(T, assignment);
+  T *= kernels.prefactor;
 
   nda::array_view<dcomplex, 3> T_out = T(_, range(0, block_dims(2 * m)), range(0, block_dims(0)));
   T_out *= contribution.sign;
@@ -433,9 +430,8 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 
 // ========== Private correlator routines ==========
 
-void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix,
+void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix,
                                              nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
-  int l_ix = assignment.poles(assignment.vertices[v_ix].pole_slot);
   int n_row_l = block_dims(2 * assignment.topology.order());
 
   // Get views on temporary storage for input and output
@@ -446,10 +442,10 @@ void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf,
   // Multiply with the operator matrix F from the right
   for (int t = 0; t < r; t++) U_v(t, _, _) = matmul(U_vp(t, _, _), F);
 
-  hyb.multiply_kernel(U_v, assignment.vertices[v_ix].kernel_sign, l_ix, -1.0);
+  apply_kernel(U_v, kernels.reflected_vertices[v_ix]);
 }
 
-void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, int e_ix,
+void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, BoundKernels const &kernels, int e_ix,
                                             nda::vector_const_view<int> block_dims) {
 
   int n_row_l = block_dims(2 * assignment.topology.order()); // number of rows for the left-hand side of the diagram
@@ -458,7 +454,7 @@ void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, 
 
   GKt_ep = propagator;
 
-  hyb.multiply_kernels_on_edge(GKt_ep, assignment, e_ix);
+  apply_kernel_product(GKt_ep, kernels.edges[e_ix]);
 
   nda::array_view<dcomplex, 3> U_e = U_buf(_, range(0, n_row_l), range(0, block_dims(e_ix + 1)));
   
@@ -485,16 +481,16 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Co
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
-  DiagramAssignment const &assignment, CorrelatorFragmentOperands const &fragment) {
+  DiagramAssignment const &assignment, BoundKernels const &kernels, CorrelatorFragmentOperands const &fragment) {
   auto const &path = fragment.path;
   auto const &dims = path.dimensions;
   if (path.side == CorrelatorSide::right) {
     T(_, range(0, dims(1)), range(0, dims(1))) = fragment.propagators[0];
     for (int v = path.first_edge + 1; v <= path.last_edge; ++v) {
-      multiply_left_vertex(T, assignment, v, fragment.vertices[v], dims);
-      integrate_left_edge(T, fragment.propagators[v], assignment, v, dims);
+      multiply_left_vertex(T, assignment, kernels, v, fragment.vertices[v], dims);
+      integrate_left_edge(T, fragment.propagators[v], assignment, kernels, v, dims);
     }
-    multiply_prefactor(T, assignment);
+    T *= kernels.prefactor;
     auto result = T(_, range(0, dims(path.last_edge + 1)), range(0, dims(1)));
     result *= assignment.prefactor_sign;
     return result;
@@ -502,8 +498,8 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
   int final_dim = dims(path.last_edge + 1);
   U(_, range(0, final_dim), range(0, final_dim)) = fragment.propagators[path.last_edge];
   for (int v = path.last_edge; v > path.first_edge; --v) {
-    multiply_right_vertex(U, assignment, v, fragment.vertices[v], dims);
-    integrate_right_edge(U, fragment.propagators[v - 1], assignment, v - 1, dims);
+    multiply_right_vertex(U, assignment, kernels, v, fragment.vertices[v], dims);
+    integrate_right_edge(U, fragment.propagators[v - 1], assignment, kernels, v - 1, dims);
   }
   U = itops.reflect(U);
   return U(_, range(0, final_dim), range(0, dims(path.first_edge + 1)));
@@ -521,6 +517,7 @@ void DiagramEvaluator::eval_correlator_join(CorrelatorJoin const &join, nda::arr
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramAssignment const &assignment,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
   check_propagator(Gt);
+  auto const kernels = bind_kernels(assignment, hyb);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   int sectors = Gt.get_num_block_cols();
@@ -531,7 +528,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Di
   for (auto side : {CorrelatorSide::right, CorrelatorSide::left}) {
     visit_correlator_fragments(Gt, assignment, Fq, side, [&](CorrelatorFragment const &path) {
       auto operands = bind_correlator_fragment(Gt, assignment, Fq, path);
-      auto result = eval_correlator_fragment(assignment, operands);
+      auto result = eval_correlator_fragment(assignment, kernels, operands);
       if (side == CorrelatorSide::right) {
         right[path.start_sector] = result;
         right_ends(path.start_sector) = path.end_sector;

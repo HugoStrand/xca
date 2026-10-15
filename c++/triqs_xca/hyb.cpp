@@ -44,31 +44,6 @@ namespace triqs_xca::hyb {
   };
 
 
-  void Hybridization::multiply_kernel(nda::array_view<dcomplex, 3> T_buf, int kernel_sign, int pole, double reflection) {
-    if (kernel_sign != 0) {
-      auto kernel = reflection * kernel_sign > 0 ? k_it_p(_, pole) : k_it_m(_, pole);
-      for (int t = 0; t < tau_mesh.dlr_it().rank(); ++t) T_buf(t, _, _) *= kernel(t);
-    }
-  }
-
-  void Hybridization::multiply_kernels_on_edge(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int edge) {
-    for (int p = 0; p < assignment.poles.size(); ++p)
-      multiply_kernel(T_buf, assignment.edge_kernels(edge, p), assignment.poles(p));
-  }
-
-  void Hybridization::multiply_kernels_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment) {
-    double prefactor = 1.0;
-    for (int p = 0; p < assignment.poles.size(); ++p) {
-      int exponent = assignment.prefactor_kernel_exponents(p);
-      if (exponent != 0) {
-        int pole = assignment.poles(p);
-        double kernel = assignment.prefactor_kernel_signs(p) > 0 ? k_0_p(pole) : k_0_m(pole);
-        prefactor *= std::pow(kernel, -exponent);
-      }
-    }
-    T_buf *= prefactor;
-  }
-
   nda::array<dcomplex, 3> coefs2vals(double beta, double Lambda, double eps, nda::array_const_view<dcomplex, 3> coefs,
                                      nda::vector_const_view<double> poles) {
     auto dlr_rf = cppdlr::build_dlr_rf(Lambda, eps);

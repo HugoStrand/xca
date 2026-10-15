@@ -4,6 +4,7 @@
 #include <triqs/atom_diag/atom_diag.hpp>
 
 #include "triqs_xca/hyb.hpp"
+#include "triqs_xca/kernel_binding.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/diagram_sign.hpp"
 #include "triqs_xca/interaction.hpp"
@@ -40,23 +41,21 @@ class DiagramEvaluator {
   void check_propagator(BlockDiagOpFun const &Gt) const;
 
   // Diagram composition routines
-  
-  void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment);
 
   // Compose already resolved vertices and propagator edges.
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix,
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix,
                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims);
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           DiagramAssignment const &assignment, int e_ix, nda::vector_const_view<int> block_dims);
+                           DiagramAssignment const &assignment, BoundKernels const &kernels, int e_ix, nda::vector_const_view<int> block_dims);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a backbone diagram (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix, nda::array_const_view<dcomplex, 2> F,
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
                              nda::vector_const_view<int> block_dims);
 
   // integrate edge (e_ix) from the right, in a backbone diagram (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, int e_ix,
+  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, DiagramAssignment const &assignment, BoundKernels const &kernels, int e_ix,
                             nda::vector_const_view<int> block_dims);
 
   // routines for self-energy diagrams
@@ -71,11 +70,11 @@ class DiagramEvaluator {
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    DiagramAssignment const &assignment, SelfEnergyContribution const &contribution);
+    DiagramAssignment const &assignment, BoundKernels const &kernels, SelfEnergyContribution const &contribution);
 
 
   nda::array_const_view<dcomplex, 3> eval_correlator_fragment(
-    DiagramAssignment const &assignment, CorrelatorFragmentOperands const &fragment);
+    DiagramAssignment const &assignment, BoundKernels const &kernels, CorrelatorFragmentOperands const &fragment);
   void eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);

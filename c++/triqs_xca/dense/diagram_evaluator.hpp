@@ -6,6 +6,7 @@
 #include <triqs/gfs.hpp>
 
 #include "triqs_xca/hyb.hpp"
+#include "triqs_xca/kernel_binding.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/backbone.hpp"
 #include "triqs_xca/diagram_sign.hpp"
@@ -62,11 +63,9 @@ namespace triqs_xca::dense {
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a backbone diagram using dense storage
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, int v_ix);
+    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix);
     // convolve with a single edge, e_ix, in a backbone diagram using dense storage
-    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment, int e_ix);
-    // multiply by the prefactor associated with the backbone
-    void multiply_prefactor(nda::array_view<dcomplex, 3> T_buf, DiagramAssignment const &assignment);
+    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
 
     // routines for self-energy diagrams
 
@@ -76,9 +75,9 @@ namespace triqs_xca::dense {
     // routines for correlator diagrams
 
     // multiply by a single vertex, v_ix, on the tau-beta side of a correlator backbone diagram using dense storage
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, int v_ix);
+    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, DiagramAssignment const &assignment, BoundKernels const &kernels, int v_ix);
     // convolve with a single edge, e_ix, on the tau-beta side of a correlator backbone diagram using dense storage
-    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment, int e_ix);
+    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
 
     public:
     void reset(); // reset all arrays to zero
