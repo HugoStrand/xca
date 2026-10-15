@@ -28,6 +28,9 @@ namespace triqs_xca::dense {
       F_bars_refl = nda::zeros<dcomplex>(n, p, N, N);
     }
 
+    // A refresh replaces the contraction, even when the pole count is unchanged.
+    F_dag_bars = 0;
+    F_bars_refl = 0;
     for (int l = 0; l < p; l++) {
       for (int nu = 0; nu < n; nu++) {
         for (int lam = 0; lam < n; lam++) {

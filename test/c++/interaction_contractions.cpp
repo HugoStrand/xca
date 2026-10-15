@@ -67,3 +67,35 @@ TEST(InteractionContractions, materialized_bars_match_explicit_complex_sums) {
     expect_close(sparse.F_bars_refl[0].get_block(0)(retained, 0, all, all), expected_backward[retained]);
   }
 }
+
+TEST(InteractionContractions, dense_coefficient_refresh_replaces_materialized_bars) {
+  nda::array<dcomplex, 3> operators(1, 2, 2), adjoints(1, 2, 2), coefficients(1, 1, 1);
+  operators(0, all, all) = nda::array<dcomplex, 2>{{0., dcomplex(1, 1)}, {0., 0.}};
+  adjoints(0, all, all) = nda::conj(nda::transpose(operators(0, all, all)));
+  coefficients(0, 0, 0) = dcomplex(2, 1);
+  dense::FSet materialized(operators, adjoints, coefficients);
+
+  coefficients(0, 0, 0) = dcomplex(3, -2);
+  auto expected_forward = nda::make_regular(dcomplex(3, -2) * adjoints(0, all, all));
+  auto expected_backward = nda::make_regular(-dcomplex(3, -2) * operators(0, all, all));
+  for (int repeat = 0; repeat < 2; ++repeat) {
+    materialized.update_hybridization(coefficients);
+    expect_close(materialized.F_dag_bars(0, 0, all, all), expected_forward);
+    expect_close(materialized.F_bars_refl(0, 0, all, all), expected_backward);
+  }
+
+  // A rejected refresh must leave the valid materialization usable.
+  nda::array<dcomplex, 3> invalid(1, 2, 2);
+  EXPECT_THROW(materialized.update_hybridization(invalid), std::invalid_argument);
+  expect_close(materialized.F_dag_bars(0, 0, all, all), expected_forward);
+
+  nda::array<dcomplex, 3> two_poles(2, 1, 1);
+  two_poles(0, 0, 0) = dcomplex(-1, 3);
+  two_poles(1, 0, 0) = dcomplex(4, -5);
+  materialized.update_hybridization(two_poles);
+  ASSERT_EQ(materialized.F_dag_bars.extent(1), 2);
+  expect_close(materialized.F_dag_bars(0, 1, all, all), nda::make_regular(dcomplex(4, -5) * adjoints(0, all, all)));
+  materialized.update_hybridization(coefficients);
+  ASSERT_EQ(materialized.F_dag_bars.extent(1), 1);
+  expect_close(materialized.F_dag_bars(0, 0, all, all), expected_forward);
+}
