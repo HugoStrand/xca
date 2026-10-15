@@ -100,3 +100,23 @@ this commit isolates the logical interval change from numerical-view extraction.
 Validation: full CPU build passed; six focused path/mask/ownership/numerical and
 all-evaluator correlator tests passed (3.60 s). Logs:
 `/tmp/xca-rename-step3-{configure,build,test}.log`.
+
+## Stage 4: backbone operands (`73a58a7`)
+
+Both full self-energy paths and correlator segments now bind through
+block_sparse::bind::backbone into one BackboneOperands type. Propagator views
+and optional vertex views cover only their intervals; absent vertices explicitly
+mean completion operands supply them. Direct accessors translate diagram indices.
+
+SelfEnergyOperands composes BackboneOperands and EndpointSumOperands, with output
+and sign bookkeeping. bind::endpoint_sum and bind::self_energy separate numerical
+selection from execution; exact nonclosing-path policy remains before arithmetic.
+Vertex binding moved under bind. The old padded fragment operand structure and
+self-energy contribution structure were removed, without compatibility aliases.
+
+Validation: CPU build passed; six focused evaluator/partition/correlator tests
+passed (5.30 s). Added checks of compact view counts, missing special endpoints,
+and the single-edge tau-to-beta propagator. Retained numerical-view ownership
+and hand-written shape/reference comparisons remain. Logs:
+`/tmp/xca-rename-step4-{configure,build,focused-build,test}.log`.
+Next: separate correlator completion metadata from its bound external operators.
