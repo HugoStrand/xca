@@ -1,4 +1,4 @@
-#include "triqs_xca/interaction.hpp"
+#include "triqs_xca/diagram/arc.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -551,8 +551,8 @@ namespace triqs_xca::block_sparse {
           for (int nu = 0; nu < sym_set_sizes(p_set); nu++) {
             long lam_orb = sym_set_to_orb(p_set, lam);
             long nu_orb  = sym_set_to_orb(p_set, nu);
-            auto forward = BarredOperator{{true}, static_cast<int>(lam_orb), l}.term(nu_orb);
-            auto backward = BarredOperator{{false}, static_cast<int>(nu_orb), l}.term(lam_orb);
+            auto forward = triqs_xca::diagram::BarredOperatorContraction{{true}, static_cast<int>(lam_orb), l}.term(nu_orb);
+            auto backward = triqs_xca::diagram::BarredOperatorContraction{{false}, static_cast<int>(nu_orb), l}.term(lam_orb);
             for (int b = 0; b < F_dags[p_set].get_num_block_cols(); b++) {
               if (F_dags[p_set].get_block_index(b) != -1) {
                 F_dag_bars[p_set].add_block(b, lam, l, nda::make_regular(forward.sign * hyb_coeffs(forward.pole, forward.coefficient_row, forward.coefficient_column) * F_dags[p_set].get_block(b)(nu, _, _)));

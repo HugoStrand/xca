@@ -10,13 +10,13 @@ namespace triqs_xca {
 /// constant in the number of assignments; an explicit vector is borrowed only
 /// for the duration of the call. Each index is decoded into logical work by the
 /// consumer. This type does not prescribe block paths or a numerical schedule.
-class AssignmentSelection {
+class FlatIndexSelection {
   long first_ = 0, last_ = 0;
   std::optional<nda::array_const_view<long, 1>> indices_;
 
 public:
-  explicit AssignmentSelection(nda::array_const_view<long, 1> indices) : indices_(indices) {}
-  AssignmentSelection(long first, long last, long count) : first_(first), last_(last) {
+  explicit FlatIndexSelection(nda::array_const_view<long, 1> indices) : indices_(indices) {}
+  FlatIndexSelection(long first, long last, long count) : first_(first), last_(last) {
     if (first < 0 || last < first || last > count)
       throw std::invalid_argument("assignment range must satisfy 0 <= first <= last <= count");
   }

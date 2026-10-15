@@ -9,7 +9,7 @@
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
@@ -23,7 +23,7 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::many_body_operator_complex;
 using triqs::operators::n;
-using triqs_xca::topology::topology_parity;
+using triqs_xca::diagram::topology::topology_parity;
 
 /**
  * @file unitary_invariance_all_evals.cpp

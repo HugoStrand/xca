@@ -13,7 +13,7 @@
 
 #include <gtest/gtest.h>
 
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/evaluators.hpp"
 
@@ -25,7 +25,7 @@ using test_utils::f_ix_t;
 using test_utils::max_abs;
 using test_utils::tensor_t;
 using test_utils::topo_t;
-using triqs_xca::topology::topology_parity;
+using triqs_xca::diagram::topology::topology_parity;
 
 /**
  * @file flat_index_all_evals.cpp

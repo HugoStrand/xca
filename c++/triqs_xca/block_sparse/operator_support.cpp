@@ -66,7 +66,7 @@ OperatorSupports::OperatorSupports(BlockOpSymQuartet const &operators) : poles(o
   }
 }
 
-OperatorSupport const &OperatorSupports::vertex(DiagramAssignment const &assignment, int vertex) const {
+OperatorSupport const &OperatorSupports::vertex(triqs_xca::diagram::Diagram const &assignment, int vertex) const {
   auto const &v = assignment.vertices.at(vertex);
   if (!v.barred) return (v.dagger ? adjoint : plain).at(v.orbital);
   int pole = assignment.poles(v.pole_slot);

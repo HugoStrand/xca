@@ -3,18 +3,18 @@
 #include <span>
 #include <vector>
 
-#include "diagram_assignment.hpp"
-#include "diagram_model.hpp"
+#include "triqs_xca/diagram/diagram.hpp"
+#include "triqs_xca/diagram/arc_catalog.hpp"
 
-namespace triqs_xca {
+namespace triqs_xca::diagram {
 
 /// Permutation parity after removing every arc with a bosonic endpoint.
 /// Order, direction, kernel, and Python observable prefactors are separate.
-int permutation_sign(DiagramTopology const &topology, std::span<Statistics const> vertices);
+int permutation_sign(Topology const &topology, std::span<Statistics const> vertices);
 
 /// The unresolved special arc has only two parity cases, independent of the
 /// number of endpoint orbitals. No orbital-pair enumeration is needed here.
-struct EndpointSigns {
+struct PermutationSigns {
   int with_fermionic_arc;
   int without_fermionic_arc;
 
@@ -23,6 +23,6 @@ struct EndpointSigns {
   }
 };
 
-EndpointSigns prepare_endpoint_signs(DiagramAssignment const &assignment, std::span<Statistics const> interactions);
+PermutationSigns prepare_permutation_signs(Diagram const &assignment, std::span<Statistics const> interactions);
 
-} // namespace triqs_xca
+} // namespace triqs_xca::diagram

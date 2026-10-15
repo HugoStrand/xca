@@ -14,8 +14,8 @@
 
 #include <triqs/operators/many_body_operator.hpp>
 
-#include <triqs_xca/diagram_assignment.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/diagram.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/evaluators.hpp"
 
@@ -30,8 +30,8 @@ using triqs::operators::c;
 using triqs::operators::c_dag;
 using triqs::operators::many_body_operator_complex;
 using triqs::operators::n;
-using triqs_xca::topology::fermionic_topology;
-using triqs_xca::topology::topology_parity;
+using triqs_xca::diagram::topology::fermionic_topology;
+using triqs_xca::diagram::topology::topology_parity;
 
 /**
  * @file one_time_correlator_all_evals.cpp
@@ -217,9 +217,9 @@ namespace {
    */
   nda::vector<long> sign_changing_backbones(test_utils::EvalModel const &m, topo_t t, bool fermionic_legs, Flip flip) {
     long n_hyb = m.n_hyb();
-    triqs_xca::DiagramTopology diagram{nda::array<int, 2>(t)};
+    triqs_xca::diagram::Topology diagram{nda::array<int, 2>(t)};
     int flavours = n_hyb + m.n_int();
-    auto sign = [&](triqs_xca::DiagramAssignment const &assignment, bool legs, bool interaction_lines_bosonic) {
+    auto sign = [&](triqs_xca::diagram::Diagram const &assignment, bool legs, bool interaction_lines_bosonic) {
       nda::array<bool, 1> fermionic(t.size());
       for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || assignment.vertices[v].orbital < n_hyb;
       fermionic(0)       = legs;
@@ -227,8 +227,8 @@ namespace {
       return topology_parity(fermionic_topology(t, fermionic));
     };
     std::vector<long> fs;
-    for (long f = 0; f < triqs_xca::count_assignments(diagram.order(), flavours, m.hyb_poles.size(), triqs_xca::DiagramKind::correlator); ++f) {
-      auto assignment = triqs_xca::prepare_assignment(diagram, flavours, m.hyb_poles, f, triqs_xca::DiagramKind::correlator);
+    for (long f = 0; f < triqs_xca::diagram::count_diagrams(diagram.order(), flavours, m.hyb_poles.size(), triqs_xca::diagram::Kind::correlator); ++f) {
+      auto assignment = triqs_xca::diagram::prepare_diagram(diagram, flavours, m.hyb_poles, f, triqs_xca::diagram::Kind::correlator);
       int alt = flip == Flip::legs ? sign(assignment, !fermionic_legs, true) : sign(assignment, fermionic_legs, false);
       if (sign(assignment, fermionic_legs, true) != alt) fs.push_back(f);
     }

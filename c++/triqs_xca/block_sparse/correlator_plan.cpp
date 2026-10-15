@@ -2,7 +2,7 @@
 
 namespace triqs_xca::block_sparse {
 
-void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                 BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
                                 std::function<void(CorrelatorFragment const &)> const &visit) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
@@ -36,7 +36,7 @@ void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignm
   }
 }
 
-CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                     BlockOpSymQuartet const &operators, CorrelatorFragment const &path) {
   CorrelatorFragmentOperands result{path, {}, {}};
   int n = 2 * assignment.topology.order();

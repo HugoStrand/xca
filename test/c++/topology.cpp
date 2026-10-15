@@ -1,11 +1,11 @@
-#include "triqs_xca/topology.hpp"
+#include "triqs_xca/diagram/topology.hpp"
 
 #include <nda/nda.hpp>
 #include <gtest/gtest.h>
 
 #include <stdexcept>
 
-using namespace triqs_xca::topology;
+using namespace triqs_xca::diagram::topology;
 
 TEST(test_topology, permutation_parity_identity) {
   // Identity: zero transpositions -> even -> +1

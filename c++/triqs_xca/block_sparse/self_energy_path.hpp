@@ -3,7 +3,7 @@
 #include <functional>
 #include "operator_support.hpp"
 
-#include "triqs_xca/diagram_assignment.hpp"
+#include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 
 namespace triqs_xca::block_sparse {
@@ -34,7 +34,7 @@ struct SelfEnergyPath {
 /// enforces terminal/output-sector equality. A callback must not change the
 /// assignment, connectivity, or masks. Independently owned copies may be
 /// prepared or replaced while a retained assignment is being visited.
-void visit_self_energy_paths(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment, BlockOpSymQuartet const &operators, OperatorSupports const &support,
+void visit_self_energy_paths(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment, BlockOpSymQuartet const &operators, OperatorSupports const &support,
                              SelfEnergyPath &workspace, std::function<void(SelfEnergyPath const &)> const &visit);
 
 } // namespace triqs_xca::block_sparse

@@ -3,7 +3,7 @@
 
 namespace triqs_xca {
 
-BoundKernels bind_kernels(DiagramAssignment const &assignment, hyb::Hybridization const &hybridization) {
+BoundKernels bind_kernels(triqs_xca::diagram::Diagram const &assignment, hyb::Hybridization const &hybridization) {
   constexpr auto all = nda::range::all;
   BoundKernels result;
   auto select = [&](int sign, int pole) -> KernelView {

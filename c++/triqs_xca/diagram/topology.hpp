@@ -2,7 +2,7 @@
 
 #include <nda/nda.hpp>
 
-namespace triqs_xca::topology {
+namespace triqs_xca::diagram::topology {
 
   /**
    * @brief Parity (fermionic sign) of a permutation via cycle decomposition
@@ -55,4 +55,18 @@ namespace triqs_xca::topology {
    */
   nda::array<int, 2> fermionic_topology(nda::array_const_view<int, 2> topology, nda::array_const_view<bool, 1> fermionic);
 
-} // namespace triqs_xca::topology
+} // namespace triqs_xca::diagram::topology
+
+namespace triqs_xca::diagram {
+
+/// Diagram connectivity, independent of operator representation and sector layout.
+struct Topology {
+  nda::array<int, 2> arcs;
+
+  explicit Topology(nda::array<int, 2> arcs);
+
+  int order() const { return static_cast<int>(arcs.extent(0)); }
+  int special_vertex() const { return arcs(0, 1); }
+};
+
+} // namespace triqs_xca::diagram

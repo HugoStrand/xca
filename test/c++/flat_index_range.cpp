@@ -209,16 +209,16 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
 }
 
 TEST(FlatIndexRange, bounds_stream_without_materializing_the_assignment_space) {
-  using triqs_xca::AssignmentSelection;
+  using triqs_xca::FlatIndexSelection;
   long count = std::numeric_limits<long>::max();
   std::vector<long> seen;
-  AssignmentSelection{count - 2, count, count}.for_each([&](long i) { seen.push_back(i); });
+  FlatIndexSelection{count - 2, count, count}.for_each([&](long i) { seen.push_back(i); });
   EXPECT_EQ(seen, (std::vector<long>{count - 2, count - 1}));
-  AssignmentSelection{count, count, count}.for_each([&](long) { FAIL() << "nonempty terminal range"; });
-  AssignmentSelection{0, 0, 0}.for_each([&](long) { FAIL() << "nonempty zero-count range"; });
-  EXPECT_THROW((AssignmentSelection{-1, 0, count}), std::invalid_argument);
-  EXPECT_THROW((AssignmentSelection{2, 1, count}), std::invalid_argument);
-  EXPECT_THROW((AssignmentSelection{0, 2, 1}), std::invalid_argument);
+  FlatIndexSelection{count, count, count}.for_each([&](long) { FAIL() << "nonempty terminal range"; });
+  FlatIndexSelection{0, 0, 0}.for_each([&](long) { FAIL() << "nonempty zero-count range"; });
+  EXPECT_THROW((FlatIndexSelection{-1, 0, count}), std::invalid_argument);
+  EXPECT_THROW((FlatIndexSelection{2, 1, count}), std::invalid_argument);
+  EXPECT_THROW((FlatIndexSelection{0, 2, 1}), std::invalid_argument);
 }
 
 TEST(FlatIndexRange, partitions_preserve_self_energy_pairs_and_observables) {

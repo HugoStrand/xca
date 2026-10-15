@@ -1,8 +1,9 @@
+#include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
 
-#include <triqs_xca/interaction.hpp>
-#include <triqs_xca/diagram_model.hpp>
-#include <triqs_xca/diagram_sign.hpp>
+#include <triqs_xca/diagram/arc.hpp>
+#include <triqs_xca/diagram/arc_catalog.hpp>
+#include <triqs_xca/diagram/sign.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 
@@ -17,7 +18,7 @@ void expect_close(nda::array_const_view<dcomplex, 2> actual, nda::array_const_vi
 }
 
 TEST(InteractionContractions, directed_line_assigns_operators_coefficients_and_reflection) {
-  InteractionLine forward{true}, backward{false};
+  triqs_xca::diagram::ArcOrientation forward{true}, backward{false};
   EXPECT_FALSE(forward.early_operator(2).adjoint);
   EXPECT_TRUE(forward.late_operator(5).adjoint);
   EXPECT_EQ(forward.coefficient_indices(5, 2), (std::pair{5, 2}));
@@ -31,7 +32,7 @@ TEST(InteractionContractions, directed_line_assigns_operators_coefficients_and_r
 
   // The label retained by the bar is the earlier operator's label; the
   // actual later operator is supplied by the sum, and no conjugation of C occurs.
-  auto term = BarredOperator{backward, 2, 3}.term(5);
+  auto term = triqs_xca::diagram::BarredOperatorContraction{backward, 2, 3}.term(5);
   EXPECT_EQ(term.op.flavour, 5);
   EXPECT_FALSE(term.op.adjoint);
   EXPECT_EQ(term.pole, 3);
@@ -103,40 +104,40 @@ TEST(InteractionContractions, dense_coefficient_refresh_replaces_materialized_ba
 }
 
 
-TEST(InteractionModel, families_preserve_explicit_statistics_and_external_order) {
-  std::vector<InteractionFamily> families{
-    {InteractionKind::retarded, Statistics::bosonic, {0, 2}},
-    {InteractionKind::hybridization, Statistics::fermionic, {3, 1}}};
-  InteractionModel model(4, families);
+TEST(ArcCatalog, families_preserve_explicit_statistics_and_external_order) {
+  std::vector<triqs_xca::diagram::ArcFamily> families{
+    {triqs_xca::diagram::ArcKind::retarded, triqs_xca::diagram::Statistics::bosonic, {0, 2}},
+    {triqs_xca::diagram::ArcKind::hybridization, triqs_xca::diagram::Statistics::fermionic, {3, 1}}};
+  triqs_xca::diagram::ArcCatalog model(4, families);
   families[0].flavours.clear(); // the model owns its metadata
   EXPECT_EQ(model.families()[0].flavours, (std::vector<int>{0, 2}));
   EXPECT_EQ((std::vector<int>{model.hybridization_flavours().begin(), model.hybridization_flavours().end()}), (std::vector<int>{3, 1}));
-  EXPECT_EQ((std::vector<Statistics>{model.statistics().begin(), model.statistics().end()}),
-            (std::vector<Statistics>{Statistics::bosonic, Statistics::fermionic, Statistics::bosonic, Statistics::fermionic}));
+  EXPECT_EQ((std::vector<triqs_xca::diagram::Statistics>{model.statistics().begin(), model.statistics().end()}),
+            (std::vector<triqs_xca::diagram::Statistics>{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::fermionic}));
 
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
-                                       AssignmentIndices{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, DiagramKind::self_energy);
-  auto signs = prepare_endpoint_signs(assignment, model.statistics());
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
+                                       triqs_xca::diagram::Indices{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
+  auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, model.statistics());
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.
-  ObservableBoundary fermionic{Statistics::fermionic, Statistics::fermionic};
-  ObservableBoundary bosonic{Statistics::bosonic, Statistics::bosonic};
-  ObservableBoundary mixed{Statistics::fermionic, Statistics::bosonic};
+  triqs_xca::diagram::CorrelatorStatistics fermionic{triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::fermionic};
+  triqs_xca::diagram::CorrelatorStatistics bosonic{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic};
+  triqs_xca::diagram::CorrelatorStatistics mixed{triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::bosonic};
   EXPECT_EQ(signs(fermionic.at_zero, fermionic.at_tau), -1);
   EXPECT_EQ(signs(bosonic.at_zero, bosonic.at_tau), 1);
   EXPECT_EQ(signs(mixed.at_zero, mixed.at_tau), 1);
 }
 
-TEST(InteractionModel, atom_diag_adapter_and_invalid_family_partitions) {
-  auto model = hybridization_retarded_model(2, 1);
+TEST(ArcCatalog, atom_diag_adapter_and_invalid_family_partitions) {
+  auto model = triqs_xca::diagram::hybridization_retarded_catalog(2, 1);
   EXPECT_EQ((std::vector<int>{model.hybridization_flavours().begin(), model.hybridization_flavours().end()}), (std::vector<int>{0, 1}));
-  EXPECT_EQ(model.statistics()[0], Statistics::fermionic);
-  EXPECT_EQ(model.statistics()[2], Statistics::bosonic);
-  EXPECT_EQ(uniform_observable(false).at_tau, Statistics::bosonic);
-  EXPECT_EQ(uniform_observable(true).at_zero, Statistics::fermionic);
-  EXPECT_THROW(hybridization_retarded_model(-1, 2), std::invalid_argument);
-  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0}}}}), std::invalid_argument);
-  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0, 2}}}}), std::invalid_argument);
-  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0, 1}},
-                                   {InteractionKind::retarded, Statistics::bosonic, {0}}}}), std::invalid_argument);
+  EXPECT_EQ(model.statistics()[0], triqs_xca::diagram::Statistics::fermionic);
+  EXPECT_EQ(model.statistics()[2], triqs_xca::diagram::Statistics::bosonic);
+  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(false).at_tau, triqs_xca::diagram::Statistics::bosonic);
+  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(true).at_zero, triqs_xca::diagram::Statistics::fermionic);
+  EXPECT_THROW(triqs_xca::diagram::hybridization_retarded_catalog(-1, 2), std::invalid_argument);
+  EXPECT_THROW((triqs_xca::diagram::ArcCatalog{2, {{triqs_xca::diagram::ArcKind::hybridization, triqs_xca::diagram::Statistics::fermionic, {0}}}}), std::invalid_argument);
+  EXPECT_THROW((triqs_xca::diagram::ArcCatalog{2, {{triqs_xca::diagram::ArcKind::hybridization, triqs_xca::diagram::Statistics::fermionic, {0, 2}}}}), std::invalid_argument);
+  EXPECT_THROW((triqs_xca::diagram::ArcCatalog{2, {{triqs_xca::diagram::ArcKind::hybridization, triqs_xca::diagram::Statistics::fermionic, {0, 1}},
+                                   {triqs_xca::diagram::ArcKind::retarded, triqs_xca::diagram::Statistics::bosonic, {0}}}}), std::invalid_argument);
 }

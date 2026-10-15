@@ -5,9 +5,9 @@
 namespace {
 
 using namespace triqs_xca::block_sparse;
-using triqs_xca::prepare_assignment;
-using triqs_xca::DiagramTopology;
-using triqs_xca::DiagramKind;
+using triqs_xca::diagram::prepare_diagram;
+using triqs_xca::diagram::Topology;
+using triqs_xca::diagram::Kind;
 
 // A synthetic ladder of sectors with dimensions 1,2,1. Only connectivity
 // matters here: operator blocks are ones, and zero propagator storage is explicitly
@@ -45,9 +45,9 @@ std::vector<int> values(nda::vector<int> const &v) { return {v.begin(), v.end()}
 TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
   auto F = ladder(2);
   auto G = propagator();
-  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
   nda::vector<double> poles{1.0};
-  auto assignment = prepare_assignment(topology, 2, poles, 0, DiagramKind::self_energy); // creation at vertex 0, annihilation at vertex 1
+  auto assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 0, triqs_xca::diagram::Kind::self_energy); // creation at vertex 0, annihilation at vertex 1
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -65,7 +65,7 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(values(path.dimensions), (i / 2 == 0 ? std::vector<int>{1, 2, 1} : std::vector<int>{2, 1, 2}));
   }
 
-  assignment = prepare_assignment(topology, 2, poles, 1, DiagramKind::self_energy); // annihilation first
+  assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 1, triqs_xca::diagram::Kind::self_energy); // annihilation first
   std::vector<SelfEnergyPath> reversed;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
@@ -82,8 +82,8 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
 
 TEST(SelfEnergyPath, nested_paths_use_every_propagator_mask_but_not_the_output_mask) {
   auto F = ladder();
-  DiagramTopology topology{nda::array<int, 2>{{0, 3}, {1, 2}}};
-  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 3}, {1, 2}}};
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   SelfEnergyPath workspace(2);
   auto G = propagator();
   std::vector<SelfEnergyPath> paths;
@@ -119,8 +119,8 @@ TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
   // This characterizes discovery only, not a physically admissible evaluator.
   F.Fs = F.F_dags;
   auto G = propagator();
-  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
-  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -133,8 +133,8 @@ TEST(SelfEnergyPath, terminal_sector_is_recorded_without_a_new_closure_filter) {
 TEST(SelfEnergyPath, crossing_path_continues_after_the_special_vertex) {
   auto F = ladder();
   auto G = propagator();
-  DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  auto const assignment = prepare_assignment(topology, 1, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   SelfEnergyPath workspace(2);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -149,14 +149,14 @@ TEST(SelfEnergyPath, crossing_path_continues_after_the_special_vertex) {
 TEST(SelfEnergyPath, discovery_is_independent_of_source_assignment_mutation) {
   auto F = ladder(2);
   auto G = propagator();
-  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
-  auto source = prepare_assignment(topology, 2, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  auto source = triqs_xca::diagram::prepare_diagram(topology, 2, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   auto const assignment = source;
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) {
     paths.push_back(path);
-    source = prepare_assignment(topology, 2, nda::vector<double>{1.0}, 1, DiagramKind::self_energy);
+    source = triqs_xca::diagram::prepare_diagram(topology, 2, nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy);
   });
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -177,8 +177,8 @@ TEST(SelfEnergyPath, internal_member_support_and_barred_support_filter_candidate
   BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
   std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
   BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 2,
-                                      triqs_xca::AssignmentIndices{{0, 0}, {0}, {0}}, nda::vector<double>{1.}, DiagramKind::self_energy);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 2,
+                                      triqs_xca::diagram::Indices{{0, 0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
   SelfEnergyPath workspace(2);
   int count = 0;
   // Internal flavour 0 is nonzero only in sector 0, while its bar is flavour 1,

@@ -13,7 +13,7 @@
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/hyb.hpp>
 #include <triqs_xca/block_sparse/dynint.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense_comparison.hpp"
@@ -384,7 +384,7 @@ TEST(BlockSparseDynintEvaluator, matches_dense_on_the_interleaved_deep_subspace_
   ASSERT_EQ(D.Nmax, max_dim);
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
+  ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
 
   // Sigma, per block, through the basis bridge.
   {

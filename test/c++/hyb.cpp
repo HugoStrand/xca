@@ -57,8 +57,8 @@ TEST(Hybridization, bound_vertex_kernels_include_reflection_and_identity) {
   double beta = 2.;
   auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, 20., 1e-10, false);
   hyb::Hybridization H(mesh, nda::vector<double>{-0.8}, nda::zeros<dcomplex>(1, 1, 1));
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-                                       AssignmentIndices{{1, 1}, {0}, {0}}, H.poles, DiagramKind::self_energy);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
+                                       triqs_xca::diagram::Indices{{1, 1}, {0}, {0}}, H.poles, triqs_xca::diagram::Kind::self_energy);
   auto bound = bind_kernels(assignment, H);
   ASSERT_EQ(bound.vertices.size(), 4);
   EXPECT_FALSE(bound.vertices[0]);
@@ -91,8 +91,8 @@ TEST(Hybridization, bound_edge_products_preserve_factors_and_rebind_to_new_table
   auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-10, false);
   nda::vector<double> poles{0.7, 1.3};
   hyb::Hybridization H(mesh, poles, nda::zeros<dcomplex>(2, 1, 1));
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, 1,
-                                       AssignmentIndices{{1, 1, 1}, {0, 1}, {0, 0}}, H.poles, DiagramKind::self_energy);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, 1,
+                                       triqs_xca::diagram::Indices{{1, 1, 1}, {0, 1}, {0, 0}}, H.poles, triqs_xca::diagram::Kind::self_energy);
   auto bound = bind_kernels(assignment, H);
   ASSERT_EQ(bound.edges.size(), 5);
   EXPECT_TRUE(bound.edges[0].empty());

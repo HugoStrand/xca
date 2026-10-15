@@ -7,7 +7,7 @@
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 #include "test_utils/block_sparse.hpp"
 
 using nda::dcomplex;
@@ -110,7 +110,7 @@ TEST(DenseDynint, self_energy_by_pairs_agrees) {
   nda::array<int, 2> topology = {{0, 2}, {1, 3}}; // crossing: the only order-2 topology that flips
 
   // only a crossing topology exposes the parity error
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
+  ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
 
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
 
@@ -154,7 +154,7 @@ TEST(DenseDynint, self_energy_by_pairs_flat_index_overloads_agree) {
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
 
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
+  ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
 
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
 

@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/evaluators.hpp"
 #include "test_utils/parallel_atom_diag_check.hpp"
@@ -17,7 +17,7 @@ namespace test_utils = triqs_xca::test_utils;
 using nda::dcomplex;
 using test_utils::max_abs;
 using test_utils::tensor_t;
-using triqs_xca::topology::topology_parity;
+using triqs_xca::diagram::topology::topology_parity;
 
 /**
  * @file sigma_spgf_all_evals.cpp

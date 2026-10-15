@@ -1,7 +1,7 @@
 #pragma once
 #include <nda/nda.hpp>
 
-#include "triqs_xca/diagram_assignment.hpp"
+#include "triqs_xca/diagram/diagram.hpp"
 
 namespace triqs_xca::dense {
 
@@ -41,7 +41,7 @@ namespace triqs_xca::dense {
        */
     void update_hybridization(nda::array_const_view<dcomplex, 3> hyb_coeffs);
 
-    nda::array_const_view<dcomplex, 2> get_operator(VertexAssignment const &vertex, int l_ix) const;
+    nda::array_const_view<dcomplex, 2> get_operator(triqs_xca::diagram::Vertex const &vertex, int l_ix) const;
     nda::array_const_view<dcomplex, 2> get_operator(bool dagger, int o_ix) const;
   };
 

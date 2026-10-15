@@ -3,7 +3,7 @@
 #include <optional>
 #include <span>
 #include <vector>
-#include "diagram_assignment.hpp"
+#include "triqs_xca/diagram/diagram.hpp"
 #include "hyb.hpp"
 
 namespace triqs_xca {
@@ -23,7 +23,7 @@ struct BoundKernels {
   double prefactor = 1; // excludes the discrete assignment/permutation signs
 };
 
-BoundKernels bind_kernels(DiagramAssignment const &assignment, hyb::Hybridization const &hybridization);
+BoundKernels bind_kernels(triqs_xca::diagram::Diagram const &assignment, hyb::Hybridization const &hybridization);
 
 /// Numerical operations over already selected factors, independent of topology,
 /// pole indices, direction decisions, and hybridization storage.

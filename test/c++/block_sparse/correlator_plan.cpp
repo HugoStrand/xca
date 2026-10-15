@@ -26,7 +26,7 @@ struct Ladder {
   }
 };
 
-std::vector<CorrelatorFragment> fragments(BlockDiagOpFun const &G, DiagramAssignment const &assignment,
+std::vector<CorrelatorFragment> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
                                          BlockOpSymQuartet const &operators, CorrelatorSide side) {
   std::vector<CorrelatorFragment> result;
   visit_correlator_fragments(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
@@ -37,8 +37,8 @@ std::vector<CorrelatorFragment> fragments(BlockDiagOpFun const &G, DiagramAssign
 TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-                                       AssignmentIndices{{1}, {0}, {0}}, nda::vector<double>{1.}, DiagramKind::correlator);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
+                                       triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
   auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
   ASSERT_EQ(right.size(), 2);
@@ -77,8 +77,8 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
   auto G = model.propagator();
   // The [tau,beta] side has no internal vertices. The preceding right walk
   // fails at its last starting sector; that must not poison the empty side.
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
-                                       AssignmentIndices{{0}, {0}, {0}}, nda::vector<double>{1.}, DiagramKind::correlator);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
+                                       triqs_xca::diagram::Indices{{0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
   auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
   ASSERT_EQ(right.size(), 2);
@@ -93,8 +93,8 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
 TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destinations) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 1}}}, 1,
-                                       AssignmentIndices{{}, {}, {}}, nda::vector<double>{1.}, DiagramKind::correlator);
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
+                                       triqs_xca::diagram::Indices{{}, {}, {}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, CorrelatorSide::right);
   auto left = fragments(G, assignment, model.operators, CorrelatorSide::left);
   ASSERT_EQ(right.size(), 3);

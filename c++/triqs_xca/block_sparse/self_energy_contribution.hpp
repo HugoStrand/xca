@@ -2,7 +2,7 @@
 
 #include "self_energy_path.hpp"
 #include "operator_binding.hpp"
-#include "triqs_xca/diagram_sign.hpp"
+#include "triqs_xca/diagram/sign.hpp"
 #include "triqs_xca/hyb.hpp"
 
 namespace triqs_xca::block_sparse {
@@ -10,7 +10,7 @@ namespace triqs_xca::block_sparse {
 struct EndpointOperand {
   nda::array_const_view<dcomplex, 2> matrix;
   int coefficient_index;
-  Statistics statistics;
+  triqs_xca::diagram::Statistics statistics;
 };
 
 /// A factored endpoint sum: one coefficient view per late operand, with axes
@@ -21,7 +21,7 @@ struct EndpointOperands {
   std::vector<EndpointOperand> late;
   std::vector<nda::array_const_view<dcomplex, 2>> coefficients;
   int reflection_sign;
-  EndpointSigns signs;
+  triqs_xca::diagram::PermutationSigns signs;
 };
 
 /// One path with resolved numerical operands. Metadata is owned; array views
@@ -47,9 +47,9 @@ struct SelfEnergyContribution {
 bool select_diagonal_self_energy(SelfEnergyContribution const &contribution);
 
 /// The path must have been discovered for this assignment and model.
-SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                      SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
-                                                     hyb::Hybridization const &hybridization, std::span<Statistics const> statistics,
-                                                     EndpointSigns signs);
+                                                     hyb::Hybridization const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
+                                                     triqs_xca::diagram::PermutationSigns signs);
 
 } // namespace triqs_xca::block_sparse

@@ -11,7 +11,7 @@
 #include <triqs_xca/dense/manual/sigma.hpp>
 #include <triqs_xca/dense/manual/spgf.hpp>
 #include <triqs_xca/hyb.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
@@ -156,7 +156,7 @@ TEST(ManualRoutines, trapezoidal_routines_match_the_evaluator) {
     SCOPED_TRACE(what);
     auto coarse = tpz(n_q), fine = tpz(2 * n_q);
     auto extrapolated = nda::make_regular((4.0 * fine(range(0, 2 * n_q + 1, 2), range::all, range::all) - coarse) / 3.0);
-    ref *= triqs_xca::topology::topology_parity(topology);
+    ref *= triqs_xca::diagram::topology::topology_parity(topology);
     auto ref_eq  = test_utils::eval_eq(m.itops, ref, n_q);
     auto points  = skip_end_points ? range(1, n_q) : range(0, n_q + 1);
     double scale = nda::max_element(nda::abs(ref_eq(points, range::all, range::all)));

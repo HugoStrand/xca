@@ -11,7 +11,7 @@
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 
 #include "test_utils/block_sparse.hpp"

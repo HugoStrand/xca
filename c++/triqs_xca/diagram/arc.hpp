@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace triqs_xca {
+namespace triqs_xca::diagram {
 
 /// A model operator, before choosing dense or block-sparse storage. Adjoint acts
 /// on the operator, never on the scalar interaction coefficient.
@@ -16,7 +16,7 @@ struct OperatorReference {
 /// Backward: -O_late C(early, late; beta-tau) O_early^dag.
 /// The minus is the existing reflected-kernel convention for both interaction
 /// families. Permutation statistics and diagram-order signs are separate.
-struct InteractionLine {
+struct ArcOrientation {
   bool forward;
 
   OperatorReference early_operator(int flavour) const { return {flavour, !forward}; }
@@ -28,7 +28,7 @@ struct InteractionLine {
   int reflection_sign() const { return forward ? 1 : -1; }
 };
 
-struct WeightedOperator {
+struct WeightedOperatorTerm {
   OperatorReference op;
   int pole;
   int coefficient_row;
@@ -40,12 +40,12 @@ struct WeightedOperator {
 /// fixed; the later flavour is still summed over the interaction space. A
 /// representation may materialize this sum or bind its terms for execution.
 /// It must not interpret the retained flavour as the later operator's flavour.
-struct BarredOperator {
-  InteractionLine line;
+struct BarredOperatorContraction {
+  ArcOrientation line;
   int retained_flavour;
   int pole;
 
-  WeightedOperator term(int summed_flavour) const {
+  WeightedOperatorTerm term(int summed_flavour) const {
     auto [row, column] = line.coefficient_indices(summed_flavour, retained_flavour);
     return {line.late_operator(summed_flavour), pole, row, column, line.reflection_sign()};
   }
@@ -54,11 +54,11 @@ struct BarredOperator {
 /// The special self-energy arc leaves both endpoint flavours summed over
 /// [0, flavours). This describes the sum without expanding its Cartesian
 /// product. A block planner may restrict candidates using exact support.
-/// Unlike BarredOperator, its coefficient is a time-dependent function and
+/// Unlike BarredOperatorContraction, its coefficient is a time-dependent function and
 /// carries no assigned pole.
-struct EndpointSum {
-  InteractionLine line;
+struct SelfEnergyEndpointSum {
+  ArcOrientation line;
   int flavours;
 };
 
-} // namespace triqs_xca
+} // namespace triqs_xca::diagram

@@ -1,11 +1,12 @@
-#include "triqs_xca/topology.hpp"
+#include <algorithm>
+#include "triqs_xca/diagram/topology.hpp"
 
 #include <nda/layout_transforms.hpp>
 
 #include <string>
 #include <vector>
 
-namespace triqs_xca::topology {
+namespace triqs_xca::diagram::topology {
 
   int permutation_parity(nda::array_const_view<int, 1> perm) {
 
@@ -101,4 +102,23 @@ namespace triqs_xca::topology {
     return result;
   }
 
-} // namespace triqs_xca::topology
+} // namespace triqs_xca::diagram::topology
+
+namespace triqs_xca::diagram {
+
+Topology::Topology(nda::array<int, 2> input) : arcs(std::move(input)) {
+  int m = order();
+  if (m < 1 || arcs.extent(1) != 2) throw std::invalid_argument("topology must contain at least one pair of vertices");
+  std::vector<int> vertices(2 * m);
+  for (int a = 0; a < m; ++a) {
+    if (a > 0 && arcs(a, 0) <= arcs(a - 1, 0)) throw std::invalid_argument("first pair indices must be in increasing order");
+    if (arcs(a, 0) >= arcs(a, 1)) throw std::invalid_argument("first row of topology must contain smaller-numbered vertices");
+    vertices[2 * a] = arcs(a, 0);
+    vertices[2 * a + 1] = arcs(a, 1);
+  }
+  std::ranges::sort(vertices);
+  for (int v = 0; v < 2 * m; ++v)
+    if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
+}
+
+} // namespace triqs_xca::diagram

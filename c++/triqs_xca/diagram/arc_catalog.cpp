@@ -1,13 +1,13 @@
-#include "diagram_model.hpp"
+#include "triqs_xca/diagram/arc_catalog.hpp"
 
 #include <limits>
 #include <numeric>
 #include <stdexcept>
 #include <utility>
 
-namespace triqs_xca {
+namespace triqs_xca::diagram {
 
-InteractionModel::InteractionModel(int flavours, std::vector<InteractionFamily> families) : families_(std::move(families)) {
+ArcCatalog::ArcCatalog(int flavours, std::vector<ArcFamily> families) : families_(std::move(families)) {
   if (flavours < 0) throw std::invalid_argument("negative number of interaction flavours");
   statistics_.resize(flavours);
   std::vector<bool> assigned(flavours, false);
@@ -17,14 +17,14 @@ InteractionModel::InteractionModel(int flavours, std::vector<InteractionFamily> 
       if (assigned[flavour]) throw std::invalid_argument("interaction flavour belongs to multiple families");
       assigned[flavour] = true;
       statistics_[flavour] = family.statistics;
-      if (family.kind == InteractionKind::hybridization) hybridization_flavours_.push_back(flavour);
+      if (family.kind == ArcKind::hybridization) hybridization_flavours_.push_back(flavour);
     }
   }
   for (bool present : assigned)
     if (!present) throw std::invalid_argument("interaction flavour has no family");
 }
 
-InteractionModel hybridization_retarded_model(int hybridization_flavours, int retarded_flavours) {
+ArcCatalog hybridization_retarded_catalog(int hybridization_flavours, int retarded_flavours) {
   if (hybridization_flavours < 0 || retarded_flavours < 0)
     throw std::invalid_argument("negative number of interaction flavours");
   if (hybridization_flavours > std::numeric_limits<int>::max() - retarded_flavours)
@@ -33,13 +33,8 @@ InteractionModel hybridization_retarded_model(int hybridization_flavours, int re
   std::iota(hybridization.begin(), hybridization.end(), 0);
   std::iota(retarded.begin(), retarded.end(), hybridization_flavours);
   return {hybridization_flavours + retarded_flavours,
-          {{InteractionKind::hybridization, Statistics::fermionic, std::move(hybridization)},
-           {InteractionKind::retarded, Statistics::bosonic, std::move(retarded)}}};
+          {{ArcKind::hybridization, Statistics::fermionic, std::move(hybridization)},
+           {ArcKind::retarded, Statistics::bosonic, std::move(retarded)}}};
 }
 
-ObservableBoundary uniform_observable(bool fermionic) {
-  auto statistics = fermionic ? Statistics::fermionic : Statistics::bosonic;
-  return {statistics, statistics};
-}
-
-} // namespace triqs_xca
+} // namespace triqs_xca::diagram

@@ -33,10 +33,10 @@ struct CorrelatorFragmentOperands {
 /// Current propagator-mask placement is preserved: the walk checks reached
 /// sectors, with no new starting-edge check. Joins apply their existing endpoint
 /// checks separately. Internal vertices use exact support prepared for this quartet.
-void visit_correlator_fragments(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                 BlockOpSymQuartet const &operators, OperatorSupports const &support, CorrelatorSide side,
                                 std::function<void(CorrelatorFragment const &)> const &visit);
-CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+CorrelatorFragmentOperands bind_correlator_fragment(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                     BlockOpSymQuartet const &operators, CorrelatorFragment const &path);
 
 struct CorrelatorTrace {

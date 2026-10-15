@@ -1,5 +1,5 @@
 #include "self_energy_contribution.hpp"
-#include "triqs_xca/interaction.hpp"
+#include "triqs_xca/diagram/arc.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -10,7 +10,7 @@ namespace {
 constexpr auto all = nda::range::all;
 
 EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int set, int index, int source_sector,
-                              bool adjoint, std::span<Statistics const> statistics) {
+                              bool adjoint, std::span<triqs_xca::diagram::Statistics const> statistics) {
   int flavour = operators.sym_set_to_orb(set, index);
   auto const &op = adjoint ? operators.F_dags[set] : operators.Fs[set];
   return {op.get_block(source_sector)(index, all, all), flavour, statistics[flavour]};
@@ -38,12 +38,12 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
 }
 
 
-SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, DiagramAssignment const &assignment,
+SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                      SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
-                                                     hyb::Hybridization const &hybridization, std::span<Statistics const> statistics,
-                                                     EndpointSigns signs) {
+                                                     hyb::Hybridization const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
+                                                     triqs_xca::diagram::PermutationSigns signs) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
-  InteractionLine line{assignment.directions(0) == 1};
+  triqs_xca::diagram::ArcOrientation line{assignment.directions(0) == 1};
   EndpointOperands endpoints{{}, {}, {}, line.reflection_sign(), signs};
   auto present = [&](int group, int index, int source, bool adjoint) {
     int flavour = operators.sym_set_to_orb(group, index);

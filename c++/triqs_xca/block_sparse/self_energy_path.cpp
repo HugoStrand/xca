@@ -4,7 +4,7 @@
 
 namespace triqs_xca::block_sparse {
 
-void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &assignment, BlockOpSymQuartet const &Fq, OperatorSupports const &support,
+void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagram const &assignment, BlockOpSymQuartet const &Fq, OperatorSupports const &support,
                              SelfEnergyPath &path, std::function<void(SelfEnergyPath const &)> const &visit) {
 
   int m = assignment.topology.order();

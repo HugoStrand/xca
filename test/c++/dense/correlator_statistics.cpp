@@ -7,9 +7,9 @@
 #include <triqs/operators/many_body_operator.hpp>
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
-#include <triqs_xca/diagram_assignment.hpp>
+#include <triqs_xca/diagram/diagram.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
 
@@ -66,7 +66,7 @@ namespace {
                                                std::vector<many_body_operator_complex> const &ops_tau,
                                                std::vector<many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
                                                nda::array_const_view<int, 2> topology, bool is_fermionic) {
-    triqs_xca::DiagramTopology diagram{topology};
+    triqs_xca::diagram::Topology diagram{topology};
     int N                           = D.N;
     auto U                          = ad.get_unitary_matrix(0);
     nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
@@ -111,7 +111,7 @@ TEST(DenseCorrelatorStatistics, spin_flip_operators_are_classified_bosonic) {
   auto h = make_harness(two_orbital_model());
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
+  ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
 
   std::vector<many_body_operator_complex> ops_tau{S_plus()}, ops_0{S_minus()};
 

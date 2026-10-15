@@ -24,7 +24,7 @@
 #include <triqs_xca/dense/manual/spgf.hpp>
 #include <triqs_xca/block_sparse/manual/spgf.hpp>
 #include <triqs_xca/hyb.hpp>
-#include <triqs_xca/topology.hpp>
+#include <triqs_xca/diagram/topology.hpp>
 
 #include <cppdlr/cppdlr.hpp>
 
@@ -43,7 +43,7 @@ using triqs::operators::n;
 namespace dense = triqs_xca::dense;
 namespace block_sparse = triqs_xca::block_sparse;
 
-using triqs_xca::topology::topology_parity;
+using triqs_xca::diagram::topology::topology_parity;
 using nda::dcomplex;
 using triqs_xca::block_sparse::BlockDiagOpFun;
 using triqs_xca::block_sparse::BlockOpSymQuartet;

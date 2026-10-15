@@ -48,23 +48,23 @@ int main(int argc, char **argv) try {
   bs::BlockDiagOpFun G(bgf);
   auto [operators, labels] = bs::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
   bs::OperatorSupports support(operators);
-  auto interactions = hybridization_retarded_model(model.n_hyb(), model.n_int());
+  auto interactions = triqs_xca::diagram::hybridization_retarded_catalog(model.n_hyb(), model.n_int());
   nda::array<int, 2> arcs(order, 2);
   for (int a = 0; a < order; ++a) arcs(a, nda::range::all) = nda::vector<int>{a, a + order};
-  DiagramTopology topology{arcs};
-  long count   = count_assignments(order, evaluator.n, model.hyb_poles.size(), DiagramKind::self_energy);
+  triqs_xca::diagram::Topology topology{arcs};
+  long count   = triqs_xca::diagram::count_diagrams(order, evaluator.n, model.hyb_poles.size(), triqs_xca::diagram::Kind::self_energy);
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
-  std::vector<AssignmentIndices> logical;
-  std::vector<DiagramAssignment> assignments;
+  std::vector<triqs_xca::diagram::Indices> logical;
+  std::vector<triqs_xca::diagram::Diagram> assignments;
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
   std::mt19937_64 random{1789};
   for (long i = 0; i < samples; ++i) {
     long first = (count / samples) * i + (count % samples) * i / samples;
     long last  = (count / samples) * (i + 1) + (count % samples) * (i + 1) / samples;
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
-    logical.push_back(decode_assignment_indices(order, evaluator.n, model.hyb_poles.size(), indices(i), DiagramKind::self_energy));
-    assignments.push_back(prepare_assignment(topology, evaluator.n, logical.back(), model.hyb_poles, DiagramKind::self_energy));
+    logical.push_back(triqs_xca::diagram::decode_indices(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
+    assignments.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
   }
   bs::SelfEnergyPath workspace(order);
   double checksum = 0;
@@ -88,15 +88,15 @@ int main(int argc, char **argv) try {
     std::cout << phase << ',' << timings[2] << ',' << timings.front() << ',' << timings.back() << '\n';
   };
   time("flat_preparation", [&](long i) {
-    auto a = prepare_assignment(topology, evaluator.n, model.hyb_poles, indices(i), DiagramKind::self_energy);
+    auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, indices(i), triqs_xca::diagram::Kind::self_energy);
     checksum += a.prefactor_sign;
   });
   time("logical_preparation", [&](long i) {
-    auto a = prepare_assignment(topology, evaluator.n, logical[i], model.hyb_poles, DiagramKind::self_energy);
+    auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical[i], model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
     checksum += a.prefactor_sign;
   });
   time("sign_and_kernel_binding", [&](long i) {
-    auto signs   = prepare_endpoint_signs(assignments[i], interactions.statistics());
+    auto signs   = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
     auto kernels = bind_kernels(assignments[i], evaluator.hyb);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
@@ -104,7 +104,7 @@ int main(int argc, char **argv) try {
     bs::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
-    auto signs = prepare_endpoint_signs(assignments[i], interactions.statistics());
+    auto signs = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
     bs::visit_self_energy_paths(G, assignments[i], operators, support, workspace, [&](auto const &path) {
       auto bound = bs::bind_self_energy_contribution(G, assignments[i], path, operators, support, evaluator.hyb, interactions.statistics(), signs);
       checksum += bs::select_diagonal_self_energy(bound);
