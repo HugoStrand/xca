@@ -22,7 +22,8 @@
 | Shared model/observable metadata | `5e7ab02` | Explicit families, flavour lists, and endpoint statistics; all 71 CTest entries passed |
 | 6a | `0602db2` | Exact-zero masks and untruncated accumulation; all 72 CTest entries passed |
 | 6b coefficient policy | `a7b1956` | Reject unrepresented cross-set coefficients; all 72 CTest entries passed |
-| 6b support / 7 | None | Individual support/grouping, selection/adapter cleanup, timing checks, and final audit pending |
+| 6b operator support | `fa44a50` | Owned exact support and compatible retarded groups; all 72 CTest entries passed |
+| 6b closure / 7 | None | Physical-partition closure, selection/adapter cleanup, timing checks, and final audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -780,3 +781,73 @@ closure must be validated. General operators can need multiple block components;
 the single-target numerical storage must not silently redefine their support.
 Stage 7 selection/adapter removal, CPU timing checks, and the final audit are
 also pending. The persistent goal remains active.
+
+## Stage 6b — operator support and compatible groups (`fa44a50`)
+
+Previously a group's connection row also stood in for each member's support.
+This forced density operators with different zero sectors into separate groups,
+so their cross-coefficients could not be represented even though all their
+nonzero blocks are diagonal. The new boundary separates a candidate group
+schedule from the actual support of each materialized operator.
+
+Read [operator_support.hpp](c++/triqs_xca/block_sparse/operator_support.hpp) and
+its implementation, then the grouping loop in
+[dynint.cpp](c++/triqs_xca/block_sparse/dynint.cpp), followed by the two path
+planners and `bind_self_energy_contribution`. `OperatorSupport` owns source/target
+connectivity in a compact offset/target representation. It can describe multiple
+targets per source; its `single_target` adapter explicitly rejects that case for
+the current CPU executor. This does not add multi-target numerical storage or
+remove the atom-diag builder's existing rejection of operators that cannot be
+represented by its one-block-per-column storage.
+
+`OperatorSupports` describes plain, adjoint, barred-adjoint, and reflected-barred
+operators independently, including each pole. It detects exact zero matrices
+once after materialization. A bar may have support where its retained plain
+operator vanishes, so its support is never inferred from that operator. Metadata
+is owned and contains no propagator values. The evaluator constructs it once
+from its private quartet; an external planner caller must rebuild it after
+replacing or mutating that quartet. There is no matrix scan per indexed call.
+Storage scales with model sectors, flavours, and poles, not the number of diagram
+assignments. Timing/memory checks remain part of final consolidation.
+
+Internal self-energy and correlator traversal now uses the selected member's
+support. Candidate group maps still provide dimensions and special-endpoint path
+candidates; endpoint binding selects the individually present operators before
+numerical execution. Remaining zero coefficient combinations can still produce
+zero contributions, but no small nonzero block is classified as absent.
+
+Retarded operators are grouped in first-appearance order when the union of their
+forward and adjoint maps remains single-target. Both orientations are checked,
+so the union is injective. Storage covers that candidate union and zero-fills
+missing member blocks; no physical operator is changed and no epsilon is added.
+Fermionic grouping remains unchanged. This is a greedy compatible grouping,
+not a search for an optimal partition. Nonzero couplings between resulting
+incompatible groups are still rejected explicitly by the preceding commit.
+
+Tests specify density occupation values directly in four one-state sectors and
+check their zeros, shared group, and the changed support of contracted bars.
+Additional checks cover owned/multi-target metadata, tiny operator values,
+coefficient replacement, and an internal path whose plain and barred supports
+are disjoint. The synthetic planner fixtures now contain nonzero operator blocks
+on the intended paths; their existing connectivity expectations remain intact.
+
+A whole-evaluator test adds asymmetric complex couplings between two density
+operators on a diagonal two-fermion Hamiltonian. Self-energy, single-particle
+functions, and density correlators agree with the dense one-block model for
+orders one through three within relative `2e-10`. Existing analytical suites
+remain unchanged. The only full-suite failure during migration was an assertion
+that single-orbital `S+` and `S-` must occupy different groups. Their supports are
+disjoint and their union is a valid swap; the revised test checks their individual
+support against atom_diag and still requires separate groups for the conflicting
+two-orbital maps. No numerical tolerance was relaxed.
+
+Validation: CPU configure/build, five focused CTest entries, and all 72 CPU CTest
+entries passed (full suite 56.19 s). Generated bindings are unchanged.
+Final logs: `/tmp/xca-backbone-group-build-verified.log` and
+`/tmp/xca-backbone-group-test-final.log`; focused checks:
+`/tmp/xca-backbone-group-focused-final.log`.
+
+Next: complete the physical-partition closure check at the orchestration boundary,
+then stage 7's selection interfaces and removal of legacy backbone adapters.
+CPU timing/memory checks and the requirement-by-requirement completion audit
+remain outstanding. The persistent goal remains active.
