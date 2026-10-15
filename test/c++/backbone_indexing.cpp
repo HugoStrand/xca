@@ -9,6 +9,7 @@
 #include <nda/nda.hpp>
 
 #include <triqs_xca/backbone.hpp>
+#include <triqs_xca/diagram_assignment.hpp>
 
 using cppdlr::build_dlr_rf;
 
@@ -140,6 +141,31 @@ TEST(Backbone, indexing) {
         ASSERT_EQ(X.get_prefactor_Kexp(i), exp_pKexp(i));
       }
       ASSERT_EQ(X.prefactor_sign, exp_psign);
+
+      // The owned preparation value must satisfy the same hand-derived rules,
+      // not merely compare equal to another production representation.
+      auto const assignment = triqs_xca::snapshot_assignment(X);
+      EXPECT_EQ(assignment.topology.order(), m);
+      EXPECT_EQ(assignment.topology.special_vertex(), topology(0, 1));
+      for (int a = 0; a < m; ++a) {
+        EXPECT_EQ(assignment.directions(a), fb(a));
+        for (int end = 0; end < 2; ++end) EXPECT_EQ(assignment.topology.arcs(a, end), topology(a, end));
+      }
+      for (int v = 0; v < 2 * m; ++v) {
+        auto const &vertex = assignment.vertices[v];
+        EXPECT_EQ(vertex.barred, exp_bar[v]);
+        EXPECT_EQ(vertex.dagger, exp_dag[v]);
+        EXPECT_EQ(vertex.pole_slot, exp_hyb(v));
+        EXPECT_EQ(vertex.kernel_sign, exp_Ksgn(v));
+        EXPECT_EQ(vertex.orbital, (v == 0 || v == topology(0, 1)) ? -1 : exp_orb(v));
+      }
+      for (int p = 0; p < m - 1; ++p) {
+        EXPECT_EQ(assignment.poles(p), pole_inds(p));
+        EXPECT_EQ(assignment.prefactor_kernel_signs(p), exp_pKsign(p));
+        EXPECT_EQ(assignment.prefactor_kernel_exponents(p), exp_pKexp(p));
+        for (int e = 0; e < 2 * m - 1; ++e) EXPECT_EQ(assignment.edge_kernels(e, p), exp_edges(e, p));
+      }
+      EXPECT_EQ(assignment.prefactor_sign, exp_psign);
     };
 
     // --- Check the diagram generated from index vectors ---
@@ -170,6 +196,43 @@ TEST(Backbone, indexing) {
     expect_generated(B3);
     ASSERT_EQ(B3.get_flat_index(), f_ix);
   }
+}
+
+TEST(DiagramAssignment, correlator_data_survives_its_source_and_copies_are_independent) {
+  auto assignment = [] {
+    CorrelatorBackbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 2);
+    B.set_flat_index(7, nda::vector<double>{-1.0, 2.0}); // orbital 1, pole 1, forward internal arc
+    B.set_orb_inds_of_0_and_vct0(-3, -3); // legacy observable mutation is not part of the internal assignment
+    auto result = triqs_xca::snapshot_assignment(B);
+    B.reset_all_inds();
+    return result;
+  }();
+  EXPECT_EQ(assignment.flat_index, 7);
+  EXPECT_EQ(assignment.directions(0), -1);
+  EXPECT_EQ(assignment.directions(1), 1);
+  EXPECT_EQ(assignment.poles(0), 1);
+  EXPECT_EQ(assignment.vertices[0].orbital, -1);
+  EXPECT_EQ(assignment.vertices[2].orbital, -1);
+  EXPECT_EQ(assignment.vertices[1].orbital, 1);
+  EXPECT_EQ(assignment.vertices[3].orbital, 1);
+  EXPECT_EQ(assignment.edge_kernels(1, 0), 1);
+  EXPECT_EQ(assignment.edge_kernels(2, 0), 1);
+
+  auto copy = assignment;
+  copy.topology.arcs(0, 1) = 3;
+  copy.vertices[1].orbital = 0;
+  copy.poles(0) = 0;
+  copy.directions(1) = 0;
+  copy.edge_kernels(1, 0) = 0;
+  copy.prefactor_kernel_signs(0) = 0;
+  copy.prefactor_kernel_exponents(0) = 0;
+  EXPECT_EQ(assignment.topology.special_vertex(), 2);
+  EXPECT_EQ(assignment.vertices[1].orbital, 1);
+  EXPECT_EQ(assignment.poles(0), 1);
+  EXPECT_EQ(assignment.directions(1), 1);
+  EXPECT_EQ(assignment.edge_kernels(1, 0), 1);
+  EXPECT_EQ(assignment.prefactor_kernel_signs(0), 1);
+  EXPECT_EQ(assignment.prefactor_kernel_exponents(0), 1);
 }
 
 /**
