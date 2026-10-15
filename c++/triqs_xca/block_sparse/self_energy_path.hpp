@@ -13,7 +13,6 @@ namespace triqs_xca::block_sparse {
 /// This is not yet a complete numerical task: operator/pole assignments still
 /// belong to the caller's diagram assignment and quartet.
 struct SelfEnergyPath {
-  long flat_index = 0;
   int output_sector = 0;
   int terminal_sector = 0;
   int kap_set = 0;

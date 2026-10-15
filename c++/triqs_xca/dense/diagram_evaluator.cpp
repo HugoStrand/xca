@@ -1,3 +1,4 @@
+#include "triqs_xca/tau_kernel_ops.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <stdexcept>
 #include <string>
@@ -205,15 +206,15 @@ namespace triqs_xca::dense {
     return compute_self_energy_by_pairs_selected(G_ppsc, topology, FlatIndexSelection{first, last, get_num_self_energy_backbones(topology)});
   }
 
-  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix) {
+  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
     auto const &vertex = assignment.vertices[v_ix];
-    int l_ix = assignment.poles(vertex.pole_slot);
+    int l_ix = assignment.pole_indices(vertex.pole_slot);
     auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
     apply_kernel(T_buf, kernels.vertices[v_ix]);
   }
 
-  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels,
+  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::bind::TauKernelViews const &kernels,
                                                   int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, kernels.edges[e_ix]);
@@ -291,7 +292,7 @@ namespace triqs_xca::dense {
     int m = assignment.topology.order();
     int vct0 = assignment.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
-    auto const kernels = bind_kernels(assignment, hyb);
+    auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -311,7 +312,7 @@ namespace triqs_xca::dense {
     T *= kernels.prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
     if (assignment.directions(0) == 0) diag_order_sign *= -1;
-    T *= diag_order_sign * assignment.prefactor_sign;
+    T *= diag_order_sign * assignment.direction_sign;
     Sigma += T;
 
   }
@@ -325,7 +326,7 @@ namespace triqs_xca::dense {
     int m = assignment.topology.order();
     int vct0 = assignment.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
-    auto const kernels = bind_kernels(assignment, hyb);
+    auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -349,20 +350,20 @@ namespace triqs_xca::dense {
     T *= kernels.prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
     if (assignment.directions(0) == 0) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
-    T *= diag_order_sign * assignment.prefactor_sign;
+    T *= diag_order_sign * assignment.direction_sign;
     Sigma += T;
 
   }
 
-  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix) {
+  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
     auto const &vertex = assignment.vertices[v_ix];
-    int l_ix = assignment.poles(vertex.pole_slot);
+    int l_ix = assignment.pole_indices(vertex.pole_slot);
     auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
     apply_kernel(U_buf, kernels.reflected_vertices[v_ix]);
   }
 
-  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels,
+  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::bind::TauKernelViews const &kernels,
                                                    int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, kernels.edges[e_ix]);
@@ -396,7 +397,7 @@ namespace triqs_xca::dense {
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics boundary) {
     int m = assignment.topology.order();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
-    auto const kernels = bind_kernels(assignment, hyb);
+    auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
@@ -422,7 +423,7 @@ namespace triqs_xca::dense {
 
     T *= kernels.prefactor;
     int diag_order_sign = 1; // (m % 2 == 1) ? -1 : 1;
-    T *= diag_order_sign * assignment.prefactor_sign;
+    T *= diag_order_sign * assignment.direction_sign;
 
     nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
 

@@ -68,9 +68,9 @@ OperatorSupports::OperatorSupports(BlockOpSymQuartet const &operators) : poles(o
 
 OperatorSupport const &OperatorSupports::vertex(triqs_xca::diagram::Diagram const &assignment, int vertex) const {
   auto const &v = assignment.vertices.at(vertex);
-  if (!v.barred) return (v.dagger ? adjoint : plain).at(v.orbital);
-  int pole = assignment.poles(v.pole_slot);
-  return (v.dagger ? barred_adjoint : reflected_bar).at(v.orbital * poles + pole);
+  if (!v.barred) return (v.adjoint ? adjoint : plain).at(v.flavour);
+  int pole = assignment.pole_indices(v.pole_slot);
+  return (v.adjoint ? barred_adjoint : reflected_bar).at(v.flavour * poles + pole);
 }
 
 } // namespace triqs_xca::block_sparse

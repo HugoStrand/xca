@@ -1,3 +1,4 @@
+#include "triqs_xca/arc_data.hpp"
 #include "self_energy_contribution.hpp"
 #include "triqs_xca/diagram/arc.hpp"
 
@@ -40,7 +41,7 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution) {
 
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                      SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
-                                                     hyb::Hybridization const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
+                                                     triqs_xca::ArcData const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
                                                      triqs_xca::diagram::PermutationSigns signs) {
   int m = assignment.topology.order(), special = assignment.topology.special_vertex();
   triqs_xca::diagram::ArcOrientation line{assignment.directions(0) == 1};
@@ -63,7 +64,7 @@ SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propa
     else endpoints.coefficients.emplace_back(hybridization.values(all, flavour, all));
   }
 
-  int sign = (m % 2 == 0 ? -1 : 1) * (line.forward ? 1 : -1) * assignment.prefactor_sign;
+  int sign = (m % 2 == 0 ? -1 : 1) * (line.forward ? 1 : -1) * assignment.direction_sign;
   SelfEnergyContribution result{path, {}, {}, std::move(endpoints), sign};
   result.vertices.reserve(2 * m);
   result.propagators.reserve(2 * m - 1);

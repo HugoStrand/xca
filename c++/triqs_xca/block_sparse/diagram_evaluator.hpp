@@ -1,11 +1,12 @@
 #pragma once
+#include "triqs_xca/arc_data.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <nda/nda.hpp>
 
 #include <triqs/atom_diag/atom_diag.hpp>
 
 #include "triqs_xca/hyb.hpp"
-#include "triqs_xca/kernel_binding.hpp"
+#include "triqs_xca/bind/tau_kernel.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"
 #include "triqs_xca/diagram/sign.hpp"
@@ -46,19 +47,19 @@ class DiagramEvaluator {
   // Diagram composition routines
 
   // Compose already resolved vertices and propagator edges.
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix,
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims);
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int e_ix, nda::vector_const_view<int> block_dims);
+                           triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, nda::vector_const_view<int> block_dims);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a diagram (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
                              nda::vector_const_view<int> block_dims);
 
   // integrate edge (e_ix) from the right, in a diagram (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int e_ix,
+  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
                             nda::vector_const_view<int> block_dims);
 
   // routines for self-energy diagrams
@@ -73,11 +74,11 @@ class DiagramEvaluator {
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, SelfEnergyContribution const &contribution);
+    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyContribution const &contribution);
 
 
   nda::array_const_view<dcomplex, 3> eval_correlator_fragment(
-    triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, CorrelatorFragmentOperands const &fragment);
+    triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment);
   void eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);
@@ -93,7 +94,7 @@ class DiagramEvaluator {
   int n_int;                           // number of dynamical-interaction flavours
   int q;                               // number of symmetry sets
   int Nmax;                            // maximum block size in the Green's function
-  C2PY_IGNORE hyb::Hybridization hyb; // Hybridization object containing hyb and related information
+  C2PY_IGNORE triqs_xca::ArcData hyb; // Hybridization object containing hyb and related information
   nda::array<dcomplex, 3> T;           // array for storing intermediate result
   nda::array<dcomplex, 3> U;           // array for storing intermediate result (tau-beta side of correlator diagram)
   nda::array<dcomplex, 3> GKt;         // array for storing result of edge computation

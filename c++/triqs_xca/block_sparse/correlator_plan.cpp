@@ -13,8 +13,8 @@ void visit_correlator_fragments(BlockDiagOpFun const &propagator, triqs_xca::dia
   path.dimensions = 0;
   auto op = [&](int vertex) -> BlockOpSymSet const & {
     auto const &v = assignment.vertices[vertex];
-    int set = operators.sym_set_labels(v.orbital);
-    return v.dagger ? operators.F_dags[set] : operators.Fs[set];
+    int set = operators.sym_set_labels(v.flavour);
+    return v.adjoint ? operators.F_dags[set] : operators.Fs[set];
   };
   for (int start = 0; start < propagator.get_num_block_cols(); ++start) {
     int sector = start;

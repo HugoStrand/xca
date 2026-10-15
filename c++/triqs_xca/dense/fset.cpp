@@ -48,8 +48,8 @@ namespace triqs_xca::dense {
   nda::array_const_view<dcomplex, 2> FSet::get_operator(triqs_xca::diagram::Vertex const &vertex, int l_ix) const {
 
     bool has_bar = vertex.barred;
-    int o_ix = vertex.orbital;
-    bool has_dag = vertex.dagger;
+    int o_ix = vertex.flavour;
+    bool has_dag = vertex.adjoint;
 
     if (has_bar)
       return has_dag ? F_dag_bars(o_ix, l_ix, _, _) : F_bars_refl(o_ix, l_ix, _, _);

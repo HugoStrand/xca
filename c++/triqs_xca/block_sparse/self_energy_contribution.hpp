@@ -1,4 +1,5 @@
 #pragma once
+#include "triqs_xca/arc_data.hpp"
 
 #include "self_energy_path.hpp"
 #include "operator_binding.hpp"
@@ -49,7 +50,7 @@ bool select_diagonal_self_energy(SelfEnergyContribution const &contribution);
 /// The path must have been discovered for this assignment and model.
 SelfEnergyContribution bind_self_energy_contribution(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &assignment,
                                                      SelfEnergyPath const &path, BlockOpSymQuartet const &operators, OperatorSupports const &support,
-                                                     hyb::Hybridization const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
+                                                     triqs_xca::ArcData const &hybridization, std::span<triqs_xca::diagram::Statistics const> statistics,
                                                      triqs_xca::diagram::PermutationSigns signs);
 
 } // namespace triqs_xca::block_sparse

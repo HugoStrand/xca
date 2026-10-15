@@ -1,4 +1,5 @@
 #pragma once
+#include "triqs_xca/arc_data.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <nda/nda.hpp>
 
@@ -7,7 +8,7 @@
 #include <triqs/gfs.hpp>
 
 #include "triqs_xca/hyb.hpp"
-#include "triqs_xca/kernel_binding.hpp"
+#include "triqs_xca/bind/tau_kernel.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"
@@ -41,7 +42,7 @@ namespace triqs_xca::dense {
     imtime_ops itops;                 // DLR imaginary time object
     nda::vector<double> dlr_it;       // DLR imaginary time nodes in relative ordering
 
-    C2PY_IGNORE hyb::Hybridization hyb; // Hybridization object containing hyb and related information
+    C2PY_IGNORE triqs_xca::ArcData hyb; // Hybridization object containing hyb and related information
     C2PY_IGNORE FSet Fset;         // FSet (cre/ann operators with and without bars)
 
     int r;     // DLR rank
@@ -81,9 +82,9 @@ namespace triqs_xca::dense {
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a diagram using dense storage
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix);
+    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix);
     // convolve with a single edge, e_ix, in a diagram using dense storage
-    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
+    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::bind::TauKernelViews const &kernels, int e_ix);
 
     // routines for self-energy diagrams
 
@@ -93,9 +94,9 @@ namespace triqs_xca::dense {
     // routines for correlator diagrams
 
     // multiply by a single vertex, v_ix, on the tau-beta side of a correlator diagram using dense storage
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix);
+    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix);
     // convolve with a single edge, e_ix, on the tau-beta side of a correlator diagram using dense storage
-    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, BoundKernels const &kernels, int e_ix);
+    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::bind::TauKernelViews const &kernels, int e_ix);
 
     public:
     void reset(); // reset all arrays to zero

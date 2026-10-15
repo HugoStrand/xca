@@ -30,11 +30,11 @@ Indices decode_indices(int order, int flavours, long pole_count, long flat_index
   Indices result{nda::vector<int>(direction_count(order, kind)), nda::vector<int>(order - 1), nda::vector<int>(order - 1)};
   long remaining = flat_index;
   for (int a = 0; a < order - 1; ++a) {
-    result.orbitals(a) = remaining % flavours;
+    result.flavours(a) = remaining % flavours;
     remaining /= flavours;
   }
   for (int a = 0; a < order - 1; ++a) {
-    result.poles(a) = remaining % pole_count;
+    result.pole_indices(a) = remaining % pole_count;
     remaining /= pole_count;
   }
   for (int a = 0; a < result.directions.size(); ++a) {

@@ -1,3 +1,4 @@
+#include "triqs_xca/tau_kernel_ops.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <algorithm>
 #include <array>
@@ -210,7 +211,7 @@ template DiagramEvaluator::DiagramEvaluator(
 // ----------- Private routines for any diagram ==========
 
 
-void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix,
+void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
                                             nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
   int vct0 = assignment.topology.special_vertex();
   int n_col_r = v_ix < vct0 ? block_dims(1) : block_dims(0);
@@ -229,7 +230,7 @@ void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, 
 
 
 void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                                           triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int e_ix, nda::vector_const_view<int> block_dims) {
+                                           triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, nda::vector_const_view<int> block_dims) {
   int vct0    = assignment.topology.special_vertex();
   int n_col_r = e_ix < vct0 ? block_dims(1) : block_dims(0);
 
@@ -273,7 +274,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment, SelfEnergyPath &path) {
   auto const signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
-  auto const kernels = bind_kernels(assignment, hyb);
+  auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
   visit_self_energy_paths(Gt, assignment, Fq, support_, path, [&](SelfEnergyPath const &prepared) {
     auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, support_, hyb, interactions_.statistics(), signs);
     if (!select_diagonal_self_energy(contribution)) return;
@@ -302,7 +303,7 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contribution(
-  triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, SelfEnergyContribution const &contribution) {
+  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyContribution const &contribution) {
   auto const &block_dims = contribution.path.dimensions;
   int m = assignment.topology.order(), vct0 = assignment.topology.special_vertex(); // vertex connnected to time zero
 
@@ -437,7 +438,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 
 // ========== Private correlator routines ==========
 
-void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int v_ix,
+void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
                                              nda::array_const_view<dcomplex, 2> F, nda::vector_const_view<int> block_dims) {
   int n_row_l = block_dims(2 * assignment.topology.order());
 
@@ -452,7 +453,7 @@ void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf,
   apply_kernel(U_v, kernels.reflected_vertices[v_ix]);
 }
 
-void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, int e_ix,
+void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
                                             nda::vector_const_view<int> block_dims) {
 
   int n_row_l = block_dims(2 * assignment.topology.order()); // number of rows for the left-hand side of the diagram
@@ -488,7 +489,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
-  triqs_xca::diagram::Diagram const &assignment, BoundKernels const &kernels, CorrelatorFragmentOperands const &fragment) {
+  triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, CorrelatorFragmentOperands const &fragment) {
   auto const &path = fragment.path;
   auto const &dims = path.dimensions;
   if (path.side == CorrelatorSide::right) {
@@ -499,7 +500,7 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
     }
     T *= kernels.prefactor;
     auto result = T(_, range(0, dims(path.last_edge + 1)), range(0, dims(1)));
-    result *= assignment.prefactor_sign;
+    result *= assignment.direction_sign;
     return result;
   }
   int final_dim = dims(path.last_edge + 1);
@@ -524,7 +525,7 @@ void DiagramEvaluator::eval_correlator_join(CorrelatorJoin const &join, nda::arr
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics boundary) {
   check_propagator(Gt);
-  auto const kernels = bind_kernels(assignment, hyb);
+  auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   int sectors = Gt.get_num_block_cols();

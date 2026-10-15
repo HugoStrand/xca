@@ -19,7 +19,7 @@ PermutationSigns prepare_permutation_signs(Diagram const &assignment, std::span<
   std::vector<Statistics> vertices(n_vertices, Statistics::bosonic);
   for (int v = 1; v < n_vertices; ++v) {
     if (v == special) continue;
-    int orbital = assignment.vertices[v].orbital;
+    int orbital = assignment.vertices[v].flavour;
     if (orbital < 0 || static_cast<std::size_t>(orbital) >= interactions.size()) throw std::invalid_argument("internal vertex has no valid interaction statistics");
     vertices[v] = interactions[orbital];
   }

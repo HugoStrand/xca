@@ -10,8 +10,8 @@ enum class Kind { self_energy, correlator };
 /// or execution order is needed to prepare these assignments.
 struct Indices {
   nda::vector<int> directions;
-  nda::vector<int> poles;
-  nda::vector<int> orbitals;
+  nda::vector<int> pole_indices;
+  nda::vector<int> flavours;
 };
 
 /// The legacy flat-index convention lives at the selection boundary.

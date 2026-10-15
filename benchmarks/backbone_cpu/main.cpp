@@ -11,7 +11,7 @@
 #include "test_utils/evaluators.hpp"
 #include <triqs_xca/block_sparse/dynint.hpp>
 #include <triqs_xca/block_sparse/self_energy_contribution.hpp>
-#include <triqs_xca/kernel_binding.hpp>
+#include <triqs_xca/bind/tau_kernel.hpp>
 
 using namespace triqs_xca;
 namespace bs = triqs_xca::block_sparse;
@@ -89,15 +89,15 @@ int main(int argc, char **argv) try {
   };
   time("flat_preparation", [&](long i) {
     auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, indices(i), triqs_xca::diagram::Kind::self_energy);
-    checksum += a.prefactor_sign;
+    checksum += a.direction_sign;
   });
   time("logical_preparation", [&](long i) {
     auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical[i], model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
-    checksum += a.prefactor_sign;
+    checksum += a.direction_sign;
   });
   time("sign_and_kernel_binding", [&](long i) {
     auto signs   = triqs_xca::diagram::prepare_permutation_signs(assignments[i], interactions.statistics());
-    auto kernels = bind_kernels(assignments[i], evaluator.hyb);
+    auto kernels = triqs_xca::bind::tau_kernels(assignments[i].kernel_placement, assignments[i].pole_indices, evaluator.hyb.kernel_values);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {

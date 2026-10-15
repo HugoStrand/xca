@@ -221,7 +221,7 @@ namespace {
     int flavours = n_hyb + m.n_int();
     auto sign = [&](triqs_xca::diagram::Diagram const &assignment, bool legs, bool interaction_lines_bosonic) {
       nda::array<bool, 1> fermionic(t.size());
-      for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || assignment.vertices[v].orbital < n_hyb;
+      for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || assignment.vertices[v].flavour < n_hyb;
       fermionic(0)       = legs;
       fermionic(t(0, 1)) = legs;
       return topology_parity(fermionic_topology(t, fermionic));

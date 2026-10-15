@@ -1,3 +1,4 @@
+#include "triqs_xca/arc_data.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
 #include <optional>
@@ -48,9 +49,8 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   changed_G *= 1.1;
   auto changed = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(changed_G, assignment), model.ad);
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(assignment.flat_index, -1);
   EXPECT_EQ(assignment.directions(0), 0);
-  EXPECT_TRUE(assignment.vertices[0].dagger);
+  EXPECT_TRUE(assignment.vertices[0].adjoint);
 }
 
 TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_propagator) {
@@ -70,9 +70,8 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   changed_G *= 1.1;
   auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(assignment.flat_index, -1);
   EXPECT_EQ(assignment.directions(0), -1);
-  EXPECT_EQ(assignment.vertices[0].orbital, -1);
+  EXPECT_EQ(assignment.vertices[0].flavour, -1);
 }
 
 
@@ -80,7 +79,7 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
   auto coefficients = hyb::get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
-  hyb::Hybridization hybridization(model.mesh, model.hyb_poles, coefficients);
+  triqs_xca::ArcData hybridization(model.mesh, model.hyb_poles, coefficients);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   auto changed_G = G;
   changed_G *= 1.3;

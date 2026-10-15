@@ -1,3 +1,4 @@
+#include "triqs_xca/arc_data.hpp"
 #include <array>
 #include <cmath>
 #include <map>
@@ -188,7 +189,7 @@ namespace {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G0_ppsc_dense;
 
     dense::DiagramEvaluator D_dense;   // for compute_self_energy_by_pairs
-    triqs_xca::hyb::Hybridization hyb; // the hybridization in the convention of the block-sparse evaluator, which the manual routines take
+    triqs_xca::ArcData hyb; // the hybridization in the convention of the block-sparse evaluator, which the manual routines take
     BlockOpSymQuartet Fq;              // field operators of the block-sparse evaluator
 
     /// Build the DLR grid, the model and every dense fixture for the model of this name

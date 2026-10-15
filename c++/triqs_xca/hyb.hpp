@@ -9,34 +9,6 @@ namespace triqs_xca::hyb {
 
   using nda::dcomplex;
 
-  class Hybridization {
-
-    public:
-    triqs::mesh::dlr_imtime tau_mesh; // imaginary time mesh
-
-    nda::vector<double> poles;      // hybridization poles
-    nda::array<dcomplex, 3> coeffs; // hybridization (matrix) coefficients
-
-    nda::array<dcomplex, 3> values;         // hybridization function at imaginary time nodes
-    nda::array<dcomplex, 3> values_reflect; // hybridization function at imaginary time nodes (reversed)
-
-    nda::vector<double> k_0_p; // fermionic kernel evaluated at tau = 0 and (+1 * poles)
-    nda::vector<double> k_0_m; // fermionic kernel evaluated at tau = 0 and (-1 * poles)
-
-    nda::array<double, 2> k_it_p; // fermionic kernel evaluated at imaginary time nodes and (+1 * poles)
-    nda::array<double, 2> k_it_m; // fermionic kernel evaluated at imaginary time nodes and (-1 * poles)
-
-    /**
-     * @brief Constructor for FSet
-     * @param[in] tau_mesh TRIQS imaginary time DLR mesh
-     * @param[in] hyb_poles poles of the hybridization
-     * @param[in] hyb_coeffs pole coefficients of the hybridization
-     */
-    Hybridization(const triqs::mesh::dlr_imtime &tau_mesh, nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                  double refl_sign = 1.0);
-
-  };
-
   /**
  * @brief Convert hybridization coefficients to values at DLR imaginary time nodes
  * @param[in] beta inverse temperature

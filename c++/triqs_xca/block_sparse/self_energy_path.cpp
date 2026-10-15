@@ -12,7 +12,6 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagr
 
   if (path.propagator_blocks.size() != 2 * m - 1 || path.dimensions.size() != 2 * m + 1)
     throw std::invalid_argument("visit_self_energy_paths: workspace does not match diagram order");
-  path.flat_index = assignment.flat_index;
   path.special_vertex = vct0;
   auto &ind_path = path.propagator_blocks;
   auto &block_dims = path.dimensions;
@@ -26,8 +25,8 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagr
       --------     --------     --------     --------     --------     --------     --------
   */
 
-  auto F_selector_p_ix = [&](int w, int p_ix) -> BlockOpSymSet const & { return assignment.vertices[w].dagger ? Fq.F_dags[p_ix] : Fq.Fs[p_ix]; };
-  auto F_selector      = [&](int w) -> BlockOpSymSet const & { return F_selector_p_ix(w, Fq.sym_set_labels(assignment.vertices[w].orbital)); };
+  auto F_selector_p_ix = [&](int w, int p_ix) -> BlockOpSymSet const & { return assignment.vertices[w].adjoint ? Fq.F_dags[p_ix] : Fq.Fs[p_ix]; };
+  auto F_selector      = [&](int w) -> BlockOpSymSet const & { return F_selector_p_ix(w, Fq.sym_set_labels(assignment.vertices[w].flavour)); };
 
   bool incomplete_path    = false;
   auto is_path_incomplete = [&](int w, int ip) { return (ip == -1 || (w < 2 * m - 1 && Gt.get_zero_block_index(ip) == -1)); };

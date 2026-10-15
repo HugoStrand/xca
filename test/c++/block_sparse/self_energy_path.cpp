@@ -55,7 +55,6 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
     auto const &path = paths[i];
-    EXPECT_EQ(path.flat_index, 0);
     EXPECT_EQ(path.special_vertex, 1);
     EXPECT_EQ(path.output_sector, i / 2);
     EXPECT_EQ(path.terminal_sector, i / 2);
@@ -74,8 +73,6 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(reversed[i].terminal_sector, i / 2 + 1);
     EXPECT_EQ(values(reversed[i].propagator_blocks), (std::vector<int>{i / 2}));
   }
-  EXPECT_EQ(assignment.flat_index, 1); // the walker neither resets nor decodes
-  EXPECT_EQ(paths[0].flat_index, 0); // copies survive workspace and assignment reuse
   EXPECT_EQ(values(paths[0].propagator_blocks), (std::vector<int>{1}));
   EXPECT_EQ(values(paths[0].dimensions), (std::vector<int>{1, 2, 1}));
 }
@@ -160,7 +157,6 @@ TEST(SelfEnergyPath, discovery_is_independent_of_source_assignment_mutation) {
   });
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
-    EXPECT_EQ(paths[i].flat_index, 0);
     EXPECT_EQ(paths[i].output_sector, i / 2);
     EXPECT_EQ(values(paths[i].propagator_blocks), (std::vector<int>{i / 2 + 1}));
   }
