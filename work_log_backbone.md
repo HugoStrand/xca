@@ -26,7 +26,8 @@
 | 6b output closure | `3456087` | Validate indexed diagonal-output closure; all 72 CTest entries passed |
 | 7a | `0a39662` | Production selection uses immutable topology; all 72 CTest entries passed |
 | 7b | `71a7173` | Mutable backbone adapters removed; all 72 CTest entries passed |
-| 7 remaining | None | Ranges/MPI coverage, timing/memory checks, and final audit pending |
+| 7c | `dffa2b2` | Bounded selections and MPI integration; all 73 CTest entries and a three-rank run passed |
+| Completion audit | None | Timing/memory checks and requirement audit pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -998,3 +999,64 @@ Validation: CPU reconfiguration, full rebuild, and all 72 CTest entries passed
 An include/type search finds no remaining uses of the removed classes in source,
 Python, or tests. Next are bounded ranges and MPI/paired coverage, followed by
 CPU timing/memory measurements and the completion audit. The goal stays active.
+
+
+## Stage 7c — bounded assignment selections and MPI coverage
+
+Code: `dffa2b2` (`[backbone] stream bounded assignment ranges`).
+
+Previously each Python rank allocated its whole local flat-index vector, and
+filtered that vector again for dense paired evaluation. Both CPU evaluators now
+accept half-open bounds `(first, last)` for self-energy, single-particle Green's
+functions, and general one-time correlators. The solver passes two integers,
+using the same contiguous `np.array_split` partition. `AssignmentSelection`
+streams indices into the existing logical preparation boundary, with constant
+selection storage. Existing explicit vector calls borrow their input for the
+call; their order and multiplicity remain meaningful.
+
+Read [diagram_selection.hpp](c++/triqs_xca/diagram_selection.hpp), then the
+`compute_*_selected` methods and their range/vector wrappers in each evaluator.
+These wrappers share the existing numerical path; they do not introduce a second
+evaluator. Full public self-energy/single-particle calls use the same selection
+loop. Prepared C++ assignment entry points remain independent of linear ranges.
+Then read `scatter_range_over_ranks` and the four solver call sites. The helper
+now returns bounds rather than an index array: this is an intentional Python
+helper API change. Evaluator scalar/vector APIs remain available.
+
+Dense paired **ranges** own only canonical seeds whose first direction bit is
+zero. Their partner can lie outside the supplied bounds. Consequently disjoint
+ranges covering the full self-energy index space count every pair once. Existing
+scalar/vector paired APIs still evaluate both partners of every supplied seed,
+including duplicates. This distinction is stated on the range declaration and
+in the solver. Empty ranges return correctly shaped zeros; invalid bounds are
+rejected before evaluation. Long bounds support selections beyond `INT_MAX`.
+
+The one-time-correlator template range overloads are instantiated for both real
+and complex `atom_diag`, including the explicit declarations used by the Python
+wrapper generator. Generated bindings are committed alongside the API change.
+The first focused Python run caught missing template-wrapper declarations;
+these were supplied before the final validation.
+
+`flat_index_range.cpp` checks partition sums against the existing vector path
+on complex, mixed fermionic/retarded fixtures at orders two and three, for both
+CPUs and all observable types. It covers empty partitions, invalid/reversed
+bounds, recovery, large actual evaluation indices, and traversal next to
+`LONG_MAX`. Dense pair sums are compared with unpaired self-energy. The Python
+`range_selection.py` checks integer partitions, including zero/huge counts, and
+binding/reduction equivalence. A three-rank run exercises real MPI, including
+more ranks than first-order assignments. No numerical tolerances were relaxed.
+
+Validation: CPU configure/build and all 73 CTest entries passed (59.36 s).
+Logs: `/tmp/xca-backbone-ranges-{configure,build,test}.log`.
+The standalone MPI check passed with:
+
+```bash
+source ~/env/xca-cpu.sh
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+export PYTHONPATH="$PWD/cbuild/python:$PWD/cbuild/deps/adapol_src/src:$PWD/cbuild/deps/pyed_src:$PYTHONPATH"
+mpiexec -n 3 python3 test/python/range_selection.py
+```
+
+Its log is `/tmp/xca-backbone-ranges-mpi.log`. This run is additional local
+validation; CTest registers the same script in serial. Remaining work is the
+planned CPU preparation/memory measurements and final requirement audit.
