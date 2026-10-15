@@ -57,3 +57,23 @@ Logs: `/tmp/xca-rename-baseline-{build,test}.log` and
 
 Next: extract ArcData/TauKernelValues, explicit TauKernelPlacement and the bind
 namespace, preserving discrete signs and barred-operator pole selection.
+
+## Stage 2: arc data and kernels (`fc511be`)
+
+ArcData now owns the numerical coefficients/values and TauKernelValues. The
+physical coefficient helpers remain in hyb. Diagram owns TauKernelPlacement;
+operator pole slots remain on Vertex, independent of vertex scalar factors.
+Discrete direction signs remain separate from kernel prefactors. Binding is
+`triqs_xca::bind::tau_kernels`; arithmetic helpers live outside bind.
+
+Removed stored flat identity from Diagram and the old path record. Flat decoding,
+validation and 64-bit counts remain at the boundary. Tests retain their explicit
+expected digits/factors and independently owned arrays; only storage-identity
+assertions were removed. The operator/kernel pole-slot test now checks each
+role separately, including barred operators with no vertex scalar factor.
+
+Validation: reconfigure/full CPU build passed; ten focused tests passed (3.61 s),
+covering kernel views/reflection, indices/signs, contractions, prepared evaluators,
+retarded interactions and all-evaluator correlators. Generated Python wrappers
+remain unchanged. Logs: `/tmp/xca-rename-step2-{configure,build,test}.log`.
+Next: compact half-open backbone intervals and SelfEnergyDiagram metadata.
