@@ -65,9 +65,8 @@ void visit_self_energy_paths(BlockDiagOpFun const &Gt, DiagramAssignment const &
 
       for (int p_mu = 0; p_mu < q; p_mu++) { // loop over symmetry sets on the vertex connected to vertex 0
 
-        // Preserve the evaluator's equal-set restriction. Its coefficient validation
-        // permits a small cross-set remainder, but those paths need not return to
-        // b_ix. Numerical/support policy is separate from this discovery extraction.
+        // Coefficient validation requires exact zeros between different groups.
+        // Only endpoints from the same execution group can contribute.
         if (p_mu != p_kap) continue;
 
         // ind_path setup 2

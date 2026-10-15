@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -11,6 +12,7 @@
 #include <triqs_xca/block_sparse/block_op.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/topology.hpp>
+#include <triqs_xca/dense/diagram_evaluator.hpp>
 
 #include "test_utils/block_sparse.hpp"
 
@@ -24,7 +26,6 @@ using triqs_xca::block_sparse::atom_diag::get_operators;
 using triqs_xca::block_sparse::BlockDiagOpFun;
 using triqs_xca::block_sparse::BlockOpSymQuartet;
 using triqs_xca::block_sparse::DiagramEvaluator;
-using triqs_xca::block_sparse::sym_set_coupling_tol;
 namespace test_utils = triqs_xca::test_utils;
 
 /**
@@ -32,12 +33,9 @@ namespace test_utils = triqs_xca::test_utils;
  *
  * @brief Tests of the symmetry-set mask on the zero vertex of the self-energy, and of the input validation of the Fq-only constructor
  *
- * @details The BlockOpSymQuartet constructor rejects a cross-symmetry-set coefficient only above sym_set_coupling_tol * max|hyb_coeffs|, and
- * the accepted remainder has to be made harmless downstream. The absolute 1e-16 guard on the assembled T_out in find_path_self_energy() does
- * not do that, since T_out also carries the propagators, the DLR kernel and the operator norms, and a cross-set (p_kap, p_mu) path need not
- * return to block b_ix, so its contribution is accumulated into a block of the wrong shape and the error is independent of the size of the
- * coefficient. Restricting the (p_kap, p_mu) loop to p_mu == p_kap removes these contributions, and this file checks that the accepted
- * remainder is inert. The rejection side of the threshold is pinned by BlockSparseSymSets.bars_bracket_symmetry_set_coupling_tolerance.
+ * @details A nonzero cross-set coefficient must be represented or rejected explicitly. The guard is structural,
+ * not an approximation based on coefficient magnitude. The dense/coarse-block reference below demonstrates that
+ * a tiny coefficient can generate an off-block self-energy which a fine block-diagonal layout cannot store.
  */
 
 namespace {
@@ -102,73 +100,69 @@ namespace {
 
 } // namespace
 
-/**
- * @brief Check that a cross-set coefficient accepted by the quartet constructor does not reach the self-energy
- */
-TEST(BlockSparseSymSetMask, accepted_cross_set_coefficients_leave_sigma_unchanged) {
+TEST(BlockSparseSymSetMask, tiny_cross_set_coefficients_are_rejected_but_within_set_terms_survive) {
+  for (auto const &ad : {test_utils::unequal_sym_set_model(true), test_utils::spin_flip_atom_diag_helper(2, false),
+                        test_utils::sz_resolved_atom_diag_helper(2, true)}) {
+    auto labels = sym_set_labels_of(ad);
+    SCOPED_TRACE(::testing::Message() << "labels=" << labels);
+    ASSERT_GE(nda::max_element(labels), 1);
+    auto clean = perturbed_hyb(labels, Slot::cross, 0.);
+    double delta = 0.9e-12 * nda::max_element(nda::abs(clean)); // formerly accepted
+    EXPECT_THROW(get_operators(ad, perturbed_hyb(labels, Slot::cross, delta)), std::invalid_argument);
+    auto baseline = sigma_from(ad, clean);
+    auto within = sigma_from(ad, perturbed_hyb(labels, Slot::within, delta));
+    ASSERT_GT(max_block_abs(baseline), 0.1);
+    EXPECT_GT(max_block_diff(within, baseline), 0.); // no threshold on representable terms
+  }
+}
 
-  // the perturbation is a fraction of the tolerance, so pin its magnitude from both sides
-  static_assert(sym_set_coupling_tol >= 1.0e-14 && sym_set_coupling_tol <= 1.0e-10,
-                "the guard is only meaningful at a round-off-scale relative tolerance, and this test's "
-                "perturbation is a fraction of it");
+TEST(BlockSparseSymSetMask, discarded_remainder_has_a_resolvable_off_block_self_energy) {
+  using tensor = nda::array<dcomplex, 3>;
+  using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
+  using bgf = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
+  // Fock basis |00>, |10>, |01>, |11>, with c1|11> = -|10>.
+  tensor F = nda::zeros<dcomplex>(2, 4, 4), Fdag = F;
+  F(0, 0, 1) = F(0, 2, 3) = F(1, 0, 2) = 1.;
+  F(1, 1, 3) = -1.;
+  for (int a = 0; a < 2; ++a)
+    for (int i = 0; i < 4; ++i)
+      for (int j = 0; j < 4; ++j) Fdag(a, i, j) = F(a, j, i);
+  auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, Lambda / beta, 1e-12, false);
+  auto itops = mesh.dlr_it();
+  nda::vector<double> poles{0.};
+  nda::array<int, 2> topology{{0, 1}};
+  nda::vector<int> connection{0};
+  std::vector<tensor> blocks{F}, dag_blocks{Fdag};
+  triqs_xca::block_sparse::BlockOpSymSet grouped_F(connection, blocks), grouped_Fdag(connection, dag_blocks);
+  tensor coefficients = nda::zeros<dcomplex>(1, 2, 2);
+  coefficients(0, 0, 0) = coefficients(0, 1, 1) = 1.;
+  double delta = 1e-14;
+  coefficients(0, 0, 1) = coefficients(0, 1, 0) = delta;
+  BlockOpSymQuartet quartet({grouped_F}, {grouped_Fdag}, coefficients, nda::vector<long>{0, 0});
+  DiagramEvaluator coarse(beta, Lambda, 1e-12, poles, coefficients, quartet);
+  triqs_xca::dense::FSet fset(F, Fdag, coefficients);
+  triqs_xca::dense::DiagramEvaluator dense(beta, 1e-12, itops, poles, coefficients, fset);
 
-  // Order 2 and crossing. Order 1 has a single vertex pair and cannot separate p_kap from p_mu.
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  ASSERT_EQ(triqs_xca::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
-
-  struct Fixture {
-    char const *name;
-    triqs::atom_diag::atom_diag<true> ad;
-  };
-  std::vector<Fixture> fixtures;
-  fixtures.push_back({"unequal_sym_set_model(true)", test_utils::unequal_sym_set_model(true)});                   // sets {2, 1}
-  fixtures.push_back({"spin_flip_atom_diag_helper(2, false)", test_utils::spin_flip_atom_diag_helper(2, false)}); // interleaved sets
-  fixtures.push_back({"sz_resolved_atom_diag_helper(2)", test_utils::sz_resolved_atom_diag_helper(2, true)});     // contiguous sets
-
-  for (auto const &f : fixtures) {
-    SCOPED_TRACE(f.name);
-
-    int n_hyb = static_cast<int>(f.ad.get_fops().size());
-    auto lab  = sym_set_labels_of(f.ad);
-
-    // check that the fixture has cross-set entries to perturb and within-set off-diagonals for the control
-    ASSERT_GE(nda::max_element(lab) + 1, 2) << "need at least two symmetry sets, got labels " << lab;
-    int n_cross = 0, n_within = 0;
-    for (int i = 0; i < n_hyb; ++i)
-      for (int j = 0; j < n_hyb; ++j) {
-        if (lab(i) != lab(j)) ++n_cross;
-        if (lab(i) == lab(j) && i != j) ++n_within;
-      }
-    ASSERT_GT(n_cross, 0) << "no cross-set entries to perturb";
-    ASSERT_GT(n_within, 0) << "no within-set off-diagonal entries: the control below would be vacuous";
-
-    auto clean     = perturbed_hyb(lab, Slot::cross, 0.0);
-    double max_abs = nda::max_element(nda::abs(clean));
-    ASSERT_GT(max_abs, 0.0) << "all-zero coefficients make a relative threshold vacuous";
-    double delta = 0.9 * sym_set_coupling_tol * max_abs;
-
-    // the entry must be on the accepted side of the threshold
-    auto cross = perturbed_hyb(lab, Slot::cross, delta);
-    ASSERT_NO_THROW(get_operators(f.ad, cross))
-       << "premise broken: a cross-set entry at 0.9 * sym_set_coupling_tol * max|hyb_coeffs| must be accepted";
-
-    auto Sigma_0     = sigma_from(f.ad, clean);
-    auto Sigma_cross = sigma_from(f.ad, cross);
-    ASSERT_GT(max_block_abs(Sigma_0), 0.1) << "vacuous test: the self-energy is too small to be sensitive to anything";
-
-    // exact equality, under the mask the cross-set coefficients are never read on the Sigma path
-    EXPECT_EQ(max_block_diff(Sigma_cross, Sigma_0), 0.0)
-       << "a cross-set coefficient at 0.9 * sym_set_coupling_tol * max|hyb_coeffs| = " << delta << " changed Sigma by "
-       << max_block_diff(Sigma_cross, Sigma_0) << " against max|Sigma| = " << max_block_abs(Sigma_0)
-       << ".\nThe (p_kap, p_mu) loop of find_path_self_energy must be restricted to p_mu == p_kap. The 1e-16 guard "
-          "does not catch this: the cross-set T_out reaches it one to two orders above 1e-16, and is then added to a "
-          "block of the wrong shape.";
-
-    // check that the same perturbation within a set does move Sigma
-    auto Sigma_within = sigma_from(f.ad, perturbed_hyb(lab, Slot::within, delta));
-    EXPECT_GT(max_block_diff(Sigma_within, Sigma_0), 0.0) << "vacuous test: a within-set perturbation of the same size " << delta
-                                                          << " does not move Sigma either, so the "
-                                                             "exact equality above says nothing about the mask";
+  for (double scale : {1., 1e8}) {
+    SCOPED_TRACE(::testing::Message() << "propagator scale=" << scale);
+    tensor values = nda::zeros<dcomplex>(mesh.size(), 4, 4);
+    for (int t = 0; t < mesh.size(); ++t) {
+      values(t, 0, 0) = scale;
+      values(t, 1, 1) = 2 * scale;
+      values(t, 2, 2) = 4 * scale;
+      values(t, 3, 3) = 3 * scale;
+    }
+    bgf G{std::vector{gf(mesh, values)}};
+    auto dense_sigma = dense.compute_self_energy(G, topology);
+    auto coarse_sigma = coarse.compute_self_energy(G, topology);
+    // Delta=-C/2. At matrix entry (1,2), c0^dag G c1 contributes G00,
+    // c1 G c0^dag contributes -G33: Sigma12=-delta/2*(G00-G33)=delta*scale.
+    // This entry is absent in a four-sector block-diagonal representation.
+    double expected = delta * scale;
+    for (int t = 0; t < mesh.size(); ++t) {
+      EXPECT_LE(std::abs(dense_sigma[0].data()(t, 1, 2) - expected), 2e-11 * expected);
+      EXPECT_LE(std::abs(coarse_sigma[0].data()(t, 1, 2) - expected), 2e-11 * expected);
+    }
   }
 }
 
@@ -187,8 +181,8 @@ TEST(BlockSparseSymSetMask, Fq_only_constructor_rejects_cross_set_coefficients) 
   nda::vector<double> hyb_poles = {1.3, -0.8};
   ASSERT_NO_THROW(DiagramEvaluator(beta, Lambda, eps, hyb_poles, good, Fq)) << "the clean pair must still construct";
 
-  // Well above sym_set_coupling_tol, i.e. the case the quartet itself would have rejected.
-  auto bad = perturbed_hyb(lab, Slot::cross, 0.25 * nda::max_element(nda::abs(good)));
+  // Even a subnormal cross-set coefficient must be rejected by both entry points.
+  auto bad = perturbed_hyb(lab, Slot::cross, std::numeric_limits<double>::denorm_min());
   ASSERT_THROW(std::get<0>(get_operators(ad, bad)), std::invalid_argument) << "premise: the quartet rejects this array";
 
   try {

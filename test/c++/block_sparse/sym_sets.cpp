@@ -1,3 +1,4 @@
+#include <limits>
 #include <gtest/gtest.h>
 
 #include <triqs/operators/many_body_operator.hpp>
@@ -31,8 +32,8 @@ namespace dense = triqs_xca::dense;
  *
  * @details The contraction of the hybridization coefficients with the operators of a symmetry set is only defined within one set, as in the dense
  * reference FSet::update_hybridization(). A hybridization coupling two different symmetry sets can not be represented by the block-sparse
- * storage and must be rejected by the constructor, with the rejection threshold sym_set_coupling_tol relative to max|hyb_coeffs| pinned from both
- * sides. With symmetry sets of unequal size, an index mix-up between the sets is an out-of-bounds read that only shows up in a bounds-checked or
+ * storage and must be rejected by the constructor, regardless of coefficient magnitude. With symmetry sets of unequal size, an index
+ * mix-up between the sets is an out-of-bounds read that only shows up in a bounds-checked or
  * sanitized build (-DASAN=ON or -DNDA_ENFORCE_BOUNDCHECK), so the barred operators are also compared to the dense reference, which is defined
  * for any coefficient matrix.
  */
@@ -93,72 +94,38 @@ TEST(BlockSparseSymSets, bars_reject_symmetry_set_coupling) {
   }
 }
 
-/**
- * @brief Bracket the rejection threshold sym_set_coupling_tol from both sides
- *
- * @details Cross-set entries perturbed by 0.5 * tol * max|hyb_coeffs| must be accepted as round-off, and by 2 * tol * max|hyb_coeffs| rejected.
- * The unperturbed fixture has exactly zero cross-set entries, so only injected noise exercises the threshold.
- */
-TEST(BlockSparseSymSets, bars_bracket_symmetry_set_coupling_tolerance) {
-
-  using triqs_xca::block_sparse::sym_set_coupling_tol;
-
-  // the bracket below scales with the tolerance, so pin its magnitude directly
-  static_assert(sym_set_coupling_tol > 0.0 && sym_set_coupling_tol <= 1.0e-10,
-                "the guard is only meaningful at a round-off-scale relative tolerance");
-
+TEST(BlockSparseSymSets, rejects_every_nonzero_cross_set_coefficient) {
   auto ad = test_utils::unequal_sym_set_model();
-  int p   = 2;
-
-  auto labels = std::get<1>(block_sparse::atom_diag::get_operators(ad, nda::zeros<dcomplex>(p, 3, 3)));
-  // scaled away from 1 to distinguish a relative threshold from an absolute one
-  auto hyb_coeffs = nda::make_regular(1.0e6 * test_utils::sym_set_diagonal_hyb(labels, p));
-  int norb        = static_cast<int>(labels.size());
-
-  // check that the fixture has cross-set entries and that they are exactly zero
-  ASSERT_GE(nda::max_element(labels) + 1, 2) << "need at least two symmetry sets, got labels " << labels;
-
-  double max_abs = 0.0;
-  int n_cross    = 0;
-  for (int l = 0; l < p; ++l) {
-    for (int i = 0; i < norb; ++i) {
-      for (int j = 0; j < norb; ++j) {
-        max_abs = std::max(max_abs, std::abs(hyb_coeffs(l, i, j)));
-        if (labels(i) != labels(j)) {
-          ++n_cross;
-          ASSERT_EQ(hyb_coeffs(l, i, j), 0.0) << "the fixture must start from exactly zero cross-set entries";
-        }
-      }
+  auto labels = std::get<1>(block_sparse::atom_diag::get_operators(ad, nda::zeros<dcomplex>(2, 3, 3)));
+  int i = -1, j = -1;
+  for (int a = 0; a < labels.size(); ++a)
+    for (int b = 0; b < labels.size(); ++b)
+      if (labels(a) != labels(b)) { i = a; j = b; }
+  ASSERT_GE(i, 0);
+  for (double scale : {1., 1e6}) {
+    auto coefficients = nda::make_regular(scale * test_utils::sym_set_diagonal_hyb(labels, 2));
+    EXPECT_NO_THROW(block_sparse::atom_diag::get_operators(ad, coefficients));
+    for (double magnitude : {std::numeric_limits<double>::denorm_min(), 1e-18, 1e-13, 1e-6}) {
+      SCOPED_TRACE(::testing::Message() << "scale=" << scale << ", magnitude=" << magnitude);
+      coefficients(0, i, j) = dcomplex(0., magnitude);
+      EXPECT_THROW(block_sparse::atom_diag::get_operators(ad, coefficients), std::invalid_argument);
+      coefficients(0, i, j) = 0.;
     }
   }
-  ASSERT_GT(n_cross, 0) << "no cross-set entries to perturb";
-  ASSERT_GT(max_abs, 0.0) << "all-zero coefficients make a relative threshold vacuous";
+}
 
-  // perturb every cross-set entry by +-delta with alternating sign
-  auto perturbed = [&](double delta) {
-    auto coeffs = nda::array<dcomplex, 3>(hyb_coeffs);
-    double sgn  = 1.0;
-    for (int l = 0; l < p; ++l) {
-      for (int i = 0; i < norb; ++i) {
-        for (int j = 0; j < norb; ++j) {
-          if (labels(i) != labels(j)) {
-            coeffs(l, i, j) += sgn * delta;
-            sgn = -sgn;
-          }
-        }
-      }
+TEST(BlockSparseSymSets, rejects_nonfinite_coefficients_within_and_between_sets) {
+  using triqs_xca::block_sparse::check_sym_set_block_diagonal;
+  nda::vector<long> labels{0, 1};
+  for (int j : {0, 1})
+    for (dcomplex value : {dcomplex(std::numeric_limits<double>::quiet_NaN(), 0.),
+                           dcomplex(0., std::numeric_limits<double>::quiet_NaN()),
+                           dcomplex(std::numeric_limits<double>::infinity(), 0.)}) {
+      auto coefficients = nda::zeros<dcomplex>(1, 2, 2);
+      coefficients(0, 0, 0) = 1.;
+      coefficients(0, 0, j) = value;
+      EXPECT_THROW(check_sym_set_block_diagonal(coefficients, labels, "test"), std::invalid_argument);
     }
-    return coeffs;
-  };
-
-  EXPECT_NO_THROW(block_sparse::atom_diag::get_operators(ad, perturbed(0.5 * sym_set_coupling_tol * max_abs)))
-     << "cross-set entries at 0.5 * tol * max|hyb_coeffs| must be accepted as round-off";
-
-  EXPECT_THROW(block_sparse::atom_diag::get_operators(ad, perturbed(2.0 * sym_set_coupling_tol * max_abs)), std::invalid_argument)
-     << "cross-set entries at 2 * tol * max|hyb_coeffs| must be rejected as a structural violation";
-
-  // the unperturbed fixture must pass
-  EXPECT_NO_THROW(block_sparse::atom_diag::get_operators(ad, hyb_coeffs));
 }
 
 /**

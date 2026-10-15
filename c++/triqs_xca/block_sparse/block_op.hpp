@@ -254,18 +254,11 @@ namespace triqs_xca::block_sparse {
   };
 
   /**
- * @brief Relative tolerance below which a hybridization coefficient coupling two symmetry sets counts as round-off
- *
- * A barred operator is stored with the block-sparsity pattern of its own symmetry set, so BlockOpSymQuartet rejects any cross-set entry
- * exceeding this tolerance times max|hyb_coeffs|. Structurally zero components of Delta(tau) give exactly zero coefficients, so the tolerance is tight.
- */
-  inline constexpr double sym_set_coupling_tol = 1.0e-12;
-
-  /**
  * @brief Throw unless hyb_coeffs is block diagonal in the symmetry sets named by sym_set_labels
  *
  * @details The precondition of BlockOpSymQuartet, factored out so that the Fq-only DiagramEvaluator constructor, which takes the quartet and
- * the coefficients separately, can apply it too. Entries at or below sym_set_coupling_tol * max|hyb_coeffs| are accepted.
+ * the coefficients separately, can apply it too. Cross-set entries must be exactly zero, and every entry must be finite.
+ * This is a representation constraint, not a physical symmetry test or a numerical approximation.
  *
  * @param[in] hyb_coeffs hybridization coefficients, shape (p, n, n)
  * @param[in] sym_set_labels symmetry set of each of the n orbital indices
