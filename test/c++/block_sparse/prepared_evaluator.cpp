@@ -84,7 +84,8 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   auto changed_G = G;
   changed_G *= 1.3;
   int n = coefficients.extent(1);
-  auto statistics = fermion_boson_statistics(model.n_hyb(), model.n_int());
+  auto interactions = hybridization_retarded_model(model.n_hyb(), model.n_int());
+  auto statistics = interactions.statistics();
   DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   constexpr auto all = nda::range::all;
   for (int direction : {0, 1}) {

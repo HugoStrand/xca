@@ -8,32 +8,24 @@
 #include <cppdlr/cppdlr.hpp>
 #include <nda/nda.hpp>
 
-#include <triqs_xca/backbone.hpp>
 #include <triqs_xca/diagram_assignment.hpp>
 
 using cppdlr::build_dlr_rf;
 
-using triqs_xca::backbone::Backbone;
-using triqs_xca::backbone::CorrelatorBackbone;
+using namespace triqs_xca;
 
 /**
  * @file backbone_indexing.cpp
  */
 
 /**
- * @brief Test the index bookkeeping of the Backbone classes
+ * @brief Check logical and flat assignments against independently derived diagram rules.
  *
- * @details For a fixed third-order topology and a fixed pair of pole indices, this loops over all 2^m line-direction indices and checks, for each of
- * them, that
- * 1. the generated vertices, edges and prefactor agree with values derived by hand from the diagram rules;
- * 2. all three ways of specifying a backbone (index vectors, per-component integer indices, and a single flat index) give that same diagram; and
- * 3. resetting a Backbone and setting it again reproduces a freshly constructed one, which is how the diagram loop in the evaluators reuses a single
- *    object.
- *
- * The pole indices are chosen so that omega_l < 0 and omega_l` > 0. As the directions vary, each hybridization line then takes both branches of
- * set_pole_inds: the branch that puts the K's on the two vertices of the line, and the branch that puts a K on every edge the line spans.
+ * @details All directions of a fixed third-order topology exercise both vertex
+ * and edge kernel placements, using one negative and one positive pole.
+ * Logical selection and flat decoding must each satisfy the same expectations.
  */
-TEST(Backbone, indexing) {
+TEST(DiagramAssignment, indexing) {
   nda::array<int, 2> topology = {{0, 2}, {1, 4}, {3, 5}}; // a third-order diagram topology
   int n                       = 4;
   int m                       = topology.extent(0);
@@ -123,30 +115,7 @@ TEST(Backbone, indexing) {
     exp_pKexp(1)  = line2_on_vertices ? 1 : topology(2, 1) - topology(2, 0) - 1;
     int exp_psign = ((fb(1) == 0) ? -1 : 1) * ((fb(2) == 0) ? -1 : 1);
 
-    auto expect_generated = [&](Backbone &X) {
-      for (int i = 0; i < m; ++i) { ASSERT_EQ(X.get_fb(i), fb(i)); }
-      for (int v = 0; v < 2 * m; ++v) {
-        ASSERT_EQ(X.has_vertex_bar(v), exp_bar[v]);
-        ASSERT_EQ(X.has_vertex_dag(v), exp_dag[v]);
-        ASSERT_EQ(X.get_vertex_hyb_ind(v), exp_hyb(v));
-        ASSERT_EQ(X.get_vertex_Ksign(v), exp_Ksgn(v));
-        ASSERT_EQ(X.get_vertex_orb(v), exp_orb(v));
-      }
-      for (int e = 0; e < 2 * m - 1; ++e) {
-        for (int p = 0; p < m - 1; ++p) { ASSERT_EQ(X.get_edge(e, p), exp_edges(e, p)); }
-      }
-      for (int i = 0; i < m - 1; ++i) {
-        ASSERT_EQ(X.get_pole_ind(i), pole_inds(i));
-        ASSERT_EQ(X.get_prefactor_Ksign(i), exp_pKsign(i));
-        ASSERT_EQ(X.get_prefactor_Kexp(i), exp_pKexp(i));
-      }
-      ASSERT_EQ(X.prefactor_sign, exp_psign);
-
-      // Direct logical preparation must satisfy the same hand-derived rules,
-      // independently of the legacy setters and the linear-index decoder.
-      auto const assignment = triqs_xca::prepare_assignment(
-        triqs_xca::DiagramTopology{topology}, n, triqs_xca::AssignmentIndices{fb, pole_inds, {orb_inds(1), orb_inds(3)}}, dlr_rf,
-        triqs_xca::DiagramKind::self_energy);
+    auto expect_generated = [&](DiagramAssignment const &assignment) {
       EXPECT_EQ(assignment.topology.order(), m);
       EXPECT_EQ(assignment.topology.special_vertex(), topology(0, 1));
       for (int a = 0; a < m; ++a) {
@@ -170,42 +139,25 @@ TEST(Backbone, indexing) {
       EXPECT_EQ(assignment.prefactor_sign, exp_psign);
     };
 
-    // --- Check the diagram generated from index vectors ---
-    auto B = Backbone(topology, n);
-    B.set_directions(fb);
-    B.set_pole_inds(pole_inds, dlr_rf);
-    B.set_orb_inds(orb_inds);
-    expect_generated(B);
+    auto logical = prepare_assignment(DiagramTopology{topology}, n,
+                                      AssignmentIndices{fb, pole_inds, {orb_inds(1), orb_inds(3)}}, dlr_rf, DiagramKind::self_energy);
+    expect_generated(logical);
+    EXPECT_EQ(logical.flat_index, -1);
 
-    // --- Check that a reset Backbone can be set again, as the diagram loop does ---
-    B.reset_all_inds();
-    B.set_directions(fb);
-    B.set_pole_inds(pole_inds, dlr_rf);
-    B.set_orb_inds(orb_inds);
-    expect_generated(B);
-
-    // --- Check that setting the indices component-wise gives the same diagram ---
-    auto B2 = Backbone(topology, n);
-    B2.set_directions(fb_ix);
-    B2.set_pole_inds(p_ix, dlr_rf);
-    B2.set_orb_inds(o_ix);
-    expect_generated(B2);
-
-    // --- Check that setting the indices from a single flat index gives the same diagram ---
     int f_ix = o_ix + p_ix * n * n + fb_ix * n * n * r * r;
-    auto B3  = Backbone(topology, n);
-    B3.set_flat_index(f_ix, dlr_rf);
-    expect_generated(B3);
-    ASSERT_EQ(B3.get_flat_index(), f_ix);
+    auto flat = prepare_assignment(DiagramTopology{topology}, n, dlr_rf, f_ix, DiagramKind::self_energy);
+    expect_generated(flat);
+    EXPECT_EQ(flat.flat_index, f_ix);
   }
 }
 
 TEST(DiagramAssignment, correlator_data_survives_its_source_and_copies_are_independent) {
   auto assignment = [] {
-    CorrelatorBackbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 2);
-    auto result = B.prepare_assignment(7, nda::vector<double>{-1.0, 2.0}); // orbital 1, pole 1, forward internal arc
-    B.set_orb_inds_of_0_and_vct0(-3, -3); // legacy observable mutation is not part of the internal assignment
-    B.reset_all_inds();
+    DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+    nda::vector<double> poles{-1.0, 2.0};
+    auto result = prepare_assignment(topology, 2, poles, 7, DiagramKind::correlator);
+    topology.arcs(0, 1) = 3;
+    poles(1) = -2.0; // preparation owns its recipe and retains neither source
     return result;
   }();
   EXPECT_EQ(assignment.flat_index, 7);
@@ -237,31 +189,29 @@ TEST(DiagramAssignment, correlator_data_survives_its_source_and_copies_are_indep
 }
 
 /**
- * @brief Check that a flat index outside [0, number of backbones) is rejected instead of wrapped around, and leaves the backbone unchanged
+ * @brief Check that a flat index outside [0, number of backbones) is rejected instead of wrapped around, without altering existing assignments
  */
-TEST(Backbone, flat_index_out_of_range) {
+TEST(DiagramAssignment, flat_index_out_of_range) {
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
   int n                       = 3;
   nda::vector<double> poles   = {1.3, -0.8};
 
-  auto check = [&](Backbone &B, int n_flat) {
-    EXPECT_NO_THROW(B.set_flat_index(n_flat - 1, poles));
-    EXPECT_THROW(B.set_flat_index(n_flat, poles), std::invalid_argument);
-    EXPECT_THROW(B.set_flat_index(-1, poles), std::invalid_argument);
-    EXPECT_EQ(B.get_flat_index(), n_flat - 1);
+  DiagramTopology diagram{topology};
+  auto check = [&](DiagramKind kind, long expected_count) {
+    EXPECT_EQ(count_assignments(2, n, poles.size(), kind), expected_count);
+    auto last = prepare_assignment(diagram, n, poles, expected_count - 1, kind);
+    EXPECT_THROW(prepare_assignment(diagram, n, poles, expected_count, kind), std::invalid_argument);
+    EXPECT_THROW(prepare_assignment(diagram, n, poles, -1, kind), std::invalid_argument);
+    EXPECT_EQ(last.flat_index, expected_count - 1);
   };
-
-  // 2^m n^(m-1) p^(m-1) self-energy and 2^(m-1) n^(m-1) p^(m-1) correlator backbones
-  auto B = Backbone(topology, n);
-  check(B, 24);
-  auto C = CorrelatorBackbone(topology, n);
-  check(C, 12);
+  check(DiagramKind::self_energy, 24);
+  check(DiagramKind::correlator, 12);
 }
 
 /**
  * @brief Check backbone counts and flat indices beyond the range of an int, and that a count beyond the range of a long is rejected
  */
-TEST(Backbone, flat_indices_beyond_int) {
+TEST(DiagramAssignment, flat_indices_beyond_int) {
   auto crossing = [](int m) { // maximally crossing topology of order m
     nda::array<int, 2> topology(m, 2);
     for (int i = 0; i < m; ++i) topology(i, nda::range::all) = nda::vector<int>{i, i + m};
@@ -275,20 +225,18 @@ TEST(Backbone, flat_indices_beyond_int) {
 
   // 2^m n^(m-1) p^(m-1) self-energy and 2^(m-1) n^(m-1) p^(m-1) correlator backbones
   int m = 5, n = 14, p = 20;
-  auto B = Backbone(crossing(m), n);
-  auto C = CorrelatorBackbone(crossing(m), n);
-  ASSERT_EQ(B.num_flat_indices(p), 196689920000L);
-  ASSERT_EQ(C.num_flat_indices(p), 98344960000L);
+  ASSERT_EQ(count_assignments(m, n, p, DiagramKind::self_energy), 196689920000L);
+  ASSERT_EQ(count_assignments(m, n, p, DiagramKind::correlator), 98344960000L);
 
-  // the last flat index has every line forward, every pole index p - 1 and every summed orbital index n - 1
-  for (Backbone *X : {&B, static_cast<Backbone *>(&C)}) {
-    long last = X->num_flat_indices(p) - 1;
-    X->set_flat_index(last, poles(p));
-    EXPECT_EQ(X->get_flat_index(), last);
-    for (int i = (X == &B ? 0 : 1); i < m; ++i) EXPECT_EQ(X->get_fb(i), 1);
-    for (int i = 0; i < m - 1; ++i) EXPECT_EQ(X->get_pole_ind(i), p - 1);
+  // The last index has every internal digit at its maximum.
+  for (auto kind : {DiagramKind::self_energy, DiagramKind::correlator}) {
+    long last = count_assignments(m, n, p, kind) - 1;
+    auto assignment = prepare_assignment(DiagramTopology{crossing(m)}, n, poles(p), last, kind);
+    EXPECT_EQ(assignment.flat_index, last);
+    for (int i = (kind == DiagramKind::self_energy ? 0 : 1); i < m; ++i) EXPECT_EQ(assignment.directions(i), 1);
+    for (int i = 0; i < m - 1; ++i) EXPECT_EQ(assignment.poles(i), p - 1);
     for (int v = 1; v < 2 * m; ++v)
-      if (v != m) EXPECT_EQ(X->get_orb_ind(v), n - 1);
+      if (v != m) EXPECT_EQ(assignment.vertices[v].orbital, n - 1);
   }
 
   // a flat index with mixed digits, f = o_ix + n^(m-1) (p_ix + p^(m-1) fb_ix), where the pole index p_ix alone exceeds the range of an int
@@ -300,16 +248,15 @@ TEST(Backbone, flat_indices_beyond_int) {
   for (int i = m9 - 2; i >= 0; --i) o_ix = n9 * o_ix + orb[i];
   for (int i = 0; i < m9 - 1; ++i) n_o *= n9, n_p *= p9;
   ASSERT_GT(p_ix, long{std::numeric_limits<int>::max()});
-  auto B9 = Backbone(crossing(m9), n9);
-  B9.set_flat_index(o_ix + n_o * (p_ix + n_p * fb_ix), poles(p9));
-  for (int i = 0; i < m9; ++i) EXPECT_EQ(B9.get_fb(i), fb[i]);
-  for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(B9.get_pole_ind(i), pole[i]);
-  for (int i = 1; i < m9; ++i) EXPECT_EQ(B9.get_orb_ind(i), orb[i - 1]); // line i joins vertices i and i + m
+  auto assignment = prepare_assignment(DiagramTopology{crossing(m9)}, n9, poles(p9), o_ix + n_o * (p_ix + n_p * fb_ix), DiagramKind::self_energy);
+  for (int i = 0; i < m9; ++i) EXPECT_EQ(assignment.directions(i), fb[i]);
+  for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(assignment.poles(i), pole[i]);
+  for (int i = 1; i < m9; ++i) EXPECT_EQ(assignment.vertices[i].orbital, orb[i - 1]);
 
-  // overflow of n^(m-1), of p^(m-1), and of the product
-  EXPECT_THROW(Backbone(crossing(18), 14), std::overflow_error);
-  EXPECT_THROW(Backbone(crossing(14), 2).num_flat_indices(40), std::overflow_error);
-  EXPECT_THROW(Backbone(crossing(17), 14).num_flat_indices(40), std::overflow_error);
+  // Overflow of n^(m-1), of p^(m-1), and of the product.
+  EXPECT_THROW(count_assignments(18, 14, 1, DiagramKind::self_energy), std::overflow_error);
+  EXPECT_THROW(count_assignments(14, 2, 40, DiagramKind::self_energy), std::overflow_error);
+  EXPECT_THROW(count_assignments(17, 14, 40, DiagramKind::self_energy), std::overflow_error);
 }
 
 TEST(DiagramAssignment, logical_and_flat_selections_have_explicit_semantics) {
@@ -361,20 +308,25 @@ TEST(DiagramAssignment, zero_poles_use_vertex_kernels_in_both_directions) {
   }
 }
 
-TEST(Backbone, complete_assignment_does_not_require_a_reset) {
-  Backbone B(nda::array<int, 2>{{0, 2}, {1, 3}}, 1);
+TEST(DiagramAssignment, independent_preparation_has_no_reset_state) {
+  DiagramTopology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   nda::vector<double> poles{-1.0, 2.0};
-  B.set_flat_index(1, poles); // backward internal arc with positive pole: vertex kernels, negative prefactor
-  B.set_flat_index(5, poles); // forward internal arc with positive pole: edge kernels, positive prefactor
-  EXPECT_EQ(B.prefactor_sign, 1);
-  EXPECT_EQ(B.get_vertex_Ksign(1), 0);
-  EXPECT_EQ(B.get_vertex_Ksign(3), 0);
-  EXPECT_EQ(B.get_edge(1, 0), 1);
-  EXPECT_EQ(B.get_edge(2, 0), 1);
-  EXPECT_THROW(B.set_flat_index(8, poles), std::invalid_argument);
-  EXPECT_EQ(B.get_flat_index(), 5);
-  EXPECT_EQ(B.prefactor_sign, 1);
-  EXPECT_EQ(B.get_edge(1, 0), 1);
+  auto vertex = prepare_assignment(topology, 1, poles, 1, DiagramKind::self_energy);
+  auto edge = prepare_assignment(topology, 1, poles, 5, DiagramKind::self_energy);
+  EXPECT_EQ(edge.prefactor_sign, 1);
+  EXPECT_EQ(edge.vertices[1].kernel_sign, 0);
+  EXPECT_EQ(edge.vertices[3].kernel_sign, 0);
+  EXPECT_EQ(edge.edge_kernels(1, 0), 1);
+  EXPECT_EQ(edge.edge_kernels(2, 0), 1);
+  EXPECT_THROW(prepare_assignment(topology, 1, poles, 8, DiagramKind::self_energy), std::invalid_argument);
+  EXPECT_EQ(edge.flat_index, 5);
+  EXPECT_EQ(edge.prefactor_sign, 1);
+  EXPECT_EQ(edge.edge_kernels(1, 0), 1);
+  EXPECT_EQ(vertex.flat_index, 1);
+  EXPECT_EQ(vertex.prefactor_sign, -1);
+  EXPECT_EQ(vertex.vertices[1].kernel_sign, 1);
+  EXPECT_EQ(vertex.vertices[3].kernel_sign, -1);
+  EXPECT_EQ(nda::sum(nda::abs(vertex.edge_kernels)), 0);
 }
 
 TEST(DiagramAssignment, logical_preparation_does_not_require_a_representable_flat_count) {

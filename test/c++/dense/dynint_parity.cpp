@@ -23,9 +23,9 @@ namespace test_utils = triqs_xca::test_utils;
  *
  * @brief Regression tests of the dense diagram evaluator with dynamical interactions
  *
- * @details Statistics enters the diagram evaluation only through the fermionic permutation parity, where Backbone::get_parity() treats a vertex
- * as fermionic iff its orbital index is smaller than n_hyb = n - n_int. Every Backbone and CorrelatorBackbone therefore has to be constructed
- * with n_int, since the default n_int = 0 classifies the interaction lines as fermionic. Only a crossing topology exposes the parity error, so
+ * @details Permutation signs use explicit interaction statistics from the model catalogue.
+ * Both plain and paired evaluation must classify retarded interactions as bosonic.
+ * Only a crossing topology exposes an incorrect all-fermionic classification, so
  * the tests use the order-2 topology {{0,2},{1,3}}, which is odd while all of its sub-matchings are even. The flat-index overloads of the
  * self-energy and the single-particle Green's function are checked for every evaluator in flat_index_all_evals.cpp; the by-pairs
  * self-energy, which only the dense evaluator has, is checked here. The tests of the single-subspace requirement cover both the dense
@@ -96,8 +96,8 @@ namespace {
 /**
  * @brief Check that compute_self_energy_by_pairs() agrees with compute_self_energy() in the presence of dynamical interactions
  *
- * @details The by-pairs routine evaluates both directions of the hybridization line attached to vertex 0 in one pass, and has to construct its
- * Backbone with n_int like the plain routine does.
+ * @details The by-pairs routine evaluates both directions of the hybridization line attached to vertex 0 in one pass, and must use the same
+ * interaction statistics as the plain routine.
  */
 TEST(DenseDynint, self_energy_by_pairs_agrees) {
 
@@ -158,7 +158,7 @@ TEST(DenseDynint, self_energy_by_pairs_flat_index_overloads_agree) {
 
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
 
-  // stride n_p of fb_ix in the flat index, from f_ix_max = n_p * fb_ix_max with fb_ix_max = 2^m for the Backbone
+  // stride n_p of fb_ix in the flat index, from f_ix_max = n_p * fb_ix_max with fb_ix_max = 2^m for self-energy assignments
   int order    = topology.extent(0);
   long f_ix_max = D.get_num_self_energy_backbones(topology);
   int n_p      = f_ix_max / (1 << order);

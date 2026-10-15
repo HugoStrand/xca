@@ -63,7 +63,7 @@ DiagramAssignment prepare_assignment(DiagramTopology const &topology, int flavou
 DiagramAssignment prepare_assignment(DiagramTopology const &topology, int flavours, nda::vector_const_view<double> poles,
                                      long flat_index, DiagramKind kind);
 
-// Shared preparation pieces used by the temporary mutable Backbone adapter.
+// Shared logical preparation of vertex and kernel recipes.
 // They return fresh values: no previous assignment or reset is required.
 std::vector<VertexAssignment> prepare_vertices(DiagramTopology const &topology, nda::vector_const_view<int> directions, DiagramKind kind);
 

@@ -5,12 +5,6 @@
 
 namespace triqs_xca {
 
-std::vector<Statistics> fermion_boson_statistics(int fermions, int bosons) {
-  auto model = hybridization_retarded_model(fermions, bosons);
-  auto statistics = model.statistics();
-  return {statistics.begin(), statistics.end()};
-}
-
 int permutation_sign(DiagramTopology const &diagram, std::span<Statistics const> vertices) {
   if (vertices.size() != static_cast<std::size_t>(2 * diagram.order())) throw std::invalid_argument("wrong number of vertex statistics");
   nda::vector<bool> fermionic(vertices.size());

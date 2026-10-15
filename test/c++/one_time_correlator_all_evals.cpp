@@ -14,7 +14,7 @@
 
 #include <triqs/operators/many_body_operator.hpp>
 
-#include <triqs_xca/backbone.hpp>
+#include <triqs_xca/diagram_assignment.hpp>
 #include <triqs_xca/topology.hpp>
 
 #include "test_utils/evaluators.hpp"
@@ -217,20 +217,20 @@ namespace {
    */
   nda::vector<long> sign_changing_backbones(test_utils::EvalModel const &m, topo_t t, bool fermionic_legs, Flip flip) {
     long n_hyb = m.n_hyb();
-    CorrelatorBackbone B(nda::array<int, 2>(t), static_cast<int>(n_hyb + m.n_int()), static_cast<int>(m.n_int()));
-    auto sign = [&](bool legs, bool interaction_lines_bosonic) {
+    triqs_xca::DiagramTopology diagram{nda::array<int, 2>(t)};
+    int flavours = n_hyb + m.n_int();
+    auto sign = [&](triqs_xca::DiagramAssignment const &assignment, bool legs, bool interaction_lines_bosonic) {
       nda::array<bool, 1> fermionic(t.size());
-      for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || B.get_vertex_orb(static_cast<int>(v)) < n_hyb;
+      for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || assignment.vertices[v].orbital < n_hyb;
       fermionic(0)       = legs;
       fermionic(t(0, 1)) = legs;
       return topology_parity(fermionic_topology(t, fermionic));
     };
     std::vector<long> fs;
-    for (long f = 0; f < B.num_flat_indices(m.hyb_poles.size()); ++f) {
-      B.set_flat_index(f, m.hyb_poles);
-      int alt = flip == Flip::legs ? sign(!fermionic_legs, true) : sign(fermionic_legs, false);
-      if (sign(fermionic_legs, true) != alt) fs.push_back(f);
-      B.reset_all_inds();
+    for (long f = 0; f < triqs_xca::count_assignments(diagram.order(), flavours, m.hyb_poles.size(), triqs_xca::DiagramKind::correlator); ++f) {
+      auto assignment = triqs_xca::prepare_assignment(diagram, flavours, m.hyb_poles, f, triqs_xca::DiagramKind::correlator);
+      int alt = flip == Flip::legs ? sign(assignment, !fermionic_legs, true) : sign(assignment, fermionic_legs, false);
+      if (sign(assignment, fermionic_legs, true) != alt) fs.push_back(f);
     }
     nda::vector<long> v(static_cast<long>(fs.size()));
     for (long i = 0; i < v.size(); ++i) v(i) = fs[i];

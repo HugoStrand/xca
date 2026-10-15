@@ -8,10 +8,6 @@
 
 namespace triqs_xca {
 
-/// Model-boundary adapter for the current hybridization-then-interaction layout.
-/// Preparation itself accepts any ordering of explicit statistics.
-std::vector<Statistics> fermion_boson_statistics(int fermions, int bosons);
-
 /// Permutation parity after removing every arc with a bosonic endpoint.
 /// Order, direction, kernel, and Python observable prefactors are separate.
 int permutation_sign(DiagramTopology const &topology, std::span<Statistics const> vertices);

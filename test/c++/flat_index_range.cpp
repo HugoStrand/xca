@@ -29,11 +29,11 @@ namespace test_utils   = triqs_xca::test_utils;
  * @brief The range of the flat indices of both diagram evaluators: the routines outside the API that flat_index_all_evals.cpp checks, and
  * flat indices beyond the range of an int
  *
- * @details Both evaluators decode a flat index with Backbone::set_flat_index, which throws std::invalid_argument outside [0, number of
+ * @details Both evaluators use shared flat-index decoding, which throws std::invalid_argument outside [0, number of
  * backbones). The flat-index overloads of the self-energy and the single-particle Green's function, and the calls that follow a call
  * that threw, are checked for every evaluator in flat_index_all_evals.cpp; here the dense by-pairs self-energy and the one-time
  * correlators, and every flat-index overload at flat indices beyond the range of an int. The dense self-energy accumulates in a member,
- * so a call that throws part way through a flat-index vector must not leave a partial sum behind for the by-pairs overloads. Backbone
+ * so a call that throws part way through a flat-index vector must not leave a partial sum behind for the by-pairs overloads. Assignment
  * counts and flat indices are longs, since the counts exceed the range of an int already at moderate order.
  */
 

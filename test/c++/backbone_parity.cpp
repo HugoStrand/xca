@@ -2,19 +2,18 @@
 
 #include <gtest/gtest.h>
 
-#include <triqs_xca/backbone.hpp>
+#include <triqs_xca/diagram_assignment.hpp>
 #include <triqs_xca/diagram_sign.hpp>
 #include <triqs_xca/topology.hpp>
 
 /**
  * @file backbone_parity.cpp
  *
- * @brief Tests of explicit diagram sign preparation and the Backbone::get_parity compatibility adapter
+ * @brief Tests of explicit diagram sign preparation.
  *
- * @details A vertex is fermionic iff its orbital index is smaller than n_hyb = n - n_int, with -2 and -3 as the external-operator sentinels of
- * the correlator path. The pairs containing a bosonic vertex are dropped by topology::fermionic_topology() and the permutation parity of the
- * rest is returned. Since n_int defaults to 0, a two-argument construction calls every vertex fermionic. The third-order crossing topology is
- * the cheapest one on which it matters which line is bosonic, the order-2 crossing topology has only single-pair sub-matchings.
+ * @details Statistics come from the interaction catalogue and observable boundary.
+ * Arcs with a bosonic endpoint are dropped before computing permutation parity.
+ * The third-order crossing topology distinguishes which internal arc is bosonic.
  */
 
 namespace {
@@ -32,23 +31,14 @@ namespace {
    * orb1 and orb2
    */
   int parity_of(int n_int_arg, int orb_kap, int orb_mu, int orb1, int orb2) {
-    Backbone B(crossing3, n_ext, n_int_arg);
     nda::vector<int> fb = {1, 0, 1};
-    B.set_directions(fb);
-    nda::vector<int> orb = nda::zeros<int>(6);
-    orb(crossing3(1, 0)) = orb1;
-    orb(crossing3(1, 1)) = orb1;
-    orb(crossing3(2, 0)) = orb2;
-    orb(crossing3(2, 1)) = orb2;
-    B.set_orb_inds(orb);
-    B.set_orb_inds_of_0_and_vct0(orb_kap, orb_mu);
     auto assignment = triqs_xca::prepare_assignment(
       triqs_xca::DiagramTopology{crossing3}, n_ext, triqs_xca::AssignmentIndices{fb, {0, 0}, {orb1, orb2}}, nda::vector<double>{1.0},
       triqs_xca::DiagramKind::self_energy);
-    auto statistics = triqs_xca::fermion_boson_statistics(n_ext - n_int_arg, n_int_arg);
+    auto model = triqs_xca::hybridization_retarded_model(n_ext - n_int_arg, n_int_arg);
+    auto statistics = model.statistics();
     auto signs = triqs_xca::prepare_endpoint_signs(assignment, statistics);
     int prepared = signs(statistics[orb_kap], statistics[orb_mu]);
-    EXPECT_EQ(B.get_parity(), prepared) << "legacy statistics translation";
     return prepared; // the hand-derived table checks explicit preparation directly
   }
 
@@ -72,7 +62,7 @@ namespace {
  *   F F    B      B     | 0       | {{0,1}}            |  +1
  *   B B    B      B     | none    | empty              |  +1
  */
-TEST(BackboneParity, interaction_lines_drop_out_of_the_permutation_parity) {
+TEST(DiagramSigns, interaction_lines_drop_out_of_the_permutation_parity) {
 
   // the all-fermionic reference
   ASSERT_EQ(triqs_xca::topology::topology_parity(crossing3), 1) << "the table below is written against an even all-fermionic topology";
@@ -89,9 +79,9 @@ TEST(BackboneParity, interaction_lines_drop_out_of_the_permutation_parity) {
 }
 
 /**
- * @brief Check that a two-argument construction, i.e. n_int = 0, calls every vertex fermionic
+ * @brief Check the negative control that assigns fermionic statistics to every flavour
  */
-TEST(BackboneParity, a_two_argument_construction_calls_every_vertex_fermionic) {
+TEST(DiagramSigns, all_fermionic_catalogue_is_a_distinguishable_negative_control) {
 
   int all_fermionic = triqs_xca::topology::topology_parity(crossing3);
 
@@ -104,60 +94,36 @@ TEST(BackboneParity, a_two_argument_construction_calls_every_vertex_fermionic) {
     }
   }
 
-  // check that the two constructions differ somewhere
-  EXPECT_NE(parity_of(n_int, 0, 1, 0, o_int), parity_of(0, 0, 1, 0, o_int)) << "line 2 bosonic is the row that distinguishes the two constructions";
+  // check that the two catalogues differ somewhere
+  EXPECT_NE(parity_of(n_int, 0, 1, 0, o_int), parity_of(0, 0, 1, 0, o_int)) << "line 2 bosonic is the row that distinguishes the two catalogues";
 }
 
 /**
- * @brief Check that the correlator sentinels -2 and -3 are equivalent to a fermionic resp. an interaction orbital index on both vertices of
- * line 0
+ * @brief Explicit observable statistics agree with the corresponding model flavours.
  */
-TEST(BackboneParity, correlator_external_flags_agree_with_explicit_orbital_indices) {
-
-  auto correlator_parity = [](int n_int_arg, int flag, int orb1, int orb2) {
-    CorrelatorBackbone B(crossing3, n_ext, n_int_arg);
-    nda::vector<int> fb = {0, 1}; // m - 1 entries: no line is attached to vertex 0
-    B.set_directions(fb);
-    nda::vector<int> orb = nda::zeros<int>(6);
-    orb(crossing3(1, 0)) = orb1;
-    orb(crossing3(1, 1)) = orb1;
-    orb(crossing3(2, 0)) = orb2;
-    orb(crossing3(2, 1)) = orb2;
-    B.set_orb_inds(orb);
-    B.set_orb_inds_of_0_and_vct0(flag, flag);
-    return B.get_parity();
+TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
+  constexpr auto F = triqs_xca::Statistics::fermionic, B = triqs_xca::Statistics::bosonic;
+  auto correlator_parity = [](int n_int_arg, triqs_xca::Statistics external, int orb1, int orb2) {
+    auto assignment = triqs_xca::prepare_assignment(
+      triqs_xca::DiagramTopology{crossing3}, n_ext, triqs_xca::AssignmentIndices{{0, 1}, {0, 0}, {orb1, orb2}},
+      nda::vector<double>{1.0}, triqs_xca::DiagramKind::correlator);
+    auto model = triqs_xca::hybridization_retarded_model(n_ext - n_int_arg, n_int_arg);
+    return triqs_xca::prepare_endpoint_signs(assignment, model.statistics())(external, external);
   };
 
   for (int orb1 : {0, o_int}) {
     for (int orb2 : {1, o_int}) {
       SCOPED_TRACE("orb1 = " + std::to_string(orb1) + ", orb2 = " + std::to_string(orb2));
-      EXPECT_EQ(correlator_parity(n_int, -2, orb1, orb2), parity_of(n_int, 0, 1, orb1, orb2)) << "-2 must behave as a fermionic orbital index";
-      EXPECT_EQ(correlator_parity(n_int, -3, orb1, orb2), parity_of(n_int, o_int, o_int, orb1, orb2))
-         << "-3 must behave as an interaction orbital index";
+      EXPECT_EQ(correlator_parity(n_int, F, orb1, orb2), parity_of(n_int, 0, 1, orb1, orb2)) << "fermionic observable boundary";
+      EXPECT_EQ(correlator_parity(n_int, B, orb1, orb2), parity_of(n_int, o_int, o_int, orb1, orb2))
+         << "bosonic observable boundary";
     }
   }
 
-  // the sentinels are read before n_hyb, so with fermionic internal lines the external flag alone decides the parity
-  EXPECT_EQ(correlator_parity(0, -3, 0, 1), correlator_parity(n_int, -3, 0, 1));
-  EXPECT_EQ(correlator_parity(0, -2, 0, 1), correlator_parity(n_int, -2, 0, 1));
-  EXPECT_NE(correlator_parity(n_int, -2, 0, 1), correlator_parity(n_int, -3, 0, 1)) << "vacuous test: the two sentinels are indistinguishable here";
-}
-
-/**
- * @brief Check that an unset orbital index, -1, is rejected by get_parity()
- */
-TEST(BackboneParity, an_unset_orbital_index_is_rejected) {
-
-  Backbone B(crossing3, n_ext, n_int);
-  nda::vector<int> fb = {1, 0, 1};
-  B.set_directions(fb);
-  B.set_orb_inds(nda::zeros<int>(6));
-  B.set_orb_inds_of_0_and_vct0(-1, 0);
-
-  try {
-    B.get_parity();
-    FAIL() << "expected std::invalid_argument for an unset orbital index";
-  } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("is not set"), std::string::npos) << e.what(); }
+  // With fermionic internal lines the observable boundary alone decides the parity.
+  EXPECT_EQ(correlator_parity(0, B, 0, 1), correlator_parity(n_int, B, 0, 1));
+  EXPECT_EQ(correlator_parity(0, F, 0, 1), correlator_parity(n_int, F, 0, 1));
+  EXPECT_NE(correlator_parity(n_int, F, 0, 1), correlator_parity(n_int, B, 0, 1)) << "vacuous test: the two boundaries are indistinguishable here";
 }
 
 TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {

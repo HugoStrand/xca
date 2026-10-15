@@ -48,7 +48,7 @@ def make_evaluator(dynint_ops, dynint_coeffs, poles, hyb_coeffs=None, e_up=-0.3,
 def sigma_of_order(S, order):
     """ The self-energy of one expansion order on the bare pseudo-particle propagator, since the S+/S-
     interaction contributes nothing at order 2 on this model. The only factor is the overall minus of the
-    solver, the topology parity is already carried by Backbone::get_parity() inside C++. """
+    solver, the topology parity is already included by shared sign preparation inside C++. """
     out = None
     for _sign, topology in all_connected_pairings(order):
         X = S.d.compute_self_energy(S.G0, np.array(topology, dtype=np.int32))

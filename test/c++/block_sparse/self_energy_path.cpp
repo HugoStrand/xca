@@ -1,12 +1,10 @@
 #include <gtest/gtest.h>
 
 #include <triqs_xca/block_sparse/self_energy_path.hpp>
-#include <triqs_xca/backbone.hpp>
 
 namespace {
 
 using namespace triqs_xca::block_sparse;
-using triqs_xca::backbone::Backbone;
 using triqs_xca::prepare_assignment;
 using triqs_xca::DiagramTopology;
 using triqs_xca::DiagramKind;
@@ -77,7 +75,7 @@ TEST(SelfEnergyPath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(values(reversed[i].propagator_blocks), (std::vector<int>{i / 2}));
   }
   EXPECT_EQ(assignment.flat_index, 1); // the walker neither resets nor decodes
-  EXPECT_EQ(paths[0].flat_index, 0); // copies survive workspace and backbone reuse
+  EXPECT_EQ(paths[0].flat_index, 0); // copies survive workspace and assignment reuse
   EXPECT_EQ(values(paths[0].propagator_blocks), (std::vector<int>{1}));
   EXPECT_EQ(values(paths[0].dimensions), (std::vector<int>{1, 2, 1}));
 }
@@ -148,17 +146,17 @@ TEST(SelfEnergyPath, crossing_path_continues_after_the_special_vertex) {
   EXPECT_EQ(values(paths[0].dimensions), (std::vector<int>{1, 2, 1, 2, 1}));
 }
 
-TEST(SelfEnergyPath, discovery_is_independent_of_source_backbone_mutation) {
+TEST(SelfEnergyPath, discovery_is_independent_of_source_assignment_mutation) {
   auto F = ladder(2);
   auto G = propagator();
-  Backbone B(nda::array<int, 2>{{0, 1}}, 2);
-  auto const assignment = B.prepare_assignment(0, nda::vector<double>{1.0});
+  DiagramTopology topology{nda::array<int, 2>{{0, 1}}};
+  auto source = prepare_assignment(topology, 2, nda::vector<double>{1.0}, 0, DiagramKind::self_energy);
+  auto const assignment = source;
   SelfEnergyPath workspace(1);
   std::vector<SelfEnergyPath> paths;
   visit_self_energy_paths(G, assignment, F, OperatorSupports(F), workspace, [&](auto const &path) {
     paths.push_back(path);
-    B.reset_all_inds(); // would change the remaining paths if the walker still read B
-    B.set_flat_index(1, nda::vector<double>{1.0});
+    source = prepare_assignment(topology, 2, nda::vector<double>{1.0}, 1, DiagramKind::self_energy);
   });
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
