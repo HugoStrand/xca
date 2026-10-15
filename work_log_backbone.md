@@ -17,7 +17,8 @@
 | 3d | `6de60bc` | Shared directed interactions and partial-contraction descriptions; all 70 CTest entries passed |
 | Materialization refresh | `5234d69` | Dense coefficient updates replace old bars; all 70 CTest entries passed |
 | 4a | `984e4bc` | Self-energy operands bound before arithmetic; all 70 CTest entries passed |
-| Remaining 3–7 | None | Model metadata, kernel/observable preparation, policy, and interface cleanup pending |
+| 5a | `eff9128` | Correlator fragment and join planning extracted; all 71 CTest entries passed |
+| Remaining 3–7 | None | Shared model/observable metadata, kernel preparation, policy, and interface cleanup pending |
 
 ## Planning checkpoint — 2026-10-15
 
@@ -514,3 +515,61 @@ Logs: `/tmp/xca-backbone-operands-{configure,build,focused,test}.log`.
 Next: finish shared model/kernel preparation and apply the planning/execution
 boundary to correlator fragments and joins. Numerical/support policy and final
 selection/adapter cleanup remain required; the persistent goal is active.
+
+
+## Stage 5a — correlator fragments and joins (`eff9128`)
+
+The correlator evaluator previously interleaved two block walks, their arithmetic,
+and external-operator closure checks. It now has separate discovery, binding, and
+execution functions. Read [correlator_plan.hpp](c++/triqs_xca/block_sparse/correlator_plan.hpp)
+and its [implementation](c++/triqs_xca/block_sparse/correlator_plan.cpp), then
+`eval_correlator_fragment`, `eval_correlator_join`, and their orchestrating
+`eval_correlator` overload in
+[diagram_evaluator.cpp](c++/triqs_xca/block_sparse/diagram_evaluator.cpp).
+
+A fragment describes an inclusive propagator-edge interval, its start/end sectors,
+and owned path/dimension metadata. A one-edge interval has no internal vertices
+and remains a valid fragment. Binding supplies borrowed operator and propagator
+views, using the same internal-vertex binder as self-energy. That binder moved
+unchanged to [operator_binding.cpp](c++/triqs_xca/block_sparse/operator_binding.cpp).
+The old block-index-consuming vertex/edge arithmetic adapters were removed.
+
+The orchestrator executes fragments in their existing side/start-sector order
+and retains the resulting matrices and end-sector maps for one assignment.
+The join planner streams compatible right/left fragment pairs for each mu
+operator and prescribes the closing kap operators and observable destinations.
+Join arithmetic computes the shared left–mu–right product once, then its traces;
+it makes no connectivity or closure decisions. Fragment results have their actual
+matrix dimensions; unused sectors no longer preallocate padded result arrays.
+No collection of all diagram assignments or all observable pairs is built.
+
+Matrix/convolution order, the left-fragment reflection, prefactor placement,
+external statistics, and mu/start/kap accumulation order are unchanged. Current
+mask placement is deliberately retained: fragment walks inspect reached sectors,
+and join discovery applies its old endpoint checks. There is no newly introduced
+starting-edge check. Numerical/support policy is still a separate required stage.
+
+Paths and join lists own their metadata; bound numerical views borrow the model,
+current propagator, or external-operator inputs. They must be used with the matching
+assignment/mesh before their owners change. Execution returns scratch views that
+the orchestrator copies immediately into retained fragment results. No numerical
+state is cached across propagator calls.
+
+The new [correlator planning tests](test/c++/block_sparse/correlator_plan.cpp) use
+an explicitly specified 1/2/1-dimensional sector ladder, independently of the
+numerical evaluator. They check crossing paths, owned metadata after workspace
+reuse, borrowed operands, reached-sector masks, and an empty fragment after the
+other walk's final starting sector fails. First-order joins check rectangular
+external operands, output indices, trace closure, absent fragments, and masks.
+Existing shared correlator and analytic suites continue to validate values,
+statistics, reflection, mixed interactions, and complex basis changes.
+
+Validation: CPU configure/build, all 15 focused CTest entries, and all 71 CPU
+CTest entries passed (full suite 56.68 s). Generated bindings are unchanged.
+Logs: `/tmp/xca-backbone-correlator-{configure,build,focused,test}.log`.
+
+Next: finish shared model/observable metadata and kernel preparation, then revise
+numerical/support policy and consolidate selection interfaces. The block-specific
+fragment/join extraction is complete, but the overall stage-3/5 common metadata
+boundary, stage 6, final adapter removal, CPU timing checks, and completion audit
+remain required. The persistent goal stays active.
