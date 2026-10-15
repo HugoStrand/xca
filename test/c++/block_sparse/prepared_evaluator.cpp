@@ -63,12 +63,12 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   CorrelatorBackbone legacy(topology.arcs, n, evaluator.n_int);
   auto op = identity(G);
   auto expected = evaluator.eval_correlator(G, legacy, {op}, {op}, f, false);
-  auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, false);
+  auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, ObservableBoundary{Statistics::bosonic, Statistics::bosonic});
   expect_close(actual, expected);
 
   auto changed_G = G;
   changed_G *= 1.1;
-  auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, false);
+  auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, ObservableBoundary{Statistics::bosonic, Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
   EXPECT_EQ(assignment.flat_index, -1);
   EXPECT_EQ(assignment.directions(0), -1);

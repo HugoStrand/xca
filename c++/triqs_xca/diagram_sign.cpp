@@ -6,10 +6,9 @@
 namespace triqs_xca {
 
 std::vector<Statistics> fermion_boson_statistics(int fermions, int bosons) {
-  if (fermions < 0 || bosons < 0) throw std::invalid_argument("negative number of interaction flavours");
-  std::vector<Statistics> result(fermions, Statistics::fermionic);
-  result.insert(result.end(), bosons, Statistics::bosonic);
-  return result;
+  auto model = hybridization_retarded_model(fermions, bosons);
+  auto statistics = model.statistics();
+  return {statistics.begin(), statistics.end()};
 }
 
 int permutation_sign(DiagramTopology const &diagram, std::span<Statistics const> vertices) {

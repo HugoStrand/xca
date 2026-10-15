@@ -56,7 +56,9 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
     private:
-    std::vector<Statistics> interaction_statistics_ = fermion_boson_statistics(n_hyb, n_int);
+    InteractionModel interactions_ = hybridization_retarded_model(n_hyb, n_int);
+    nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
+
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
     nda::array_const_view<dcomplex, 3> native_propagator(gf_vt G_ppsc) const;
 
@@ -87,7 +89,7 @@ namespace triqs_xca::dense {
     C2PY_IGNORE void eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment);
     C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
       nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
-      nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic = true);
+      nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, ObservableBoundary boundary = {});
 
     // evaluate a diagram of a given order and topology in dense storage
     // (i.e., evaluate and sum all backbones with different orbital indices, poles, and hybridization line directions)

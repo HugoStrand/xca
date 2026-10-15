@@ -271,10 +271,10 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, DiagramAssignment const &assignment, SelfEnergyPath &path) {
-  auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
+  auto const signs = prepare_endpoint_signs(assignment, interactions_.statistics());
   auto const kernels = bind_kernels(assignment, hyb);
   visit_self_energy_paths(Gt, assignment, Fq, path, [&](SelfEnergyPath const &prepared) {
-    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interaction_statistics_, signs);
+    auto contribution = bind_self_energy_contribution(Gt, assignment, prepared, Fq, hyb, interactions_.statistics(), signs);
     auto result = eval_self_energy_contribution(assignment, kernels, contribution);
     // Preserve the current numerical policy outside the arithmetic executor.
     if (nda::max_element(nda::abs(result)) > 1e-16) Sigma.add_block(contribution.path.output_sector, result);
@@ -477,7 +477,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Co
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, CorrelatorBackbone &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
                                                           long f_ix, bool is_fermionic) {
   auto const assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::correlator);
-  return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), is_fermionic);
+  return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), uniform_observable(is_fermionic));
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
@@ -515,7 +515,7 @@ void DiagramEvaluator::eval_correlator_join(CorrelatorJoin const &join, nda::arr
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, DiagramAssignment const &assignment,
-  std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
+  std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, ObservableBoundary boundary) {
   check_propagator(Gt);
   auto const kernels = bind_kernels(assignment, hyb);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
@@ -541,9 +541,8 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, Di
   visit_correlator_joins(Gt, right_ends, left_ends, mu_ops, kap_ops, [&](CorrelatorJoin const &join) {
     eval_correlator_join(join, left[join.left_start], right[join.right_start], scratch, correlator);
   });
-  auto signs = prepare_endpoint_signs(assignment, interaction_statistics_);
-  auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
-  correlator *= signs(external, external);
+  auto signs = prepare_endpoint_signs(assignment, interactions_.statistics());
+  correlator *= signs(boundary.at_zero, boundary.at_tau);
   return correlator;
 }
 
@@ -610,8 +609,8 @@ long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<i
 // Order the operators by orbital index, not by symmetry set, since they index the external legs of the single-particle Green's function
 std::vector<BlockOp> DiagramEvaluator::setup_mu_ops_for_single_ptcle_gf() {
   std::vector<BlockOp> mu_ops;
-  // the interaction flavours are the last n_int orbital indices and are not external legs of the single-particle Green's function
-  for (int o_ix = 0; o_ix < n_hyb; ++o_ix) {
+  // The model specifies which flavours are external single-particle operators.
+  for (int o_ix : interactions_.hybridization_flavours()) {
     auto &F = Fq.Fs[Fq.sym_set_labels(o_ix)];
     int i   = static_cast<int>(Fq.sym_set_inds(o_ix));
     std::vector<nda::array<dcomplex, 2>> mu_blocks;
@@ -631,7 +630,7 @@ std::vector<BlockOp> DiagramEvaluator::setup_mu_ops_for_single_ptcle_gf() {
 
 std::vector<BlockOp> DiagramEvaluator::setup_kap_ops_for_single_ptcle_gf() {
   std::vector<BlockOp> kap_ops;
-  for (int o_ix = 0; o_ix < n_hyb; ++o_ix) {
+  for (int o_ix : interactions_.hybridization_flavours()) {
     auto &F_dag = Fq.F_dags[Fq.sym_set_labels(o_ix)];
     int i       = static_cast<int>(Fq.sym_set_inds(o_ix));
     std::vector<nda::array<dcomplex, 2>> kap_blocks;

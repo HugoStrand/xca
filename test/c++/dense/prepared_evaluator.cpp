@@ -56,10 +56,10 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   auto expected = evaluator.compute_single_ptcle_gf(G, topology.arcs, f);
   auto annihilators = nda::make_regular(evaluator.Fset.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
   auto creators = nda::make_regular(evaluator.Fset.F_dags(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
-  auto actual = evaluator.eval_correlator(model.G, assignment, annihilators, creators, true);
+  auto actual = evaluator.eval_correlator(model.G, assignment, annihilators, creators, ObservableBoundary{});
   expect_close(actual, expected);
   auto changed_G = nda::make_regular(1.1 * model.G);
-  auto changed = evaluator.eval_correlator(changed_G, assignment, annihilators, creators, true);
+  auto changed = evaluator.eval_correlator(changed_G, assignment, annihilators, creators, ObservableBoundary{});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
   EXPECT_EQ(assignment.flat_index, -1);
   EXPECT_EQ(assignment.directions(0), -1);

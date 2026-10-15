@@ -229,7 +229,7 @@ namespace triqs_xca::dense {
         auto [row, column] = sum.line.coefficient_indices(mu, kap);
         nda::array_const_view<dcomplex, 1> hyb_t = hyb_too(_, row, column);
 
-        int fermionic_parity = signs(interaction_statistics_[kap], interaction_statistics_[mu]);
+        int fermionic_parity = signs(interactions_.statistics()[kap], interactions_.statistics()[mu]);
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += fermionic_parity * hyb_t(t) * Tkaps(kap, t, _, _);
       }
@@ -276,7 +276,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment) {
     int m = assignment.topology.order();
     int vct0 = assignment.topology.special_vertex();
-    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
+    auto const signs = prepare_endpoint_signs(assignment, interactions_.statistics());
     auto const kernels = bind_kernels(assignment, hyb);
 
     T = Gt;
@@ -310,7 +310,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment) {
     int m = assignment.topology.order();
     int vct0 = assignment.topology.special_vertex();
-    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
+    auto const signs = prepare_endpoint_signs(assignment, interactions_.statistics());
     auto const kernels = bind_kernels(assignment, hyb);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
@@ -375,13 +375,13 @@ namespace triqs_xca::dense {
                                                             bool is_fermionic) {
 
     auto assignment = prepare_assignment(DiagramTopology{backbone.get_topology()}, n, hyb.poles, f_ix, DiagramKind::correlator);
-    return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), is_fermionic);
+    return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), uniform_observable(is_fermionic));
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, DiagramAssignment const &assignment,
-                                                          nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic) {
+                                                          nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, ObservableBoundary boundary) {
     int m = assignment.topology.order();
-    auto const signs = prepare_endpoint_signs(assignment, interaction_statistics_);
+    auto const signs = prepare_endpoint_signs(assignment, interactions_.statistics());
     auto const kernels = bind_kernels(assignment, hyb);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
@@ -419,11 +419,17 @@ namespace triqs_xca::dense {
       }
     }
 
-    auto external = is_fermionic ? Statistics::fermionic : Statistics::bosonic;
-    correlator *= signs(external, external);
+    correlator *= signs(boundary.at_zero, boundary.at_tau);
 
 
     return correlator;
+  }
+
+  nda::array<dcomplex, 3> DiagramEvaluator::single_particle_operators(bool adjoint) const {
+    auto flavours = interactions_.hybridization_flavours();
+    nda::array<dcomplex, 3> result(flavours.size(), N, N);
+    for (int i = 0; i < flavours.size(); ++i) result(i, _, _) = Fset.get_operator(adjoint, flavours[i]);
+    return result;
   }
 
   long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology) {
@@ -436,8 +442,8 @@ namespace triqs_xca::dense {
     CorrelatorBackbone backbone(topology, n, n_int);
 
     // the external legs are the fermionic flavours only, not the dynamical-interaction operators appended to Fset
-    auto mu_ops  = Fset.Fs(nda::range(n_hyb), _, _);
-    auto kap_ops = Fset.F_dags(nda::range(n_hyb), _, _);
+    auto mu_ops  = single_particle_operators(false);
+    auto kap_ops = single_particle_operators(true);
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
@@ -445,14 +451,14 @@ namespace triqs_xca::dense {
       return correlator;
       */
 
-    return eval_correlator(Gt, backbone, mu_ops, kap_ops);
+    return eval_correlator(Gt, backbone, std::move(mu_ops), std::move(kap_ops));
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long f_ix) {
     auto Gt = native_propagator(G_ppsc);
     CorrelatorBackbone backbone(topology, n, n_int);
-    auto mu_ops  = Fset.Fs(nda::range(n_hyb), _, _);
-    auto kap_ops = Fset.F_dags(nda::range(n_hyb), _, _);
+    auto mu_ops  = single_particle_operators(false);
+    auto kap_ops = single_particle_operators(true);
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
@@ -460,15 +466,15 @@ namespace triqs_xca::dense {
       return correlator;
       */
 
-    return eval_correlator(Gt, backbone, mu_ops, kap_ops, f_ix);
+    return eval_correlator(Gt, backbone, std::move(mu_ops), std::move(kap_ops), f_ix);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
                                                                     nda::array_const_view<long, 1> f_ix_vec) {
     auto Gt = native_propagator(G_ppsc);
     CorrelatorBackbone backbone(topology, n, n_int);
-    auto mu_ops  = Fset.Fs(nda::range(n_hyb), _, _);
-    auto kap_ops = Fset.F_dags(nda::range(n_hyb), _, _);
+    auto mu_ops  = single_particle_operators(false);
+    auto kap_ops = single_particle_operators(true);
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(

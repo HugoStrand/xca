@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <triqs_xca/interaction.hpp>
+#include <triqs_xca/diagram_model.hpp>
+#include <triqs_xca/diagram_sign.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 
@@ -98,4 +100,43 @@ TEST(InteractionContractions, dense_coefficient_refresh_replaces_materialized_ba
   materialized.update_hybridization(coefficients);
   ASSERT_EQ(materialized.F_dag_bars.extent(1), 1);
   expect_close(materialized.F_dag_bars(0, 0, all, all), expected_forward);
+}
+
+
+TEST(InteractionModel, families_preserve_explicit_statistics_and_external_order) {
+  std::vector<InteractionFamily> families{
+    {InteractionKind::retarded, Statistics::bosonic, {0, 2}},
+    {InteractionKind::hybridization, Statistics::fermionic, {3, 1}}};
+  InteractionModel model(4, families);
+  families[0].flavours.clear(); // the model owns its metadata
+  EXPECT_EQ(model.families()[0].flavours, (std::vector<int>{0, 2}));
+  EXPECT_EQ((std::vector<int>{model.hybridization_flavours().begin(), model.hybridization_flavours().end()}), (std::vector<int>{3, 1}));
+  EXPECT_EQ((std::vector<Statistics>{model.statistics().begin(), model.statistics().end()}),
+            (std::vector<Statistics>{Statistics::bosonic, Statistics::fermionic, Statistics::bosonic, Statistics::fermionic}));
+
+  auto assignment = prepare_assignment(DiagramTopology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
+                                       AssignmentIndices{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, DiagramKind::self_energy);
+  auto signs = prepare_endpoint_signs(assignment, model.statistics());
+  // Two crossing fermionic arcs give a minus; removing the external fermionic
+  // arc leaves one arc with positive parity. Direction/kernel signs are separate.
+  ObservableBoundary fermionic{Statistics::fermionic, Statistics::fermionic};
+  ObservableBoundary bosonic{Statistics::bosonic, Statistics::bosonic};
+  ObservableBoundary mixed{Statistics::fermionic, Statistics::bosonic};
+  EXPECT_EQ(signs(fermionic.at_zero, fermionic.at_tau), -1);
+  EXPECT_EQ(signs(bosonic.at_zero, bosonic.at_tau), 1);
+  EXPECT_EQ(signs(mixed.at_zero, mixed.at_tau), 1);
+}
+
+TEST(InteractionModel, atom_diag_adapter_and_invalid_family_partitions) {
+  auto model = hybridization_retarded_model(2, 1);
+  EXPECT_EQ((std::vector<int>{model.hybridization_flavours().begin(), model.hybridization_flavours().end()}), (std::vector<int>{0, 1}));
+  EXPECT_EQ(model.statistics()[0], Statistics::fermionic);
+  EXPECT_EQ(model.statistics()[2], Statistics::bosonic);
+  EXPECT_EQ(uniform_observable(false).at_tau, Statistics::bosonic);
+  EXPECT_EQ(uniform_observable(true).at_zero, Statistics::fermionic);
+  EXPECT_THROW(hybridization_retarded_model(-1, 2), std::invalid_argument);
+  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0}}}}), std::invalid_argument);
+  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0, 2}}}}), std::invalid_argument);
+  EXPECT_THROW((InteractionModel{2, {{InteractionKind::hybridization, Statistics::fermionic, {0, 1}},
+                                   {InteractionKind::retarded, Statistics::bosonic, {0}}}}), std::invalid_argument);
 }

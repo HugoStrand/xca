@@ -4,10 +4,9 @@
 #include <vector>
 
 #include "diagram_assignment.hpp"
+#include "diagram_model.hpp"
 
 namespace triqs_xca {
-
-enum class Statistics { bosonic, fermionic };
 
 /// Model-boundary adapter for the current hybridization-then-interaction layout.
 /// Preparation itself accepts any ordering of explicit statistics.

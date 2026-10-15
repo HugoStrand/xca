@@ -98,7 +98,7 @@ class DiagramEvaluator {
   nda::array<dcomplex, 3> Tmu;         // intermediate storage array
 
   private:
-  std::vector<Statistics> interaction_statistics_ = fermion_boson_statistics(n_hyb, n_int);
+  InteractionModel interactions_ = hybridization_retarded_model(n_hyb, n_int);
 
   public:
   // routines for any diagram
@@ -132,7 +132,7 @@ class DiagramEvaluator {
 
   // Evaluate a logical assignment; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, DiagramAssignment const &assignment, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, DiagramAssignment const &assignment, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, ObservableBoundary boundary = {});
 
   // compute single particle Green's function for given topology (and flat index)
   C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
