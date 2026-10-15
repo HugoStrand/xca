@@ -1,5 +1,6 @@
+#include "triqs_xca/block_sparse/bind/backbone.hpp"
 #include <gtest/gtest.h>
-#include <triqs_xca/block_sparse/correlator_plan.hpp>
+#include <triqs_xca/block_sparse/bind/correlator.hpp>
 
 namespace {
 using namespace triqs_xca;
@@ -29,7 +30,7 @@ struct Ladder {
 std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
                                          BlockOpSymQuartet const &operators, triqs_xca::diagram::CorrelatorSegment side) {
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
-  visit_correlator_fragments(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
+  triqs_xca::block_sparse::diagram::visit_correlator_paths(G, assignment, operators, OperatorSupports(operators), side, [&](auto const &p) { result.push_back(p); });
   return result;
 }
 }
@@ -115,27 +116,31 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
   ASSERT_EQ(right.size(), 3);
   ASSERT_EQ(left.size(), 3);
-  nda::vector<int> right_ends{0, 1, 2}, left_ends{0, 1, 2};
   std::vector<BlockOp> mu{model.raising}, kap{model.raising, model.lowering};
-  std::vector<CorrelatorJoin> joins;
-  visit_correlator_joins(G, right_ends, left_ends, mu, kap, [&](auto const &j) { joins.push_back(j); });
+  std::vector<triqs_xca::block_sparse::diagram::CorrelatorDiagram> joins;
+  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
   ASSERT_EQ(joins.size(), 2);
   for (int i = 0; i < 2; ++i) {
-    EXPECT_EQ(joins[i].mu, 0);
-    EXPECT_EQ(joins[i].right_start, i);
-    EXPECT_EQ(joins[i].left_start, i + 1);
-    ASSERT_EQ(joins[i].traces.size(), 1);
-    EXPECT_EQ(joins[i].traces[0].kap, 1);
-    EXPECT_EQ(joins[i].mu_op.data(), mu[0].get_block(i).data());
-    EXPECT_EQ(joins[i].traces[0].op.data(), kap[1].get_block(i + 1).data());
+    EXPECT_EQ(joins[i].at_tau_operator, 0);
+    EXPECT_EQ(joins[i].zero_to_tau_path, i);
+    EXPECT_EQ(joins[i].tau_to_beta_path, i + 1);
+    ASSERT_EQ(joins[i].at_zero_operators.size(), 1);
+    EXPECT_EQ(joins[i].at_zero_operators[0], 1);
+    auto operands = triqs_xca::block_sparse::bind::correlator(joins[i], right, left, mu, kap);
+    EXPECT_EQ(operands.at_tau_matrix.data(), mu[0].get_block(i).data());
+    EXPECT_EQ(operands.closures[0].matrix.data(), kap[1].get_block(i + 1).data());
   }
   auto masked = model.propagator({0, -1, 0});
   int count = 0;
-  visit_correlator_joins(masked, right_ends, left_ends, mu, kap, [&](auto const &) { ++count; });
+  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(masked, right, left, mu, kap, [&](auto const &) { ++count; });
   EXPECT_EQ(count, 0);
-  left_ends(1) = -1;
+  left.erase(left.begin() + 1); // absent middle path; table indices differ from sectors
   joins.clear();
-  visit_correlator_joins(G, right_ends, left_ends, mu, kap, [&](auto const &j) { joins.push_back(j); });
+  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
   ASSERT_EQ(joins.size(), 1);
-  EXPECT_EQ(joins[0].right_start, 1);
+  EXPECT_EQ(joins[0].zero_to_tau_path, 1);
+  EXPECT_EQ(joins[0].tau_to_beta_path, 1); // retained table index, not sector 2
+  auto operands = triqs_xca::block_sparse::bind::correlator(joins[0], right, left, mu, kap);
+  EXPECT_EQ(operands.at_tau_matrix.data(), mu[0].get_block(1).data());
+  EXPECT_EQ(operands.closures[0].matrix.data(), kap[1].get_block(2).data());
 }

@@ -488,7 +488,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
   return eval_correlator(Gt, assignment, std::move(mu_ops), std::move(kap_ops), triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
 }
 
-nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
+nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_backbone_segment(
   triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment) {
   auto const &path = fragment.path;
   if (segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
@@ -512,13 +512,13 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_correlator_fragment(
   return U(_, range(0, final_dim), range(0, path.dimension(path.first_edge + 1)));
 }
 
-void DiagramEvaluator::eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
+void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &join, nda::array_const_view<dcomplex, 3> left,
                                            nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                                            nda::array_view<dcomplex, 3> correlator) {
   auto product = scratch(_, range(0, left.extent(1)), range(0, right.extent(2)));
-  for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(join.mu_op, right(t, _, _)));
-  for (auto const &closing : join.traces)
-    for (int t = 0; t < r; ++t) correlator(t, join.mu, closing.kap) += trace(matmul(product(t, _, _), closing.op));
+  for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(join.at_tau_matrix, right(t, _, _)));
+  for (auto const &closing : join.closures)
+    for (int t = 0; t < r; ++t) correlator(t, join.at_tau_operator, closing.at_zero_operator) += trace(matmul(product(t, _, _), closing.matrix));
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &assignment,
@@ -527,26 +527,26 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
   auto const kernels = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, hyb.kernel_values);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
-  int sectors = Gt.get_num_block_cols();
-  std::vector<nda::array<dcomplex, 3>> right(sectors), left(sectors);
-  nda::vector<int> right_ends(sectors), left_ends(sectors);
-  right_ends = -1;
-  left_ends = -1;
-  for (auto side : {triqs_xca::diagram::CorrelatorSegment::zero_to_tau, triqs_xca::diagram::CorrelatorSegment::tau_to_beta}) {
-    visit_correlator_fragments(Gt, assignment, Fq, support_, side, [&](diagram::BackbonePath const &path) {
-      auto operands = triqs_xca::block_sparse::bind::backbone(Gt, assignment, Fq, path);
-      auto result = eval_correlator_fragment(assignment, kernels, operands, side);
-      if (side == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
-        right[path.sector(path.first_vertex)] = result;
-        right_ends(path.sector(path.first_vertex)) = path.sector(path.vertex_end);
+  std::vector<diagram::BackbonePath> zero_to_tau_paths, tau_to_beta_paths;
+  std::vector<nda::array<dcomplex, 3>> zero_to_tau_results, tau_to_beta_results;
+  for (auto segment : {triqs_xca::diagram::CorrelatorSegment::zero_to_tau, triqs_xca::diagram::CorrelatorSegment::tau_to_beta}) {
+    diagram::visit_correlator_paths(Gt, assignment, Fq, support_, segment, [&](diagram::BackbonePath const &path) {
+      auto operands = bind::backbone(Gt, assignment, Fq, path);
+      auto result = eval_backbone_segment(assignment, kernels, operands, segment);
+      if (segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
+        zero_to_tau_paths.push_back(path);
+        zero_to_tau_results.emplace_back(result);
       } else {
-        left[path.sector(path.first_vertex)] = result;
-        left_ends(path.sector(path.first_vertex)) = path.sector(path.vertex_end);
+        tau_to_beta_paths.push_back(path);
+        tau_to_beta_results.emplace_back(result);
       }
     });
   }
-  visit_correlator_joins(Gt, right_ends, left_ends, mu_ops, kap_ops, [&](CorrelatorJoin const &join) {
-    eval_correlator_join(join, left[join.left_start], right[join.right_start], scratch, correlator);
+  diagram::visit_correlator_diagrams(Gt, zero_to_tau_paths, tau_to_beta_paths, mu_ops, kap_ops,
+      [&](diagram::CorrelatorDiagram const &prepared) {
+    auto operands = bind::correlator(prepared, zero_to_tau_paths, tau_to_beta_paths, mu_ops, kap_ops);
+    eval_correlator_completion(operands, tau_to_beta_results[operands.tau_to_beta_path],
+                               zero_to_tau_results[operands.zero_to_tau_path], scratch, correlator);
   });
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions_.statistics());
   correlator *= signs(boundary.at_zero, boundary.at_tau);

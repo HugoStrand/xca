@@ -13,7 +13,7 @@
 #include "triqs_xca/diagram/arc.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/bind/self_energy.hpp"
-#include "triqs_xca/block_sparse/correlator_plan.hpp"
+#include "triqs_xca/block_sparse/bind/correlator.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -77,9 +77,9 @@ class DiagramEvaluator {
     triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution);
 
 
-  nda::array_const_view<dcomplex, 3> eval_correlator_fragment(
+  nda::array_const_view<dcomplex, 3> eval_backbone_segment(
     triqs_xca::diagram::Diagram const &assignment, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &fragment, triqs_xca::diagram::CorrelatorSegment segment);
-  void eval_correlator_join(CorrelatorJoin const &join, nda::array_const_view<dcomplex, 3> left,
+  void eval_correlator_completion(CorrelatorOperands const &join, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);
 
