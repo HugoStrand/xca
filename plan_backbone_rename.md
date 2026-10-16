@@ -2,6 +2,11 @@
 
 Implementation plan, started 2026-10-15; implemented and validated 2026-10-16 on `dev_backbone`.
 
+The subsequent boundary review and implementation are recorded in
+[work_log_backbone_boundaries.md](work_log_backbone_boundaries.md). The
+**Shared backbone boundary correction** at the end of this document supersedes
+the earlier placement of geometry, kernel prefactors and discovery APIs.
+
 All six source stages are complete. See [work_log_backbone_rename.md](work_log_backbone_rename.md)
 for the code-commit review index, separate documentation checkpoints, and validation
 results. The final specification below governs the implementation; earlier sections
@@ -914,3 +919,43 @@ checkpoints. Full CPU build and 73/73 CTest entries passed, as did the three-ran
 MPI range-selection check and explicit backbone_cpu target build. Generated Python
 bindings differ from the pre-implementation checkpoint only in two class docstrings.
 See work_log_backbone_rename.md for code hashes, commands and remaining limitations.
+
+## Shared backbone boundary correction (2026-10-16)
+
+The adversarial review found that folder separation alone had left common
+backbone geometry in block-specific records. The user authorized the following
+correction, implemented as three further code/documentation checkpoints.
+
+| Concept | Location and responsibility |
+| --- | --- |
+| BackboneRange | `diagram/backbone_range.hpp`: validated half-open vertex and edge bounds, independent of sectors and evaluation direction. |
+| Backbone | `diagram/backbone.hpp`: owns ordered operator vertices and local TauKernelPlacement; owned by Diagram. |
+| TauKernelPrefactor | `diagram/tau_kernel.hpp`: whole-diagram scalar recipe, owned by Diagram alongside direction_sign. |
+| BackbonePath | `block_sparse/diagram/backbone_path.hpp`: composes BackboneRange and adds owned sectors and dimensions. |
+| SelfEnergyDiagram / CorrelatorDiagram | Plain block-specific realization/completion records under `block_sparse/diagram/`; no host discovery declarations. |
+| Host discovery | `block_sparse/backbone_paths.*`, `self_energy_paths.*`, `correlator_diagrams.*`, with functions in `block_sparse`. |
+
+Shared `correlator_backbone_ranges(topology)` returns the zero-to-tau and
+tau-to-beta ranges. Dense evaluation and block discovery use the same geometry.
+CorrelatorSegment is removed: discovery takes the range itself. Block completion
+still records compatible sector-path pairs and external-operator choices; a
+shared range does not replace that block-specific information.
+
+Backbone includes every propagator edge. Self-energy has 2m-1 edges; a correlator
+has 2m, including the final edge to beta with an empty scalar-kernel list. This
+supersedes the earlier n-1-row placement convention for correlators. Block binding
+checks the range against the actual prepared backbone extent.
+
+CPU forward/backward traversal routines consume bound backbone operands and
+kernel views. Correlator orchestration explicitly applies global factors and
+time reflection, preserving the order of operations on contributions. These
+private traversal routines handle edge-ended intervals with resolved internal
+vertices; self-energy endpoint completion retains its separate insertion point.
+No traversal direction, reflection policy or CPU workspace belongs in the shared
+Backbone or BackboneRange. This leaves a future GPU executor free to choose its
+own schedule, targeting high-end hardware such as GH200.
+
+Host range discovery supports selected-vertex intervals beyond the two complete
+correlator halves. It rejects unresolved external endpoints, which require their
+own completion discovery. It retains the existing initial-sector mask policy;
+this refactor does not change numerical pruning or support invalidation rules.
