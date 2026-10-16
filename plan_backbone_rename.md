@@ -4,8 +4,10 @@ Implementation plan, started 2026-10-15; implemented and validated 2026-10-16 on
 
 The subsequent boundary review and implementation are recorded in
 [work_log_backbone_boundaries.md](work_log_backbone_boundaries.md). The
-**Shared backbone boundary correction** at the end of this document supersedes
-the earlier placement of geometry, kernel prefactors and discovery APIs.
+**Shared backbone boundary correction** near the end of this document supersedes
+the earlier placement of geometry, kernel prefactors and discovery APIs. The final
+**Arc selection ownership** section supersedes Indices and the standalone
+Diagram direction/pole fields; see [work_log_diagram_arcs.md](work_log_diagram_arcs.md).
 
 All six source stages are complete. See [work_log_backbone_rename.md](work_log_backbone_rename.md)
 for the code-commit review index, separate documentation checkpoints, and validation
@@ -959,3 +961,22 @@ Host range discovery supports selected-vertex intervals beyond the two complete
 correlator halves. It rejects unresolved external endpoints, which require their
 own completion discovery. It retains the existing initial-sector mask policy;
 this refactor does not change numerical pruning or support invalidation rules.
+
+## Arc selection ownership (2026-10-16)
+
+The agreed follow-up replaces Indices with diagram::Arcs in diagram/arcs.hpp.
+Diagram owns it as `arcs`; the standalone direction/pole members are removed.
+The three arrays are directions, pole_indices and flavours. Directions always
+align with topology rows, including a -1 placeholder at the absent external
+correlator arc. Internal pole/flavour slot a-1 belongs to topology row a >= 1.
+The flat decoder is now decode_arcs and produces that same layout directly.
+
+Both vertex preparation and tau-kernel preparation consume Arcs. Topology retains
+connectivity; Backbone retains derived vertex/edge prescriptions. The numerical
+pole table remains a preparation input because its signs determine stable kernel
+placement. ArcCatalog::hybridization_flavours keeps its qualified name and behavior.
+
+See work_log_diagram_arcs.md for implementation, validation and the adversarial
+review of diagram/bind responsibilities. The review's further design changes are
+proposals, not part of this implementation. As elsewhere, future optimization
+should target high-end GPUs such as GH200 rather than the local RTX A4000.
