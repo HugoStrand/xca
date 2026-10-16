@@ -10,8 +10,6 @@ namespace triqs_xca::diagram {
   /// This is diagram geometry, independent of traversal or operator representation.
   std::pair<BackboneRange, BackboneRange> correlator_backbone_ranges(Topology const &topology);
 
-  enum class CorrelatorSegment { zero_to_tau, tau_to_beta };
-
   /// External operator lists have homogeneous statistics at each endpoint. These
   /// are observable metadata, not an interaction flavour or sentinel orbital.
   struct CorrelatorStatistics {

@@ -1,3 +1,6 @@
+#include <triqs_xca/block_sparse/backbone_paths.hpp>
+#include <triqs_xca/diagram/correlator.hpp>
+#include <triqs_xca/block_sparse/correlator_diagrams.hpp>
 #include "triqs_xca/block_sparse/bind/backbone.hpp"
 #include <gtest/gtest.h>
 #include <triqs_xca/block_sparse/bind/correlator.hpp>
@@ -28,9 +31,9 @@ struct Ladder {
 };
 
 std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
-                                         BlockOpSymQuartet const &operators, triqs_xca::diagram::CorrelatorSegment side) {
+                                         BlockOpSymQuartet const &operators, triqs_xca::diagram::BackboneRange range) {
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
-  triqs_xca::block_sparse::diagram::visit_correlator_paths(G, assignment, operators, OperatorSupportTable(operators), side, [&](auto const &p) { result.push_back(p); });
+  triqs_xca::block_sparse::visit_backbone_paths(G, assignment, operators, OperatorSupportTable(operators), range, [&](auto const &p) { result.push_back(p); });
   return result;
 }
 }
@@ -40,8 +43,8 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
                                        triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 2);
   for (int i = 0; i < 2; ++i) {
@@ -77,7 +80,7 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   EXPECT_EQ(bound.path.dimension(2), 1);
 
   auto masked = model.propagator({-1, 0, 0});
-  auto surviving = fragments(masked, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
+  auto surviving = fragments(masked, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
   ASSERT_EQ(surviving.size(), 1);
   EXPECT_EQ(surviving[0].sector(surviving[0].range.first_vertex), 2);
   EXPECT_EQ(surviving[0].sector(surviving[0].range.vertex_end), 1);
@@ -90,8 +93,8 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
   // fails at its last starting sector; that must not poison the empty side.
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
                                        triqs_xca::diagram::Indices{{0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 3);
   for (int i = 0; i < 3; ++i) {
@@ -112,13 +115,13 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
                                        triqs_xca::diagram::Indices{{}, {}, {}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::tau_to_beta);
+  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
+  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 3);
   ASSERT_EQ(left.size(), 3);
   std::vector<BlockOp> mu{model.raising}, kap{model.raising, model.lowering};
   std::vector<triqs_xca::block_sparse::diagram::CorrelatorDiagram> joins;
-  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
+  triqs_xca::block_sparse::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
   ASSERT_EQ(joins.size(), 2);
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(joins[i].at_tau_operator, 0);
@@ -132,15 +135,41 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   }
   auto masked = model.propagator({0, -1, 0});
   int count = 0;
-  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(masked, right, left, mu, kap, [&](auto const &) { ++count; });
+  triqs_xca::block_sparse::visit_correlator_diagrams(masked, right, left, mu, kap, [&](auto const &) { ++count; });
   EXPECT_EQ(count, 0);
   left.erase(left.begin() + 1); // absent middle path; table indices differ from sectors
   joins.clear();
-  triqs_xca::block_sparse::diagram::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
+  triqs_xca::block_sparse::visit_correlator_diagrams(G, right, left, mu, kap, [&](auto const &j) { joins.push_back(j); });
   ASSERT_EQ(joins.size(), 1);
   EXPECT_EQ(joins[0].zero_to_tau_path, 1);
   EXPECT_EQ(joins[0].tau_to_beta_path, 1); // retained table index, not sector 2
   auto operands = triqs_xca::block_sparse::bind::correlator(joins[0], right, left, mu, kap);
   EXPECT_EQ(operands.at_tau_matrix.data(), mu[0].get_block(1).data());
   EXPECT_EQ(operands.closures[0].matrix.data(), kap[1].get_block(2).data());
+}
+
+TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_labels) {
+  Ladder model;
+  auto G = model.propagator();
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
+      triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+  // Leading selected vertex 1 followed by edge 1: neither complete correlator half.
+  auto paths = fragments(G, assignment, model.operators, {1, 2, 1, 2});
+  ASSERT_EQ(paths.size(), 2);
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_EQ(paths[i].sector(1), i + 1);
+    EXPECT_EQ(paths[i].sector(2), i);
+    auto bound = triqs_xca::block_sparse::bind::backbone(G, assignment, model.operators, paths[i]);
+    ASSERT_EQ(bound.propagators.size(), 1);
+    ASSERT_EQ(bound.vertices.size(), 1);
+    EXPECT_EQ(bound.propagator(1).data(), G.get_block(i).data());
+  }
+  auto edge_only = fragments(G, assignment, model.operators, {2, 2, 1, 2});
+  ASSERT_EQ(edge_only.size(), 3);
+  for (int i = 0; i < 3; ++i) {
+    ASSERT_EQ(edge_only[i].sectors.size(), 1);
+    EXPECT_EQ(edge_only[i].sector(2), i);
+  }
+  EXPECT_THROW(fragments(G, assignment, model.operators, {3, 5, 2, 5}), std::invalid_argument);
+  EXPECT_THROW(fragments(G, assignment, model.operators, {0, 2, 0, 2}), std::invalid_argument); // external operator unresolved
 }

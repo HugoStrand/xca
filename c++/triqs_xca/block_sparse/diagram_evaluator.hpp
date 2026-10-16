@@ -47,19 +47,19 @@ class DiagramEvaluator {
   // Diagram composition routines
 
   // Compose already resolved vertices and propagator edges.
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
-                            nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path);
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::bind::TauKernelViews const &kernels, int v_ix,
+                            nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path, int n_col_r);
   void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int e_ix, diagram::BackbonePath const &path);
+                           triqs_xca::bind::TauKernelViews const &kernels, int e_ix, diagram::BackbonePath const &path, int n_col_r);
 
   // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
 
   // multiply vertex (v_ix) from the right, in a diagram (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::bind::TauKernelViews const &kernels, int v_ix, nda::array_const_view<dcomplex, 2> F,
                              diagram::BackbonePath const &path);
 
   // integrate edge (e_ix) from the right, in a diagram (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
+  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::bind::TauKernelViews const &kernels, int e_ix,
                             diagram::BackbonePath const &path);
 
   // routines for self-energy diagrams
@@ -77,8 +77,10 @@ class DiagramEvaluator {
     triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, SelfEnergyOperands const &contribution);
 
 
-  nda::array_const_view<dcomplex, 3> eval_backbone_segment(
-    triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &backbone, triqs_xca::diagram::CorrelatorSegment segment);
+  // CPU traversal of edge-ended intervals with all internal operators bound.
+  // Results borrow scratch storage; reflection and global factors belong to the caller.
+  nda::array_view<dcomplex, 3> eval_backbone_forward(triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &backbone);
+  nda::array_view<dcomplex, 3> eval_backbone_backward(triqs_xca::bind::TauKernelViews const &kernels, BackboneOperands const &backbone);
   void eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);

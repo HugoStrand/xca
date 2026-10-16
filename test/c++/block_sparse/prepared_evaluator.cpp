@@ -1,3 +1,4 @@
+#include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include "triqs_xca/arc_data.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
@@ -95,7 +96,7 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
     std::optional<SelfEnergyOperands> retained;
     nda::vector<int> dimensions;
     int count = 0;
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &path) {
+    triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &path) {
       auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), hybridization, statistics, signs);
       auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), hybridization, statistics, signs);
       ++count;
@@ -103,6 +104,9 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
       EXPECT_FALSE(bound.backbone.vertices[0].has_value());
       EXPECT_FALSE(bound.backbone.vertices[2].has_value());
       ASSERT_EQ(bound.backbone.propagators.size(), 3);
+      auto invalid_path = path.path;
+      invalid_path.range.edge_end = 4; // a correlator-only trailing edge
+      EXPECT_THROW(triqs_xca::block_sparse::bind::backbone(G, assignment, operators, invalid_path), std::invalid_argument);
       for (int e = 0; e < 3; ++e) {
         EXPECT_EQ(bound.backbone.propagator(e).data(), G.get_block(path.path.edge_sector(e)).data());
         expect_close(tensor(changed.backbone.propagator(e)), nda::make_regular(1.3 * bound.backbone.propagator(e)));

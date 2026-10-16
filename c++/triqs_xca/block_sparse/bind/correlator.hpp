@@ -1,4 +1,7 @@
 #pragma once
+#include <span>
+#include "triqs_xca/block_sparse/diagram/backbone_path.hpp"
+#include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/diagram/correlator.hpp"
 #include "triqs_xca/block_sparse/correlator_operands.hpp"
 

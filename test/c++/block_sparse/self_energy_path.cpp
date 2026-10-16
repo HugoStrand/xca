@@ -1,3 +1,4 @@
+#include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include <gtest/gtest.h>
 
 #include <triqs_xca/block_sparse/diagram/self_energy.hpp>
@@ -55,7 +56,7 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
   auto assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 0, triqs_xca::diagram::Kind::self_energy); // creation at vertex 0, annihilation at vertex 1
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
 
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -76,7 +77,7 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
 
   assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 1, triqs_xca::diagram::Kind::self_energy); // annihilation first
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> reversed;
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { reversed.push_back(path); });
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
   for (int i = 0; i < 4; ++i) {
     EXPECT_EQ(reversed[i].output_sector, i / 2 + 1);
@@ -95,7 +96,7 @@ TEST(SelfEnergyDiagram, nested_paths_use_every_propagator_mask_but_not_the_outpu
   auto G = propagator();
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
   auto collect = [&](auto const &path) { paths.push_back(path); };
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, collect);
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, collect);
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 0);
@@ -105,18 +106,18 @@ TEST(SelfEnergyDiagram, nested_paths_use_every_propagator_mask_but_not_the_outpu
   for (auto mask : {nda::vector<int>{0, -1, 0}, nda::vector<int>{0, 0, -1}}) {
     auto masked = propagator(mask);
     paths.clear();
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(masked, assignment, F, OperatorSupportTable(F), workspace, collect);
+    triqs_xca::block_sparse::visit_self_energy_paths(masked, assignment, F, OperatorSupportTable(F), workspace, collect);
     EXPECT_TRUE(paths.empty());
   }
   auto output_zero = propagator({-1, 0, 0});
   paths.clear();
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(output_zero, assignment, F, OperatorSupportTable(F), workspace, collect);
+  triqs_xca::block_sparse::visit_self_energy_paths(output_zero, assignment, F, OperatorSupportTable(F), workspace, collect);
   ASSERT_EQ(paths.size(), 1); // no propagator on the external output sector
   EXPECT_EQ(paths[0].output_sector, 0);
 
   // Reusing a workspace of the wrong order must not write past its arrays.
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram wrong_order(1);
-  EXPECT_THROW(triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), wrong_order, collect), std::invalid_argument);
+  EXPECT_THROW(triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), wrong_order, collect), std::invalid_argument);
 }
 
 TEST(SelfEnergyDiagram, terminal_sector_is_recorded_without_a_new_closure_filter) {
@@ -129,7 +130,7 @@ TEST(SelfEnergyDiagram, terminal_sector_is_recorded_without_a_new_closure_filter
   auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 2);
@@ -143,7 +144,7 @@ TEST(SelfEnergyDiagram, crossing_path_continues_after_the_special_vertex) {
   auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
   EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 0);
@@ -159,7 +160,7 @@ TEST(SelfEnergyDiagram, discovery_is_independent_of_source_assignment_mutation) 
   auto const assignment = source;
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) {
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) {
     paths.push_back(path);
     source = triqs_xca::diagram::prepare_diagram(topology, 2, nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy);
   });
@@ -187,12 +188,12 @@ TEST(SelfEnergyDiagram, internal_member_support_and_barred_support_filter_candid
   int count = 0;
   // Internal flavour 0 is nonzero only in sector 0, while its bar is flavour 1,
   // nonzero only in sector 1. Both sectors are candidates, but no path survives.
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &) { ++count; });
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &) { ++count; });
   EXPECT_EQ(count, 0);
   coefficients = 0;
   coefficients(0, 0, 0) = coefficients(0, 1, 1) = 1.;
   BlockOpSymQuartet diagonal({group}, {group}, coefficients, nda::vector<long>{0, 0});
-  triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, diagonal, OperatorSupportTable(diagonal), workspace, [&](auto const &path) {
+  triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, diagonal, OperatorSupportTable(diagonal), workspace, [&](auto const &path) {
     ++count;
     EXPECT_EQ(path.output_sector, 0);
   });

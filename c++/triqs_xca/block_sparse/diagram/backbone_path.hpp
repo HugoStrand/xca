@@ -10,7 +10,11 @@ namespace triqs_xca::block_sparse::diagram {
     nda::vector<int> sectors, sector_dimensions;
 
     explicit BackbonePath(triqs_xca::diagram::BackboneRange range)
-       : range(range), sectors(range.vertex_end - range.first_vertex + 1), sector_dimensions(sectors.size()) {}
+       : range(range) {
+      range.validate();
+      sectors = nda::vector<int>(range.vertex_end - range.first_vertex + 1);
+      sector_dimensions = nda::vector<int>(sectors.size());
+    }
 
     int &sector(int slot) { return sectors(slot - range.first_vertex); }
     int sector(int slot) const { return sectors(slot - range.first_vertex); }

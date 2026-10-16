@@ -1,12 +1,12 @@
-#include "self_energy.hpp"
+#include "self_energy_paths.hpp"
 
 #include <stdexcept>
 
-namespace triqs_xca::block_sparse::diagram {
+namespace triqs_xca::block_sparse {
 
   void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Diagram const &diagram, BlockOpSymQuartet const &Fq,
-                               OperatorSupportTable const &support, SelfEnergyDiagram &prepared,
-                               std::function<void(SelfEnergyDiagram const &)> const &visit) {
+                               OperatorSupportTable const &support, diagram::SelfEnergyDiagram &prepared,
+                               std::function<void(diagram::SelfEnergyDiagram const &)> const &visit) {
 
     int m    = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
@@ -99,4 +99,4 @@ namespace triqs_xca::block_sparse::diagram {
     }
   }
 
-} // namespace triqs_xca::block_sparse::diagram
+} // namespace triqs_xca::block_sparse

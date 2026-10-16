@@ -1,3 +1,4 @@
+#include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -70,7 +71,7 @@ int main(int argc, char **argv) try {
   double checksum = 0;
   long paths      = 0;
   for (auto const &diagram : diagrams)
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagram, operators, support, workspace, [&](auto const &) { ++paths; });
+    triqs_xca::block_sparse::visit_self_energy_paths(G, diagram, operators, support, workspace, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
             << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
             << ',' << paths << '\n';
@@ -101,11 +102,11 @@ int main(int argc, char **argv) try {
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
+    triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
     auto signs = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
-    triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) {
+    triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) {
       auto bound = triqs_xca::block_sparse::bind::self_energy(G, diagrams[i], path, operators, support, evaluator.arc_data, arc_catalog.statistics(), signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });
