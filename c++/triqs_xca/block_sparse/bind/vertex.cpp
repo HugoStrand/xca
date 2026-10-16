@@ -10,7 +10,7 @@ namespace triqs_xca::block_sparse::bind {
     auto const &v = diagram.backbone.vertices[vertex];
     int set = operators.sym_set_labels(v.flavour), index = operators.sym_set_inds(v.flavour);
     if (v.barred) {
-      int pole       = diagram.pole_indices(v.pole_slot);
+      int pole       = diagram.arcs.pole_indices(v.pole_slot);
       auto const &op = v.adjoint ? operators.F_dag_bars[set] : operators.F_bars_refl[set];
       return op.get_block(source_sector)(index, pole, all, all);
     }

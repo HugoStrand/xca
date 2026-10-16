@@ -7,56 +7,49 @@
 #include <string>
 
 namespace triqs_xca::diagram {
-  std::vector<Vertex> prepare_vertices(Topology const &topology, nda::vector_const_view<int> directions, Kind kind) {
-    int m     = topology.order();
+  std::vector<Vertex> prepare_vertices(Topology const &topology, Arcs const &arcs, Kind kind) {
+    int m = topology.order();
+    arcs.validate(m, kind);
     int first = kind == Kind::correlator ? 1 : 0;
-    if (directions.size() != m - first) throw std::invalid_argument("wrong number of arc directions");
     std::vector<Vertex> result(2 * m, {false, false, -1, 0});
     // Legacy external correlator endpoint convention; statistics are assigned separately.
     result[0].adjoint = true;
     for (int a = first; a < m; ++a) {
-      int direction = directions(a - first);
-      if (direction != 0 && direction != 1) throw std::invalid_argument("arc direction must be zero or one");
-      ArcOrientation orientation{direction == 1};
-      result[topology.arcs(a, 0)].adjoint = orientation.early_operator(-1).adjoint;
-      result[topology.arcs(a, 1)].adjoint = orientation.late_operator(-1).adjoint;
-      result[topology.arcs(a, 1)].barred  = a != 0;
+      ArcOrientation orientation{arcs.directions(a) == 1};
+      auto &early   = result[topology.arcs(a, 0)];
+      auto &late    = result[topology.arcs(a, 1)];
+      early.adjoint = orientation.early_operator(-1).adjoint;
+      late.adjoint  = orientation.late_operator(-1).adjoint;
+      late.barred   = a != 0;
+      if (a != 0) {
+        early.flavour = late.flavour = arcs.flavours(a - 1);
+        late.pole_slot               = a - 1;
+      }
     }
     return result;
   }
 
-  Diagram prepare_diagram(Topology const &topology, int flavours, Indices const &indices, nda::vector_const_view<double> poles, Kind kind) {
-    int m = topology.order();
-    if (flavours < 0 || indices.flavours.size() != m - 1) throw std::invalid_argument("invalid orbital assignment dimensions");
-    auto vertices = prepare_vertices(topology, indices.directions, kind);
-    nda::vector<int> full_directions(m);
-    int first                             = kind == Kind::correlator ? 1 : 0;
-    full_directions(0)                    = -1;
-    full_directions(nda::range(first, m)) = indices.directions;
-    auto [kernels, prefactor] = prepare_tau_kernels(topology, full_directions, indices.pole_indices, poles, kind);
-    for (int a = 1; a < m; ++a) {
-      int orbital = indices.flavours(a - 1);
-      if (orbital < 0 || orbital >= flavours) throw std::invalid_argument("orbital index out of range");
-      vertices[topology.arcs(a, 0)].flavour = orbital;
-      vertices[topology.arcs(a, 1)].flavour = orbital;
-    }
-    int direction_sign = 1;
-    for (int a = 1; a < m; ++a) {
-      vertices[topology.arcs(a, 1)].pole_slot = a - 1;
-      if (full_directions(a) == 0) direction_sign *= -1;
-    }
-    return {topology, {std::move(vertices), std::move(kernels)}, std::move(full_directions), indices.pole_indices, std::move(prefactor), direction_sign};
+  Diagram prepare_diagram(Topology const &topology, int flavours, Arcs const &arcs, nda::vector_const_view<double> poles, Kind kind) {
+    if (flavours < 0) throw std::invalid_argument("negative flavour count");
+    auto vertices = prepare_vertices(topology, arcs, kind);
+    for (int flavour : arcs.flavours)
+      if (flavour >= flavours) throw std::invalid_argument("flavour index out of range");
+    auto [kernels, prefactor] = prepare_tau_kernels(topology, arcs, poles, kind);
+    int direction_sign        = 1;
+    for (int a = 1; a < topology.order(); ++a)
+      if (arcs.directions(a) == 0) direction_sign *= -1;
+    return {topology, arcs, {std::move(vertices), std::move(kernels)}, std::move(prefactor), direction_sign};
   }
 
   Diagram prepare_diagram(Topology const &topology, int flavours, nda::vector_const_view<double> poles, long flat_index, Kind kind) {
-    auto indices = decode_indices(topology.order(), flavours, poles.size(), flat_index, kind);
-    return prepare_diagram(topology, flavours, indices, poles, kind);
+    auto arcs = decode_arcs(topology.order(), flavours, poles.size(), flat_index, kind);
+    return prepare_diagram(topology, flavours, arcs, poles, kind);
   }
 
   std::ostream &operator<<(std::ostream &out, Diagram const &diagram) {
     out << "Topology:\n"
-        << diagram.topology.arcs << "\nDirections: " << diagram.directions << "\nPoles: " << diagram.pole_indices
-        << "\nVertices (flavour, adjoint, bar, pole slot):\n";
+        << diagram.topology.arcs << "\nDirections: " << diagram.arcs.directions << "\nPoles: " << diagram.arcs.pole_indices
+        << "\nFlavours: " << diagram.arcs.flavours << "\nVertices (flavour, adjoint, bar, pole slot):\n";
     for (int v = 0; v < diagram.backbone.vertices.size(); ++v) {
       auto const &vertex = diagram.backbone.vertices[v];
       out << v << ": " << vertex.flavour << ' ' << vertex.adjoint << ' ' << vertex.barred << ' ' << vertex.pole_slot << '\n';

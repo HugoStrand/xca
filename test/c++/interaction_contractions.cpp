@@ -116,7 +116,7 @@ TEST(ArcCatalog, families_preserve_explicit_statistics_and_external_order) {
             (std::vector<triqs_xca::diagram::Statistics>{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::fermionic}));
 
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
-                                       triqs_xca::diagram::Indices{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
+                                       triqs_xca::diagram::Arcs{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, model.statistics());
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.

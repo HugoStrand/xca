@@ -273,7 +273,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace) {
   auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, arc_data.kernel_values);
+  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
   triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, Fq, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
     auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, diagram, prepared, Fq, support_, arc_data, arc_catalog_.statistics(), signs);
     if (!select_diagonal_self_energy(contribution)) return;
@@ -529,7 +529,7 @@ void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &oper
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
   check_propagator(Gt);
-  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, arc_data.kernel_values);
+  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   std::vector<diagram::BackbonePath> zero_to_tau_paths, tau_to_beta_paths;

@@ -119,7 +119,7 @@ TEST(Diagram, indexing) {
       EXPECT_EQ(assignment.topology.order(), m);
       EXPECT_EQ(assignment.topology.special_vertex(), topology(0, 1));
       for (int a = 0; a < m; ++a) {
-        EXPECT_EQ(assignment.directions(a), fb(a));
+        EXPECT_EQ(assignment.arcs.directions(a), fb(a));
         for (int end = 0; end < 2; ++end) EXPECT_EQ(assignment.topology.arcs(a, end), topology(a, end));
       }
       for (int v = 0; v < 2 * m; ++v) {
@@ -132,7 +132,7 @@ TEST(Diagram, indexing) {
         EXPECT_EQ(vertex.flavour, (v == 0 || v == topology(0, 1)) ? -1 : exp_orb(v));
       }
       for (int p = 0; p < m - 1; ++p) {
-        EXPECT_EQ(assignment.pole_indices(p), pole_inds(p));
+        EXPECT_EQ(assignment.arcs.pole_indices(p), pole_inds(p));
         EXPECT_EQ(assignment.kernel_prefactor.argument_signs(p), exp_pKsign(p));
         EXPECT_EQ(assignment.kernel_prefactor.exponents(p), exp_pKexp(p));
         for (int e = 0; e < 2 * m - 1; ++e) EXPECT_EQ(assignment.backbone.kernel_placement.edges(e, p), exp_edges(e, p));
@@ -141,7 +141,7 @@ TEST(Diagram, indexing) {
     };
 
     auto logical = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{topology}, n,
-                                      triqs_xca::diagram::Indices{fb, pole_inds, {orb_inds(1), orb_inds(3)}}, dlr_rf, triqs_xca::diagram::Kind::self_energy);
+                                      triqs_xca::diagram::Arcs{fb, pole_inds, {orb_inds(1), orb_inds(3)}}, dlr_rf, triqs_xca::diagram::Kind::self_energy);
     expect_generated(logical);
 
     int f_ix = o_ix + p_ix * n * n + fb_ix * n * n * r * r;
@@ -159,9 +159,9 @@ TEST(Diagram, correlator_data_survives_its_source_and_copies_are_independent) {
     poles(1) = -2.0; // preparation owns its recipe and retains neither source
     return result;
   }();
-  EXPECT_EQ(assignment.directions(0), -1);
-  EXPECT_EQ(assignment.directions(1), 1);
-  EXPECT_EQ(assignment.pole_indices(0), 1);
+  EXPECT_EQ(assignment.arcs.directions(0), -1);
+  EXPECT_EQ(assignment.arcs.directions(1), 1);
+  EXPECT_EQ(assignment.arcs.pole_indices(0), 1);
   EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
   EXPECT_EQ(assignment.backbone.vertices[2].flavour, -1);
   EXPECT_EQ(assignment.backbone.vertices[1].flavour, 1);
@@ -172,15 +172,15 @@ TEST(Diagram, correlator_data_survives_its_source_and_copies_are_independent) {
   auto copy = assignment;
   copy.topology.arcs(0, 1) = 3;
   copy.backbone.vertices[1].flavour = 0;
-  copy.pole_indices(0) = 0;
-  copy.directions(1) = 0;
+  copy.arcs.pole_indices(0) = 0;
+  copy.arcs.directions(1) = 0;
   copy.backbone.kernel_placement.edges(1, 0) = 0;
   copy.kernel_prefactor.argument_signs(0) = 0;
   copy.kernel_prefactor.exponents(0) = 0;
   EXPECT_EQ(assignment.topology.special_vertex(), 2);
   EXPECT_EQ(assignment.backbone.vertices[1].flavour, 1);
-  EXPECT_EQ(assignment.pole_indices(0), 1);
-  EXPECT_EQ(assignment.directions(1), 1);
+  EXPECT_EQ(assignment.arcs.pole_indices(0), 1);
+  EXPECT_EQ(assignment.arcs.directions(1), 1);
   EXPECT_EQ(assignment.backbone.kernel_placement.edges(1, 0), 1);
   EXPECT_EQ(assignment.kernel_prefactor.argument_signs(0), 1);
   EXPECT_EQ(assignment.kernel_prefactor.exponents(0), 1);
@@ -200,9 +200,9 @@ TEST(Diagram, flat_index_out_of_range) {
     auto last = triqs_xca::diagram::prepare_diagram(diagram, n, poles, expected_count - 1, kind);
     EXPECT_THROW(triqs_xca::diagram::prepare_diagram(diagram, n, poles, expected_count, kind), std::invalid_argument);
     EXPECT_THROW(triqs_xca::diagram::prepare_diagram(diagram, n, poles, -1, kind), std::invalid_argument);
-    EXPECT_EQ(last.pole_indices(0), 1);
+    EXPECT_EQ(last.arcs.pole_indices(0), 1);
     EXPECT_EQ(last.backbone.vertices[1].flavour, n - 1);
-    EXPECT_EQ(last.directions(1), 1);
+    EXPECT_EQ(last.arcs.directions(1), 1);
   };
   check(triqs_xca::diagram::Kind::self_energy, 24);
   check(triqs_xca::diagram::Kind::correlator, 12);
@@ -232,8 +232,8 @@ TEST(Diagram, flat_indices_beyond_int) {
   for (auto kind : {triqs_xca::diagram::Kind::self_energy, triqs_xca::diagram::Kind::correlator}) {
     long last = triqs_xca::diagram::count_diagrams(m, n, p, kind) - 1;
     auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing(m)}, n, poles(p), last, kind);
-    for (int i = (kind == triqs_xca::diagram::Kind::self_energy ? 0 : 1); i < m; ++i) EXPECT_EQ(assignment.directions(i), 1);
-    for (int i = 0; i < m - 1; ++i) EXPECT_EQ(assignment.pole_indices(i), p - 1);
+    for (int i = (kind == triqs_xca::diagram::Kind::self_energy ? 0 : 1); i < m; ++i) EXPECT_EQ(assignment.arcs.directions(i), 1);
+    for (int i = 0; i < m - 1; ++i) EXPECT_EQ(assignment.arcs.pole_indices(i), p - 1);
     for (int v = 1; v < 2 * m; ++v)
       if (v != m) EXPECT_EQ(assignment.backbone.vertices[v].flavour, n - 1);
   }
@@ -248,8 +248,8 @@ TEST(Diagram, flat_indices_beyond_int) {
   for (int i = 0; i < m9 - 1; ++i) n_o *= n9, n_p *= p9;
   ASSERT_GT(p_ix, long{std::numeric_limits<int>::max()});
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing(m9)}, n9, poles(p9), o_ix + n_o * (p_ix + n_p * fb_ix), triqs_xca::diagram::Kind::self_energy);
-  for (int i = 0; i < m9; ++i) EXPECT_EQ(assignment.directions(i), fb[i]);
-  for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(assignment.pole_indices(i), pole[i]);
+  for (int i = 0; i < m9; ++i) EXPECT_EQ(assignment.arcs.directions(i), fb[i]);
+  for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(assignment.arcs.pole_indices(i), pole[i]);
   for (int i = 1; i < m9; ++i) EXPECT_EQ(assignment.backbone.vertices[i].flavour, orb[i - 1]);
 
   // Overflow of n^(m-1), of p^(m-1), and of the product.
@@ -264,13 +264,13 @@ TEST(Diagram, logical_and_flat_selections_have_explicit_semantics) {
   nda::vector<double> poles{-1.0, 2.0};
   // Orbital digits 2,1 -> 5; pole digits 1,0 -> 1; direction digits 1,0,1 -> 5.
   // f = 5 + 3^2 * (1 + 2^2 * 5) = 194.
-  auto decoded = triqs_xca::diagram::decode_indices(3, 3, 2, 194, triqs_xca::diagram::Kind::self_energy);
+  auto decoded = triqs_xca::diagram::decode_arcs(3, 3, 2, 194, triqs_xca::diagram::Kind::self_energy);
   EXPECT_EQ((std::vector<int>(decoded.directions.begin(), decoded.directions.end())), (std::vector<int>{1, 0, 1}));
   EXPECT_EQ((std::vector<int>(decoded.pole_indices.begin(), decoded.pole_indices.end())), (std::vector<int>{1, 0}));
   EXPECT_EQ((std::vector<int>(decoded.flavours.begin(), decoded.flavours.end())), (std::vector<int>{2, 1}));
   EXPECT_EQ(triqs_xca::diagram::count_diagrams(3, 3, 2, triqs_xca::diagram::Kind::self_energy), 288);
   EXPECT_EQ(triqs_xca::diagram::count_diagrams(3, 3, 2, triqs_xca::diagram::Kind::correlator), 144);
-  auto logical = triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Indices{{1, 0, 1}, {1, 0}, {2, 1}}, poles, triqs_xca::diagram::Kind::self_energy);
+  auto logical = triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Arcs{{1, 0, 1}, {1, 0}, {2, 1}}, poles, triqs_xca::diagram::Kind::self_energy);
   auto flat = triqs_xca::diagram::prepare_diagram(topology, 3, poles, 194, triqs_xca::diagram::Kind::self_energy);
   for (auto const *a : {&logical, &flat}) {
     EXPECT_EQ(a->backbone.vertices[1].flavour, 2);
@@ -283,21 +283,21 @@ TEST(Diagram, logical_and_flat_selections_have_explicit_semantics) {
     EXPECT_EQ(nda::sum(nda::abs(a->backbone.kernel_placement.edges)), 0);
   }
   auto correlator = triqs_xca::diagram::prepare_diagram(topology, 3, poles, 86, triqs_xca::diagram::Kind::correlator);
-  EXPECT_EQ(correlator.directions(0), -1);
-  EXPECT_EQ(correlator.directions(1), 0);
-  EXPECT_EQ(correlator.directions(2), 1);
+  EXPECT_EQ(correlator.arcs.directions(0), -1);
+  EXPECT_EQ(correlator.arcs.directions(1), 0);
+  EXPECT_EQ(correlator.arcs.directions(2), 1);
   EXPECT_EQ(correlator.backbone.vertices[1].flavour, 2);
   EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, poles, 288, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
   EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, poles, -1, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
-  EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Indices{{1, 0, 1}, {2, 0}, {2, 1}}, poles, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
-  EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Indices{{1, 0, 1}, {1, 0}, {3, 1}}, poles, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
+  EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Arcs{{1, 0, 1}, {2, 0}, {2, 1}}, poles, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
+  EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 3, triqs_xca::diagram::Arcs{{1, 0, 1}, {1, 0}, {3, 1}}, poles, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
 }
 
 TEST(Diagram, zero_poles_use_vertex_kernels_in_both_directions) {
   using namespace triqs_xca;
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   for (int direction : {0, 1}) {
-    auto a = triqs_xca::diagram::prepare_diagram(topology, 1, triqs_xca::diagram::Indices{{0, direction}, {0}, {0}}, nda::vector<double>{0.0}, triqs_xca::diagram::Kind::self_energy);
+    auto a = triqs_xca::diagram::prepare_diagram(topology, 1, triqs_xca::diagram::Arcs{{0, direction}, {0}, {0}}, nda::vector<double>{0.0}, triqs_xca::diagram::Kind::self_energy);
     EXPECT_EQ(a.backbone.kernel_placement.vertices[1].argument_sign, direction == 0 ? 1 : -1);
     EXPECT_EQ(a.backbone.kernel_placement.vertices[3].argument_sign, direction == 0 ? -1 : 1);
     EXPECT_EQ(a.kernel_prefactor.exponents(0), 1);
@@ -329,7 +329,7 @@ TEST(Diagram, logical_preparation_does_not_require_a_representable_flat_count) {
   constexpr int order = 18, flavours = 14;
   nda::array<int, 2> arcs(order, 2);
   for (int a = 0; a < order; ++a) arcs(a, nda::range::all) = nda::vector<int>{a, a + order};
-  triqs_xca::diagram::Indices indices{nda::vector<int>(order, 1), nda::vector<int>(order - 1, 0), nda::vector<int>(order - 1, 13)};
+  triqs_xca::diagram::Arcs indices{nda::vector<int>(order, 1), nda::vector<int>(order - 1, 0), nda::vector<int>(order - 1, 13)};
   EXPECT_THROW(triqs_xca::diagram::count_diagrams(order, flavours, 1, triqs_xca::diagram::Kind::self_energy), std::overflow_error);
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{arcs}, flavours, indices, nda::vector<double>{-1.0}, triqs_xca::diagram::Kind::self_energy);
   ASSERT_EQ(assignment.backbone.vertices.size(), 2 * order);
@@ -337,4 +337,56 @@ TEST(Diagram, logical_preparation_does_not_require_a_representable_flat_count) {
   EXPECT_EQ(assignment.backbone.vertices[order + 1].flavour, 13);
   EXPECT_EQ(assignment.backbone.kernel_placement.vertices[1].argument_sign, -1);
   EXPECT_EQ(assignment.backbone.kernel_placement.vertices[order + 1].argument_sign, 1);
+}
+
+TEST(Diagram, correlator_arcs_keep_one_layout_through_preparation) {
+  using namespace triqs_xca::diagram;
+  Topology topology{nda::array<int, 2>{{0, 2}, {1, 4}, {3, 5}}};
+  nda::vector<double> poles{-1., 2.};
+  // Same flat digits as the independent correlator example above.
+  auto arcs = decode_arcs(3, 3, 2, 86, Kind::correlator);
+  EXPECT_EQ((std::vector<int>(arcs.directions.begin(), arcs.directions.end())), (std::vector<int>{-1, 0, 1}));
+  EXPECT_EQ((std::vector<int>(arcs.pole_indices.begin(), arcs.pole_indices.end())), (std::vector<int>{1, 0}));
+  EXPECT_EQ((std::vector<int>(arcs.flavours.begin(), arcs.flavours.end())), (std::vector<int>{2, 1}));
+  auto prepared = prepare_diagram(topology, 3, arcs, poles, Kind::correlator);
+  arcs.directions(1) = 1;
+  arcs.pole_indices(0) = 0;
+  arcs.flavours(0) = 0;
+  EXPECT_EQ(prepared.arcs.directions(1), 0);
+  EXPECT_EQ(prepared.arcs.pole_indices(0), 1);
+  EXPECT_EQ(prepared.arcs.flavours(0), 2);
+  EXPECT_EQ(prepared.backbone.vertices[1].flavour, 2);
+  EXPECT_EQ(prepared.backbone.vertices[4].flavour, 2);
+  auto copy = prepared;
+  copy.arcs.flavours(0) = 0;
+  EXPECT_EQ(prepared.arcs.flavours(0), 2);
+
+  // An order-one correlator has no internal choices, but keeps its absent arc slot.
+  auto empty = decode_arcs(1, 0, 0, 0, Kind::correlator);
+  ASSERT_EQ(empty.directions.size(), 1);
+  EXPECT_EQ(empty.directions(0), -1);
+  EXPECT_EQ(empty.pole_indices.size(), 0);
+  EXPECT_EQ(empty.flavours.size(), 0);
+  auto first = prepare_diagram(Topology{nda::array<int, 2>{{0, 1}}}, 0, empty, nda::vector<double>{}, Kind::correlator);
+  EXPECT_EQ(first.backbone.kernel_placement.edges.extent(0), 2);
+}
+
+TEST(Diagram, arc_preparation_rejects_ambiguous_or_incomplete_layouts) {
+  using namespace triqs_xca::diagram;
+  Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::vector<double> poles{1.};
+  auto reject = [&](Arcs const &arcs, Kind kind) {
+    EXPECT_THROW(prepare_vertices(topology, arcs, kind), std::invalid_argument);
+    EXPECT_THROW(prepare_tau_kernels(topology, arcs, poles, kind), std::invalid_argument);
+    EXPECT_THROW(prepare_diagram(topology, 1, arcs, poles, kind), std::invalid_argument);
+  };
+  reject(Arcs{{1}, {0}, {0}}, Kind::correlator); // formerly compact directions
+  reject(Arcs{{0, 1}, {0}, {0}}, Kind::correlator); // external arc must be absent
+  reject(Arcs{{-1, 1}, {0}, {0}}, Kind::self_energy); // external arc must be present
+  reject(Arcs{{-1, -1}, {0}, {0}}, Kind::correlator);
+  reject(Arcs{{0, 2}, {0}, {0}}, Kind::self_energy);
+  reject(Arcs{{0, 1}, {}, {0}}, Kind::self_energy);
+  reject(Arcs{{0, 1}, {0}, {}}, Kind::self_energy);
+  reject(Arcs{{0, 1}, {-1}, {0}}, Kind::self_energy);
+  reject(Arcs{{0, 1}, {0}, {-1}}, Kind::self_energy);
 }

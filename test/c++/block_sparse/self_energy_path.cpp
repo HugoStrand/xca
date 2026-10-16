@@ -183,7 +183,7 @@ TEST(SelfEnergyDiagram, internal_member_support_and_barred_support_filter_candid
   std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
   BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 2,
-                                      triqs_xca::diagram::Indices{{0, 0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
+                                      triqs_xca::diagram::Arcs{{0, 0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
   int count = 0;
   // Internal flavour 0 is nonzero only in sector 0, while its bar is flavour 1,

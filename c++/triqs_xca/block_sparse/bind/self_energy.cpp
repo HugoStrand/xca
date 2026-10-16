@@ -17,7 +17,7 @@ namespace triqs_xca::block_sparse::bind {
                                    BlockOpSymQuartet const &operators, OperatorSupportTable const &support, ArcData const &arc_data,
                                    std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int special = diagram.topology.special_vertex();
-    triqs_xca::diagram::ArcOrientation orientation{diagram.directions(0) == 1};
+    triqs_xca::diagram::ArcOrientation orientation{diagram.arcs.directions(0) == 1};
     EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), signs};
     auto present = [&](int group, int index, int source, bool adjoint) {
       int flavour = operators.sym_set_to_orb(group, index);
@@ -47,7 +47,7 @@ namespace triqs_xca::block_sparse::bind {
                                  OperatorSupportTable const &support, ArcData const &arc_data,
                                  std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int m    = diagram.topology.order();
-    int sign = (m % 2 == 0 ? -1 : 1) * (diagram.directions(0) == 1 ? 1 : -1) * diagram.direction_sign;
+    int sign = (m % 2 == 0 ? -1 : 1) * (diagram.arcs.directions(0) == 1 ? 1 : -1) * diagram.direction_sign;
     return {backbone(propagator, diagram, operators, prepared.path), endpoint_sum(diagram, prepared, operators, support, arc_data, statistics, signs),
             prepared.output_sector, sign};
   }

@@ -33,8 +33,8 @@ TEST(BackboneRange, rejects_disconnected_or_reversed_intervals) {
 
 TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
   diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  auto sigma = diagram::prepare_diagram(topology, 1, diagram::Indices{{1, 1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::self_energy);
-  auto corr = diagram::prepare_diagram(topology, 1, diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::correlator);
+  auto sigma = diagram::prepare_diagram(topology, 1, diagram::Arcs{{1, 1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::self_energy);
+  auto corr = diagram::prepare_diagram(topology, 1, diagram::Arcs{{-1, 1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::correlator);
   EXPECT_EQ(sigma.backbone.range(), (diagram::BackboneRange{0, 4, 0, 3}));
   EXPECT_EQ(corr.backbone.range(), (diagram::BackboneRange{0, 4, 0, 4}));
   auto [zero_to_tau, tau_to_beta] = diagram::correlator_backbone_ranges(topology);

@@ -42,7 +42,7 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   Ladder model;
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-                                       triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+                                       triqs_xca::diagram::Arcs{{-1, 1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
   auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 2);
@@ -92,7 +92,7 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
   // The [tau,beta] side has no internal vertices. The preceding right walk
   // fails at its last starting sector; that must not poison the empty side.
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
-                                       triqs_xca::diagram::Indices{{0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+                                       triqs_xca::diagram::Arcs{{-1, 0}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
   auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 2);
@@ -114,7 +114,7 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   Ladder model;
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
-                                       triqs_xca::diagram::Indices{{}, {}, {}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+                                       triqs_xca::diagram::Arcs{{-1}, {}, {}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
   auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
   ASSERT_EQ(right.size(), 3);
@@ -152,7 +152,7 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
   Ladder model;
   auto G = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-      triqs_xca::diagram::Indices{{1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+      triqs_xca::diagram::Arcs{{-1, 1}, {0}, {0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   // Leading selected vertex 1 followed by edge 1: neither complete correlator half.
   auto paths = fragments(G, assignment, model.operators, {1, 2, 1, 2});
   ASSERT_EQ(paths.size(), 2);

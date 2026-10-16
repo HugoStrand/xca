@@ -22,7 +22,7 @@ TEST(DensePrepared, logical_self_energy_and_pair_reuse_the_same_assignment) {
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Indices{{0, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{0, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
   long partner = f + n * model.hyb_poles.size();
   auto expected = tensor(evaluator.compute_self_energy(G, topology.arcs, f)[0].data());
@@ -34,7 +34,7 @@ TEST(DensePrepared, logical_self_energy_and_pair_reuse_the_same_assignment) {
   evaluator.reset();
   evaluator.eval_self_energy_pair(model.G, assignment);
   expect_close(evaluator.Sigma, expected_pair);
-  EXPECT_EQ(assignment.directions(0), 0);
+  EXPECT_EQ(assignment.arcs.directions(0), 0);
   EXPECT_TRUE(assignment.backbone.vertices[0].adjoint);
 
   // There are three propagator edges at order two. Reusing preparation with a
@@ -51,7 +51,7 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Indices{{1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::correlator);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{-1, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::correlator);
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto expected = evaluator.compute_single_ptcle_gf(G, topology.arcs, f);
   auto annihilators = nda::make_regular(evaluator.Fset.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
@@ -61,6 +61,6 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   auto changed_G = nda::make_regular(1.1 * model.G);
   auto changed = evaluator.eval_correlator(changed_G, assignment, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(assignment.directions(0), -1);
+  EXPECT_EQ(assignment.arcs.directions(0), -1);
   EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
 }

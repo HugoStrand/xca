@@ -56,7 +56,7 @@ int main(int argc, char **argv) try {
   long count   = triqs_xca::diagram::count_diagrams(order, evaluator.n, model.hyb_poles.size(), triqs_xca::diagram::Kind::self_energy);
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
-  std::vector<triqs_xca::diagram::Indices> logical;
+  std::vector<triqs_xca::diagram::Arcs> logical;
   std::vector<triqs_xca::diagram::Diagram> diagrams;
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
   std::mt19937_64 random{1789};
@@ -64,7 +64,7 @@ int main(int argc, char **argv) try {
     long first = (count / samples) * i + (count % samples) * i / samples;
     long last  = (count / samples) * (i + 1) + (count % samples) * (i + 1) / samples;
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
-    logical.push_back(triqs_xca::diagram::decode_indices(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
+    logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
     diagrams.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
   }
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(order);
@@ -98,7 +98,7 @@ int main(int argc, char **argv) try {
   });
   time("sign_and_kernel_binding", [&](long i) {
     auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
-    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].pole_indices, evaluator.arc_data.kernel_values);
+    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].arcs.pole_indices, evaluator.arc_data.kernel_values);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
