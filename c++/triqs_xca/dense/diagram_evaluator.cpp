@@ -395,7 +395,7 @@ namespace triqs_xca::dense {
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
-    int m = diagram.topology.order();
+    auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
     auto const kernels = triqs_xca::bind::tau_kernels(diagram.kernel_placement, diagram.pole_indices, arc_data.kernel_values);
 
@@ -405,7 +405,7 @@ namespace triqs_xca::dense {
     // annihilation matrices at the end points. the result is an N x N matrix-valued function of tau.
     T = Gt;
     // T is initialized to Gt, which is always the function at the rightmost edge
-    for (int v = 1; v < diagram.topology.special_vertex(); ++v) { // loop from the first vertex to before the special vertex
+    for (int v = zero_to_tau.first_vertex; v < zero_to_tau.vertex_end; ++v) { // loop from the first vertex to before the special vertex
       multiply_left_vertex(T, diagram, kernels, v);
       integrate_left_edge(T, Gt, kernels, v);
     }
@@ -414,7 +414,7 @@ namespace triqs_xca::dense {
     // result is another N x N matrix-valued function of tau.
     U = Gt;
 
-    for (int v = 2 * m - 1; v > diagram.topology.special_vertex(); v--) {
+    for (int v = tau_to_beta.vertex_end - 1; v >= tau_to_beta.first_vertex; --v) {
       multiply_right_vertex(U, diagram, kernels, v);
       integrate_right_edge(U, Gt, kernels, v - 1);
     }

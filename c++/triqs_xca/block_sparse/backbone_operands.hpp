@@ -12,7 +12,7 @@ namespace triqs_xca::block_sparse {
     std::vector<std::optional<nda::array_const_view<nda::dcomplex, 2>>> vertices;
     std::vector<nda::array_const_view<nda::dcomplex, 3>> propagators;
 
-    nda::array_const_view<nda::dcomplex, 2> vertex(int v) const { return vertices[v - path.first_vertex].value(); }
-    nda::array_const_view<nda::dcomplex, 3> propagator(int e) const { return propagators[e - path.first_edge]; }
+    nda::array_const_view<nda::dcomplex, 2> vertex(int v) const { return vertices[v - path.range.first_vertex].value(); }
+    nda::array_const_view<nda::dcomplex, 3> propagator(int e) const { return propagators[e - path.range.first_edge]; }
   };
 } // namespace triqs_xca::block_sparse

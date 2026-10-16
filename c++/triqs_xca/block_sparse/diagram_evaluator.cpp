@@ -493,23 +493,23 @@ nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_backbone_segment(
   auto const &path = backbone.path;
   if (segment == triqs_xca::diagram::CorrelatorSegment::zero_to_tau) {
     T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = backbone.propagator(0);
-    for (int v = path.first_edge + 1; v <= (path.edge_end - 1); ++v) {
+    for (int v = path.range.first_edge + 1; v <= (path.range.edge_end - 1); ++v) {
       multiply_left_vertex(T, diagram, kernels, v, backbone.vertex(v), path);
       integrate_left_edge(T, backbone.propagator(v), diagram, kernels, v, path);
     }
     T *= kernels.prefactor;
-    auto result = T(_, range(0, path.dimension(path.edge_end)), range(0, path.dimension(1)));
+    auto result = T(_, range(0, path.dimension(path.range.edge_end)), range(0, path.dimension(1)));
     result *= diagram.direction_sign;
     return result;
   }
-  int final_dim = path.dimension(path.edge_end);
-  U(_, range(0, final_dim), range(0, final_dim)) = backbone.propagator((path.edge_end - 1));
-  for (int v = (path.edge_end - 1); v > path.first_edge; --v) {
+  int final_dim = path.dimension(path.range.edge_end);
+  U(_, range(0, final_dim), range(0, final_dim)) = backbone.propagator((path.range.edge_end - 1));
+  for (int v = (path.range.edge_end - 1); v > path.range.first_edge; --v) {
     multiply_right_vertex(U, diagram, kernels, v, backbone.vertex(v), path);
     integrate_right_edge(U, backbone.propagator(v - 1), diagram, kernels, v - 1, path);
   }
   U = itops.reflect(U);
-  return U(_, range(0, final_dim), range(0, path.dimension(path.first_edge + 1)));
+  return U(_, range(0, final_dim), range(0, path.dimension(path.range.first_edge + 1)));
 }
 
 void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,

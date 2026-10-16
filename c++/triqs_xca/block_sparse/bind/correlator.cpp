@@ -10,9 +10,9 @@ namespace triqs_xca::block_sparse::bind {
     CorrelatorOperands result{prepared.zero_to_tau_path,
                               prepared.tau_to_beta_path,
                               prepared.at_tau_operator,
-                              at_tau[prepared.at_tau_operator].get_block(right.sector(right.vertex_end)),
+                              at_tau[prepared.at_tau_operator].get_block(right.sector(right.range.vertex_end)),
                               {}};
-    for (int kap : prepared.at_zero_operators) result.closures.push_back({kap, at_zero[kap].get_block(left.sector(left.vertex_end))});
+    for (int kap : prepared.at_zero_operators) result.closures.push_back({kap, at_zero[kap].get_block(left.sector(left.range.vertex_end))});
     return result;
   }
 } // namespace triqs_xca::block_sparse::bind

@@ -10,7 +10,7 @@ namespace triqs_xca::block_sparse::diagram {
     BackbonePath path;
     int early_symmetry_set = 0, late_symmetry_set = 0;
     int output_sector = 0;
-    explicit SelfEnergyDiagram(int order) : path(0, 2 * order, 0, 2 * order - 1) {}
+    explicit SelfEnergyDiagram(int order) : path({0, 2 * order, 0, 2 * order - 1}) {}
   };
 
   /// Discover paths for an immutable diagram assignment, without evaluating diagrams.

@@ -1,7 +1,14 @@
 #pragma once
 #include "arc_catalog.hpp"
+#include "backbone_range.hpp"
+#include "topology.hpp"
+#include <utility>
 
 namespace triqs_xca::diagram {
+
+  /// Ranges excluding the external vertices: first zero-to-tau, then tau-to-beta.
+  /// This is diagram geometry, independent of traversal or operator representation.
+  std::pair<BackboneRange, BackboneRange> correlator_backbone_ranges(Topology const &topology);
 
   enum class CorrelatorSegment { zero_to_tau, tau_to_beta };
 

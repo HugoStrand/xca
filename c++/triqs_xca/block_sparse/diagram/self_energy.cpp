@@ -11,7 +11,7 @@ namespace triqs_xca::block_sparse::diagram {
     int m    = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
 
-    if (prepared.path.first_vertex != 0 || prepared.path.vertex_end != 2 * m || prepared.path.first_edge != 0 || prepared.path.edge_end != 2 * m - 1
+    if (prepared.path.range.first_vertex != 0 || prepared.path.range.vertex_end != 2 * m || prepared.path.range.first_edge != 0 || prepared.path.range.edge_end != 2 * m - 1
         || prepared.path.sectors.size() != 2 * m + 1 || prepared.path.sector_dimensions.size() != 2 * m + 1)
       throw std::invalid_argument("visit_self_energy_paths: workspace does not match diagram order");
     auto ind_path    = [&](int edge) -> int    &{ return prepared.path.edge_sector(edge); };

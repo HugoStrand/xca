@@ -41,7 +41,7 @@ BlockDiagOpFun propagator(nda::vector<int> const &mask = {0, 0, 0}) {
 std::vector<int> values(nda::vector<int> const &v) { return {v.begin(), v.end()}; }
 std::vector<int> edge_sectors(triqs_xca::block_sparse::diagram::BackbonePath const &path) {
   std::vector<int> result;
-  for (int e = path.first_edge; e < path.edge_end; ++e) result.push_back(path.edge_sector(e));
+  for (int e = path.range.first_edge; e < path.range.edge_end; ++e) result.push_back(path.edge_sector(e));
   return result;
 }
 
@@ -60,14 +60,14 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
     auto const &path = paths[i];
-    EXPECT_EQ(path.path.first_vertex, 0);
-    EXPECT_EQ(path.path.vertex_end, 2);
-    EXPECT_EQ(path.path.first_edge, 0);
-    EXPECT_EQ(path.path.edge_end, 1);
+    EXPECT_EQ(path.path.range.first_vertex, 0);
+    EXPECT_EQ(path.path.range.vertex_end, 2);
+    EXPECT_EQ(path.path.range.first_edge, 0);
+    EXPECT_EQ(path.path.range.edge_end, 1);
     EXPECT_EQ(path.path.sectors.size(), 3);
     EXPECT_EQ(path.path.sector(0), i / 2);
     EXPECT_EQ(path.output_sector, i / 2);
-    EXPECT_EQ(path.path.sector(path.path.vertex_end), i / 2);
+    EXPECT_EQ(path.path.sector(path.path.range.vertex_end), i / 2);
     EXPECT_EQ(path.early_symmetry_set, i % 2);
     EXPECT_EQ(path.late_symmetry_set, i % 2); // no cross-set pairs
     EXPECT_EQ(edge_sectors(path.path), (std::vector<int>{i / 2 + 1}));
@@ -80,7 +80,7 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
   ASSERT_EQ(reversed.size(), 4);
   for (int i = 0; i < 4; ++i) {
     EXPECT_EQ(reversed[i].output_sector, i / 2 + 1);
-    EXPECT_EQ(reversed[i].path.sector(reversed[i].path.vertex_end), i / 2 + 1);
+    EXPECT_EQ(reversed[i].path.sector(reversed[i].path.range.vertex_end), i / 2 + 1);
     EXPECT_EQ(edge_sectors(reversed[i].path), (std::vector<int>{i / 2}));
   }
   EXPECT_EQ(edge_sectors(paths[0].path), (std::vector<int>{1}));
@@ -98,7 +98,7 @@ TEST(SelfEnergyDiagram, nested_paths_use_every_propagator_mask_but_not_the_outpu
   triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, collect);
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
-  EXPECT_EQ(paths[0].path.sector(paths[0].path.vertex_end), 0);
+  EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 0);
   EXPECT_EQ(edge_sectors(paths[0].path), (std::vector<int>{1, 2, 1}));
   EXPECT_EQ(values(paths[0].path.sector_dimensions), (std::vector<int>{1, 2, 1, 2, 1}));
 
@@ -132,7 +132,7 @@ TEST(SelfEnergyDiagram, terminal_sector_is_recorded_without_a_new_closure_filter
   triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
-  EXPECT_EQ(paths[0].path.sector(paths[0].path.vertex_end), 2);
+  EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 2);
   EXPECT_EQ(edge_sectors(paths[0].path), (std::vector<int>{1}));
 }
 
@@ -146,7 +146,7 @@ TEST(SelfEnergyDiagram, crossing_path_continues_after_the_special_vertex) {
   triqs_xca::block_sparse::diagram::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].output_sector, 0);
-  EXPECT_EQ(paths[0].path.sector(paths[0].path.vertex_end), 0);
+  EXPECT_EQ(paths[0].path.sector(paths[0].path.range.vertex_end), 0);
   EXPECT_EQ(edge_sectors(paths[0].path), (std::vector<int>{1, 2, 1}));
   EXPECT_EQ(values(paths[0].path.sector_dimensions), (std::vector<int>{1, 2, 1, 2, 1}));
 }

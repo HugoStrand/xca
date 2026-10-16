@@ -47,18 +47,18 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(right[i].sectors.size(), 2);
     EXPECT_EQ(left[i].sectors.size(), 2);
-    EXPECT_EQ(right[i].first_vertex, 1);
-    EXPECT_EQ(left[i].first_vertex, 3);
-    EXPECT_EQ(right[i].first_edge, 0);
-    EXPECT_EQ((right[i].edge_end - 1), 1);
-    EXPECT_EQ(right[i].sector(right[i].first_vertex), i + 1);
-    EXPECT_EQ(right[i].sector(right[i].vertex_end), i);
+    EXPECT_EQ(right[i].range.first_vertex, 1);
+    EXPECT_EQ(left[i].range.first_vertex, 3);
+    EXPECT_EQ(right[i].range.first_edge, 0);
+    EXPECT_EQ((right[i].range.edge_end - 1), 1);
+    EXPECT_EQ(right[i].sector(right[i].range.first_vertex), i + 1);
+    EXPECT_EQ(right[i].sector(right[i].range.vertex_end), i);
     EXPECT_EQ(right[i].edge_sector(0), i + 1);
     EXPECT_EQ(right[i].edge_sector(1), i);
-    EXPECT_EQ(left[i].first_edge, 2);
-    EXPECT_EQ((left[i].edge_end - 1), 3);
-    EXPECT_EQ(left[i].sector(left[i].first_vertex), i);
-    EXPECT_EQ(left[i].sector(left[i].vertex_end), i + 1);
+    EXPECT_EQ(left[i].range.first_edge, 2);
+    EXPECT_EQ((left[i].range.edge_end - 1), 3);
+    EXPECT_EQ(left[i].sector(left[i].range.first_vertex), i);
+    EXPECT_EQ(left[i].sector(left[i].range.vertex_end), i + 1);
     EXPECT_EQ(left[i].edge_sector(2), i);
     EXPECT_EQ(left[i].edge_sector(3), i + 1);
   }
@@ -79,8 +79,8 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   auto masked = model.propagator({-1, 0, 0});
   auto surviving = fragments(masked, assignment, model.operators, triqs_xca::diagram::CorrelatorSegment::zero_to_tau);
   ASSERT_EQ(surviving.size(), 1);
-  EXPECT_EQ(surviving[0].sector(surviving[0].first_vertex), 2);
-  EXPECT_EQ(surviving[0].sector(surviving[0].vertex_end), 1);
+  EXPECT_EQ(surviving[0].sector(surviving[0].range.first_vertex), 2);
+  EXPECT_EQ(surviving[0].sector(surviving[0].range.vertex_end), 1);
 }
 
 TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
@@ -96,14 +96,14 @@ TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
   ASSERT_EQ(left.size(), 3);
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ(left[i].sectors.size(), 1);
-    EXPECT_EQ(left[i].first_vertex, left[i].vertex_end);
+    EXPECT_EQ(left[i].range.first_vertex, left[i].range.vertex_end);
     auto bound = triqs_xca::block_sparse::bind::backbone(G, assignment, model.operators, left[i]);
     EXPECT_TRUE(bound.vertices.empty());
     ASSERT_EQ(bound.propagators.size(), 1);
     EXPECT_EQ(bound.propagator(3).data(), G.get_block(i).data());
-    EXPECT_EQ(left[i].first_edge, (left[i].edge_end - 1));
-    EXPECT_EQ(left[i].sector(left[i].first_vertex), i);
-    EXPECT_EQ(left[i].sector(left[i].vertex_end), i);
+    EXPECT_EQ(left[i].range.first_edge, (left[i].range.edge_end - 1));
+    EXPECT_EQ(left[i].sector(left[i].range.first_vertex), i);
+    EXPECT_EQ(left[i].sector(left[i].range.vertex_end), i);
   }
 }
 
