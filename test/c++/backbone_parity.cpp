@@ -139,8 +139,8 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   EXPECT_EQ(signs(B, F), 1);
   EXPECT_EQ(signs(F, B), 1);
   EXPECT_EQ(signs(B, B), 1);
-  EXPECT_EQ(assignment.vertices[0].flavour, -1);
-  EXPECT_EQ(assignment.vertices[2].flavour, -1);
+  EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
+  EXPECT_EQ(assignment.backbone.vertices[2].flavour, -1);
 
   auto correlator = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Indices{{0, 1}, {0, 0}, {1, 0}},
                                       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
@@ -152,7 +152,7 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   interactions[1] = B;
   EXPECT_EQ(triqs_xca::diagram::prepare_permutation_signs(assignment, interactions)(F, F), 1); // now internal line 1 is omitted
   EXPECT_EQ(signs(F, F), -1); // prepared signs retain no borrowed catalogue data
-  assignment.vertices[1].flavour = -1;
+  assignment.backbone.vertices[1].flavour = -1;
   EXPECT_THROW(triqs_xca::diagram::prepare_permutation_signs(assignment, interactions), std::invalid_argument);
 }
 

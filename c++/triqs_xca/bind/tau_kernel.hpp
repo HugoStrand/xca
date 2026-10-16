@@ -23,7 +23,8 @@ namespace triqs_xca::bind {
     double prefactor = 1; // excludes the discrete direction/permutation signs
   };
 
-  TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices,
+  TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, triqs_xca::diagram::TauKernelPrefactor const &prefactor,
+                             nda::vector_const_view<int> pole_indices,
                              TauKernelValues const &values);
 
 } // namespace triqs_xca::bind

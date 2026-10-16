@@ -62,7 +62,7 @@ TEST(Hybridization, bound_vertex_kernels_include_reflection_and_identity) {
   triqs_xca::ArcData H(mesh, nda::vector<double>{-0.8}, nda::zeros<dcomplex>(1, 1, 1));
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
                                        triqs_xca::diagram::Indices{{1, 1}, {0}, {0}}, H.poles, triqs_xca::diagram::Kind::self_energy);
-  auto bound = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, H.kernel_values);
+  auto bound = triqs_xca::bind::tau_kernels(assignment.backbone.kernel_placement, assignment.kernel_prefactor, assignment.pole_indices, H.kernel_values);
   ASSERT_EQ(bound.vertices.size(), 4);
   EXPECT_FALSE(bound.vertices[0]);
   EXPECT_FALSE(bound.vertices[2]);
@@ -96,7 +96,7 @@ TEST(Hybridization, bound_edge_products_preserve_factors_and_rebind_to_new_table
   triqs_xca::ArcData H(mesh, poles, nda::zeros<dcomplex>(2, 1, 1));
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, 1,
                                        triqs_xca::diagram::Indices{{1, 1, 1}, {0, 1}, {0, 0}}, H.poles, triqs_xca::diagram::Kind::self_energy);
-  auto bound = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, H.kernel_values);
+  auto bound = triqs_xca::bind::tau_kernels(assignment.backbone.kernel_placement, assignment.kernel_prefactor, assignment.pole_indices, H.kernel_values);
   ASSERT_EQ(bound.edges.size(), 5);
   EXPECT_TRUE(bound.edges[0].empty());
   EXPECT_EQ(bound.edges[1].size(), 1);
@@ -115,9 +115,25 @@ TEST(Hybridization, bound_edge_products_preserve_factors_and_rebind_to_new_table
   // The recipe stays valid when positive poles change magnitude, but numerical
   // operands must be rebound. The old binding still refers to its original owner.
   triqs_xca::ArcData changed(mesh, nda::vector<double>{0.9, 1.5}, nda::zeros<dcomplex>(2, 1, 1));
-  auto rebound = triqs_xca::bind::tau_kernels(assignment.kernel_placement, assignment.pole_indices, changed.kernel_values);
+  auto rebound = triqs_xca::bind::tau_kernels(assignment.backbone.kernel_placement, assignment.kernel_prefactor, assignment.pole_indices, changed.kernel_values);
   EXPECT_NE(rebound.edges[2][0].data(), bound.edges[2][0].data());
   EXPECT_EQ(rebound.edges[2][0].data(), changed.kernel_values.at_tau_plus(range::all, 0).data());
   EXPECT_DOUBLE_EQ(rebound.edges[2][0](0), cppdlr::k_it(nodes(0), 1.8));
   EXPECT_DOUBLE_EQ(bound.edges[2][0](0), cppdlr::k_it(nodes(0), 1.4));
+}
+
+TEST(Hybridization, trailing_correlator_edge_binds_as_identity) {
+  using namespace triqs_xca;
+  auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-10, false);
+  ArcData data(mesh, nda::vector<double>{0.7}, nda::zeros<dcomplex>(1, 1, 1));
+  for (auto topology_arr : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
+    diagram::Topology topology{topology_arr};
+    auto diagram = diagram::prepare_diagram(topology, 1, data.poles, 0, diagram::Kind::correlator);
+    auto kernels = bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, data.kernel_values);
+    ASSERT_EQ(kernels.edges.size(), 2 * topology.order());
+    EXPECT_TRUE(kernels.edges.back().empty());
+    auto values = nda::ones<dcomplex>(data.kernel_values.at_tau_plus.extent(0), 1, 1);
+    apply_kernel_product(values, kernels.edges.back());
+    EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
+  }
 }

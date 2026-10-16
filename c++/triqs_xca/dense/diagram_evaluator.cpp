@@ -207,7 +207,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
-    auto const &vertex = diagram.vertices[v_ix];
+    auto const &vertex = diagram.backbone.vertices[v_ix];
     int l_ix = diagram.pole_indices(vertex.pole_slot);
     auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
@@ -292,7 +292,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.kernel_placement, diagram.pole_indices, arc_data.kernel_values);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, arc_data.kernel_values);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -326,7 +326,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.kernel_placement, diagram.pole_indices, arc_data.kernel_values);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, arc_data.kernel_values);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -356,7 +356,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
-    auto const &vertex = diagram.vertices[v_ix];
+    auto const &vertex = diagram.backbone.vertices[v_ix];
     int l_ix = diagram.pole_indices(vertex.pole_slot);
     auto F = Fset.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
@@ -397,7 +397,7 @@ namespace triqs_xca::dense {
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.kernel_placement, diagram.pole_indices, arc_data.kernel_values);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.pole_indices, arc_data.kernel_values);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 

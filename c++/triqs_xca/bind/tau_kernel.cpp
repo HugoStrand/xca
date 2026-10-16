@@ -3,7 +3,8 @@
 
 namespace triqs_xca::bind {
 
-  TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, nda::vector_const_view<int> pole_indices,
+  TauKernelViews tau_kernels(triqs_xca::diagram::TauKernelPlacement const &placement, triqs_xca::diagram::TauKernelPrefactor const &prefactor,
+                             nda::vector_const_view<int> pole_indices,
                              TauKernelValues const &values) {
     constexpr auto all = nda::range::all;
     TauKernelViews result;
@@ -25,10 +26,10 @@ namespace triqs_xca::bind {
         if (sign != 0) result.edges[edge].push_back(select(sign, pole_indices(p)));
       }
     for (int p = 0; p < pole_indices.size(); ++p) {
-      int exponent = placement.prefactor_exponents(p);
+      int exponent = prefactor.exponents(p);
       if (exponent != 0) {
         int pole     = pole_indices(p);
-        double value = placement.prefactor_argument_signs(p) > 0 ? values.at_zero_plus(pole) : values.at_zero_minus(pole);
+        double value = prefactor.argument_signs(p) > 0 ? values.at_zero_plus(pole) : values.at_zero_minus(pole);
         result.prefactor *= std::pow(value, -exponent);
       }
     }

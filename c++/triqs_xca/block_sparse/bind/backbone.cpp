@@ -3,9 +3,8 @@
 namespace triqs_xca::block_sparse::bind {
   BackboneOperands backbone(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram, BlockOpSymQuartet const &operators,
                             block_sparse::diagram::BackbonePath const &path) {
-    int n = 2 * diagram.topology.order();
     path.range.validate();
-    if (path.range.vertex_end > n || path.range.edge_end > n
+    if (!diagram.backbone.range().contains(path.range)
         || path.sectors.size() != path.range.vertex_end - path.range.first_vertex + 1 || path.sector_dimensions.size() != path.sectors.size())
       throw std::invalid_argument("backbone path does not match diagram interval");
     BackboneOperands result{path, {}, {}};

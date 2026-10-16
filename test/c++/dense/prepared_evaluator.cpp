@@ -35,7 +35,7 @@ TEST(DensePrepared, logical_self_energy_and_pair_reuse_the_same_assignment) {
   evaluator.eval_self_energy_pair(model.G, assignment);
   expect_close(evaluator.Sigma, expected_pair);
   EXPECT_EQ(assignment.directions(0), 0);
-  EXPECT_TRUE(assignment.vertices[0].adjoint);
+  EXPECT_TRUE(assignment.backbone.vertices[0].adjoint);
 
   // There are three propagator edges at order two. Reusing preparation with a
   // different G must not reuse old numerical data or an old accumulator.
@@ -62,5 +62,5 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   auto changed = evaluator.eval_correlator(changed_G, assignment, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
   EXPECT_EQ(assignment.directions(0), -1);
-  EXPECT_EQ(assignment.vertices[0].flavour, -1);
+  EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
 }

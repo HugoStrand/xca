@@ -67,7 +67,7 @@ OperatorSupportTable::OperatorSupportTable(BlockOpSymQuartet const &operators) :
 }
 
 OperatorSupport const &OperatorSupportTable::vertex(triqs_xca::diagram::Diagram const &diagram, int vertex) const {
-  auto const &v = diagram.vertices.at(vertex);
+  auto const &v = diagram.backbone.vertices.at(vertex);
   if (!v.barred) return (v.adjoint ? adjoint : plain).at(v.flavour);
   int pole = diagram.pole_indices(v.pole_slot);
   return (v.adjoint ? barred_adjoint : reflected_bar).at(v.flavour * poles + pole);

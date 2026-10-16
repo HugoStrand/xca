@@ -97,7 +97,7 @@ int main(int argc, char **argv) try {
   });
   time("sign_and_kernel_binding", [&](long i) {
     auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
-    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].kernel_placement, diagrams[i].pole_indices, evaluator.arc_data.kernel_values);
+    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].pole_indices, evaluator.arc_data.kernel_values);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {

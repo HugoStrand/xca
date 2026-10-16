@@ -6,28 +6,19 @@
 #include <nda/nda.hpp>
 #include "topology.hpp"
 #include "indices.hpp"
-#include "tau_kernel.hpp"
+#include "backbone.hpp"
 
 namespace triqs_xca::diagram {
-
-  /// One vertex in an assigned diagram. A flavour of -1 is an unresolved special
-  /// endpoint, to be supplied by the remaining endpoint sum or observable.
-  struct Vertex {
-    bool barred;
-    bool adjoint;
-    int flavour;
-    int pole_slot;
-  };
 
   /// Owned description of a diagram and its stable scalar-kernel recipe.
   /// Consumers take a const reference; copying this value shares no mutable arrays.
   /// No sector indices, matrix storage, or executor workspace belong here.
   struct Diagram {
     Topology topology;
-    std::vector<Vertex> vertices;
+    Backbone backbone;
     nda::vector<int> directions;   // per arc; -1 for the absent external correlator arc
     nda::vector<int> pole_indices; // internal arcs only
-    TauKernelPlacement kernel_placement;
+    TauKernelPrefactor kernel_prefactor;
     int direction_sign;
   };
 

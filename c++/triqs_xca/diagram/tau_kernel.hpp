@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include "topology.hpp"
+#include "indices.hpp"
+#include <utility>
 
 namespace triqs_xca::diagram {
   struct VertexTauKernel {
@@ -11,9 +13,12 @@ namespace triqs_xca::diagram {
   struct TauKernelPlacement {
     std::vector<VertexTauKernel> vertices;
     nda::array<int, 2> edges;
-    nda::vector<int> prefactor_argument_signs;
-    nda::vector<int> prefactor_exponents;
   };
-  TauKernelPlacement prepare_tau_kernel_placement(Topology const &topology, nda::vector_const_view<int> directions,
-                                                  nda::vector_const_view<int> pole_indices, nda::vector_const_view<double> poles);
+  /// Recipe for the scalar factor of the whole diagram, separate from local kernels.
+  struct TauKernelPrefactor {
+    nda::vector<int> argument_signs;
+    nda::vector<int> exponents;
+  };
+  std::pair<TauKernelPlacement, TauKernelPrefactor> prepare_tau_kernels(Topology const &topology, nda::vector_const_view<int> directions,
+                                                  nda::vector_const_view<int> pole_indices, nda::vector_const_view<double> poles, Kind kind);
 } // namespace triqs_xca::diagram

@@ -33,7 +33,7 @@ namespace triqs_xca::diagram {
     int first                             = kind == Kind::correlator ? 1 : 0;
     full_directions(0)                    = -1;
     full_directions(nda::range(first, m)) = indices.directions;
-    auto kernels                          = prepare_tau_kernel_placement(topology, full_directions, indices.pole_indices, poles);
+    auto [kernels, prefactor] = prepare_tau_kernels(topology, full_directions, indices.pole_indices, poles, kind);
     for (int a = 1; a < m; ++a) {
       int orbital = indices.flavours(a - 1);
       if (orbital < 0 || orbital >= flavours) throw std::invalid_argument("orbital index out of range");
@@ -45,7 +45,7 @@ namespace triqs_xca::diagram {
       vertices[topology.arcs(a, 1)].pole_slot = a - 1;
       if (full_directions(a) == 0) direction_sign *= -1;
     }
-    return {topology, std::move(vertices), std::move(full_directions), indices.pole_indices, std::move(kernels), direction_sign};
+    return {topology, {std::move(vertices), std::move(kernels)}, std::move(full_directions), indices.pole_indices, std::move(prefactor), direction_sign};
   }
 
   Diagram prepare_diagram(Topology const &topology, int flavours, nda::vector_const_view<double> poles, long flat_index, Kind kind) {
@@ -57,13 +57,13 @@ namespace triqs_xca::diagram {
     out << "Topology:\n"
         << diagram.topology.arcs << "\nDirections: " << diagram.directions << "\nPoles: " << diagram.pole_indices
         << "\nVertices (flavour, adjoint, bar, pole slot):\n";
-    for (int v = 0; v < diagram.vertices.size(); ++v) {
-      auto const &vertex = diagram.vertices[v];
+    for (int v = 0; v < diagram.backbone.vertices.size(); ++v) {
+      auto const &vertex = diagram.backbone.vertices[v];
       out << v << ": " << vertex.flavour << ' ' << vertex.adjoint << ' ' << vertex.barred << ' ' << vertex.pole_slot << '\n';
     }
     return out << "Edge kernels:\n"
-               << diagram.kernel_placement.edges << "\nPrefactor: " << diagram.direction_sign << ", kernel signs "
-               << diagram.kernel_placement.prefactor_argument_signs << ", exponents " << diagram.kernel_placement.prefactor_exponents << '\n';
+               << diagram.backbone.kernel_placement.edges << "\nPrefactor: " << diagram.direction_sign << ", kernel signs "
+               << diagram.kernel_prefactor.argument_signs << ", exponents " << diagram.kernel_prefactor.exponents << '\n';
   }
 
 } // namespace triqs_xca::diagram

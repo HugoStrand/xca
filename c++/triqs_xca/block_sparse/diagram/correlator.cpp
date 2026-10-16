@@ -9,7 +9,7 @@ namespace triqs_xca::block_sparse::diagram {
     int first = range.first_edge, last = range.edge_end - 1;
     BackbonePath path(range);
     auto op = [&](int vertex) -> BlockOpSymSet const & {
-      auto const &v = diagram.vertices[vertex];
+      auto const &v = diagram.backbone.vertices[vertex];
       int set       = operators.sym_set_labels(v.flavour);
       return v.adjoint ? operators.F_dags[set] : operators.Fs[set];
     };
