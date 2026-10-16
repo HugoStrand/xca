@@ -33,3 +33,22 @@ Validation: configured and built the CPU tree; six focused shared geometry,
 path ownership, prepared evaluator and all-evaluator correlator tests passed
 (3.71 s). Generated wrappers are unchanged. Logs:
 `/tmp/xca-boundaries-step1-{configure,build,test}.log`.
+
+## Stage 2 — shared backbone owner (`46f1607`)
+
+Diagram now owns diagram::Backbone, containing operator vertices and local
+vertex/edge kernel placement. TauKernelPrefactor describes the whole-diagram
+scalar factor separately; signs also remain on Diagram. Kernel binding takes
+both recipes explicitly and preserves its multiplication order.
+
+Correlator backbones contain all 2m propagator edges, including the trailing edge
+to beta with no scalar factors. Self-energy backbones have 2m-1 edges. A block
+binder checks ranges against this actual extent instead of accepting any edge
+below 2m. The shared owner has no block dimensions, numerical matrices or CPU
+execution choices.
+
+Validation: full CPU build passed; eight focused indexing, parity, kernel,
+geometry and evaluator tests passed (3.75 s). New checks cover independent
+backbone copies, the two full extents and identity binding of the trailing edge
+at first and second order. Python wrappers remain unchanged. Logs:
+`/tmp/xca-boundaries-step2-{build,test}.log`.
