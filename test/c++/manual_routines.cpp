@@ -132,6 +132,27 @@ TEST(ManualRoutines, strided_inputs) {
   }
 }
 
+// Compare explicit physical poles with a DLR fit of the same time values.
+// beta != 1 and both pole signs expose missing or repeated beta scaling.
+TEST(ManualRoutines, physical_poles_match_time_values) {
+  Model m;
+  auto Fq = std::get<0>(block_sparse::atom_diag::get_operators(m.base.ad, m.hyb_coeffs));
+  auto Fs_bs = test_utils::make_correlator_ops(Fq, 2).first;
+  auto reflected = m.itops.reflect(m.hyb);
+  auto expected = dense::manual::sigma_oca(m.hyb, m.itops, beta, m.Gt, m.Fs, m.F_dags);
+  double scale = nda::max_element(nda::abs(expected));
+  ASSERT_GT(scale, 1.0e-3);
+  auto check = [&](std::string const &label, nda::array_const_view<dcomplex, 3> actual) {
+    SCOPED_TRACE(label);
+    EXPECT_LT(nda::max_element(nda::abs(actual - expected)), 1.0e-9 * scale);
+  };
+  check("dense poles", dense::manual::sigma_oca(m.hyb, m.hyb_coeffs, reflected, m.hyb_coeffs, m.hyb_poles, m.itops, beta, m.Gt, m.Fs, m.F_dags));
+  auto full = [&](block_sparse::BlockDiagOpFun const &S) { return test_utils::get_tensor_in_full_hilbert_space(S, m.base.ad); };
+  check("block sparse quartet", full(block_sparse::manual::sigma_oca(m.hyb, m.hyb_poles, m.itops, beta, m.base.G_bdof, Fq)));
+  check("block sparse time values", full(block_sparse::manual::sigma_oca(m.hyb, m.itops, beta, m.base.G_bdof, Fs_bs)));
+  check("block sparse coefficients", full(block_sparse::manual::sigma_oca(m.hyb, m.hyb_coeffs, reflected, m.hyb_coeffs, m.hyb_poles, m.itops, beta, m.base.G_bdof, Fs_bs)));
+}
+
 /**
  * @brief Check the trapezoidal routines against the evaluator with a non-symmetric two-orbital hybridization
  *

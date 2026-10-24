@@ -257,7 +257,8 @@ namespace triqs_xca::block_sparse::manual {
       for (int l = 0; l < r; l++) {
         for (int nu = 0; nu < num_Fs; nu++) {
           Fdagbars[lam][l] += hyb_coeffs(l, nu, lam) * F_dags[nu];
-          Fbarsrefl[lam][l] += hyb_refl_coeffs(l, lam, nu) * Fs[nu];
+          // Match the signed backward F-bar supplied by BlockOpSymQuartet.
+          Fbarsrefl[lam][l] += -hyb_refl_coeffs(l, lam, nu) * Fs[nu];
         }
       }
     }
@@ -527,7 +528,8 @@ namespace triqs_xca::block_sparse::manual {
       for (int l = 0; l < p; l++) {
         for (int nu = 0; nu < n; nu++) {
           Fdagbars[lam][l] += hyb_coeffs(l, nu, lam) * F_dags[nu];
-          Fbarsrefl[lam][l] += hyb_refl_coeffs(l, lam, nu) * Fs[nu];
+          // Match the signed backward F-bar supplied by BlockOpSymQuartet.
+          Fbarsrefl[lam][l] += -hyb_refl_coeffs(l, lam, nu) * Fs[nu];
         }
       }
     }
