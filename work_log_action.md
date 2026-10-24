@@ -48,3 +48,14 @@ unchanged. Logs: `/tmp/xca-action-stage1-{build,test}.log`.
 
 ArcData/ArcCatalog and both evaluators remain at this checkpoint as comparison
 references. Next: dense ownership migration, then block-sparse migration.
+
+## Checkpoint 2: dense evaluator ownership
+
+The dense evaluator now owns a const Action instead of separate FSet, ArcData
+and ArcCatalog objects. Matrix contractions, scalar bindings and diagram signs
+read that owner. Python constructors and generated wrappers are unchanged;
+C++ tests that inspected Fset now inspect action.operators. DLR consolidation is
+intentionally deferred to its own checkpoint.
+
+Full CPU build passed; all 76 CTest entries passed in 56.85 s with the standard
+single-threaded numerical libraries. Logs: `/tmp/xca-action-dense-{build,test}.log`.
