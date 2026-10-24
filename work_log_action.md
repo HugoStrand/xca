@@ -96,3 +96,50 @@ plan; no concurrent-first-use guarantee has been added.
 New tests cover grid rejection, explicit mesh adoption, evaluator copies surviving
 source destruction, and Python property reads/immutability. Full CPU build and
 all 76 CTest entries passed (56.87 s). Logs: `/tmp/xca-action-dlr-{build,test}.log`.
+
+
+## Checkpoint 5: removal and final review
+
+Code: `85bcee0` — `[action] remove arc data and catalogue`.
+
+Removed ArcData, ArcCatalog and their kind/family metadata. Structural diagram
+headers include only Statistics. Scalar and sign tests now use Action or the
+specific numerical tables/statistics they exercise; manual references reuse the
+existing evaluator Action. The backbone benchmark fixture was adapted and
+compiled, without running benchmarks or changing results.
+
+Final review checked ownership, lifetime, grid compatibility, scalar conventions,
+coefficient assembly and wrapper changes. There are no retained atom_diag or
+symbolic-operator references, no second persistent ordinary-operator list, and no
+views from operator storage into its enclosing Action. Numerical adapters rebuild
+bars from the owned coefficients. Support tables own their metadata. Explicit
+sector dimensions include inactive sectors; legacy unknown dimensions remain -1.
+Physical poles, unsigned reflected scalar values, explicit reflection signs and
+existing operator-grouping restrictions are unchanged. No numerical tolerance was
+loosened. No obsolete model-type references remain in source, tests or benchmarks.
+
+Final CPU configure/build passed. All 76 CTest entries passed in 57.02 s, with
+OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1 and test parallelism 2. The optional
+backbone_cpu target also builds. Logs: `/tmp/xca-action-final-configure.log`,
+`/tmp/xca-action-final-build.log`, `/tmp/xca-action-final-test.log` and
+`/tmp/xca-action-benchmark-build.log`. No CUDA validation was part of this scope.
+
+The goal is complete. Remaining design work is deliberately separate: unifying
+operator-resolution/grouping algorithms and designing GPU data layouts. Shared
+DLR caches require serial first initialization before concurrent sharing, as
+noted at checkpoint 4. Python constructors are unchanged; the three dense DLR
+properties are read-only compatibility views (copies on operation/node access).
+
+## Review order
+
+Each code commit is followed by a separate documentation checkpoint.
+
+| Code commit | Change |
+|---|---|
+| `57177a6` | Numerical Action and construction adapters |
+| `37f0b1f` | Dense ownership migration |
+| `4016f3b` | Block-sparse ownership and explicit sector dimensions |
+| `6d00e39` | Single DLR owner and compatibility properties |
+| `85bcee0` | Remove obsolete model types and migrate remaining consumers |
+
+Unrelated initial worktree changes and untracked files were preserved.

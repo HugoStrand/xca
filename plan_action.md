@@ -1,7 +1,7 @@
 # Action refactoring plan
 
 Revised and reviewed 2026-10-24 on `dev_backbone`. This version supersedes the
-previous proposal to retain atom_diag in Action. Implementation authorized on 2026-10-24 as a persistent goal. Progress and
+previous proposal to retain atom_diag in Action. Implemented and validated on 2026-10-24 through five code checkpoints. Progress and
 validation are recorded in [work_log_action.md](work_log_action.md).
 
 ## Agreed ownership
@@ -60,7 +60,8 @@ evaluator = DenseDiagramEvaluator(
 # The corresponding BlockSparseDiagramEvaluator calls also remain unchanged.
 ```
 
-The atom_diag path constructs a temporary ordered symbolic list:
+The atom_diag path resolves the following conceptual ordered operator list,
+using the existing representation-specific setup routines:
 
 ```text
 h = ad.get_fops().size()
@@ -281,5 +282,5 @@ Installed dependency sources checked on 2026-10-24:
   reflection at 265, convolution at 311, node view at 721, and lazy cache storage
   near 932–943. Public cache initialization methods are at 833 and 901.
 
-This revision was source-reviewed; no evaluator code, builds or benchmarks were
-changed or run for the documentation update.
+The planning revision was source-reviewed before implementation. Implementation,
+compatibility details and final validation are recorded in work_log_action.md.
