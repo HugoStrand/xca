@@ -140,3 +140,35 @@ An additional comparison of the explicit-pole manual overloads against the
 time-value reference exposed an independent backward-F-bar sign inconsistency
 in the older block-sparse explicit-operator overload. That regression and the
 sign correction are kept in the next code commit, separate from this unit change.
+
+## Step 4: legacy manual backward-F-bar sign
+
+The pole audit added a comparison at beta=2 with positive/negative poles and a
+complex, non-symmetric two-orbital hybridization. Dense manual self-energy from
+time values is the reference. The comparison covers dense explicit poles,
+block-sparse prebuilt quartet, block-sparse time values with explicit operators,
+and block-sparse explicit poles/coefficients with explicit operators.
+
+Before this correction the latter two overloads disagreed with the reference by
+about 0.01836 (reference maximum about 0.03146). Both built an unsigned backward
+F-bar, but sigma_oca_left_in_place expects the signed backward F-bar supplied by
+BlockOpSymQuartet. Their F-bar construction now includes the minus sign. The
+shared helper, quartet route, main diagram evaluators and scalar reflection
+convention are unchanged. This fixes a pre-existing sign error independent of
+pole units; the time-value overload has no external pole argument at all.
+
+Code commit: `20b99af` — `[bs] fix manual reflected Fbar sign`.
+
+Validation:
+
+- The new regression failed for both legacy overloads before the correction and
+  passed afterwards, at relative tolerance 1e-9 with DLR accuracy 1e-10.
+- Full CPU build passed. All 75 CTest entries passed in 56.78 s using the same
+  thread settings as Step 3. The existing analytic self-energy/correlator tests,
+  constructor checks and strided-input comparisons passed.
+- No existing tolerance changed; no additional Python wrapper changes arose.
+- git diff --check passed. Unrelated initial work remains untouched.
+
+Logs: `/tmp/xca-manual-reflection-{red-build,red-test,build,test,full-test}.log`.
+The red-test log intentionally records the failing regression before the sign
+correction. No Action refactor or GPU/benchmark work was introduced.
