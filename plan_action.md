@@ -1,288 +1,285 @@
 # Action refactoring plan
 
-Revised and reviewed 2026-10-24 on `dev_backbone`. This replaces the initial
-ownership sketch with the subsequent discussion. Planning only: implementation
-has not been requested in this revision.
+Revised and reviewed 2026-10-24 on `dev_backbone`. This version supersedes the
+previous proposal to retain atom_diag in Action. Planning only; this revision
+does not implement the refactoring.
 
-## Agreed structure
+## Agreed ownership
 
-Introduce a flat `triqs_xca::Action` in `c++/triqs_xca/action.hpp`. Remove the
-`ArcData` and `ArcCatalog` concepts rather than putting them inside Action.
-Keep the existing numerical arrays and their conventions, with these names:
+Action is the persistent numerical input for one evaluator representation,
+including its operator/F-bar precomputations. Template it only on that existing
+operator-storage type:
 
-| Action member | Meaning and ownership |
-| --- | --- |
-| `tau_mesh` | Owned imaginary-time mesh |
-| `kernel` | Owned `TauKernelValues`, computed from mesh and poles |
-| `atom_diag` | Const reference to the caller's atomic realization; never copied |
-| `ops` | Owned list of second-quantized operators, one per combined flavour |
-| `poles` | Owned physical frequencies, not beta-scaled |
-| `pole_coeffs` | Owned combined pole coefficient tensor |
-| `tau_values` | Owned scalar functions on `tau_mesh` |
-| `tau_values_reflect` | Owned unsigned time reflection `C(beta-tau)` |
-| `statistics` | Per-operator fermion parity, established during construction |
+```cpp
+template <typename OperatorStorage>
+struct Action {
+  triqs::mesh::dlr_imtime tau_mesh;
+  TauKernelValues kernel;
+  nda::vector<double> poles;
+  nda::array<nda::dcomplex, 3> pole_coeffs;
+  nda::array<nda::dcomplex, 3> tau_values;
+  nda::array<nda::dcomplex, 3> tau_values_reflect;
+  std::vector<diagram::Statistics> statistics;
+  int n_hyb;
+  nda::vector<long> block_dims;
+  OperatorStorage operators;
+};
+```
 
-These are logical member names; external access must not permit independent
-mutation of arrays that would invalidate derived tables or cached F-bars.
-Beta and flavour/pole counts are derived from these members, not independently
-editable model properties. Mesh-dependent numerical workspaces remain evaluator
-state.
+This is a member sketch, not a prescription for public mutation or constructor
+order. Construct consistent state, then expose it read-only. Counts other than
+`n_hyb` are derived from the arrays/representation where possible.
 
-The evaluator owns Action, F-bar storage and its workspaces. Action is constructed
-inside the existing evaluator constructor. The propagator is a separate input.
-Action owns no numerical operator matrices: dense `FSet` and block-sparse
-`BlockOpSymQuartet` remain the representation-dependent operator/F-bar storage.
-There is no additional persistent numerical model beside Action and F-bar.
+The dense evaluator owns `Action<dense::FSet>`; the block-sparse evaluator owns
+`Action<block_sparse::BlockOpSymQuartet>`. Action replaces ArcData, ArcCatalog,
+and the separate evaluator F-bar member. There are no kind/family objects and
+no separate persistent list of ordinary operator matrices beside `operators`.
 
-The caller guarantees that atom_diag outlives the evaluator and remains unchanged
-while its derived state is used. Do not copy atom_diag, move it out of the solver,
-or introduce shared ownership. Action's lifetime is the evaluator's lifetime.
-Replace the evaluator when fitted model data changes, as the solver already does.
+FSet/BlockOpSymQuartet continue to own ordinary matrices, adjoints and barred
+contractions in their existing packed layouts. They need no references back
+into Action. Operator symmetry grouping and support information retain their
+representation-specific roles. Mutable diagram workspaces and the propagator
+remain outside Action; immutable support metadata can initially stay in the
+evaluator, derived from `action.operators`.
 
-## One operator list and one coefficient tensor
+**No atom_diag object or reference is retained.** It is an adapter input used to
+construct matrices, not the local Hamiltonian needed by the numerical evaluator.
+There is no atom_diag copy, lifetime extension, real/complex reference variant,
+abstract base class or runtime backend selector. Dense and block-sparse Actions
+are different numerical realizations of the model; this is deliberate.
 
-Keep **`dynint_ops`** as the existing constructor argument name. Construct:
+## Construction paths and operator meaning
+
+Keep the existing Python-facing evaluator constructors, including argument names,
+real/complex atom_diag overloads and `dynint_ops`. Construct Action inside them.
+The existing solver calls need not change:
+
+```python
+evaluator = DenseDiagramEvaluator(
+    poles, hyb_coeffs, mesh, ad, dynint_ops, dynint_coeffs)
+# The corresponding BlockSparseDiagramEvaluator calls also remain unchanged.
+```
+
+The atom_diag path constructs a temporary ordered symbolic list:
 
 ```text
-h = atom_diag.get_fops().size()
-d = dynint_ops.size()
+h = ad.get_fops().size()
 ops = [c_0, ..., c_(h-1), dynint_ops[0], ..., dynint_ops[d-1]]
 ```
 
-Generate the annihilation-operator expressions from atom_diag in its fundamental
-operator order. Store one expression per flavour, not separate entries for both
-an operator and its adjoint. Representation construction derives the adjoints.
-Do not retain another `dynint_ops` vector after assembling `ops`; its entries
-are available as the tail of `ops`.
+Use atom_diag's fundamental-operator ordering. There is one operator per flavour;
+adjoints are derived, not additional coefficient-axis entries. Resolve matrices
+in the occupation-number basis used by the evaluator, undoing the atomic
+eigenbasis rotation as current code does. Symbolic `ops`/`dynint_ops` are setup
+inputs and need not persist in Action.
 
-This is the indexing contract:
+The direct numerical path accepts operator matrices and their layout/statistics,
+without atom_diag. Existing C++ test entry points accepting FSet or
+BlockOpSymQuartet can delegate to this construction. No dummy atomic model or
+partially initialized Action is needed. Preserve tests that deliberately supply
+alternative groupings and synthetic matrices.
 
-```text
-ops[a]                   operator for flavour a
-statistics[a]            its fermion parity
-pole_coeffs[p, a, b]      coefficient of ops[a]^dag ... ops[b] in a forward arc
-```
+If an ungrouped block-operator input is useful, use a small setup record with
+`connection[b]` and `blocks[b]`: source sector b maps to the target sector in
+`connection[b]`, with -1 for absence. Rows belong to the target sector and columns
+to the source. Reuse/consolidate the existing BlockOp/op_block_mat patterns;
+do not introduce another persistent operator container alongside F-bar storage.
+This compact format retains the accepted single-target and injective-connection
+restriction needed to represent adjoints. A dense matrix is the one-sector case.
 
-Backward arcs still use `diagram::ArcOrientation` and
-`BarredOperatorContraction`, including their index reversal and reflection sign.
-No new sign convention or factor of one half is introduced.
+The direct constructor must also receive:
 
-Continue the existing `hyb::get_extended_coefficients` construction, performed
-once per Action:
+- `block_dims`, including sectors on which all operators vanish; matrix shapes
+  alone cannot recover these. Dense evaluation has one full-space dimension.
+- `statistics` in global flavour order; arbitrary matrices alone do not determine
+  fermion parity.
+- `n_hyb`, identifying the first fundamental-operator flavours used by
+  single-particle observables. Statistics cannot substitute for this information.
+
+Keep legacy low-level overloads as thin adapters where useful. An older
+quartet-only input can infer dimensions where blocks exist; preserve its current
+unknown-sector handling explicitly until callers provide full dimensions.
+Do not invent dimensions for missing sectors. Tests of custom layouts should
+prefer the explicit-dimensions path.
+
+Correlator methods retain their existing atom_diag argument and construct their
+observable matrices separately in the same evaluation basis. Preserve current
+compatibility checks and behavior. Their operators are not added to Action's
+model operator list. A direct matrix correlator path already fits this boundary.
+
+## Coefficients, statistics and consistency
+
+Both construction paths use one physical pole list and one combined tensor:
 
 ```text
 pole_coeffs[p] = [ hyb_coeffs[p]       0          ]
                 [      0       dynint_coeffs[p] ]
 ```
 
-Both inputs share the same physical pole list. Off-diagonal entries within the
-retarded block remain supported subject to the selected representation's
-restrictions. For example, with `ops = [c_up, c_down, n_up, n_down]`, the forward
-coupling of `n_up^dag` and `n_down` occupies `pole_coeffs[p,2,3]`.
+An entry `(p,a,b)` couples operator a's adjoint to operator b in a forward arc.
+Backward orientation, index reversal and reflection signs continue to come from
+`diagram::ArcOrientation` and `BarredOperatorContraction`. There is no new factor
+of one half or change of fitted scalar-kernel normalization. Coupled dynamical
+operators remain a full matrix within the retarded block.
 
-Inputs remain already fitted poles and coefficients. The existing Python joint
-fit and subsequent coefficient split need not change. No refitting, pole merging
-or separate per-operator pole sets are introduced. The original input coefficient
-blocks are not retained alongside `pole_coeffs` inside the evaluator. Const
-slices suffice when setup needs one block.
+Inputs are already fitted poles/coefficients on the shared pole set. Keep the
+Python joint-fit/split procedure. Assemble the combined tensor once, using the
+current `hyb::get_extended_coefficients` pattern. Do not retain the split blocks
+as additional evaluator storage. Setup can take const slices when needed.
 
-Move ArcData's scalar precomputations directly into Action: construct
-`tau_values`, its unsigned reflection, and `kernel`. Apply beta scaling only at
-the dimensionless cppdlr kernel calls. Bosonic operator statistics do not change
-the fitted scalar-kernel representation or normalization.
+Build F-bars from this same `pole_coeffs`. For prebuilt operator-storage inputs,
+validate shape/layout and coefficient admissibility, then rebuild barred
+contractions from their ordinary matrices/adjoints and the supplied coefficients.
+Do not assume existing bars match merely because their dimensions do. Preserve
+custom symmetry labels/grouping while rebuilding. Current quartet-only checks
+cover shapes and cross-set coefficients, not numerical agreement of every bar.
 
-## Remove kind and families
+Construct scalar tables directly in Action:
 
-There is no `ArcKind`, `ArcFamily`, catalogue, or stored family list in the final
-model. Current numerical consumers need statistics and the external
-single-particle flavours, not family objects.
+- `poles` stores physical frequencies unchanged.
+- `tau_values` contains the combined scalar functions at the mesh nodes.
+- `tau_values_reflect` is unsigned `C(beta-tau)`.
+- `kernel` contains the existing TauKernelValues evaluated at `beta*poles`.
 
-The first `h` entries identify the fundamental annihilation operators. Derive
-that range from atom_diag; never select fundamental operators merely by scanning
-for fermionic statistics. A general odd-parity operator is not necessarily a
-single-particle field. This ordering convention deliberately replaces the
-catalogue's ability to describe arbitrarily interleaved families.
+The symbolic adapter establishes statistics from the supported operator
+expressions; the matrix adapter receives them. Preserve the current supported
+bosonic dynamical-interaction model. Audit zero, odd and mixed-parity inputs
+before applying the existing parity helper wholesale: it rejects zero/mixed
+expressions. Do not hide a change of accepted operator classes in this refactor.
 
-`diagram::Arcs` remains: it records the chosen directions, pole indices and
-retained flavours of a particular diagram. These indices refer to Action's
-arrays. `diagram::OperatorReference` and `BarredOperatorContraction` also remain.
-Move the still-needed `Statistics` enum out of the deleted catalogue header into
-a small diagram statistics header, updating includes without changing its meaning.
+Delete ArcCatalog and its kind/family types. Move the needed Statistics enum to
+a small diagram statistics header. `diagram::Arcs`, operator references and
+barred-contraction descriptions remain structural inputs indexing Action data.
+The first `n_hyb` flavours identify single-particle operators; arbitrary
+interleaved family order is no longer a model-construction feature.
 
-Block-sparse operator symmetry sets remain in F-bar construction. They describe
-matrix connectivity, not physical interaction families, and need not follow
-flavour order. Preserve their existing global-flavour mappings.
+## One mesh, all DLR functionality
 
-## Preserve the Python API and make ownership concrete
-
-Existing Python-facing constructors remain unchanged, including real/complex
-atom_diag overloads, argument names and optional dynamical-interaction arguments.
-For example, existing calls continue to look like:
-
-```python
-evaluator = DenseDiagramEvaluator(
-    poles, hyb_coeffs, mesh, ad, dynint_ops, dynint_coeffs)
-# BlockSparseDiagramEvaluator accepts the corresponding existing arguments.
-```
-
-Internally the sequence is:
-
-```text
-borrow atom_diag; construct owned Action
-    -> construct operator matrices and F-bars from Action
-    -> initialize support information and numerical workspaces
-```
-
-Action is an internal member (excluded from automatic Python wrapping), not a
-temporary whose arrays are borrowed after construction. Declare it before state
-that depends on it. Do not cache pointers into its members
-unless evaluator copy/move behavior explicitly maintains those pointers. Prefer
-access through the owning evaluator and call-local bound views. Preserve existing
-Python-visible properties, such as beta/counts, through compatible access where
-needed; unchanged constructors alone are not the entire API compatibility check.
-
-The existing evaluator classes are non-templated but accept both
-`atom_diag<false>` and `atom_diag<true>`. A concrete implementation recommendation
-is a non-templated Action with a closed two-alternative reference holder:
+The local TRIQS/cppdlr source audit confirms that Action can retain only
+`tau_mesh` as its DLR state. The mesh already owns/shares a full imtime_ops object:
 
 ```cpp
-using AtomDiagRef = std::variant<
-    std::reference_wrapper<triqs::atom_diag::atom_diag<false> const>,
-    std::reference_wrapper<triqs::atom_diag::atom_diag<true> const>>;
+auto const &itops = action.tau_mesh.dlr_it();
+auto nodes = itops.get_itnodes(); // const view, not an owning node array
+auto beta = action.tau_mesh.beta();
+auto rank = action.tau_mesh.size();
 ```
 
-This represents a const reference to either existing atom_diag type, never an
-owned atom_diag or nullable model. Visit it in setup operations that need the
-atomic realization. Numerical loops read Action's non-templated fields directly;
-there is no variant dispatch per backbone contribution. No abstract base class,
-virtual model interface or new evaluator template hierarchy is needed.
+`dlr_imtime::dlr_it()` returns a const reference. All operations used by the
+current evaluators are callable through it: `vals2coefs`, `convolve` (including
+TIME_ORDERED) and `reflect`. Kernel preparation also obtains nodes/rank through
+this object. There is no missing functionality requiring a separately owned
+`itops`, and no need to add forwarding convolution methods to Action.
 
-The lifetime guarantee is supplied by the caller, including Python callers.
-The solver already retains its atomic realization; document and check its
-construction/replacement order. Binding regeneration must not introduce a
-conversion temporary or copy in place of the referenced object. Do not add a
-new ownership mechanism to compensate for lifetimes the user has guaranteed.
+The names currently obscure different roles: `tau_mesh.dlr_it()` returns the
+operations object, whereas the evaluator member called `dlr_it` is a copied
+node vector. In both evaluators that member is initialized but never read by the
+implementation. Remove it. Replace owning `itops` members with local const
+references and eliminate the extra evaluator mesh once Action owns it. Use
+`action.tau_mesh` when constructing output Green's functions.
 
-Existing correlator methods separately accept atom_diag. Preserve those
-signatures and their current use of the supplied argument and compatibility
-checks in this refactoring. Do not silently ignore that argument or newly require
-pointer identity. Any later simplification to use only Action's reference is a
-separate API decision. Correlator operator matrices remain separate from `ops`.
+Mesh copies already share their internal DLR tables through a shared pointer;
+the current evaluator mesh and ArcData mesh are not independent expensive DLR
+reconstructions. The extra by-value imtime_ops is a separate owning object,
+including its matrices/caches, and the node member is an unnecessary copy.
+Prefer `auto const &itops`, not `auto itops`, when borrowing the mesh operations.
+Do not add reference members merely to shorten access: local references avoid
+copy/move lifetime complications.
 
-## Operator construction and binding boundaries
+Three details must be retained in implementation:
 
-The common destination is operator construction from `ops`, atom_diag and
-`pole_coeffs`, without the F-bar contraction needing to know which entries came
-from hybridization. FSet and BlockOpSymQuartet already contract supplied matrices
-and coefficients. Most special handling lives in constructing those matrices
-and their symmetry groups.
+1. **Lazy caches.** cppdlr's const reflection/convolution methods initialize mutable
+   cached matrices on first use. Mesh copies share those caches. This permits
+   const use but does not establish thread-safe concurrent first initialization.
+   If a shared mesh will be used by concurrent evaluators, initialize the needed
+   caches serially before that use. The installed API exposes `reflect_init()`
+   and `tconvolve_init()`; do not repeatedly reinitialize them in hot loops.
+   The current mutable-workspace evaluators themselves are not concurrent-call
+   objects. No additional DLR copy is needed for ordinary sequential use.
+2. **The old dense low-level constructor.** It accepts an independent imtime_ops
+   but reconstructs a mesh from lambda/epsilon. Those objects are not guaranteed
+   to have identical nodes for custom inputs. Prefer a mesh-based direct
+   constructor and migrate internal tests to supply their actual mesh. If the
+   old C++-only overload remains, validate grid compatibility rather than silently
+   substitute a reconstructed grid. The installed mesh has no public constructor
+   that imports an arbitrary imtime_ops; exact custom-grid import would be a
+   separate TRIQS API issue, not a reason for duplicate state in normal use.
+3. **Units and wrappers.** `get_itnodes()` returns cppdlr's relative-time nodes;
+   mesh iteration returns physical times. Do not substitute one for the other
+   in kernel formulas. Dense currently exposes tau_mesh/itops/dlr_it properties
+   through generated bindings. Preserve read access via derived properties if
+   needed, without duplicate member storage; check conversion/lifetime behavior.
+   Independent mutation of these properties cannot remain a supported way to
+   alter an otherwise immutable evaluator. Record that compatibility detail.
 
-Separate adopting the common inputs from unifying every implementation detail:
+Keep the contiguous copy at block-sparse reflection of a workspace slice:
+`itops.reflect(nda::make_regular(result))`. Removing DLR redundancy must not undo
+this existing strided-input fix. Scope the cleanup to evaluator/Action state;
+manual reference routines may continue accepting imtime_ops arguments.
 
-- Dense fundamental-operator construction currently handles multiple atom_diag
-  subspaces. The dynamical-operator path currently requires one subspace. Routing
-  every operator through the latter would be a regression; retain the existing
-  capability while a general matrix-resolution path is developed.
-- Fundamental block-sparse grouping matches connection rows. Dynamical grouping
-  accepts compatible rows with missing blocks. Preserve the existing partitions
-  and admissible coefficients initially; replacing both grouping algorithms is
-  a separate, independently validated step, not a consequence of moving data.
-- Block-sparse single-target/injective connection requirements and restrictions
-  on cross-symmetry-set coefficients remain representation-specific. Action
-  construction must not impose them on models meant for dense evaluation.
+## Boundaries and implementation sequence
 
-Helpers continue to receive the narrow inputs they use: sign preparation takes
-statistics; tau-kernel binding takes `kernel`; endpoint binding takes the scalar
-tables and operator data; backbone binding takes propagator and F-bar views.
-Do not pass all of Action through shared diagram code merely because it is now
-available. Update bind functions that explicitly mention ArcData to take the
-required fields, rather than introducing a replacement persistent view container.
+Use ordinary overloaded setup helpers for dense and block-sparse storage. A
+single template parameter does not require traits, policy hierarchies or runtime
+backend machinery. Keep Action internal to the existing Python evaluator types.
+Binding/sign helpers receive the fields they use, not the entire Action.
 
-Bound CPU operands remain temporary. Action does not prescribe enumerating or
-transferring every backbone path. GPU storage and execution strategies remain
-future work, targeting high-end cards such as GH200 rather than the local RTX
-A4000. No MPI work-partition API or GPU benchmark work belongs to this refactor.
+The representation-specific matrix setup still deserves a separate review:
+current dense fundamental-operator construction supports multiple atomic
+subspaces, unlike its dynamical-operator route. Fundamental block-sparse grouping
+uses matching connection rows; dynamical grouping allows compatible missing
+blocks. Preserve these capabilities and admissible coefficients during Action
+adoption. Do not silently route all operators through a more restrictive path.
 
-## Review findings and migration checks
+A reviewable sequence is:
 
-The review identified these concrete traps and incorporated them into the plan:
+1. **Introduce numerical Action and construction adapters.** Test scalar fields,
+   operators, explicit metadata and bars from the same coefficients. Cover both
+   atom_diag and numerical-only inputs, with no retained atom_diag or separate
+   persistent operator list. Existing classes may remain temporarily as comparison
+   references, but do not add duplicate model storage to an evaluator.
+2. **Adopt Action in the dense evaluator.** Preserve Python constructors and direct
+   C++ test construction; move FSet/scalar ownership into Action. Keep current
+   basis ordering, contractions and numerical entry points.
+3. **Adopt Action in the block-sparse evaluator.** Preserve custom groupings,
+   support behavior and dimensions, including all-zero sectors. Move quartet
+   ownership, update bind inputs, and retain matrix-only tests.
+4. **Consolidate DLR state.** Route transformations, convolutions, reflection and
+   output meshes through Action's mesh. Remove owning itops/node members and
+   settle the old low-level grid adapter and derived Python properties. This is
+   separate from changes to operator grouping or contraction arithmetic.
+5. **Remove obsolete concepts and close validation.** Delete ArcData/ArcCatalog
+   and repeated coefficient assembly; migrate their tests to Action and diagram
+   sign tests. Check wrapper API, real/complex construction, direct numerical
+   construction, copy/move behavior and the complete CPU/Python suite.
 
-1. **A templated Action cannot be a single direct member of today's non-templated
-   evaluator.** Use the small real/complex reference holder above, without copying
-   atom_diag or duplicating the numerical fields across variant alternatives.
-2. **Some C++ tests construct evaluators without atom_diag.** In particular,
-   sparsity-invariance, numerical-zero, symmetry-mask and convention tests supply
-   prebuilt operators. Audit these before switching constructors. Use real
-   atom_diag-backed fixtures where they describe physical models, keeping custom
-   propagators and operator-grouping coverage. Keep genuinely synthetic checks
-   at the operator/numerical boundary when they cannot describe an Action.
-   Do not fabricate atom_diag merely to fill a field, introduce a half-valid
-   Action, or retain ArcData/ArcCatalog as a permanent test escape route. The
-   exact test adaptation is an implementation checkpoint before deleting the
-   old low-level constructors; preserving coverage is required.
-3. **Deriving parity has edge cases.** The current helper rejects zero and
-   mixed-parity expressions, while current dynamical setup assumes bosonic
-   operators. For nonzero supported even operators, derived statistics agree.
-   Explicitly audit zero/odd/mixed inputs before applying the helper wholesale:
-   do not accidentally reject previously supported zero operators or claim
-   support for odd dynamical interactions merely by changing their sign flag.
-   Any change to accepted operator classes requires its own documented decision
-   and regression, rather than being hidden in the ownership change.
-4. **Generic resolution can change basis ordering, support or summation order.**
-   Compare against existing Fock-basis matrices and F-bars, including adjoints,
-   non-Hermitian operators, multiple subspaces and missing blocks. Test numerical
-   agreement at established tolerances; do not weaken tolerances to mask errors.
-5. **Immutability includes the borrowed atom_diag.** A live reference is not
-   sufficient if the caller changes its basis or partition after F-bar setup.
-   State this invariant alongside the lifetime guarantee.
+Only afterwards consolidate remaining operator-resolution/grouping algorithms
+as an independently reviewed change. No GPU implementation or MPI partition API
+is part of this plan. Future GPU execution can use Action's numerical arrays
+without CPU enumeration of every backbone path; performance targets remain
+high-end cards such as GH200, not the local RTX A4000.
 
-## Reviewable implementation sequence
+Use focused code commits and separate `work_log_action.md` checkpoints, with
+terse house-style messages. Each checkpoint explains the change, preserved
+contracts and relevant validation. Reuse existing convention, mixed-interaction,
+symmetry, numerical-zero, strided-input, dense/block-sparse agreement and Python
+solver tests. Add tests only for the new construction/ownership/grid contracts.
 
-1. **Flat Action and construction tests.** Implement the members, borrowed
-   real/complex atom_diag, unified `ops`, combined coefficients and scalar tables.
-   Compare with existing construction, including beta != 1 and empty dynint input.
-   Old classes can remain temporarily for comparison during migration, but no
-   evaluator should own duplicate old/new scalar model storage.
-2. **Dense evaluator adoption.** Construct Action inside the existing public
-   constructors; source scalar data/statistics from it and feed its common inputs
-   to F-bar setup. Migrate affected low-level tests. Preserve existing dense
-   matrix-resolution capabilities and Python-facing behavior.
-3. **Block-sparse evaluator adoption.** Do the corresponding ownership change,
-   bind-signature updates and test migration. Preserve symmetry grouping,
-   support construction and coefficient admissibility while changing ownership.
-4. **Remove the obsolete concepts and close compatibility checks.** Delete
-   ArcData/ArcCatalog/family types and obsolete constructors once callers migrate.
-   Replace catalogue-specific tests with Action ordering/statistics and diagram
-   sign tests. Remove repeated coefficient assembly from setup, update wrappers
-   as needed, and run the complete CPU/Python suite.
-5. **Unify remaining operator-resolution machinery separately.** Review the
-   actual duplication left by stages 2–3, then consolidate matrix construction
-   behind the common operator inputs. Keep grouping-policy changes separate if
-   they affect admissibility or work ordering. This stage must not be folded into
-   the ownership commits merely to make the implementation appear uniform.
+## Sources reviewed
 
-Each stage should be understandable from its code commit and a separate
-`work_log_action.md` checkpoint: what changed, why, preserved contracts and
-validation. Use the established terse commit style. Split a stage only where its
-size prevents useful review; do not combine ownership, grouping changes and
-unrelated naming cleanup in one commit.
+Repository: `c++/triqs_xca/{dense,block_sparse}/diagram_evaluator.{hpp,cpp}`,
+`arc_data.{hpp,cpp}`, `hyb.cpp`, both operator/dynint setup implementations,
+`dense/fset.hpp`, `block_sparse/block_op.hpp`, `atom_diag.hpp`, and generated
+`python/triqs_xca/_triqs_xca.wrap.cxx` properties. Direct-construction coverage
+includes sparsity_invariance, numerical_zero, sym_set_mask and evaluator_conventions.
 
-Use the existing convention, interaction-contraction, mixed-interaction,
-dense/block-sparse comparison, symmetry, correlator and Python solver tests.
-Add focused ownership/indexing/matrix-equivalence tests where those contracts
-are new. Validate real and complex atom_diag routes and wrapper signatures.
-Documentation revision itself requires no build or numerical benchmark.
+Installed dependency sources checked on 2026-10-24:
 
-## Sources checked for this revision
+- `/home/hugstr/apps/triqs/include/triqs/mesh/dlr_imtime.hpp`: operations accessor
+  at line 274, physical-time conversion at 248–253, shared ownership at line 391.
+- `/home/hugstr/apps/triqs/include/cppdlr/dlr_imtime.hpp`: const transforms at 103,
+  reflection at 265, convolution at 311, node view at 721, and lazy cache storage
+  near 932–943. Public cache initialization methods are at 833 and 901.
 
-- `arc_data.{hpp,cpp}` and `diagram/arc_catalog.{hpp,cpp}` under
-  `c++/triqs_xca/`: scalar precomputation, metadata and removal targets.
-- `dense/atom_diag.cpp`, `block_sparse/atom_diag.cpp` and both `dynint.cpp`
-  implementations: matrix construction and different grouping policies.
-- Both `diagram_evaluator.{hpp,cpp}` implementations: ownership, real/complex
-  constructors, external-flavour selection and explicit correlator atom_diag.
-- `c++/triqs_xca/operator_statistics.hpp`: zero/mixed-parity behavior.
-- `python/triqs_xca/_triqs_xca.cpp` and `solver.py`: existing exposed signatures
-  and solver construction pattern.
-- `test/c++/block_sparse/{sparsity_invariance,numerical_zero,sym_set_mask}.cpp`
-  and `test/c++/evaluator_conventions.cpp`: low-level constructor dependencies.
+This revision was source-reviewed; no evaluator code, builds or benchmarks were
+changed or run for the documentation update.
