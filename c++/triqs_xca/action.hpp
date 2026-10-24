@@ -5,6 +5,7 @@
 #include "tau_kernel_values.hpp"
 #include <algorithm>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -45,7 +46,10 @@ namespace triqs_xca {
        nda::vector_const_view<long> dims, triqs::mesh::dlr_imtime const &mesh) {
       if (mesh.size() == 0 || poles == 0) throw std::invalid_argument("Action: mesh and pole list must not be empty");
       if (coefficients.extent(0) != poles || coefficients.extent(1) != flavours || coefficients.extent(2) != flavours)
-        throw std::invalid_argument("Action: coefficients must have shape (poles, flavours, flavours), matching statistics");
+        throw std::invalid_argument("Action: coefficients must have shape (poles.size() = " + std::to_string(poles)
+                                    + ", statistics.size() = " + std::to_string(flavours) + ", " + std::to_string(flavours)
+                                    + "), got (" + std::to_string(coefficients.extent(0)) + ", " + std::to_string(coefficients.extent(1))
+                                    + ", " + std::to_string(coefficients.extent(2)) + ")");
       if (n_hyb < 0 || n_hyb > flavours) throw std::invalid_argument("Action: invalid fundamental flavour count");
       if (dims.empty()) throw std::invalid_argument("Action: sector dimensions must not be empty");
       for (auto d : dims)

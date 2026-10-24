@@ -40,7 +40,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{0, 1}, {1}, {n - 1}}, evaluator.arc_data.poles, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{0, 1}, {1}, {n - 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::self_energy);
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
   auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology.arcs, f), model.ad);
   auto actual = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, assignment), model.ad);
@@ -60,7 +60,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{-1, 1}, {1}, {n - 1}}, evaluator.arc_data.poles, triqs_xca::diagram::Kind::correlator);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{-1, 1}, {1}, {n - 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::correlator);
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto op = identity(G);
   auto expected = evaluator.eval_correlator(G, topology, {op}, {op}, f, false);
@@ -97,8 +97,8 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
     nda::vector<int> dimensions;
     int count = 0;
     triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), hybridization, statistics, signs);
-      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), hybridization, statistics, signs);
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), hybridization.values, hybridization.values_reflect, statistics, signs);
+      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), hybridization.values, hybridization.values_reflect, statistics, signs);
       ++count;
       ASSERT_EQ(bound.backbone.vertices.size(), 4);
       EXPECT_FALSE(bound.backbone.vertices[0].has_value());

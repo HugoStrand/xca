@@ -30,97 +30,27 @@ using nda::linalg::matmul;
 
 namespace {
 
-  // an out-of-range n_int would give a negative n_hyb
-  void check_n_int(int n_int, long n) {
-    if (n_int < 0 || n_int > n)
-      throw std::invalid_argument("DiagramEvaluator: n_int = " + std::to_string(n_int) + " is out of range for a quartet with "
-                                  + std::to_string(n) + " orbital indices");
-  }
-
-  // Validate the coefficients of the Fq-only constructor against the quartet and return n, the atom_diag constructors build both from the
-  // same array and need no check
-  long check_fq_only_coeffs(nda::array_const_view<dcomplex, 3> hyb_coeffs, nda::vector_const_view<double> hyb_poles,
-                            BlockOpSymQuartet const &Fq) {
-    long n = nda::sum(Fq.sym_set_sizes);
-    long p = hyb_poles.size();
-    // all three extents, a wrong pole count is silently reinterpreted by the reshape in coefs2vals
-    if (hyb_coeffs.extent(0) != p || hyb_coeffs.extent(1) != n || hyb_coeffs.extent(2) != n) {
-      throw std::invalid_argument("DiagramEvaluator: hyb_coeffs must have shape (p, n, n) with p = hyb_poles.size() = "
-                                  + std::to_string(p) + " and n = sum(Fq.sym_set_sizes) = " + std::to_string(n) + ", got ("
-                                  + std::to_string(hyb_coeffs.extent(0)) + ", " + std::to_string(hyb_coeffs.extent(1)) + ", "
-                                  + std::to_string(hyb_coeffs.extent(2)) + ")");
-    }
-    check_sym_set_block_diagonal(hyb_coeffs, Fq.sym_set_labels, "DiagramEvaluator");
-    return n;
-  }
-
   // the leading index kap of Tkaps runs within one symmetry set, so the largest set is the bound rather than n
   long max_sym_set_size(BlockOpSymQuartet const &Fq) { return nda::max_element(Fq.sym_set_sizes); }
 
-  // largest block dimension over all symmetry sets, Fs[0] alone underestimates it when set 0 misses the largest subspace
-  int max_block_dim(BlockOpSymQuartet const &Fq) {
-    int N = 0;
-    for (auto const &F : Fq.Fs) N = std::max(N, nda::max_element(F.get_block_sizes()));
-    for (auto const &F : Fq.F_dags) N = std::max(N, nda::max_element(F.get_block_sizes()));
-    return N;
-  }
-
-  // dimension of each invariant subspace, read off the blocks of the operators acting on it; -1 for a subspace no operator acts on
-  nda::vector<long> subspace_dims_of(BlockOpSymQuartet const &Fq) {
-    long n_sub = Fq.Fs[0].get_num_block_cols();
-    nda::vector<long> dims(n_sub);
-    dims = -1;
-    for (auto const *sets : {&Fq.Fs, &Fq.F_dags})
-      for (auto const &F : *sets)
-        for (long b = 0; b < n_sub; ++b)
-          if (F.get_block_index(b) >= 0) dims(b) = F.get_block_size(b, 1);
-    return dims;
-  }
-
-  template <bool isComplex>
-  nda::vector<long> subspace_dims_of(triqs::atom_diag::atom_diag<isComplex> const &ad) {
-    auto const dims = ad.get_subspace_dims();
-    nda::vector<long> result(dims.size());
-    for (std::size_t b = 0; b < dims.size(); ++b) result(b) = dims[b];
-    return result;
-  }
-
-  // largest invariant-subspace dimension, i.e. the largest block of the pseudo-particle propagator
-  template <bool isComplex>
-  int max_subspace_dim(triqs::atom_diag::atom_diag<isComplex> const &ad) {
-    auto const dims = ad.get_subspace_dims();
-    return dims.empty() ? 0 : *std::max_element(dims.begin(), dims.end());
-  }
-
 } // namespace
+
+DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model)
+   : action(std::move(model)), tau_mesh(action.tau_mesh), itops(tau_mesh.dlr_it()), dlr_it(itops.get_itnodes()),
+     Sigma({}, {}), beta(tau_mesh.beta()), r(itops.rank()), n(action.statistics.size()),
+     n_hyb(action.n_hyb), n_int(n - n_hyb), q(action.operators.sym_set_sizes.size()),
+     Nmax(std::max(0L, nda::max_element(action.block_dims))),
+     T(nda::zeros<dcomplex>(r, Nmax, Nmax)), U(nda::zeros<dcomplex>(r, Nmax, Nmax)),
+     GKt(nda::zeros<dcomplex>(r, Nmax, Nmax)),
+     Tkaps(nda::zeros<dcomplex>(max_sym_set_size(action.operators), r, Nmax, Nmax)),
+     Tmu(nda::zeros<dcomplex>(r, Nmax, Nmax)) {}
 
 DiagramEvaluator::DiagramEvaluator(double beta, double Lambda, double eps,
                                    nda::vector_const_view<double> hyb_poles,
                                    nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                   BlockOpSymQuartet &Fq, int n_int)
-   :
-     tau_mesh(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, Lambda / beta, eps, false)),
-     itops(tau_mesh.dlr_it()),
-     dlr_it(itops.get_itnodes()),
-     Fq(Fq),
-     Sigma({}, {}),
-     subspace_dims(subspace_dims_of(Fq)),
-     beta(beta),
-     r(itops.rank()),
-     n(check_fq_only_coeffs(hyb_coeffs, hyb_poles, Fq)), // number of spin-orbitals; also validates hyb_coeffs
-     // n_int is the constructor parameter here, the member of the same name is not yet initialized
-     n_hyb((check_n_int(n_int, nda::sum(Fq.sym_set_sizes)), nda::sum(Fq.sym_set_sizes) - n_int)),
-     n_int(n_int),
-     q(nda::max_element(Fq.sym_set_labels) + 1),
-     Nmax(max_block_dim(Fq)),
-     arc_data(tau_mesh, hyb_poles, hyb_coeffs),
-     // allocate arrays
-     T(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     U(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     GKt(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     Tkaps(nda::zeros<dcomplex>(max_sym_set_size(Fq), r, Nmax, Nmax)), // kap runs within one symmetry set, not over all n
-     Tmu(nda::zeros<dcomplex>(r, Nmax, Nmax))
-     {}
+                                   BlockOpSymQuartet const &Fq, int n_int)
+   : DiagramEvaluator(make_action(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, Lambda / beta, eps, false),
+                                  hyb_poles, hyb_coeffs, Fq, n_int)) {}
 
 template<bool isComplex>
 DiagramEvaluator::DiagramEvaluator(
@@ -128,28 +58,7 @@ DiagramEvaluator::DiagramEvaluator(
   nda::array_const_view<dcomplex, 3> hyb_coeffs,
   triqs::mesh::dlr_imtime tau_mesh,
   triqs::atom_diag::atom_diag<isComplex> const &ad)
-   :
-     tau_mesh(tau_mesh),
-     itops(tau_mesh.dlr_it()),
-     dlr_it(itops.get_itnodes()),
-     Fq(std::get<0>(atom_diag::get_operators(ad, hyb_coeffs))),
-     Sigma({}, {}),
-     subspace_dims(subspace_dims_of(ad)),
-     beta(tau_mesh.beta()),
-     r(itops.rank()),
-     n(ad.get_fops().size()), // number of fermion flavours (spin-orbitals)
-     n_hyb(ad.get_fops().size()),
-     n_int(0), // no dynamical interactions in this constructor
-     q(nda::max_element(Fq.sym_set_labels) + 1),
-     Nmax(max_subspace_dim(ad)),
-     arc_data(tau_mesh, hyb_poles, hyb_coeffs),
-     // allocate arrays
-     T(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     U(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     GKt(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     Tkaps(nda::zeros<dcomplex>(max_sym_set_size(Fq), r, Nmax, Nmax)), // kap runs within one symmetry set, not over all n
-     Tmu(nda::zeros<dcomplex>(r, Nmax, Nmax))
-     {}
+   : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)) {}
 
 template DiagramEvaluator::DiagramEvaluator(
   nda::vector_const_view<double> hyb_poles,
@@ -171,29 +80,7 @@ DiagramEvaluator::DiagramEvaluator(
   triqs::atom_diag::atom_diag<isComplex> const &ad,
   std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
   nda::array_const_view<dcomplex, 3> dynint_coeffs)
-   :
-     tau_mesh(tau_mesh),
-     itops(tau_mesh.dlr_it()),
-     dlr_it(itops.get_itnodes()),
-     Fq(std::get<0>(dynint::get_operators_and_interactions(ad, hyb_coeffs, dynint_coeffs, dynint_ops))),
-     Sigma({}, {}),
-     subspace_dims(subspace_dims_of(ad)),
-     beta(tau_mesh.beta()),
-     r(itops.rank()),
-     n(ad.get_fops().size() + dynint_ops.size()), // the extended flavour space
-     n_hyb(ad.get_fops().size()),
-     n_int(dynint_ops.size()),
-     q(nda::max_element(Fq.sym_set_labels) + 1),
-     Nmax(max_subspace_dim(ad)),
-     // no refl_sign argument: block-sparse keeps +1.0 and applies the backward-line sign explicitly
-     arc_data(tau_mesh, hyb_poles, hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs)),
-     // allocate arrays
-     T(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     U(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     GKt(nda::zeros<dcomplex>(r, Nmax, Nmax)),
-     Tkaps(nda::zeros<dcomplex>(max_sym_set_size(Fq), r, Nmax, Nmax)), // kap runs within one symmetry set, not over all n
-     Tmu(nda::zeros<dcomplex>(r, Nmax, Nmax))
-     {}
+   : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)) {}
 
 template DiagramEvaluator::DiagramEvaluator(
   nda::vector_const_view<double> hyb_poles,
@@ -272,10 +159,10 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace) {
-  auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
-  triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, Fq, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
-    auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, diagram, prepared, Fq, support_, arc_data, arc_catalog_.statistics(), signs);
+  auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+  triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, action.operators, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
+    auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, diagram, prepared, action.operators, support_, action.tau_values, action.tau_values_reflect, action.statistics, signs);
     if (!select_diagonal_self_energy(contribution)) return;
     auto result = eval_self_energy_contribution(diagram, kernels, contribution);
     Sigma.add_block(contribution.output_sector, result);
@@ -284,7 +171,7 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::dia
 
 void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(topology.order());
-  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
   eval_self_energy_paths(Gt, diagram, workspace);
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
@@ -293,9 +180,9 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(topology.order());
 
   // loop over all flat indices
-  long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::self_energy);
+  long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::self_energy);
   for (long f_ix = 0; f_ix < f_ix_max; f_ix++) {
-    auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+    auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy_paths(Gt, diagram, workspace);
   }
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
@@ -405,7 +292,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology_arr, long f_ix)
   {
-  auto const diagram = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{topology_arr}, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+  auto const diagram = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{topology_arr}, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
   return compute_self_energy(Gt, diagram);
 }
 
@@ -472,7 +359,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
     std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
   check_propagator(Gt);
 
-  long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::correlator);
+  long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
 
   nda::array<dcomplex, 3> correlator(r, mu_ops.size(), kap_ops.size()), Tmuop(r, Nmax, Nmax);
   correlator = 0;
@@ -483,7 +370,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
                                                           long f_ix, bool is_fermionic) {
-  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::correlator);
+  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::correlator);
   return eval_correlator(Gt, diagram, std::move(mu_ops), std::move(kap_ops), triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
 }
 
@@ -529,14 +416,14 @@ void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &oper
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
   check_propagator(Gt);
-  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
+  auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   std::vector<diagram::BackbonePath> zero_to_tau_paths, tau_to_beta_paths;
   std::vector<nda::array<dcomplex, 3>> zero_to_tau_results, tau_to_beta_results;
   auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
-  visit_backbone_paths(Gt, diagram, Fq, support_, zero_to_tau, [&](diagram::BackbonePath const &path) {
-    auto operands = bind::backbone(Gt, diagram, Fq, path);
+  visit_backbone_paths(Gt, diagram, action.operators, support_, zero_to_tau, [&](diagram::BackbonePath const &path) {
+    auto operands = bind::backbone(Gt, diagram, action.operators, path);
     auto result = eval_backbone_forward(kernels, operands);
     // Correlator normalization is a caller decision, not a property of the range.
     result *= kernels.prefactor;
@@ -544,8 +431,8 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
     zero_to_tau_paths.push_back(path);
     zero_to_tau_results.emplace_back(result);
   });
-  visit_backbone_paths(Gt, diagram, Fq, support_, tau_to_beta, [&](diagram::BackbonePath const &path) {
-    auto operands = bind::backbone(Gt, diagram, Fq, path);
+  visit_backbone_paths(Gt, diagram, action.operators, support_, tau_to_beta, [&](diagram::BackbonePath const &path) {
+    auto operands = bind::backbone(Gt, diagram, action.operators, path);
     auto result = eval_backbone_backward(kernels, operands);
     tau_to_beta_paths.push_back(path);
     // cppdlr::reflect reshapes its input; an active block in U can be strided.
@@ -557,7 +444,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
     eval_correlator_completion(operands, tau_to_beta_results[operands.tau_to_beta_path],
                                zero_to_tau_results[operands.zero_to_tau_path], scratch, correlator);
   });
-  auto signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
+  auto signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
   correlator *= signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
   return correlator;
 }
@@ -584,14 +471,14 @@ namespace {
 } // namespace
 
 BlockDiagOpFun DiagramEvaluator::native_propagator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc) const {
-  check_block_count(G_ppsc.size(), subspace_dims.size());
-  for (long b = 0; b < subspace_dims.size(); ++b) check_block_shape(b, G_ppsc[b].data().shape(), r, subspace_dims(b));
+  check_block_count(G_ppsc.size(), action.block_dims.size());
+  for (long b = 0; b < action.block_dims.size(); ++b) check_block_shape(b, G_ppsc[b].data().shape(), r, action.block_dims(b));
   return BlockDiagOpFun(G_ppsc);
 }
 
 void DiagramEvaluator::check_propagator(BlockDiagOpFun const &Gt) const {
-  check_block_count(Gt.get_num_block_cols(), subspace_dims.size());
-  for (long b = 0; b < subspace_dims.size(); ++b) check_block_shape(b, Gt.get_block(b).shape(), r, subspace_dims(b));
+  check_block_count(Gt.get_num_block_cols(), action.block_dims.size());
+  for (long b = 0; b < action.block_dims.size(); ++b) check_block_shape(b, Gt.get_block(b).shape(), r, action.block_dims(b));
 }
 
 void DiagramEvaluator::reset() {
@@ -607,28 +494,28 @@ void DiagramEvaluator::reset() {
 
 long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 2> topology_arr) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  return triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::self_energy);
+  return triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::self_energy);
 }
 
 void DiagramEvaluator::print_self_energy_backbone(nda::array_const_view<int, 2> topology_arr, long f_ix) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
   std::cout << "Self-energy diagram for f_ix = " << f_ix << ":\n";
   std::cout << diagram << std::endl;
 }
 
 long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology_arr) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  return triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::correlator);
+  return triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
 }
 
 // Order the operators by orbital index, not by symmetry set, since they index the external legs of the single-particle Green's function
 std::vector<BlockOp> DiagramEvaluator::setup_mu_ops_for_single_ptcle_gf() {
   std::vector<BlockOp> mu_ops;
   // The model specifies which flavours are external single-particle operators.
-  for (int o_ix : arc_catalog_.hybridization_flavours()) {
-    auto &F = Fq.Fs[Fq.sym_set_labels(o_ix)];
-    int i   = static_cast<int>(Fq.sym_set_inds(o_ix));
+  for (int o_ix = 0; o_ix < action.n_hyb; ++o_ix) {
+    auto &F = action.operators.Fs[action.operators.sym_set_labels(o_ix)];
+    int i   = static_cast<int>(action.operators.sym_set_inds(o_ix));
     std::vector<nda::array<dcomplex, 2>> mu_blocks;
     for (int j = 0; j < F.get_num_block_cols(); ++j) {
       if (F.get_block_index(j) != -1) {
@@ -646,9 +533,9 @@ std::vector<BlockOp> DiagramEvaluator::setup_mu_ops_for_single_ptcle_gf() {
 
 std::vector<BlockOp> DiagramEvaluator::setup_kap_ops_for_single_ptcle_gf() {
   std::vector<BlockOp> kap_ops;
-  for (int o_ix : arc_catalog_.hybridization_flavours()) {
-    auto &F_dag = Fq.F_dags[Fq.sym_set_labels(o_ix)];
-    int i       = static_cast<int>(Fq.sym_set_inds(o_ix));
+  for (int o_ix = 0; o_ix < action.n_hyb; ++o_ix) {
+    auto &F_dag = action.operators.F_dags[action.operators.sym_set_labels(o_ix)];
+    int i       = static_cast<int>(action.operators.sym_set_inds(o_ix));
     std::vector<nda::array<dcomplex, 2>> kap_blocks;
     for (int j = 0; j < F_dag.get_num_block_cols(); ++j) {
       if (F_dag.get_block_index(j) != -1) {
@@ -719,7 +606,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::bl
 
 void DiagramEvaluator::print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology_arr, long f_ix) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::correlator);
+  auto const diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::correlator);
   std::cout << "Single-particle Green's function diagram for f_ix = " << f_ix << ":\n";
   std::cout << diagram << std::endl;
 }
@@ -771,9 +658,9 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator_selected(
   triqs_xca::diagram::Topology topology{topology_arr};
 
   // the operator blocks are placed by the subspaces of ad, which have to be those of the evaluator
-  auto ad_dims = subspace_dims_of(ad);
-  bool same    = ad_dims.size() == subspace_dims.size();
-  for (long b = 0; same && b < ad_dims.size(); ++b) same = subspace_dims(b) < 0 || ad_dims(b) == subspace_dims(b);
+  auto ad_dims = atom_block_dims(ad);
+  bool same    = ad_dims.size() == action.block_dims.size();
+  for (long b = 0; same && b < ad_dims.size(); ++b) same = action.block_dims(b) < 0 || ad_dims(b) == action.block_dims(b);
   if (!same) throw std::invalid_argument("compute_one_time_correlator: the subspaces of the atom_diag differ from those the evaluator was built for");
 
   auto mu_ops  = setup_ops_from_triqs_2nd_quant_ops(ops_tau, ad);

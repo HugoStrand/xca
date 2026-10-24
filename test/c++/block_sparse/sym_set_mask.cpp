@@ -219,7 +219,7 @@ TEST(BlockSparseSymSetMask, Fq_only_constructor_rejects_mismatched_coefficient_e
     std::string msg = e.what();
     EXPECT_NE(msg.find("shape"), std::string::npos)
        << "wrong throw - this must be the extent check, not the cross-set check reading past the array: " << msg;
-    EXPECT_NE(msg.find("sum(Fq.sym_set_sizes)"), std::string::npos) << "the message should say what n was compared against: " << msg;
+    EXPECT_NE(msg.find("statistics.size()"), std::string::npos) << "the message should say what n was compared against: " << msg;
   }
 
   // the pole extent too, a wrong p is silently reinterpreted by the reshape in coefs2vals
@@ -231,6 +231,6 @@ TEST(BlockSparseSymSetMask, Fq_only_constructor_rejects_mismatched_coefficient_e
   } catch (std::invalid_argument const &e) {
     std::string msg = e.what();
     EXPECT_NE(msg.find("shape"), std::string::npos) << "wrong throw - this must be the extent check: " << msg;
-    EXPECT_NE(msg.find("hyb_poles.size()"), std::string::npos) << "the message should name hyb_poles as the thing that disagrees: " << msg;
+    EXPECT_NE(msg.find("poles.size()"), std::string::npos) << "the message should name hyb_poles as the thing that disagrees: " << msg;
   }
 }

@@ -63,3 +63,25 @@ TEST(Action, mixed_and_empty_dynamical_inputs_keep_flavour_order) {
     EXPECT_EQ(dense.operators.F_bars_refl, old.F_bars_refl);
   }
 }
+
+TEST(Action, explicit_dimensions_keep_sectors_where_all_operators_vanish) {
+  using nda::dcomplex;
+  using tensor = nda::array<dcomplex, 3>;
+  using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
+  using bgf = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
+  auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-12, false);
+  auto coefficients = nda::ones<dcomplex>(1, 1, 1);
+  std::vector<tensor> blocks{nda::ones<dcomplex>(1, 1, 1), nda::zeros<dcomplex>(1, 3, 3)};
+  block_sparse::BlockOpSymSet op(nda::vector<int>{0, -1}, blocks);
+  block_sparse::BlockOpSymQuartet quartet({op}, {op}, coefficients, nda::vector<long>{0});
+  auto model = block_sparse::make_action(mesh, nda::vector<double>{0.}, coefficients, quartet,
+                                        {diagram::Statistics::bosonic}, 0, nda::vector<long>{1, 3});
+  block_sparse::DiagramEvaluator evaluator(std::move(model));
+  EXPECT_EQ(evaluator.Nmax, 3);
+  EXPECT_EQ(evaluator.n_hyb, 0);
+  bgf G{std::vector{gf(mesh, nda::ones<dcomplex>(mesh.size(), 1, 1)), gf(mesh, nda::ones<dcomplex>(mesh.size(), 3, 3))}};
+  auto result = evaluator.compute_self_energy(G, nda::array<int, 2>{{0, 1}});
+  EXPECT_EQ(nda::max_element(nda::abs(result[1].data())), 0.);
+  bgf bad{std::vector{G[0], gf(mesh, nda::ones<dcomplex>(mesh.size(), 2, 2))}};
+  EXPECT_THROW(evaluator.compute_self_energy(bad, nda::array<int, 2>{{0, 1}}), std::invalid_argument);
+}

@@ -14,7 +14,8 @@ namespace triqs_xca::block_sparse::bind {
   } // namespace
 
   EndpointSumOperands endpoint_sum(triqs_xca::diagram::Diagram const &diagram, block_sparse::diagram::SelfEnergyDiagram const &prepared,
-                                   BlockOpSymQuartet const &operators, OperatorSupportTable const &support, ArcData const &arc_data,
+                                   BlockOpSymQuartet const &operators, OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
+                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                    std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int special = diagram.topology.special_vertex();
     triqs_xca::diagram::ArcOrientation orientation{diagram.arcs.directions(0) == 1};
@@ -34,9 +35,9 @@ namespace triqs_xca::block_sparse::bind {
                                              orientation.late_operator(-1).adjoint, statistics));
       int flavour = endpoints.late.back().coefficient_index;
       if (orientation.reflected())
-        endpoints.coefficients.emplace_back(arc_data.values_reflect(all, all, flavour));
+        endpoints.coefficients.emplace_back(tau_values_reflect(all, all, flavour));
       else
-        endpoints.coefficients.emplace_back(arc_data.values(all, flavour, all));
+        endpoints.coefficients.emplace_back(tau_values(all, flavour, all));
     }
 
     return endpoints;
@@ -44,11 +45,12 @@ namespace triqs_xca::block_sparse::bind {
 
   SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram,
                                  block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
-                                 OperatorSupportTable const &support, ArcData const &arc_data,
+                                 OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
+                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                  std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int m    = diagram.topology.order();
     int sign = (m % 2 == 0 ? -1 : 1) * (diagram.arcs.directions(0) == 1 ? 1 : -1) * diagram.direction_sign;
-    return {backbone(propagator, diagram, operators, prepared.path), endpoint_sum(diagram, prepared, operators, support, arc_data, statistics, signs),
+    return {backbone(propagator, diagram, operators, prepared.path), endpoint_sum(diagram, prepared, operators, support, tau_values, tau_values_reflect, statistics, signs),
             prepared.output_sector, sign};
   }
 } // namespace triqs_xca::block_sparse::bind

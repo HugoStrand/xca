@@ -1,5 +1,5 @@
 #pragma once
-#include "triqs_xca/arc_data.hpp"
+#include "action.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <nda/nda.hpp>
 
@@ -29,14 +29,15 @@ using cppdlr::imtime_ops;
  * data structures required for computation.
  */
 class DiagramEvaluator {
+  public:
+  C2PY_IGNORE const Action<BlockOpSymQuartet> action;
+
   private:
   triqs::mesh::dlr_imtime tau_mesh;  // imaginary time mesh
   imtime_ops itops;           // DLR imaginary time object
   nda::vector<double> dlr_it; // DLR imaginary time nodes in relative ordering
-  BlockOpSymQuartet Fq;       // BlockOpSymQuartet (field operators with and without bars)
-  OperatorSupportTable support_ = OperatorSupportTable(Fq); // immutable model support; no propagator data
+  OperatorSupportTable support_ = OperatorSupportTable(action.operators); // immutable model support; no propagator data
   BlockDiagOpFun Sigma;       // array for storing self-energy contribution (final result)
-  nda::vector<long> subspace_dims; // dimension of each invariant subspace, i.e. of each block of G_ppsc; -1 where no operator acts
 
   // check that G_ppsc has one (r, d, d) block per invariant subspace of dimension d, in subspace order, and return it as a BlockDiagOpFun
   BlockDiagOpFun native_propagator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc) const;
@@ -96,7 +97,6 @@ class DiagramEvaluator {
   int n_int;                           // number of dynamical-interaction flavours
   int q;                               // number of symmetry sets
   int Nmax;                            // maximum block size in the Green's function
-  C2PY_IGNORE triqs_xca::ArcData arc_data; // Numerical coefficients, time functions and scalar kernels for all arc families
   nda::array<dcomplex, 3> T;           // array for storing intermediate result
   nda::array<dcomplex, 3> U;           // array for storing intermediate result (tau-beta side of correlator diagram)
   nda::array<dcomplex, 3> GKt;         // array for storing result of edge computation
@@ -117,7 +117,6 @@ class DiagramEvaluator {
                                                                triqs::atom_diag::atom_diag<isComplex> const &ad,
                                                                nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
 
-  triqs_xca::diagram::ArcCatalog arc_catalog_ = triqs_xca::diagram::hybridization_retarded_catalog(n_hyb, n_int);
 
   public:
   // routines for any diagram
@@ -190,7 +189,10 @@ class DiagramEvaluator {
                                                       triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                       long first, long last);
 
-  // Every constructor takes physical pole frequencies, also stored unchanged in ArcData.
+  /// Direct numerical construction, including explicit statistics and sector dimensions.
+  C2PY_IGNORE explicit DiagramEvaluator(Action<BlockOpSymQuartet> action);
+
+  // Every constructor takes physical pole frequencies, also stored unchanged in Action.
   /**
    * @brief Constructor for DiagramEvaluator
    * @param[in] beta inverse temperature
@@ -240,7 +242,7 @@ class DiagramEvaluator {
     double beta, double Lambda, double eps, 
     nda::vector_const_view<double> hyb_poles, 
     nda::array_const_view<dcomplex, 3> hyb_coeffs,
-    BlockOpSymQuartet &Fq, int n_int = 0);
+    BlockOpSymQuartet const &Fq, int n_int = 0);
 
   virtual ~DiagramEvaluator() = default;
 };

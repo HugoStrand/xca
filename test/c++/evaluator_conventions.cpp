@@ -52,8 +52,8 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
         }
   expect_close(dense.action.tau_values, values);
   expect_close(dense.action.tau_values_reflect, reflected);
-  expect_close(sparse.arc_data.values, values);
-  expect_close(sparse.arc_data.values_reflect, reflected);
+  expect_close(sparse.action.tau_values, values);
+  expect_close(sparse.action.tau_values_reflect, reflected);
 
   tensor G = nda::zeros<dcomplex>(mesh.size(), 4, 4);
   for (int t = 0; t < mesh.size(); ++t)
@@ -109,8 +109,8 @@ TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {
     };
     check(dense_atom.action.poles, dense_atom.action.pole_coeffs, dense_atom.action.tau_values, dense_atom.action.tau_values_reflect, dense_atom.action.kernel);
     check(dense_ops.action.poles, dense_ops.action.pole_coeffs, dense_ops.action.tau_values, dense_ops.action.tau_values_reflect, dense_ops.action.kernel);
-    check(sparse_atom.arc_data.poles, sparse_atom.arc_data.coeffs, sparse_atom.arc_data.values, sparse_atom.arc_data.values_reflect, sparse_atom.arc_data.kernel_values);
-    check(sparse_ops.arc_data.poles, sparse_ops.arc_data.coeffs, sparse_ops.arc_data.values, sparse_ops.arc_data.values_reflect, sparse_ops.arc_data.kernel_values);
+    check(sparse_atom.action.poles, sparse_atom.action.pole_coeffs, sparse_atom.action.tau_values, sparse_atom.action.tau_values_reflect, sparse_atom.action.kernel);
+    check(sparse_ops.action.poles, sparse_ops.action.pole_coeffs, sparse_ops.action.tau_values, sparse_ops.action.tau_values_reflect, sparse_ops.action.kernel);
 
     int N = model.ad_flat.get_full_hilbert_space_dim();
     tensor G = nda::zeros<dcomplex>(mesh.size(), N, N);
