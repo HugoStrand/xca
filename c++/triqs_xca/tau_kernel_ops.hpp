@@ -1,10 +1,18 @@
 #pragma once
-#include "bind/tau_kernel.hpp"
+#include "diagram/tau_kernel.hpp"
+#include "tau_kernel.hpp"
 
 namespace triqs_xca {
-  /// Numerical operations over already selected factors, independent of topology,
-  /// pole indices, direction decisions, and hybridization storage.
-  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, triqs_xca::bind::VertexKernelView const &kernel);
-  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<triqs_xca::bind::KernelView const> factors);
+  /// Apply a vertex recipe directly from the numerical tables. A zero argument
+  /// sign is the identity; reflection exchanges the plus/minus tables.
+  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::VertexTauKernel const &recipe,
+                    nda::vector_const_view<int> pole_indices, TauKernel const &kernel, bool reflected = false);
 
+  /// Apply an edge's nonzero factors in pole-slot order, without forming a product table.
+  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, nda::vector_const_view<int> argument_signs,
+                            nda::vector_const_view<int> pole_indices, TauKernel const &kernel);
+
+  /// Evaluate once per diagram and reuse across its backbone paths.
+  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, nda::vector_const_view<int> pole_indices,
+                              TauKernel const &kernel);
 } // namespace triqs_xca

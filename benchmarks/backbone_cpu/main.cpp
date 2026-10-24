@@ -12,7 +12,7 @@
 #include "test_utils/evaluators.hpp"
 #include <triqs_xca/block_sparse/dynint.hpp>
 #include <triqs_xca/block_sparse/bind/self_energy.hpp>
-#include <triqs_xca/bind/tau_kernel.hpp>
+#include <triqs_xca/tau_kernel_ops.hpp>
 
 using namespace triqs_xca;
 namespace bs = triqs_xca::block_sparse;
@@ -95,10 +95,10 @@ int main(int argc, char **argv) try {
     auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical[i], model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
     checksum += a.direction_sign;
   });
-  time("sign_and_kernel_binding", [&](long i) {
+  time("sign_and_kernel_prefactor", [&](long i) {
     auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], evaluator.action.statistics);
-    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].arcs.pole_indices, evaluator.action.kernel);
-    checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
+    double prefactor = tau_kernel_prefactor(diagrams[i].kernel_prefactor, diagrams[i].arcs.pole_indices, evaluator.action.kernel);
+    checksum += std::abs(prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
     triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });

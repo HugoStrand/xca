@@ -2,7 +2,7 @@
 
 #include "diagram/statistics.hpp"
 #include "hyb.hpp"
-#include "tau_kernel_values.hpp"
+#include "tau_kernel.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -13,7 +13,7 @@ namespace triqs_xca {
 
   /// Existing input convention: fundamental fermions, then bosonic dynamical operators.
   std::vector<diagram::Statistics> action_statistics(int flavours, int n_hyb);
-  TauKernelValues make_tau_kernel_values(triqs::mesh::dlr_imtime const &mesh, nda::vector_const_view<double> poles);
+  TauKernel make_tau_kernel(triqs::mesh::dlr_imtime const &mesh, nda::vector_const_view<double> poles);
 
   /// Numerical model and its representation-specific operator contractions.
   /// No atom_diag or symbolic operators are retained. Evaluators own a const Action.
@@ -23,7 +23,7 @@ namespace triqs_xca {
     nda::array<nda::dcomplex, 3> pole_coeffs;
     nda::array<nda::dcomplex, 3> tau_values;
     nda::array<nda::dcomplex, 3> tau_values_reflect;
-    TauKernelValues kernel;
+    TauKernel kernel;
     std::vector<diagram::Statistics> statistics;
     int n_hyb;
     nda::vector<long> block_dims; // -1 only for legacy numerical inputs with an unobserved sector
@@ -37,7 +37,7 @@ namespace triqs_xca {
        : tau_mesh(std::move(mesh)), poles(poles),
          pole_coeffs(checked_coefficients(coefficients, this->poles.size(), statistics.size(), n_hyb, block_dims, tau_mesh)),
          tau_values(hyb::coefs2vals(tau_mesh.beta(), tau_mesh.dlr_it(), pole_coeffs, this->poles)),
-         tau_values_reflect(tau_mesh.dlr_it().reflect(tau_values)), kernel(make_tau_kernel_values(tau_mesh, this->poles)),
+         tau_values_reflect(tau_mesh.dlr_it().reflect(tau_values)), kernel(make_tau_kernel(tau_mesh, this->poles)),
          statistics(std::move(statistics)), n_hyb(n_hyb), block_dims(std::move(block_dims)), operators(build_operators(pole_coeffs)) {}
 
     private:
