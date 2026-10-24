@@ -21,3 +21,30 @@ work is required for this refactor.
 
 The first construction tests will cover physical poles, table equivalence,
 operator metadata and rebuilding stale F-bars from the Action coefficients.
+
+## Checkpoint 1: numerical Action construction
+
+Code: `57177a6` — `[action] add numerical model storage`.
+
+Added Action with flat scalar fields and representation-specific operator storage.
+Dense and block-sparse factories support both atom_diag setup and numerical
+operator inputs. atom_diag is never retained. A construction-only callback builds
+storage from the Action's owned coefficients; it is invoked once, not stored or
+used during evaluation. Numerical adapters rebuild bars instead of trusting
+potentially stale input contractions. Explicit sparse dimensions are validated;
+legacy dimension inference retains -1 for unseen sectors.
+
+Added combined-coefficient overloads to the existing dynamical setup routines,
+so Action can assemble coefficients once. Matrix construction and grouping are
+unchanged. Invalid coefficient block shapes now throw rather than depend on
+assertions. Statistics preserve the current fundamental-fermion/bosonic-dynint
+input convention; no new operator class is silently admitted or rejected.
+
+Action tests compare scalar data with the old implementation, check physical
+poles and mixed/empty dynamical ordering, and deliberately reuse stale bars to
+verify rebuilding. Full CPU build passed; all 76 CTest entries passed in 56.81 s
+with OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1, parallelism 2. Python wrappers
+unchanged. Logs: `/tmp/xca-action-stage1-{build,test}.log`.
+
+ArcData/ArcCatalog and both evaluators remain at this checkpoint as comparison
+references. Next: dense ownership migration, then block-sparse migration.
