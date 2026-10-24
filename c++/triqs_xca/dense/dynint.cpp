@@ -15,10 +15,12 @@ namespace triqs_xca::dense::dynint {
         const triqs_atom_diag_t<IsComplex> &ad, 
         nda::array_const_view<dcomplex, 3> hyb_coeffs, 
         nda::array_const_view<dcomplex, 3> dynint_coeffs,  
-        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+        nda::array_const_view<dcomplex, 3> ext_coeffs) {
 
-        auto ext_coeffs = hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs);
         int n_ext = ext_coeffs.extent(1);
+        if (hyb_coeffs.extent(1) != ad.get_fops().size() || dynint_coeffs.extent(1) != dynint_ops.size())
+            throw std::invalid_argument("get_operators_and_interactions: coefficient blocks must match fundamental operators and dynint_ops");
 
         auto [Fs, Fdags] = atom_diag::get_operators(ad);
 
@@ -74,7 +76,8 @@ namespace triqs_xca::dense::dynint {
         nda::array_const_view<dcomplex, 3> hyb_coeffs, 
         nda::array_const_view<dcomplex, 3> dynint_coeffs,  
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
-        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops);
+        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
+                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
     FSet get_operators_and_interactions(
@@ -82,7 +85,26 @@ namespace triqs_xca::dense::dynint {
         nda::array_const_view<dcomplex, 3> hyb_coeffs, 
         nda::array_const_view<dcomplex, 3> dynint_coeffs,  
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
-        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops);
+        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
+                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
+
+    FSet get_operators_and_interactions(const triqs_atom_diag_t<true> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        int h = ad.get_fops().size(), n = coefficients.extent(1);
+        if (n != h + dynint_ops.size() || coefficients.extent(2) != n)
+            throw std::invalid_argument("get_operators_and_interactions: combined coefficients must cover fundamental operators and dynint_ops");
+        return get_operators_and_interactions_impl(ad, coefficients(_, range(0,h), range(0,h)),
+            coefficients(_, range(h,n), range(h,n)), dynint_ops, coefficients);
+    }
+
+    FSet get_operators_and_interactions(const triqs_atom_diag_t<false> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        int h = ad.get_fops().size(), n = coefficients.extent(1);
+        if (n != h + dynint_ops.size() || coefficients.extent(2) != n)
+            throw std::invalid_argument("get_operators_and_interactions: combined coefficients must cover fundamental operators and dynint_ops");
+        return get_operators_and_interactions_impl(ad, coefficients(_, range(0,h), range(0,h)),
+            coefficients(_, range(h,n), range(h,n)), dynint_ops, coefficients);
+    }
 }

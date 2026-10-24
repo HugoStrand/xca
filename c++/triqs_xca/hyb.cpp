@@ -29,9 +29,9 @@ namespace triqs_xca::hyb {
 
   nda::array<dcomplex, 3> get_extended_coefficients(nda::array_const_view<dcomplex, 3> hyb_coeffs, nda::array_const_view<dcomplex, 3> dynint_coeffs) {
 
-    assert(hyb_coeffs.extent(0) == dynint_coeffs.extent(0));
-    assert(hyb_coeffs.extent(1) == hyb_coeffs.extent(2));
-    assert(dynint_coeffs.extent(1) == dynint_coeffs.extent(2));
+    if (hyb_coeffs.extent(0) != dynint_coeffs.extent(0) || hyb_coeffs.extent(1) != hyb_coeffs.extent(2)
+        || dynint_coeffs.extent(1) != dynint_coeffs.extent(2))
+      throw std::invalid_argument("get_extended_coefficients: square coefficient blocks must share the pole axis");
 
     int r        = hyb_coeffs.extent(0);
     int n_hyb    = hyb_coeffs.extent(1);

@@ -1,11 +1,11 @@
 #pragma once
 
+#include "statistics.hpp"
 #include <span>
 #include <vector>
 
 namespace triqs_xca::diagram {
 
-  enum class Statistics { bosonic, fermionic };
   enum class ArcKind { hybridization, retarded };
 
   /// A family groups logical interaction flavours, independently of block

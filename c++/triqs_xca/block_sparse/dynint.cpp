@@ -109,7 +109,8 @@ namespace triqs_xca::block_sparse::dynint {
         const triqs_atom_diag_t<IsComplex> &ad,
         nda::array_const_view<dcomplex, 3> hyb_coeffs,
         nda::array_const_view<dcomplex, 3> dynint_coeffs,
-        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+        nda::array_const_view<dcomplex, 3> ext_coeffs) {
 
         int nb    = ad.n_subspaces();
         int p     = hyb_coeffs.extent(0);
@@ -201,7 +202,6 @@ namespace triqs_xca::block_sparse::dynint {
         for (int i = 0; i < n_int; ++i) labels(n_hyb + i) = n_sym_hyb + group_of_op[i];
 
         // the cross-set guard of the quartet constructor validates the extended coefficients uniformly
-        auto ext_coeffs = hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs);
 
         return {BlockOpSymQuartet(sets.Fs, sets.F_dags, ext_coeffs, labels), labels};
     }
@@ -211,7 +211,8 @@ namespace triqs_xca::block_sparse::dynint {
         nda::array_const_view<dcomplex, 3> hyb_coeffs,
         nda::array_const_view<dcomplex, 3> dynint_coeffs,
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
-        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops);
+        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
+                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
     std::tuple<BlockOpSymQuartet, nda::vector<long>> get_operators_and_interactions(
@@ -219,7 +220,26 @@ namespace triqs_xca::block_sparse::dynint {
         nda::array_const_view<dcomplex, 3> hyb_coeffs,
         nda::array_const_view<dcomplex, 3> dynint_coeffs,
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
-        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops);
+        return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
+                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
+
+    std::tuple<BlockOpSymQuartet, nda::vector<long>> get_operators_and_interactions(const triqs_atom_diag_t<true> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        int h = ad.get_fops().size(), n = coefficients.extent(1);
+        if (n != h + dynint_ops.size() || coefficients.extent(2) != n)
+            throw std::invalid_argument("get_operators_and_interactions: combined coefficients must cover fundamental operators and dynint_ops");
+        return get_operators_and_interactions_impl(ad, coefficients(_, range(0,h), range(0,h)),
+            coefficients(_, range(h,n), range(h,n)), dynint_ops, coefficients);
+    }
+
+    std::tuple<BlockOpSymQuartet, nda::vector<long>> get_operators_and_interactions(const triqs_atom_diag_t<false> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
+        int h = ad.get_fops().size(), n = coefficients.extent(1);
+        if (n != h + dynint_ops.size() || coefficients.extent(2) != n)
+            throw std::invalid_argument("get_operators_and_interactions: combined coefficients must cover fundamental operators and dynint_ops");
+        return get_operators_and_interactions_impl(ad, coefficients(_, range(0,h), range(0,h)),
+            coefficients(_, range(h,n), range(h,n)), dynint_ops, coefficients);
+    }
 }

@@ -25,4 +25,10 @@ namespace triqs_xca::dense::dynint {
         nda::array_const_view<dcomplex, 3> dynint_coeffs,  
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops);
 
+
+    // Already combined coefficients, shared with Action scalar data.
+    FSet get_operators_and_interactions(const triqs_atom_diag_t<true> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops);
+    FSet get_operators_and_interactions(const triqs_atom_diag_t<false> &ad, nda::array_const_view<dcomplex, 3> coefficients,
+        std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops);
 }
