@@ -74,10 +74,10 @@ TEST(SparsityInvariance, OCA_trivial_sparsity) {
   auto OCA_result = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
 
   // --- dense evaluation ---
-  // The old dense constructor divides the poles it is given by beta internally, so it takes dlr_rf where the block-sparse one takes dlr_rf / beta.
+  // Both evaluators take physical poles; the DLR nodes are beta-scaled.
   auto [Gt_dense, Fs_dense, F_dags_dense] = test_utils::two_band_dense_helper(beta, Lambda, eps);
   auto Fset                               = FSet(Fs_dense, F_dags_dense, hyb_coeffs);
-  dense::DiagramEvaluator DDE(beta, eps, itops, dlr_rf, hyb_coeffs, Fset);
+  dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
   DDE.eval_self_energy(Gt_dense, B);
   auto OCA_dense_result = DDE.Sigma;
 
@@ -133,10 +133,10 @@ TEST(SparsityInvariance, OCA_correlator_trivial_sparsity) {
   auto OCA_result        = D.eval_correlator(Gt, B, mu_ops, kap_ops);
 
   // --- dense evaluation ---
-  // The old dense constructor divides the poles it is given by beta internally, so it takes dlr_rf where the block-sparse one takes dlr_rf / beta.
+  // Both evaluators take physical poles; the DLR nodes are beta-scaled.
   auto [Gt_dense, Fs_dense, F_dags_dense] = test_utils::two_band_dense_helper(beta, Lambda, eps);
   auto Fset                               = FSet(Fs_dense, F_dags_dense, hyb_coeffs);
-  dense::DiagramEvaluator D_dense(beta, eps, itops, dlr_rf, hyb_coeffs, Fset);
+  dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
   auto OCA_dense_result = D_dense.eval_correlator(Gt_dense, B, Fs_dense, F_dags_dense);
 
   // --- block-sparse evaluation with trivial sparsity: one block, one symmetry set ---
@@ -189,7 +189,7 @@ static void check_spin_flip_fermion(bool use_particle_number_sym) {
   auto Gt_dense = test_utils::Hmat_to_Gtmat(test_utils::get_full_h_atomic(ad), beta, dlr_it_abs);
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
 
-  dense::DiagramEvaluator DDE(beta, eps, itops, dlr_rf, hyb_coeffs, Fset);
+  dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
   DDE.eval_self_energy_by_pairs(Gt_dense, B);
   auto result_dense = DDE.Sigma;
 
@@ -245,7 +245,7 @@ static void check_spin_flip_fermion_correlator(bool use_particle_number_sym) {
   // compare to dense backbone result
   auto Gt_dense = test_utils::Hmat_to_Gtmat(test_utils::get_full_h_atomic(ad), beta, dlr_it_abs);
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
-  dense::DiagramEvaluator D_dense(beta, eps, itops, dlr_rf, hyb_coeffs, Fset);
+  dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
   auto result_dense = D_dense.eval_correlator(Gt_dense, B, Fset.Fs, Fset.F_dags);
 
   ASSERT_LE(nda::max_element(nda::abs(result - result_dense)), 1.0e-15);
@@ -309,7 +309,7 @@ TEST(SparsityInvariance, spgf_is_indexed_by_orbital) {
   // dense reference, ordered per orbital by construction
   auto Gt_dense = test_utils::Hmat_to_Gtmat(test_utils::get_full_h_atomic(ad), beta, dlr_it_abs);
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
-  dense::DiagramEvaluator D_dense(beta, eps, itops, dlr_rf, hyb_coeffs, Fset);
+  dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
   auto ref_dense = D_dense.eval_correlator(Gt_dense, B, Fset.Fs, Fset.F_dags);
 
   DiagramEvaluator D(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);

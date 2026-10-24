@@ -190,6 +190,7 @@ class DiagramEvaluator {
                                                       triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                       long first, long last);
 
+  // Every constructor takes physical pole frequencies; ArcData applies beta scaling.
   /**
    * @brief Constructor for DiagramEvaluator
    * @param[in] beta inverse temperature

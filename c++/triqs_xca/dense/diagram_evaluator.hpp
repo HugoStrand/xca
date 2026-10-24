@@ -172,17 +172,18 @@ namespace triqs_xca::dense {
                                                         triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                         long first, long last);
 
+    // Every constructor takes physical pole frequencies; ArcData applies beta scaling.
     /**
        * @brief Constructor for DiagramEvaluator
        * 
        * @param[in] beta inverse temperature
        * @param[in] itops DLR imaginary time object
-       * @param[in] hyb hybridization function at imaginary time nodes
-       * @param[in] hyb_refl hybridization function at (beta - tau) nodes
-       * @param[in] hyb_poles hybridization poles
+       * @param[in] eps DLR imaginary time accuracy
+       * @param[in] physical_poles hybridization poles in physical frequency units (not beta-scaled)
+       * @param[in] hyb_coeffs hybridization function coefficients at these poles
        * @param[in] Fset FSet (cre/ann operators with and without bars)
        */
-    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> hyb_poles,
+    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> physical_poles,
                                       nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet &Fset);
 
     /**

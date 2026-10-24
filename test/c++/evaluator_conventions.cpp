@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
+#include "test_utils/evaluators.hpp"
 
 namespace {
   using namespace triqs_xca;
@@ -33,8 +34,7 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
   F(1, 1, 3) = -1.;
   for (int a = 0; a < 2; ++a) Fdag(a, all, all) = nda::dagger(F(a, all, all));
   dense::FSet fset(F, Fdag, coefficients);
-  // The legacy low-level dense constructor currently accepts beta-scaled poles.
-  dense::DiagramEvaluator dense(beta, eps, itops, nda::make_regular(beta * physical_poles), coefficients, fset);
+  dense::DiagramEvaluator dense(beta, eps, itops, physical_poles, coefficients, fset);
   nda::vector<int> connection{0};
   std::vector<tensor> blocks{F}, dag_blocks{Fdag};
   block_sparse::BlockOpSymSet grouped_F(connection, blocks), grouped_Fdag(connection, dag_blocks);
@@ -80,4 +80,57 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
     sum += expected;
   }
   expect_close(tensor(dense.compute_self_energy_by_pairs(propagator, topology)[0].data()), sum);
+}
+
+TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {
+  auto model = test_utils::build_eval_model("unequal_sets");
+  double Lambda = 40., eps = 1e-12;
+  for (double beta : {1.5, 3.}) {
+    SCOPED_TRACE(beta);
+    auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, Lambda / beta, eps, false);
+    auto itops = mesh.dlr_it();
+    // Use the same single-sector realization so matrix layouts coincide.
+    dense::DiagramEvaluator dense_atom(model.hyb_poles, model.hyb_coeffs, mesh, model.ad_flat);
+    block_sparse::DiagramEvaluator sparse_atom(model.hyb_poles, model.hyb_coeffs, mesh, model.ad_flat);
+    dense::DiagramEvaluator dense_ops(beta, eps, itops, model.hyb_poles, model.hyb_coeffs, dense_atom.Fset);
+    auto quartet = std::get<0>(block_sparse::atom_diag::get_operators(model.ad_flat, model.hyb_coeffs));
+    block_sparse::DiagramEvaluator sparse_ops(beta, Lambda, eps, model.hyb_poles, model.hyb_coeffs, quartet);
+
+    for (auto const *data : {&dense_atom.arc_data, &sparse_atom.arc_data, &dense_ops.arc_data, &sparse_ops.arc_data}) {
+      for (int p = 0; p < model.hyb_poles.size(); ++p) EXPECT_DOUBLE_EQ(data->poles(p), beta * model.hyb_poles(p));
+      EXPECT_EQ(nda::max_element(nda::abs(data->coeffs - model.hyb_coeffs)), 0.);
+      expect_close(data->values, dense_atom.arc_data.values);
+      expect_close(data->values_reflect, dense_atom.arc_data.values_reflect);
+      auto const &actual = data->kernel_values;
+      auto const &expected = dense_atom.arc_data.kernel_values;
+      EXPECT_LT(nda::max_element(nda::abs(actual.at_tau_plus - expected.at_tau_plus)), 1e-13);
+      EXPECT_LT(nda::max_element(nda::abs(actual.at_tau_minus - expected.at_tau_minus)), 1e-13);
+      EXPECT_LT(nda::max_element(nda::abs(actual.at_zero_plus - expected.at_zero_plus)), 1e-13);
+      EXPECT_LT(nda::max_element(nda::abs(actual.at_zero_minus - expected.at_zero_minus)), 1e-13);
+    }
+
+    int N = model.ad_flat.get_full_hilbert_space_dim();
+    tensor G = nda::zeros<dcomplex>(mesh.size(), N, N);
+    for (int t = 0; t < mesh.size(); ++t)
+      for (int i = 0; i < N; ++i) G(t, i, i) = 1. + 0.3 * i;
+    bgf propagator{std::vector{gf(mesh, G)}};
+    // First order resolves the time-valued coefficients; second order also
+    // resolves barred operators, kernel placement and convolution factors.
+    for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
+      std::vector<long> selected{0, 1};
+      if (topology.extent(0) == 2) {
+        selected.clear();
+        for (int direction = 0; direction < 4; ++direction)
+          for (int pole = 0; pole < model.hyb_poles.size(); ++pole)
+            selected.push_back(model.n_hyb() * (pole + model.hyb_poles.size() * direction));
+      }
+      for (long f : selected) {
+        SCOPED_TRACE(::testing::Message() << "order=" << topology.extent(0) << ", index=" << f);
+        tensor expected = dense_atom.compute_self_energy(propagator, topology, f)[0].data();
+        expect_close(tensor(dense_ops.compute_self_energy(propagator, topology, f)[0].data()), expected);
+        expect_close(tensor(sparse_atom.compute_self_energy(propagator, topology, f)[0].data()), expected);
+        expect_close(tensor(sparse_ops.compute_self_energy(propagator, topology, f)[0].data()), expected);
+      }
+    }
+  }
 }

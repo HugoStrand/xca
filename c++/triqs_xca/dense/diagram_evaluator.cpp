@@ -22,13 +22,13 @@ namespace triqs_xca::dense {
   using nda::linalg::matmul;
 
 
-  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> hyb_poles,
+  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> physical_poles,
                                                nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet &Fset)
      : tau_mesh(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false)),
        beta(beta),
        itops(itops),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, nda::make_regular(hyb_poles / beta), hyb_coeffs), // Scaling of poles by beta?
+       arc_data(tau_mesh, physical_poles, hyb_coeffs),
        Fset(Fset),
        r(itops.rank()),
        n(hyb_coeffs.extent(1)),

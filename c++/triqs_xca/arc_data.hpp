@@ -12,6 +12,7 @@ namespace triqs_xca {
     nda::array<nda::dcomplex, 3> values_reflect; // C(beta-tau), with no orientation sign, transpose or conjugation
     TauKernelValues kernel_values;
 
-    ArcData(triqs::mesh::dlr_imtime const &tau_mesh, nda::vector_const_view<double> poles, nda::array_const_view<nda::dcomplex, 3> coeffs);
+    /// Accept physical frequencies and store beta-scaled poles for kernel preparation.
+    ArcData(triqs::mesh::dlr_imtime const &tau_mesh, nda::vector_const_view<double> physical_poles, nda::array_const_view<nda::dcomplex, 3> coeffs);
   };
 } // namespace triqs_xca
