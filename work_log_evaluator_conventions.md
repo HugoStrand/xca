@@ -105,3 +105,38 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 
 Both requested consistency fixes are complete. No Action, new data container,
 F-bar refactor, GPU implementation or benchmark experiment was introduced.
+
+## Step 3: physical poles in ArcData
+
+ArcData now stores its input frequencies unchanged in `poles`. This supersedes
+Step 2's temporary beta-scaled storage and `physical_poles` parameter naming.
+Constructor parameters are named `poles`; beta scaling happens locally when
+ArcData prepares its dimensionless cppdlr kernel tables.
+
+The consumer audit found that diagram preparation only needs pole counts and
+signs. The dense and block-sparse manual OCA self-energy/correlator routines were
+the remaining numerical consumers of the scaled storage. Their explicit-pole
+overloads now accept physical frequencies and multiply by beta at kernel calls
+and calls to internal kernel helpers. Internal DLR real-frequency nodes and the
+helpers' dimensionless arguments retain their existing convention. No second
+stored pole representation was introduced.
+
+Existing manual-versus-analytic/evaluator tests obtain poles from ArcData and
+therefore migrate automatically. The constructor regression now checks unchanged
+physical storage at beta=1.5 and beta=3. The Python solver already supplies
+physical poles; no solver changes were needed. The Python-exposed dense manual
+sigma_oca overload has a regenerated docstring documenting physical units.
+External callers of explicit-pole manual routines must stop supplying beta-scaled
+frequencies (or divide those inputs by beta).
+
+Code commit: `7e5e0ef` — `[xca] store physical poles`.
+
+Validation: full CPU build passed; all 75 CTest entries passed in 56.69 s with
+OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1 and CTest parallelism 2. No existing
+tolerance changed. Logs: `/tmp/xca-physical-poles-build.log` and
+`/tmp/xca-physical-poles-test.log`.
+
+An additional comparison of the explicit-pole manual overloads against the
+time-value reference exposed an independent backward-F-bar sign inconsistency
+in the older block-sparse explicit-operator overload. That regression and the
+sign correction are kept in the next code commit, separate from this unit change.
