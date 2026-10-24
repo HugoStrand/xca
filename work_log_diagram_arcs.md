@@ -200,3 +200,43 @@ No regression was found in the changed supported execution paths. The review
 above identifies contracts that would need strengthening for arbitrary retained
 plans, model replacement, branching paths or a new GPU execution adapter; those
 broader behaviors were not implemented or validated in this change.
+
+## Follow-up: topology and arc sign preparation (2026-10-25)
+
+Code: `7b3f5cb` — `[diagram] prepare signs from arcs`.
+
+Merged sign.hpp/.cpp into topology.hpp/.cpp. The header now presents Topology,
+PermutationSigns and the evaluator-facing sign functions first, followed by the
+existing array-based helpers in diagram::topology. The helper signatures,
+implementations and their tests are unchanged. Topology remains in diagram;
+no namespace aliases or compatibility forwarding headers were introduced.
+
+prepare_permutation_signs now takes (Topology, Arcs, statistics). It reads each
+internal arc's retained flavour from arcs.flavours and assigns its statistics to
+the two vertices connected by that topology row. It no longer requires a Diagram
+or a prepared Backbone. Directions and pole indices are irrelevant to this sign
+calculation; the function checks the internal flavour count and each flavour's
+bounds. The external arc still has the same two cases, with and without fermionic
+endpoints. All evaluator, test and benchmark callers use the explicit arguments.
+
+The retained flavour labels the ordinary endpoint and its F-bar contraction,
+not two individually selected endpoint operators. Assigning its parity to both
+vertices retains the existing assumption that the barred contraction only mixes
+operators of that parity. This assumption is now documented at the API; this
+change does not add coefficient/parity validation or broaden supported models.
+
+Updated the negative test to invalidate the arc flavour instead of a copied
+backbone flavour. Added a direct preparation test with no Diagram, backbone,
+directions or pole assignments, checking the expected mixed-statistics signs
+and rejecting out-of-range flavours and incorrect flavour counts. Existing
+first-order, direction, correlator and independent parity-table coverage remains.
+
+CPU reconfiguration and full build passed. All 76 CTest entries passed in
+56.94 s with OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1 and test parallelism 2.
+The optional backbone_cpu target also compiles and links; no benchmark was run.
+Generated Python bindings are unchanged. git diff --check passed, and unrelated
+worktree changes were preserved. No CUDA validation was part of this change.
+
+Logs: `/tmp/xca-topology-signs-configure.log`,
+`/tmp/xca-topology-signs-build.log`, `/tmp/xca-topology-signs-test.log`, and
+`/tmp/xca-topology-signs-benchmark-build.log`.
