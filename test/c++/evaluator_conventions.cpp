@@ -50,10 +50,10 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
           values(t, a, b) -= coefficients(p, a, b) * std::exp(-tau(t) * omega) / (1. + std::exp(-omega));
           reflected(t, a, b) -= coefficients(p, a, b) * std::exp(-(1. - tau(t)) * omega) / (1. + std::exp(-omega));
         }
-  for (auto const *data : {&dense.arc_data, &sparse.arc_data}) {
-    expect_close(data->values, values);
-    expect_close(data->values_reflect, reflected);
-  }
+  expect_close(dense.action.tau_values, values);
+  expect_close(dense.action.tau_values_reflect, reflected);
+  expect_close(sparse.arc_data.values, values);
+  expect_close(sparse.arc_data.values_reflect, reflected);
 
   tensor G = nda::zeros<dcomplex>(mesh.size(), 4, 4);
   for (int t = 0; t < mesh.size(); ++t)
@@ -92,22 +92,25 @@ TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {
     // Use the same single-sector realization so matrix layouts coincide.
     dense::DiagramEvaluator dense_atom(model.hyb_poles, model.hyb_coeffs, mesh, model.ad_flat);
     block_sparse::DiagramEvaluator sparse_atom(model.hyb_poles, model.hyb_coeffs, mesh, model.ad_flat);
-    dense::DiagramEvaluator dense_ops(beta, eps, itops, model.hyb_poles, model.hyb_coeffs, dense_atom.Fset);
+    dense::DiagramEvaluator dense_ops(beta, eps, itops, model.hyb_poles, model.hyb_coeffs, dense_atom.action.operators);
     auto quartet = std::get<0>(block_sparse::atom_diag::get_operators(model.ad_flat, model.hyb_coeffs));
     block_sparse::DiagramEvaluator sparse_ops(beta, Lambda, eps, model.hyb_poles, model.hyb_coeffs, quartet);
 
-    for (auto const *data : {&dense_atom.arc_data, &sparse_atom.arc_data, &dense_ops.arc_data, &sparse_ops.arc_data}) {
-      for (int p = 0; p < model.hyb_poles.size(); ++p) EXPECT_DOUBLE_EQ(data->poles(p), model.hyb_poles(p));
-      EXPECT_EQ(nda::max_element(nda::abs(data->coeffs - model.hyb_coeffs)), 0.);
-      expect_close(data->values, dense_atom.arc_data.values);
-      expect_close(data->values_reflect, dense_atom.arc_data.values_reflect);
-      auto const &actual = data->kernel_values;
-      auto const &expected = dense_atom.arc_data.kernel_values;
+    auto check = [&](auto const &poles, auto const &coeffs, auto const &values, auto const &reflected, auto const &actual) {
+      for (int p = 0; p < model.hyb_poles.size(); ++p) EXPECT_DOUBLE_EQ(poles(p), model.hyb_poles(p));
+      EXPECT_EQ(nda::max_element(nda::abs(coeffs - model.hyb_coeffs)), 0.);
+      expect_close(values, dense_atom.action.tau_values);
+      expect_close(reflected, dense_atom.action.tau_values_reflect);
+      auto const &expected = dense_atom.action.kernel;
       EXPECT_LT(nda::max_element(nda::abs(actual.at_tau_plus - expected.at_tau_plus)), 1e-13);
       EXPECT_LT(nda::max_element(nda::abs(actual.at_tau_minus - expected.at_tau_minus)), 1e-13);
       EXPECT_LT(nda::max_element(nda::abs(actual.at_zero_plus - expected.at_zero_plus)), 1e-13);
       EXPECT_LT(nda::max_element(nda::abs(actual.at_zero_minus - expected.at_zero_minus)), 1e-13);
-    }
+    };
+    check(dense_atom.action.poles, dense_atom.action.pole_coeffs, dense_atom.action.tau_values, dense_atom.action.tau_values_reflect, dense_atom.action.kernel);
+    check(dense_ops.action.poles, dense_ops.action.pole_coeffs, dense_ops.action.tau_values, dense_ops.action.tau_values_reflect, dense_ops.action.kernel);
+    check(sparse_atom.arc_data.poles, sparse_atom.arc_data.coeffs, sparse_atom.arc_data.values, sparse_atom.arc_data.values_reflect, sparse_atom.arc_data.kernel_values);
+    check(sparse_ops.arc_data.poles, sparse_ops.arc_data.coeffs, sparse_ops.arc_data.values, sparse_ops.arc_data.values_reflect, sparse_ops.arc_data.kernel_values);
 
     int N = model.ad_flat.get_full_hilbert_space_dim();
     tensor G = nda::zeros<dcomplex>(mesh.size(), N, N);

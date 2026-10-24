@@ -23,13 +23,12 @@ namespace triqs_xca::dense {
 
 
   DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> poles,
-                                               nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet &Fset)
-     : tau_mesh(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false)),
+                                               nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset)
+     : action(make_action(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false), poles, hyb_coeffs, Fset)),
+       tau_mesh(action.tau_mesh),
        beta(beta),
        itops(itops),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, poles, hyb_coeffs),
-       Fset(Fset),
        r(itops.rank()),
        n(hyb_coeffs.extent(1)),
        n_hyb(n),
@@ -47,12 +46,11 @@ namespace triqs_xca::dense {
   template <bool isComplex>
   DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
                                                triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad)
-     : tau_mesh(tau_mesh),
+     : action(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)),
+       tau_mesh(action.tau_mesh),
        beta(tau_mesh.beta()),
        itops(tau_mesh.dlr_it()),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, hyb_poles, hyb_coeffs),
-       Fset(atom_diag::get_operators(ad, hyb_coeffs)),
        r(itops.rank()),
        n(ad.get_fops().size()), // number of fermion flavours (spin-orbitals)
        n_hyb(n),
@@ -77,12 +75,11 @@ namespace triqs_xca::dense {
                                      triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad,
                                      std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
                                      nda::array_const_view<dcomplex, 3> dynint_coeffs)
-     : tau_mesh(tau_mesh),
+     : action(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)),
+       tau_mesh(action.tau_mesh),
        beta(tau_mesh.beta()),
        itops(tau_mesh.dlr_it()),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, hyb_poles, hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs)),
-       Fset(dynint::get_operators_and_interactions(ad, hyb_coeffs, dynint_coeffs, dynint_ops)),
        r(itops.rank()),
        n(ad.get_fops().size() + dynint_ops.size()), // number of fermion flavours (spin-orbitals)
        n_hyb(ad.get_fops().size()),
@@ -209,7 +206,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
     auto const &vertex = diagram.backbone.vertices[v_ix];
     int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
-    auto F = Fset.get_operator(vertex, l_ix);
+    auto F = action.operators.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
     apply_kernel(T_buf, kernels.vertices[v_ix]);
   }
@@ -226,13 +223,13 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::SelfEnergyEndpointSum const &endpoint_sum, triqs_xca::diagram::PermutationSigns const &signs) {
 
     // Time reflection and the arc orientation sign are separate, as in block_sparse.
-    nda::array_const_view<dcomplex, 3> hyb_too = endpoint_sum.orientation.reflected() ? arc_data.values_reflect : arc_data.values;
+    nda::array_const_view<dcomplex, 3> hyb_too = endpoint_sum.orientation.reflected() ? action.tau_values_reflect : action.tau_values;
 
     // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
     // at the cost of storing an n x r x N x N array (Tkaps) instead of an r x N x N array
 
     for (int kap = 0; kap < endpoint_sum.flavours; kap++) {
-      nda::array_const_view<dcomplex, 2> F_kap = Fset.get_operator(endpoint_sum.orientation.early_operator(kap).adjoint, kap);
+      nda::array_const_view<dcomplex, 2> F_kap = action.operators.get_operator(endpoint_sum.orientation.early_operator(kap).adjoint, kap);
       for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
     }
 
@@ -244,11 +241,11 @@ namespace triqs_xca::dense {
         auto [row, column] = endpoint_sum.orientation.coefficient_indices(mu, kap);
         nda::array_const_view<dcomplex, 1> hyb_t = hyb_too(_, row, column);
 
-        int sign = signs(arc_catalog_.statistics()[kap], arc_catalog_.statistics()[mu]) * endpoint_sum.orientation.reflection_sign();
+        int sign = signs(action.statistics[kap], action.statistics[mu]) * endpoint_sum.orientation.reflection_sign();
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
       }
-      nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(endpoint_sum.orientation.late_operator(mu).adjoint, mu);
+      nda::array_const_view<dcomplex, 2> F_mu = action.operators.get_operator(endpoint_sum.orientation.late_operator(mu).adjoint, mu);
       for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
     }
   }
@@ -259,7 +256,7 @@ namespace triqs_xca::dense {
   }
 
   long DiagramEvaluator::get_num_self_energy_backbones(triqs_xca::diagram::Topology const &topology) {
-    long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::self_energy);
+    long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::self_energy);
     return f_ix_max;
   }
 
@@ -284,15 +281,15 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy_pair(Gt, diagram);
   }
 
   void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -318,15 +315,15 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
+    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy(Gt, diagram);
   }
 
   void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -358,7 +355,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, triqs_xca::bind::TauKernelViews const &kernels, int v_ix) {
     auto const &vertex = diagram.backbone.vertices[v_ix];
     int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
-    auto F = Fset.get_operator(vertex, l_ix);
+    auto F = action.operators.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
     apply_kernel(U_buf, kernels.reflected_vertices[v_ix]);
   }
@@ -372,7 +369,7 @@ namespace triqs_xca::dense {
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology,
                                                                  nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic) {
-    long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::correlator);
+    long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
@@ -389,15 +386,15 @@ namespace triqs_xca::dense {
                                                             nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, long f_ix,
                                                             bool is_fermionic) {
 
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, arc_data.poles, f_ix, triqs_xca::diagram::Kind::correlator);
+    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::correlator);
     return eval_correlator(Gt, diagram, std::move(mu_ops), std::move(kap_ops), triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, arc_catalog_.statistics());
-    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, arc_data.kernel_values);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const kernels = triqs_xca::bind::tau_kernels(diagram.backbone.kernel_placement, diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
@@ -441,15 +438,14 @@ namespace triqs_xca::dense {
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::single_particle_operators(bool adjoint) const {
-    auto flavours = arc_catalog_.hybridization_flavours();
-    nda::array<dcomplex, 3> result(flavours.size(), N, N);
-    for (int i = 0; i < flavours.size(); ++i) result(i, _, _) = Fset.get_operator(adjoint, flavours[i]);
+    nda::array<dcomplex, 3> result(action.n_hyb, N, N);
+    for (int i = 0; i < action.n_hyb; ++i) result(i, _, _) = action.operators.get_operator(adjoint, i);
     return result;
   }
 
   long DiagramEvaluator::get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology_arr) {
     triqs_xca::diagram::Topology topology{topology_arr};
-    return triqs_xca::diagram::count_diagrams(topology.order(), n, arc_data.poles.size(), triqs_xca::diagram::Kind::correlator);
+    return triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology_arr) {

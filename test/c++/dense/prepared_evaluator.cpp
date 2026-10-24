@@ -54,8 +54,8 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{-1, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::correlator);
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto expected = evaluator.compute_single_ptcle_gf(G, topology.arcs, f);
-  auto annihilators = nda::make_regular(evaluator.Fset.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
-  auto creators = nda::make_regular(evaluator.Fset.F_dags(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
+  auto annihilators = nda::make_regular(evaluator.action.operators.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
+  auto creators = nda::make_regular(evaluator.action.operators.F_dags(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
   auto actual = evaluator.eval_correlator(model.G, assignment, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});
   expect_close(actual, expected);
   auto changed_G = nda::make_regular(1.1 * model.G);

@@ -1,5 +1,5 @@
 #pragma once
-#include "triqs_xca/arc_data.hpp"
+#include "action.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <nda/nda.hpp>
 
@@ -37,13 +37,13 @@ namespace triqs_xca::dense {
     using gf_t  = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     using gf_vt = triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>;
 
+    C2PY_IGNORE const Action<FSet> action;
+
     triqs::mesh::dlr_imtime tau_mesh; // imaginary time mesh
     double beta;                      // inverse temperature
     imtime_ops itops;                 // DLR imaginary time object
     nda::vector<double> dlr_it;       // DLR imaginary time nodes in relative ordering
 
-    C2PY_IGNORE triqs_xca::ArcData arc_data; // Numerical coefficients, time functions and scalar kernels for all arc families
-    C2PY_IGNORE FSet Fset;         // FSet (cre/ann operators with and without bars)
 
     int r;     // DLR rank
     int n;     // number of orbitals
@@ -73,7 +73,6 @@ namespace triqs_xca::dense {
                                                                  triqs::atom_diag::atom_diag<isComplex> const &ad,
                                                                  nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
 
-    triqs_xca::diagram::ArcCatalog arc_catalog_ = triqs_xca::diagram::hybridization_retarded_catalog(n_hyb, n_int);
     nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
 
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
@@ -172,7 +171,7 @@ namespace triqs_xca::dense {
                                                         triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
                                                         long first, long last);
 
-    // Every constructor takes physical pole frequencies, also stored unchanged in ArcData.
+    // Every constructor takes physical pole frequencies, also stored unchanged in Action.
     /**
        * @brief Constructor for DiagramEvaluator
        * 
@@ -184,7 +183,7 @@ namespace triqs_xca::dense {
        * @param[in] Fset FSet (cre/ann operators with and without bars)
        */
     C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> poles,
-                                      nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet &Fset);
+                                      nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset);
 
     /**
        * @brief Constructor for DiagramEvaluator
