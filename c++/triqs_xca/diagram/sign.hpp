@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "triqs_xca/diagram/diagram.hpp"
-#include "triqs_xca/diagram/arc_catalog.hpp"
+#include "triqs_xca/diagram/statistics.hpp"
 
 namespace triqs_xca::diagram {
 

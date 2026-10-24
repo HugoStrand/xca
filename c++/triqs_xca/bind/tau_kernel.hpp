@@ -11,7 +11,7 @@ namespace triqs_xca::bind {
   using KernelView       = nda::vector_const_view<double>;
   using VertexKernelView = std::optional<KernelView>;
 
-  /// Scalar operands for one diagram. Views borrow the ArcData owner's
+  /// Scalar operands for one diagram. Views borrow the Action owner's
   /// mesh/pole kernel tables, which must remain alive and unchanged during use.
   /// Bind once per diagram, reuse across its backbone paths, and rebind after
   /// model or mesh replacement. No propagator values belong here.

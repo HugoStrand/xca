@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <triqs_xca/action.hpp>
 
 #include <gtest/gtest.h>
 
@@ -11,7 +12,7 @@
  *
  * @brief Tests of explicit diagram sign preparation.
  *
- * @details triqs_xca::diagram::Statistics come from the interaction catalogue and observable boundary.
+ * @details triqs_xca::diagram::Statistics come from the Action and observable boundary.
  * Arcs with a bosonic endpoint are dropped before computing permutation parity.
  * The third-order crossing topology distinguishes which internal arc is bosonic.
  */
@@ -35,8 +36,7 @@ namespace {
     auto assignment = triqs_xca::diagram::prepare_diagram(
       triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{fb, {0, 0}, {orb1, orb2}}, nda::vector<double>{1.0},
       triqs_xca::diagram::Kind::self_energy);
-    auto model = triqs_xca::diagram::hybridization_retarded_catalog(n_ext - n_int_arg, n_int_arg);
-    auto statistics = model.statistics();
+    auto statistics = triqs_xca::action_statistics(n_ext, n_ext - n_int_arg);
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
     int prepared = signs(statistics[orb_kap], statistics[orb_mu]);
     return prepared; // the hand-derived table checks explicit preparation directly
@@ -107,8 +107,8 @@ TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
     auto assignment = triqs_xca::diagram::prepare_diagram(
       triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{{-1, 0, 1}, {0, 0}, {orb1, orb2}},
       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
-    auto model = triqs_xca::diagram::hybridization_retarded_catalog(n_ext - n_int_arg, n_int_arg);
-    return triqs_xca::diagram::prepare_permutation_signs(assignment, model.statistics())(external, external);
+    auto statistics = triqs_xca::action_statistics(n_ext, n_ext - n_int_arg);
+    return triqs_xca::diagram::prepare_permutation_signs(assignment, statistics)(external, external);
   };
 
   for (int orb1 : {0, o_int}) {

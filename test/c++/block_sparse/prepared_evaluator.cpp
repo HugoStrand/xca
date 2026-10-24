@@ -1,5 +1,4 @@
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
-#include "triqs_xca/arc_data.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
 #include <optional>
@@ -80,25 +79,25 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
   auto coefficients = hyb::get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
-  triqs_xca::ArcData hybridization(model.mesh, model.hyb_poles, coefficients);
+  auto values = hyb::coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), coefficients, model.hyb_poles);
+  auto reflected = model.mesh.dlr_it().reflect(values);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   auto changed_G = G;
   changed_G *= 1.3;
   int n = coefficients.extent(1);
-  auto interactions = triqs_xca::diagram::hybridization_retarded_catalog(model.n_hyb(), model.n_int());
-  auto statistics = interactions.statistics();
+  auto statistics = action_statistics(n, model.n_hyb());
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   constexpr auto all = nda::range::all;
   for (int direction : {0, 1}) {
-    auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{direction, 1}, {1}, {n - 1}}, hybridization.poles, triqs_xca::diagram::Kind::self_energy);
+    auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{direction, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
     triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
     std::optional<SelfEnergyOperands> retained;
     nda::vector<int> dimensions;
     int count = 0;
     triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), hybridization.values, hybridization.values_reflect, statistics, signs);
-      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), hybridization.values, hybridization.values_reflect, statistics, signs);
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), values, reflected, statistics, signs);
+      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), values, reflected, statistics, signs);
       ++count;
       ASSERT_EQ(bound.backbone.vertices.size(), 4);
       EXPECT_FALSE(bound.backbone.vertices[0].has_value());
@@ -121,8 +120,8 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
         EXPECT_EQ(late.statistics, statistics[late.coefficient_index]);
         for (auto const &early : bound.endpoints.early) {
           EXPECT_EQ(early.statistics, statistics[early.coefficient_index]);
-          auto expected = direction == 1 ? hybridization.values(all, late.coefficient_index, early.coefficient_index)
-                                         : hybridization.values_reflect(all, early.coefficient_index, late.coefficient_index);
+          auto expected = direction == 1 ? values(all, late.coefficient_index, early.coefficient_index)
+                                         : reflected(all, early.coefficient_index, late.coefficient_index);
           auto actual = bound.endpoints.coefficients[mu](all, early.coefficient_index);
           EXPECT_EQ(nda::max_element(nda::abs(actual - expected)), 0.0);
         }

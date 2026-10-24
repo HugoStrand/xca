@@ -1,4 +1,3 @@
-#include "triqs_xca/arc_data.hpp"
 #include <array>
 #include <cmath>
 #include <map>
@@ -189,7 +188,6 @@ namespace {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G0_ppsc_dense;
 
     dense::DiagramEvaluator D_dense;   // for compute_self_energy_by_pairs
-    triqs_xca::ArcData hyb; // the hybridization and its unsigned time reflection, also used by the manual routines
     BlockOpSymQuartet Fq;              // field operators of the block-sparse evaluator
 
     /// Build the DLR grid, the model and every dense fixture for the model of this name
@@ -204,7 +202,6 @@ namespace {
          Gt_dense_refl(itops.reflect(Gt_dense)),
          G0_ppsc_dense(wrap_dense(model.G_ppsc[0].mesh(), Gt_dense)),
          D_dense(model.hyb_poles, model.hyb_coeffs, model.G_ppsc[0].mesh(), model.ad),
-         hyb(model.G_ppsc[0].mesh(), model.hyb_poles, model.hyb_coeffs),
          Fq(make_field_operators(model.ad, model.hyb_coeffs)) {
       auto [Fs, F_dags] = dense::atom_diag::get_operators(model.ad);
       Fs_dense          = std::move(Fs);
@@ -498,6 +495,7 @@ namespace {
   // tabulated closed form pins a result at the times of its table only, so there compute_self_energy_by_pairs also meets the whole topology
   // on every node.
   void expect_se_routines_match(OneFermionSetup &s) {
+    auto const &action = s.D_dense.action;
     for (int order : {1, 2, 3}) {
       auto const &c = find_case(s.name, "sigma", order);
       SCOPED_TRACE(tag(c));
@@ -509,17 +507,17 @@ namespace {
         EXPECT_TRUE(matches_on_every_node(by_pairs, s.D_dense.compute_self_energy(s.G0_ppsc_dense, t)[0].data(), c))
            << "compute_self_energy_by_pairs against compute_self_energy";
       if (order == 1) {
-        EXPECT_TRUE(matches(dense::manual::sigma_nca(s.hyb.values, s.hyb.values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense), c, 1, s.itops))
+        EXPECT_TRUE(matches(dense::manual::sigma_nca(action.tau_values, action.tau_values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense), c, 1, s.itops))
            << "dense::manual::sigma_nca";
-        auto bdof = block_sparse::manual::sigma_nca(s.hyb.values, s.hyb.values_reflect, s.model.G_bdof, s.Fq);
+        auto bdof = block_sparse::manual::sigma_nca(action.tau_values, action.tau_values_reflect, s.model.G_bdof, s.Fq);
         EXPECT_TRUE(matches(test_utils::get_tensor_in_full_hilbert_space(bdof, s.model.ad, s.r), c, 1, s.itops)) << "block_sparse::manual::sigma_nca";
       }
       if (order == 2) {
-        EXPECT_TRUE(matches(dense::manual::sigma_oca(s.hyb.values, s.hyb.coeffs, s.hyb.values_reflect, s.hyb.coeffs, s.hyb.poles, s.itops, s.beta,
+        EXPECT_TRUE(matches(dense::manual::sigma_oca(action.tau_values, action.pole_coeffs, action.tau_values_reflect, action.pole_coeffs, action.poles, s.itops, s.beta,
                                                      s.Gt_dense, s.Fs_dense, s.F_dags_dense),
                             c, 1, s.itops))
            << "dense::manual::sigma_oca";
-        auto bdof = block_sparse::manual::sigma_oca(s.hyb.values, s.hyb.poles, s.itops, s.beta, s.model.G_bdof, s.Fq);
+        auto bdof = block_sparse::manual::sigma_oca(action.tau_values, action.poles, s.itops, s.beta, s.model.G_bdof, s.Fq);
         EXPECT_TRUE(matches(test_utils::get_tensor_in_full_hilbert_space(bdof, s.model.ad, s.r), c, 1, s.itops)) << "block_sparse::manual::sigma_oca";
         auto hyb = tpz_hyb(s);
         EXPECT_TRUE(matches_on_grid([&](int n) { return dense::manual::sigma_oca_tpz(hyb, s.itops, s.beta, s.Gt_dense, s.Fs_dense, n); }, c))
@@ -531,6 +529,7 @@ namespace {
   // The single-particle Green's function of the manual routines at first and second order, and of spgf_oca_tpz and spgf_o3_tpz at second
   // and third order, none of which carry topology_parity
   void expect_spgf_routines_match(OneFermionSetup &s) {
+    auto const &action = s.D_dense.action;
     // unlike sigma_oca_tpz and sigma_o3_tpz, the spgf_*_tpz routines want DLR coefficients rather than values, and
     // they do not build the reflected hybridization themselves; they take the plain reflection +reflect(hyb). Both
     // run their outer loop over the interior times of the grid and skip its endpoints, where the closed forms vanish.
@@ -548,10 +547,10 @@ namespace {
            << "block_sparse::manual::spgf_nca";
       }
       if (order == 2) {
-        EXPECT_TRUE(matches(dense::manual::spgf_oca(s.hyb.coeffs, s.hyb.coeffs, s.hyb.poles, s.itops, s.beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense),
+        EXPECT_TRUE(matches(dense::manual::spgf_oca(action.pole_coeffs, action.pole_coeffs, action.poles, s.itops, s.beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense),
                             c, 1, s.itops))
            << "dense::manual::spgf_oca";
-        EXPECT_TRUE(matches(block_sparse::manual::spgf_oca(s.hyb.poles, s.itops, s.beta, s.model.G_bdof, s.Fq), c, 1, s.itops))
+        EXPECT_TRUE(matches(block_sparse::manual::spgf_oca(action.poles, s.itops, s.beta, s.model.G_bdof, s.Fq), c, 1, s.itops))
            << "block_sparse::manual::spgf_oca";
         EXPECT_TRUE(matches_on_grid(
            [&](int n) { return dense::manual::spgf_oca_tpz(hyb_coeffs, hyb_refl_coeffs, s.itops, s.beta, Gt_coeffs, s.Fs_dense, n); }, c))

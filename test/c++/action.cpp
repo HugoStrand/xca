@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <triqs_xca/dense/action.hpp>
 #include <triqs_xca/block_sparse/action.hpp>
-#include <triqs_xca/arc_data.hpp>
 #include "test_utils/evaluators.hpp"
 
 using namespace triqs_xca;
@@ -10,14 +9,13 @@ TEST(Action, atomic_and_numerical_inputs_share_scalar_data_and_rebuild_bars) {
   auto model = test_utils::build_eval_model("unequal_sets");
   auto dense = dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad_flat);
   auto sparse = block_sparse::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad);
-  ArcData reference(model.mesh, model.hyb_poles, model.hyb_coeffs);
+  auto values = hyb::coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), model.hyb_coeffs, model.hyb_poles);
+  auto reflected = model.mesh.dlr_it().reflect(values);
   auto check = [&](auto const &action) {
     EXPECT_EQ(action.poles, model.hyb_poles);
     EXPECT_EQ(action.pole_coeffs, model.hyb_coeffs);
-    EXPECT_EQ(action.tau_values, reference.values);
-    EXPECT_EQ(action.tau_values_reflect, reference.values_reflect);
-    EXPECT_EQ(action.kernel.at_tau_plus, reference.kernel_values.at_tau_plus);
-    EXPECT_EQ(action.kernel.at_tau_minus, reference.kernel_values.at_tau_minus);
+    EXPECT_EQ(action.tau_values, values);
+    EXPECT_EQ(action.tau_values_reflect, reflected);
     EXPECT_EQ(action.n_hyb, model.n_hyb());
   };
   check(dense);

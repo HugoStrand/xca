@@ -49,7 +49,6 @@ int main(int argc, char **argv) try {
   bs::BlockDiagOpFun G(bgf);
   auto [operators, labels] = bs::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
   bs::OperatorSupportTable support(operators);
-  auto arc_catalog = triqs_xca::diagram::hybridization_retarded_catalog(model.n_hyb(), model.n_int());
   nda::array<int, 2> arcs(order, 2);
   for (int a = 0; a < order; ++a) arcs(a, nda::range::all) = nda::vector<int>{a, a + order};
   triqs_xca::diagram::Topology topology{arcs};
@@ -97,17 +96,17 @@ int main(int argc, char **argv) try {
     checksum += a.direction_sign;
   });
   time("sign_and_kernel_binding", [&](long i) {
-    auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
-    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].arcs.pole_indices, evaluator.arc_data.kernel_values);
+    auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], evaluator.action.statistics);
+    auto kernels = triqs_xca::bind::tau_kernels(diagrams[i].backbone.kernel_placement, diagrams[i].kernel_prefactor, diagrams[i].arcs.pole_indices, evaluator.action.kernel);
     checksum += std::abs(kernels.prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
     triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
-    auto signs = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], arc_catalog.statistics());
+    auto signs = triqs_xca::diagram::prepare_permutation_signs(diagrams[i], evaluator.action.statistics);
     triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, diagrams[i], path, operators, support, evaluator.arc_data, arc_catalog.statistics(), signs);
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, diagrams[i], path, operators, support, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics, signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });
   });

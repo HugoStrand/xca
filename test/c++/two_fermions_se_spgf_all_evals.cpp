@@ -1,4 +1,3 @@
-#include "triqs_xca/arc_data.hpp"
 #include <array>
 #include <cmath>
 #include <map>
@@ -149,7 +148,6 @@ namespace {
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G_ppsc_dense;
 
     dense::DiagramEvaluator D_dense;   // for compute_self_energy_by_pairs
-    triqs_xca::ArcData hyb; // the hybridization and its unsigned time reflection, also used by the manual routines
     BlockOpSymQuartet Fq;              // field operators of the block-sparse evaluator
     nda::vector<int> block_N;          // occupation sector N of each block
 
@@ -164,7 +162,6 @@ namespace {
          Gt_dense_refl(itops.reflect(Gt_dense)),
          G_ppsc_dense(wrap_dense(model.G_ppsc[0].mesh(), Gt_dense)),
          D_dense(model.hyb_poles, model.hyb_coeffs, model.G_ppsc[0].mesh(), model.ad),
-         hyb(model.G_ppsc[0].mesh(), model.hyb_poles, model.hyb_coeffs),
          Fq(make_field_operators(model.ad, model.hyb_coeffs)),
          block_N(make_block_occupations(model.ad)) {
       auto [Fs, F_dags] = dense::atom_diag::get_operators(model.ad);
@@ -421,6 +418,7 @@ namespace {
   // The self-energy of compute_self_energy_by_pairs at every order, and of the manual routines at first and second order. The raw output
   // of dense::DiagramEvaluator carries the parity of the topology, the manual routines carry none.
   void expect_se_routines_match(TwoFermionSetup &s) {
+    auto const &action = s.D_dense.action;
     for (int order : {1, 2, 3}) {
       auto const &c = find_case(s.name, "sigma", order);
       SCOPED_TRACE(tag(c));
@@ -429,17 +427,17 @@ namespace {
       EXPECT_TRUE(matches(s.D_dense.compute_self_energy_by_pairs(s.G_ppsc_dense, t)[0].data(), c, crossing_parity(order), s.itops))
          << "compute_self_energy_by_pairs";
       if (order == 1) {
-        EXPECT_TRUE(matches(dense::manual::sigma_nca(s.hyb.values, s.hyb.values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense), c, 1, s.itops))
+        EXPECT_TRUE(matches(dense::manual::sigma_nca(action.tau_values, action.tau_values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense), c, 1, s.itops))
            << "dense::manual::sigma_nca";
-        auto bdof = block_sparse::manual::sigma_nca(s.hyb.values, s.hyb.values_reflect, s.model.G_bdof, s.Fq);
+        auto bdof = block_sparse::manual::sigma_nca(action.tau_values, action.tau_values_reflect, s.model.G_bdof, s.Fq);
         EXPECT_TRUE(matches(test_utils::get_tensor_in_full_hilbert_space(bdof, s.model.ad, s.r), c, 1, s.itops)) << "block_sparse::manual::sigma_nca";
       }
       if (order == 2) {
-        EXPECT_TRUE(matches(dense::manual::sigma_oca(s.hyb.values, s.hyb.coeffs, s.hyb.values_reflect, s.hyb.coeffs, s.hyb.poles, s.itops, beta,
+        EXPECT_TRUE(matches(dense::manual::sigma_oca(action.tau_values, action.pole_coeffs, action.tau_values_reflect, action.pole_coeffs, action.poles, s.itops, beta,
                                                      s.Gt_dense, s.Fs_dense, s.F_dags_dense),
                             c, 1, s.itops))
            << "dense::manual::sigma_oca";
-        auto bdof = block_sparse::manual::sigma_oca(s.hyb.values, s.hyb.poles, s.itops, beta, s.model.G_bdof, s.Fq);
+        auto bdof = block_sparse::manual::sigma_oca(action.tau_values, action.poles, s.itops, beta, s.model.G_bdof, s.Fq);
         EXPECT_TRUE(matches(test_utils::get_tensor_in_full_hilbert_space(bdof, s.model.ad, s.r), c, 1, s.itops)) << "block_sparse::manual::sigma_oca";
       }
     }
@@ -448,6 +446,7 @@ namespace {
   // The single-particle Green's function of the manual routines at first and second order, which carry no topology_parity. A tabulated
   // closed form pins a result at the times of its table only, so there the routines also meet dense::DiagramEvaluator on every node.
   void expect_spgf_routines_match(TwoFermionSetup &s) {
+    auto const &action = s.D_dense.action;
     for (int order : {1, 2}) {
       auto const &c = find_case(s.name, "spgf", order);
       SCOPED_TRACE(tag(c));
@@ -459,8 +458,8 @@ namespace {
       }
       if (order == 2) {
         results.emplace_back("dense::manual::spgf_oca",
-                             dense::manual::spgf_oca(s.hyb.coeffs, s.hyb.coeffs, s.hyb.poles, s.itops, beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense));
-        results.emplace_back("block_sparse::manual::spgf_oca", block_sparse::manual::spgf_oca(s.hyb.poles, s.itops, beta, s.model.G_bdof, s.Fq));
+                             dense::manual::spgf_oca(action.pole_coeffs, action.pole_coeffs, action.poles, s.itops, beta, s.Gt_dense, s.Fs_dense, s.F_dags_dense));
+        results.emplace_back("block_sparse::manual::spgf_oca", block_sparse::manual::spgf_oca(action.poles, s.itops, beta, s.model.G_bdof, s.Fq));
       }
       bool tabulated = !closed_form(c, rel2abs(s.dlr_it)).table.empty();
       tensor_t whole = tabulated ? tensor_t(crossing_parity(order) * s.D_dense.compute_single_ptcle_gf(s.G_ppsc_dense, t)) : tensor_t{};

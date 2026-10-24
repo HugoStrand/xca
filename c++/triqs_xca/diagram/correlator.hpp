@@ -1,5 +1,5 @@
 #pragma once
-#include "arc_catalog.hpp"
+#include "statistics.hpp"
 #include "backbone_range.hpp"
 #include "topology.hpp"
 #include <utility>
