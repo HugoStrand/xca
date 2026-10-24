@@ -1,8 +1,8 @@
 # Action refactoring plan
 
 Revised and reviewed 2026-10-24 on `dev_backbone`. This version supersedes the
-previous proposal to retain atom_diag in Action. Planning only; this revision
-does not implement the refactoring.
+previous proposal to retain atom_diag in Action. Implementation authorized on 2026-10-24 as a persistent goal. Progress and
+validation are recorded in [work_log_action.md](work_log_action.md).
 
 ## Agreed ownership
 
