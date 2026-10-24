@@ -59,3 +59,19 @@ intentionally deferred to its own checkpoint.
 
 Full CPU build passed; all 76 CTest entries passed in 56.85 s with the standard
 single-threaded numerical libraries. Logs: `/tmp/xca-action-dense-{build,test}.log`.
+
+## Checkpoint 3: block-sparse evaluator ownership
+
+Block-sparse construction now delegates to one Action constructor. Operators,
+scalar tables, statistics and sector dimensions live in that owner; support
+metadata and mutable workspaces remain in the evaluator. Bind helpers receive
+scalar views rather than Action or ArcData. Direct Action input permits explicit
+sector dimensions; the new test retains a dimension-three sector on which all
+operators vanish, and rejects a propagator of the wrong size there. Legacy
+quartet adapters still infer unknown dimensions as -1.
+
+Full CPU build passed. The full suite passed 75/76 entries; the sole failure
+was a test matching the old constructor's diagnostic wording. Action diagnostics
+now report expected and actual dimensions; the adjusted mask test and Action
+tests both pass (0.35 s). Numerical results required no changes or tolerance
+adjustments. Logs: `/tmp/xca-action-sparse-{build,test,focused}.log`.
