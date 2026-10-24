@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "triqs_xca/hyb.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/block_sparse/dynint.hpp"
 
 namespace triqs_xca::block_sparse::dynint {
@@ -212,7 +212,7 @@ namespace triqs_xca::block_sparse::dynint {
         nda::array_const_view<dcomplex, 3> dynint_coeffs,
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
         return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
-                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
+                                                    get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
     std::tuple<BlockOpSymQuartet, nda::vector<long>> get_operators_and_interactions(
@@ -221,7 +221,7 @@ namespace triqs_xca::block_sparse::dynint {
         nda::array_const_view<dcomplex, 3> dynint_coeffs,
         std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops) {
         return get_operators_and_interactions_impl(ad, hyb_coeffs, dynint_coeffs, dynint_ops,
-                                                    hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs));
+                                                    get_extended_coefficients(hyb_coeffs, dynint_coeffs));
     }
 
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "statistics.hpp"
+#include "triqs_xca/action.hpp"
 #include "backbone_range.hpp"
 #include "topology.hpp"
 #include <utility>

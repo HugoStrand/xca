@@ -1,26 +1,94 @@
 #include "action.hpp"
+#include "diagram/tau_kernel.hpp"
+#include <cmath>
 
 namespace triqs_xca {
-  std::vector<diagram::Statistics> action_statistics(int flavours, int n_hyb) {
+  std::vector<Statistics> action_statistics(int flavours, int n_hyb) {
     if (flavours < 0 || n_hyb < 0 || n_hyb > flavours) throw std::invalid_argument("Action: invalid fundamental flavour count");
-    std::vector<diagram::Statistics> result(flavours, diagram::Statistics::bosonic);
-    std::fill_n(result.begin(), n_hyb, diagram::Statistics::fermionic);
+    std::vector<Statistics> result(flavours, Statistics::bosonic);
+    std::fill_n(result.begin(), n_hyb, Statistics::fermionic);
     return result;
   }
 
   TauKernel make_tau_kernel(triqs::mesh::dlr_imtime const &mesh, nda::vector_const_view<double> poles) {
     auto nodes = mesh.dlr_it().get_itnodes();
-    TauKernel kernel{nda::vector<double>(poles.size()), nda::vector<double>(poles.size()),
-                           nda::array<double, 2>(nodes.size(), poles.size()), nda::array<double, 2>(nodes.size(), poles.size())};
+    TauKernel kernel{nda::vector<double>(poles.size()), nda::vector<double>(poles.size()), nda::array<double, 2>(nodes.size(), poles.size()),
+                     nda::array<double, 2>(nodes.size(), poles.size())};
     for (long p = 0; p < poles.size(); ++p) {
-      double beta_pole = mesh.beta() * poles(p);
-      kernel.at_zero_plus(p) = cppdlr::k_it(0, beta_pole);
+      double beta_pole        = mesh.beta() * poles(p);
+      kernel.at_zero_plus(p)  = cppdlr::k_it(0, beta_pole);
       kernel.at_zero_minus(p) = cppdlr::k_it(0, -beta_pole);
       for (long t = 0; t < nodes.size(); ++t) {
-        kernel.at_tau_plus(t, p) = cppdlr::k_it(nodes(t), beta_pole);
+        kernel.at_tau_plus(t, p)  = cppdlr::k_it(nodes(t), beta_pole);
         kernel.at_tau_minus(t, p) = cppdlr::k_it(nodes(t), -beta_pole);
       }
     }
     return kernel;
   }
-}
+
+  nda::array<nda::dcomplex, 3> coefs2vals(double beta, const cppdlr::imtime_ops &itops, nda::array_const_view<nda::dcomplex, 3> coefs,
+                                          nda::vector_const_view<double> poles) {
+    long n1     = coefs.extent(1);
+    long n2     = coefs.extent(2);
+    int r       = itops.rank();
+    auto dlr_it = itops.get_itnodes();
+    int p       = static_cast<int>(poles.size());
+    auto kmat   = cppdlr::build_k_it(dlr_it, nda::make_regular(beta * poles));
+    auto cf_r   = nda::reshape(nda::make_regular(coefs), p, coefs.size() / p); // reshape needs C-ordered memory, coefs may have any strides
+    nda::array<nda::dcomplex, 3> vals(r, n1, n2);
+    reshape(vals, r, n1 * n2) = nda::linalg::matmul(kmat, cf_r);
+    return vals;
+  }
+
+  nda::array<nda::dcomplex, 3> get_extended_coefficients(nda::array_const_view<nda::dcomplex, 3> hyb_coeffs,
+                                                         nda::array_const_view<nda::dcomplex, 3> dynint_coeffs) {
+
+    if (hyb_coeffs.extent(0) != dynint_coeffs.extent(0) || hyb_coeffs.extent(1) != hyb_coeffs.extent(2)
+        || dynint_coeffs.extent(1) != dynint_coeffs.extent(2))
+      throw std::invalid_argument("get_extended_coefficients: square coefficient blocks must share the pole axis");
+
+    int r        = hyb_coeffs.extent(0);
+    int n_hyb    = hyb_coeffs.extent(1);
+    int n_dynint = dynint_coeffs.extent(1);
+    int n_ext    = n_hyb + n_dynint;
+
+    auto ext_coeffs = nda::array<nda::dcomplex, 3>::zeros(r, n_ext, n_ext);
+
+    ext_coeffs(nda::range::all, nda::range(0, n_hyb), nda::range(0, n_hyb))         = hyb_coeffs;
+    ext_coeffs(nda::range::all, nda::range(n_hyb, n_ext), nda::range(n_hyb, n_ext)) = dynint_coeffs;
+
+    return ext_coeffs;
+  }
+
+  namespace {
+    void multiply_factor(nda::array_view<nda::dcomplex, 3> target, TauKernel const &kernel, int pole, int sign) {
+      auto factor = sign > 0 ? kernel.at_tau_plus(nda::range::all, pole) : kernel.at_tau_minus(nda::range::all, pole);
+      for (long t = 0; t < factor.size(); ++t) target(t, nda::range::all, nda::range::all) *= factor(t);
+    }
+  } // namespace
+
+  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::VertexTauKernel const &recipe, nda::vector_const_view<int> pole_indices,
+                    TauKernel const &kernel, bool reflected) {
+    if (recipe.argument_sign == 0) return;
+    multiply_factor(target, kernel, pole_indices(recipe.pole_slot), reflected ? -recipe.argument_sign : recipe.argument_sign);
+  }
+
+  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, nda::vector_const_view<int> argument_signs,
+                            nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {
+    for (long p = 0; p < pole_indices.size(); ++p)
+      if (argument_signs(p) != 0) multiply_factor(target, kernel, pole_indices(p), argument_signs(p));
+  }
+
+  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {
+    double result = 1;
+    for (long p = 0; p < pole_indices.size(); ++p) {
+      int exponent = recipe.exponents(p);
+      if (exponent != 0) {
+        int pole     = pole_indices(p);
+        double value = recipe.argument_signs(p) > 0 ? kernel.at_zero_plus(pole) : kernel.at_zero_minus(pole);
+        result *= std::pow(value, -exponent);
+      }
+    }
+    return result;
+  }
+} // namespace triqs_xca

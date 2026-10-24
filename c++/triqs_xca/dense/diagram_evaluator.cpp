@@ -1,4 +1,4 @@
-#include "triqs_xca/tau_kernel_ops.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <stdexcept>
 #include <string>
@@ -8,7 +8,6 @@
 #include <cppdlr/dlr_imtime.hpp>
 #include <cppdlr/dlr_kernels.hpp>
 
-#include "triqs_xca/hyb.hpp"
 #include "triqs_xca/dense/dynint.hpp"
 #include "triqs_xca/dense/diagram_evaluator.hpp"
 #include "triqs_xca/dense/atom_diag.hpp"

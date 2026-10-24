@@ -12,7 +12,7 @@
  *
  * @brief Tests of explicit diagram sign preparation.
  *
- * @details triqs_xca::diagram::Statistics come from the Action and observable boundary.
+ * @details triqs_xca::Statistics come from the Action and observable boundary.
  * Arcs with a bosonic endpoint are dropped before computing permutation parity.
  * The third-order crossing topology distinguishes which internal arc is bosonic.
  */
@@ -102,8 +102,8 @@ TEST(DiagramSigns, all_fermionic_catalogue_is_a_distinguishable_negative_control
  * @brief Explicit observable statistics agree with the corresponding model flavours.
  */
 TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
-  constexpr auto F = triqs_xca::diagram::Statistics::fermionic, B = triqs_xca::diagram::Statistics::bosonic;
-  auto correlator_parity = [](int n_int_arg, triqs_xca::diagram::Statistics external, int orb1, int orb2) {
+  constexpr auto F = triqs_xca::Statistics::fermionic, B = triqs_xca::Statistics::bosonic;
+  auto correlator_parity = [](int n_int_arg, triqs_xca::Statistics external, int orb1, int orb2) {
     auto assignment = triqs_xca::diagram::prepare_diagram(
       triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{{-1, 0, 1}, {0, 0}, {orb1, orb2}},
       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
@@ -128,8 +128,8 @@ TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
 
 TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   using namespace triqs_xca;
-  constexpr auto F = triqs_xca::diagram::Statistics::fermionic, B = triqs_xca::diagram::Statistics::bosonic;
-  std::vector<triqs_xca::diagram::Statistics> interactions{B, F, B, F};
+  constexpr auto F = triqs_xca::Statistics::fermionic, B = triqs_xca::Statistics::bosonic;
+  std::vector<triqs_xca::Statistics> interactions{B, F, B, F};
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Arcs{{1, 0, 1}, {0, 0}, {1, 0}},
                                       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::self_energy);
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, interactions);
@@ -161,6 +161,6 @@ TEST(DiagramSigns, first_order_has_no_internal_statistics) {
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 0, triqs_xca::diagram::Arcs{{0}, {}, {}},
                                       nda::vector<double>{}, triqs_xca::diagram::Kind::self_energy);
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, {});
-  EXPECT_EQ(signs(triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::fermionic), 1);
-  EXPECT_EQ(signs(triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic), 1);
+  EXPECT_EQ(signs(triqs_xca::Statistics::fermionic, triqs_xca::Statistics::fermionic), 1);
+  EXPECT_EQ(signs(triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic), 1);
 }

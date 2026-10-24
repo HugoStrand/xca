@@ -7,7 +7,7 @@
 
 #include <triqs/gfs.hpp>
 
-#include "triqs_xca/hyb.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"

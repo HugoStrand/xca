@@ -20,7 +20,7 @@ namespace triqs_xca::block_sparse::dynint {
      * into symmetry sets as in get_operators(), and the interaction operators are grouped by compatible
      * single-target maps in both orientations. Missing member blocks remain exactly zero in the union
      * storage; group connectivity is only a candidate schedule. These groups are appended as further symmetry sets. The coefficients are extended block-diagonally by
-     * hyb::get_extended_coefficients(). Unlike the dense path there is no restriction on the number of atom_diag
+     * get_extended_coefficients(). Unlike the dense path there is no restriction on the number of atom_diag
      * subspaces, an interaction operator only has to map each subspace to at most one target.
      *
      * @param[in] ad AtomDiag object

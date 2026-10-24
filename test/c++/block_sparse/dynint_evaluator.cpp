@@ -11,7 +11,7 @@
 #include <triqs_xca/block_sparse/block_op.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/block_sparse/dynint.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 
@@ -31,7 +31,7 @@ using triqs_xca::block_sparse::BlockDiagOpFun;
 using triqs_xca::block_sparse::BlockOpSymQuartet;
 using triqs_xca::block_sparse::DiagramEvaluator;
 namespace dense = triqs_xca::dense;
-using triqs_xca::hyb::get_extended_coefficients;
+using triqs_xca::get_extended_coefficients;
 using triqs_xca::block_sparse::dynint::get_operators_and_interactions;
 namespace test_utils = triqs_xca::test_utils;
 

@@ -105,7 +105,7 @@ TEST(InteractionContractions, dense_coefficient_refresh_replaces_materialized_ba
 
 
 TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
-  using triqs_xca::diagram::Statistics;
+  using triqs_xca::Statistics;
   std::vector<Statistics> statistics{Statistics::bosonic, Statistics::fermionic, Statistics::bosonic, Statistics::fermionic};
 
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
@@ -113,9 +113,9 @@ TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.
-  triqs_xca::diagram::CorrelatorStatistics fermionic{triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::fermionic};
-  triqs_xca::diagram::CorrelatorStatistics bosonic{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic};
-  triqs_xca::diagram::CorrelatorStatistics mixed{triqs_xca::diagram::Statistics::fermionic, triqs_xca::diagram::Statistics::bosonic};
+  triqs_xca::diagram::CorrelatorStatistics fermionic{triqs_xca::Statistics::fermionic, triqs_xca::Statistics::fermionic};
+  triqs_xca::diagram::CorrelatorStatistics bosonic{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic};
+  triqs_xca::diagram::CorrelatorStatistics mixed{triqs_xca::Statistics::fermionic, triqs_xca::Statistics::bosonic};
   EXPECT_EQ(signs(fermionic.at_zero, fermionic.at_tau), -1);
   EXPECT_EQ(signs(bosonic.at_zero, bosonic.at_tau), 1);
   EXPECT_EQ(signs(mixed.at_zero, mixed.at_tau), 1);
@@ -123,10 +123,10 @@ TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
 
 TEST(ArcStatistics, model_order_and_correlator_statistics) {
   auto statistics = triqs_xca::action_statistics(3, 2);
-  EXPECT_EQ(statistics[0], triqs_xca::diagram::Statistics::fermionic);
-  EXPECT_EQ(statistics[2], triqs_xca::diagram::Statistics::bosonic);
-  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(false).at_tau, triqs_xca::diagram::Statistics::bosonic);
-  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(true).at_zero, triqs_xca::diagram::Statistics::fermionic);
+  EXPECT_EQ(statistics[0], triqs_xca::Statistics::fermionic);
+  EXPECT_EQ(statistics[2], triqs_xca::Statistics::bosonic);
+  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(false).at_tau, triqs_xca::Statistics::bosonic);
+  EXPECT_EQ(triqs_xca::diagram::uniform_correlator_statistics(true).at_zero, triqs_xca::Statistics::fermionic);
   EXPECT_THROW(triqs_xca::action_statistics(2, -1), std::invalid_argument);
   EXPECT_THROW(triqs_xca::action_statistics(2, 3), std::invalid_argument);
 }

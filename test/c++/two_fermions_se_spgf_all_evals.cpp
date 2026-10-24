@@ -16,7 +16,7 @@
 #include <triqs_xca/dense/atom_diag.hpp>
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/dense/manual/sigma.hpp>
 #include <triqs_xca/block_sparse/manual/sigma.hpp>

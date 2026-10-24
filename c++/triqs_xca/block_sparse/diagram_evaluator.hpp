@@ -5,7 +5,7 @@
 
 #include <triqs/atom_diag/atom_diag.hpp>
 
-#include "triqs_xca/hyb.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"
 #include "triqs_xca/diagram/sign.hpp"

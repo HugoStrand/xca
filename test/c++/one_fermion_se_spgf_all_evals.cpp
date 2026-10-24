@@ -23,7 +23,7 @@
 #include <triqs_xca/block_sparse/manual/sigma.hpp>
 #include <triqs_xca/dense/manual/spgf.hpp>
 #include <triqs_xca/block_sparse/manual/spgf.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 
 #include <cppdlr/cppdlr.hpp>
@@ -486,9 +486,8 @@ namespace {
     EXPECT_LE(nda::max_element(nda::abs(test_utils::get_tensor_in_full_hilbert_space(s.model.G_bdof, s.model.ad) - G0_ana)), eps);
   }
 
-  // The hybridization on the DLR nodes for the trapezoidal routines, from the itops overload of coefs2vals; the beta/Lambda/eps one
-  // hardcodes a symmetrized grid internally
-  nda::array<dcomplex, 3> tpz_hyb(OneFermionSetup &s) { return triqs_xca::hyb::coefs2vals(s.beta, s.itops, s.model.hyb_coeffs, s.model.hyb_poles); }
+  // The hybridization on the same DLR nodes as the propagator, for the trapezoidal routines.
+  nda::array<dcomplex, 3> tpz_hyb(OneFermionSetup &s) { return triqs_xca::coefs2vals(s.beta, s.itops, s.model.hyb_coeffs, s.model.hyb_poles); }
 
   // The self-energy of compute_self_energy_by_pairs at every order, of the manual routines at first and second order, and of sigma_oca_tpz
   // at second order. The raw output of dense::DiagramEvaluator carries the parity of the topology, the other routines carry none. A

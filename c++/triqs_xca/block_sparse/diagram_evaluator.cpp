@@ -1,7 +1,7 @@
 #include "backbone_paths.hpp"
 #include "self_energy_paths.hpp"
 #include "correlator_diagrams.hpp"
-#include "triqs_xca/tau_kernel_ops.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/diagram/correlator.hpp"
 #include <algorithm>
 #include <array>
@@ -16,7 +16,6 @@
 #include "triqs_xca/block_sparse/diagram_evaluator.hpp"
 #include "triqs_xca/block_sparse/dynint.hpp"
 
-#include "triqs_xca/hyb.hpp"
 #include "triqs_xca/operator_statistics.hpp"
 
 namespace triqs_xca::block_sparse {

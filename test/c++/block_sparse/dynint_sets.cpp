@@ -7,7 +7,7 @@
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 #include <triqs_xca/dense/fset.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/dense/dynint.hpp>
 #include <triqs_xca/block_sparse/dynint.hpp>
 #include <triqs_xca/block_sparse/operator_support.hpp>
@@ -422,7 +422,7 @@ TEST(BlockSparseDynintSets, rejects_coefficients_coupling_different_dynint_sets)
 
   // a hyb <-> dynint coefficient is rejected by the same guard
   auto clean = group_diagonal_dynint_coeffs({0, 1}, p);
-  auto ext   = triqs_xca::hyb::get_extended_coefficients(hyb, clean);
+  auto ext   = triqs_xca::get_extended_coefficients(hyb, clean);
   ASSERT_EQ(ext(0, 0, n_hyb), 0.0) << "get_extended_coefficients must zero-fill the cross blocks";
   ext(0, 0, n_hyb) = 0.3;
   auto Fq_ok       = std::get<0>(block_sparse::dynint::get_operators_and_interactions(ad, hyb, clean, ops));

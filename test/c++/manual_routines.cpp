@@ -10,7 +10,7 @@
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/dense/manual/sigma.hpp>
 #include <triqs_xca/dense/manual/spgf.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 
 #include "test_utils/block_sparse.hpp"
@@ -69,7 +69,7 @@ namespace {
       for (int l = 0; l < 2; ++l)
         for (int i = 0; i < 2; ++i)
           for (int j = 0; j < 2; ++j) hyb_coeffs(l, i, j) = dcomplex(0.5 - 0.2 * l + 0.15 * (i - j), 0.1 * (i + 2 * j));
-      hyb                  = triqs_xca::hyb::coefs2vals(beta, itops, hyb_coeffs, hyb_poles);
+      hyb                  = triqs_xca::coefs2vals(beta, itops, hyb_coeffs, hyb_poles);
       Gt                   = test_utils::get_tensor_in_full_hilbert_space(base.G_ppsc, base.ad);
       std::tie(Fs, F_dags) = dense::atom_diag::get_operators(base.ad);
     }

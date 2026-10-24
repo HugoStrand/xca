@@ -63,12 +63,12 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto op = identity(G);
   auto expected = evaluator.eval_correlator(G, topology, {op}, {op}, f, false);
-  auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic});
+  auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(actual, expected);
 
   auto changed_G = G;
   changed_G *= 1.1;
-  auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::diagram::Statistics::bosonic, triqs_xca::diagram::Statistics::bosonic});
+  auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
   EXPECT_EQ(assignment.arcs.directions(0), -1);
   EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
@@ -78,8 +78,8 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
 TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
-  auto coefficients = hyb::get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
-  auto values = hyb::coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), coefficients, model.hyb_poles);
+  auto coefficients = get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
+  auto values = coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), coefficients, model.hyb_poles);
   auto reflected = model.mesh.dlr_it().reflect(values);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   auto changed_G = G;

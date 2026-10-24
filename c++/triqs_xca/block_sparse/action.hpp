@@ -9,7 +9,7 @@ namespace triqs_xca::block_sparse {
 
   inline Action<BlockOpSymQuartet> make_action(triqs::mesh::dlr_imtime mesh, nda::vector_const_view<double> poles,
                                               nda::array_const_view<nda::dcomplex, 3> coefficients, BlockOpSymQuartet const &operators,
-                                              std::vector<triqs_xca::diagram::Statistics> statistics, int n_hyb, nda::vector<long> dims) {
+                                              std::vector<triqs_xca::Statistics> statistics, int n_hyb, nda::vector<long> dims) {
     if (nda::sum(operators.sym_set_sizes) != statistics.size()) throw std::invalid_argument("Action: statistics must cover every operator");
     check_operator_block_dims(operators, dims);
     return {std::move(mesh), poles, coefficients, std::move(statistics), n_hyb, std::move(dims),
@@ -47,7 +47,7 @@ namespace triqs_xca::block_sparse {
     int h = ad.get_fops().size(), n = h + dynint_ops.size();
     if (hyb_coeffs.extent(1) != h || dynint_coeffs.extent(1) != dynint_ops.size())
       throw std::invalid_argument("Action: coefficient blocks must match fundamental operators and dynint_ops");
-    auto coefficients = hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs);
+    auto coefficients = get_extended_coefficients(hyb_coeffs, dynint_coeffs);
     return {std::move(mesh), poles, coefficients, action_statistics(n, h), h, atom_block_dims(ad),
             [&](auto const &c) { return std::get<0>(dynint::get_operators_and_interactions(ad, c, dynint_ops)); }};
   }

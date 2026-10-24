@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 
 #include "test_utils/block_sparse.hpp"
 

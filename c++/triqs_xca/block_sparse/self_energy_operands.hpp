@@ -6,7 +6,7 @@ namespace triqs_xca::block_sparse {
   struct EndpointOperand {
     nda::array_const_view<nda::dcomplex, 2> matrix;
     int coefficient_index;
-    triqs_xca::diagram::Statistics statistics;
+    triqs_xca::Statistics statistics;
   };
 
   /// A factored endpoint sum: one coefficient view per late operand, with axes

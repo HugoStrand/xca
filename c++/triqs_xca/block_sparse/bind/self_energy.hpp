@@ -8,10 +8,10 @@ namespace triqs_xca::block_sparse::bind {
   EndpointSumOperands endpoint_sum(triqs_xca::diagram::Diagram const &diagram, block_sparse::diagram::SelfEnergyDiagram const &prepared,
                                    BlockOpSymQuartet const &operators, OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                   std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
+                                   std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
   SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram,
                                  block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
                                  OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                 std::span<triqs_xca::diagram::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
+                                 std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
 } // namespace triqs_xca::block_sparse::bind

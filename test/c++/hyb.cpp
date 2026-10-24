@@ -1,12 +1,11 @@
 #include "triqs_xca/diagram/diagram.hpp"
-#include "triqs_xca/tau_kernel_ops.hpp"
+#include "triqs_xca/action.hpp"
 #include "triqs_xca/dense/action.hpp"
 #include <gtest/gtest.h>
 
 #include <nda/nda.hpp>
 #include <triqs/gfs.hpp>
 
-#include <triqs_xca/hyb.hpp>
 #include <cppdlr/dlr_kernels.hpp>
 
 /**

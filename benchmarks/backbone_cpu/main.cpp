@@ -12,7 +12,7 @@
 #include "test_utils/evaluators.hpp"
 #include <triqs_xca/block_sparse/dynint.hpp>
 #include <triqs_xca/block_sparse/bind/self_energy.hpp>
-#include <triqs_xca/tau_kernel_ops.hpp>
+#include <triqs_xca/action.hpp>
 
 using namespace triqs_xca;
 namespace bs = triqs_xca::block_sparse;

@@ -6,7 +6,7 @@
 
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"

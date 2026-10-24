@@ -7,7 +7,7 @@
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
-#include <triqs_xca/hyb.hpp>
+#include <triqs_xca/action.hpp>
 #include <triqs_xca/block_sparse/dynint.hpp>
 
 #include "test_utils/block_sparse.hpp"
@@ -20,7 +20,7 @@ using triqs::operators::many_body_operator_complex;
 
 using triqs_xca::block_sparse::atom_diag::get_operators;
 using triqs_xca::block_sparse::DiagramEvaluator;
-using triqs_xca::hyb::get_extended_coefficients;
+using triqs_xca::get_extended_coefficients;
 using triqs_xca::block_sparse::dynint::get_operators_and_interactions;
 namespace test_utils = triqs_xca::test_utils;
 

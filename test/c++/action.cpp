@@ -9,7 +9,7 @@ TEST(Action, atomic_and_numerical_inputs_share_scalar_data_and_rebuild_bars) {
   auto model = test_utils::build_eval_model("unequal_sets");
   auto dense = dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad_flat);
   auto sparse = block_sparse::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad);
-  auto values = hyb::coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), model.hyb_coeffs, model.hyb_poles);
+  auto values = coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), model.hyb_coeffs, model.hyb_poles);
   auto reflected = model.mesh.dlr_it().reflect(values);
   auto check = [&](auto const &action) {
     EXPECT_EQ(action.poles, model.hyb_poles);
@@ -41,7 +41,7 @@ TEST(Action, validates_metadata_before_scalar_evaluation) {
   auto wrong_poles = nda::vector<double>{1.};
   EXPECT_THROW(dense::make_action(model.mesh, wrong_poles, model.hyb_coeffs, operators), std::invalid_argument);
   EXPECT_THROW(dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, operators,
-                                 std::vector<diagram::Statistics>{}, 0), std::invalid_argument);
+                                 std::vector<Statistics>{}, 0), std::invalid_argument);
 }
 
 TEST(Action, mixed_and_empty_dynamical_inputs_keep_flavour_order) {
@@ -49,13 +49,13 @@ TEST(Action, mixed_and_empty_dynamical_inputs_keep_flavour_order) {
     auto model = test_utils::build_eval_model(name);
     auto dense = dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
     auto sparse = block_sparse::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad, model.dynint_ops, model.dynint_coeffs);
-    auto expected = hyb::get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
+    auto expected = get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
     EXPECT_EQ(dense.pole_coeffs, expected);
     EXPECT_EQ(sparse.pole_coeffs, expected);
     EXPECT_EQ(dense.statistics, sparse.statistics);
     EXPECT_EQ(dense.statistics.size(), model.n_hyb() + model.n_int());
     for (int i = 0; i < dense.statistics.size(); ++i)
-      EXPECT_EQ(dense.statistics[i], i < model.n_hyb() ? diagram::Statistics::fermionic : diagram::Statistics::bosonic);
+      EXPECT_EQ(dense.statistics[i], i < model.n_hyb() ? Statistics::fermionic : Statistics::bosonic);
     auto old = dense::dynint::get_operators_and_interactions(model.ad_flat, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
     EXPECT_EQ(dense.operators.F_dag_bars, old.F_dag_bars);
     EXPECT_EQ(dense.operators.F_bars_refl, old.F_bars_refl);
@@ -73,7 +73,7 @@ TEST(Action, explicit_dimensions_keep_sectors_where_all_operators_vanish) {
   block_sparse::BlockOpSymSet op(nda::vector<int>{0, -1}, blocks);
   block_sparse::BlockOpSymQuartet quartet({op}, {op}, coefficients, nda::vector<long>{0});
   auto model = block_sparse::make_action(mesh, nda::vector<double>{0.}, coefficients, quartet,
-                                        {diagram::Statistics::bosonic}, 0, nda::vector<long>{1, 3});
+                                        {Statistics::bosonic}, 0, nda::vector<long>{1, 3});
   block_sparse::DiagramEvaluator evaluator(std::move(model));
   EXPECT_EQ(evaluator.Nmax, 3);
   EXPECT_EQ(evaluator.n_hyb, 0);
