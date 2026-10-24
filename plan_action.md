@@ -19,7 +19,7 @@ struct Action {
   nda::array<nda::dcomplex, 3> pole_coeffs;
   nda::array<nda::dcomplex, 3> tau_values;
   nda::array<nda::dcomplex, 3> tau_values_reflect;
-  std::vector<diagram::Statistics> statistics;
+  std::vector<Statistics> statistics;
   int n_hyb;
   nda::vector<long> block_dims;
   OperatorStorage operators;

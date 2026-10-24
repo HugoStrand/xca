@@ -183,3 +183,38 @@ Final logs: `/tmp/xca-kernel-renamed-configure.log`,
 `/tmp/xca-kernel-renamed-build.log`, `/tmp/xca-kernel-renamed-test.log`, and
 `/tmp/xca-kernel-renamed-benchmark-build.log`. Unrelated worktree changes remain
 untouched.
+
+## Follow-up: consolidate numerical helpers (2026-10-25)
+
+Code: `db4c851` — `[action] consolidate numerical helpers`.
+
+Moved Statistics to action.hpp in the triqs_xca namespace: parity describes the
+model's operators and external observables, rather than diagram geometry. Moved
+TauKernel, its numerical application routines and get_extended_coefficients
+into action.hpp/action.cpp. Updated both evaluators, construction adapters,
+binding helpers, tests and the backbone_cpu benchmark to use these declarations.
+Removed the root tau_kernel.hpp, tau_kernel_ops.hpp/.cpp, hyb.hpp/.cpp and
+diagram/statistics.hpp headers/sources.
+
+Logical kernel placement and prefactor recipes remain in diagram/tau_kernel.*.
+The Action header forward-declares the two recipe types used by its numerical
+helpers; their definitions are included only in action.cpp. This avoids a
+circular include. A consequence of consolidation is that diagram headers using
+Statistics now include the numerical Action header; they do not retain an Action
+or acquire additional numerical state.
+
+Retained the coefs2vals overload accepting existing imaginary-time operations,
+now in triqs_xca. Action construction and manual/reference test setup use it to
+evaluate coefficients at fitted physical poles, which can differ from the mesh's
+native DLR poles. Therefore cppdlr::imtime_ops::coefs2vals is not a replacement.
+Removed the unused beta/Lambda/eps overload that constructed a separate grid.
+The retained helper's strided-input handling and all numerical algorithms are
+unchanged. No compatibility aliases or forwarding headers were added; C++ callers
+use the new header and namespace, while generated Python bindings are unchanged.
+
+CPU reconfiguration and build passed. All 76 CTest entries passed in 57.17 s,
+with OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1 and test parallelism 2. The optional
+backbone_cpu target also builds; no benchmark timings or CUDA validation were
+part of this cleanup. Logs: `/tmp/xca-action-files-configure.log`,
+`/tmp/xca-action-files-build-final.log`, `/tmp/xca-action-files-benchmark-build.log`
+and `/tmp/xca-action-files-test.log`. Unrelated worktree changes were preserved.
