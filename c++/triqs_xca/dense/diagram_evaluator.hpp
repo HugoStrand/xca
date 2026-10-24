@@ -39,10 +39,15 @@ namespace triqs_xca::dense {
 
     C2PY_IGNORE const Action<FSet> action;
 
-    triqs::mesh::dlr_imtime tau_mesh; // imaginary time mesh
+    // Compatibility reads return detached values; numerical methods borrow action.tau_mesh.dlr_it().
+    C2PY_PROPERTY_GET(tau_mesh) triqs::mesh::dlr_imtime get_tau_mesh() const { return action.tau_mesh; }
+    C2PY_PROPERTY_GET(itops) imtime_ops get_itops() const { return action.tau_mesh.dlr_it(); }
+    C2PY_PROPERTY_GET(dlr_it) nda::vector<double> get_dlr_it() const { return action.tau_mesh.dlr_it().get_itnodes(); }
+
+    /// Direct numerical construction with explicit statistics and a single DLR mesh.
+    C2PY_IGNORE explicit DiagramEvaluator(Action<FSet> action);
+
     double beta;                      // inverse temperature
-    imtime_ops itops;                 // DLR imaginary time object
-    nda::vector<double> dlr_it;       // DLR imaginary time nodes in relative ordering
 
 
     int r;     // DLR rank
@@ -182,7 +187,7 @@ namespace triqs_xca::dense {
        * @param[in] hyb_coeffs hybridization function coefficients at these poles
        * @param[in] Fset FSet (cre/ann operators with and without bars)
        */
-    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> poles,
+    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops const &itops, nda::vector_const_view<double> poles,
                                       nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset);
 
     /**

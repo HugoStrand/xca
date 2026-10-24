@@ -85,3 +85,41 @@ TEST(Action, explicit_dimensions_keep_sectors_where_all_operators_vanish) {
   bgf bad{std::vector{G[0], gf(mesh, nda::ones<dcomplex>(mesh.size(), 2, 2))}};
   EXPECT_THROW(evaluator.compute_self_energy(bad, nda::array<int, 2>{{0, 1}}), std::invalid_argument);
 }
+
+TEST(Action, dense_legacy_constructor_rejects_a_different_DLR_grid) {
+  auto model = test_utils::build_eval_model("unequal_sets");
+  auto operators = dense::atom_diag::get_operators(model.ad_flat, model.hyb_coeffs);
+  auto const &ops = model.mesh.dlr_it();
+  EXPECT_NO_THROW(dense::DiagramEvaluator(model.mesh.beta(), model.mesh.eps(), ops, model.hyb_poles, model.hyb_coeffs, operators));
+  cppdlr::imtime_ops custom(ops.lambda(), nda::vector<double>{0.});
+  EXPECT_THROW(dense::DiagramEvaluator(model.mesh.beta(), model.mesh.eps(), custom, model.hyb_poles, model.hyb_coeffs, operators),
+               std::invalid_argument);
+  auto mesh = triqs::mesh::dlr_imtime(model.mesh.beta(), triqs::mesh::Fermion, 20., 1e-10, true);
+  dense::DiagramEvaluator evaluator(dense::make_action(mesh, model.hyb_poles, model.hyb_coeffs, operators));
+  EXPECT_EQ(evaluator.action.tau_mesh, mesh);
+  EXPECT_EQ(evaluator.get_dlr_it(), mesh.dlr_it().get_itnodes());
+}
+
+TEST(Action, evaluator_copies_own_operator_data_and_outlive_their_source) {
+  auto model = test_utils::build_eval_model("unequal_sets_nA0");
+  auto dense = [&] {
+    dense::DiagramEvaluator source(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+    auto copy = source;
+    EXPECT_NE(copy.action.operators.Fs.data(), source.action.operators.Fs.data());
+    EXPECT_NE(copy.action.pole_coeffs.data(), source.action.pole_coeffs.data());
+    return copy;
+  }();
+  auto sparse = [&] {
+    block_sparse::DiagramEvaluator source(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
+    auto copy = source;
+    EXPECT_NE(copy.action.pole_coeffs.data(), source.action.pole_coeffs.data());
+    return copy;
+  }();
+  auto G_dense = test_utils::subspace_blocks(model.G, model.ad_flat, model.mesh);
+  auto G_sparse = test_utils::subspace_blocks(model.G, model.ad, model.mesh);
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
+  auto sigma_dense = dense.compute_self_energy(G_dense, topology, 0L, 8L);
+  auto sigma_sparse = sparse.compute_self_energy(G_sparse, topology, 0L, 8L);
+  auto expected = test_utils::get_tensor_in_full_hilbert_space(sigma_sparse, model.ad);
+  EXPECT_LT(nda::max_element(nda::abs(sigma_dense[0].data() - expected)), 1e-12);
+}

@@ -36,8 +36,8 @@ namespace {
 } // namespace
 
 DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model)
-   : action(std::move(model)), tau_mesh(action.tau_mesh), itops(tau_mesh.dlr_it()), dlr_it(itops.get_itnodes()),
-     Sigma({}, {}), beta(tau_mesh.beta()), r(itops.rank()), n(action.statistics.size()),
+   : action(std::move(model)),
+     Sigma({}, {}), beta(action.tau_mesh.beta()), r(action.tau_mesh.size()), n(action.statistics.size()),
      n_hyb(action.n_hyb), n_int(n - n_hyb), q(action.operators.sym_set_sizes.size()),
      Nmax(std::max(0L, nda::max_element(action.block_dims))),
      T(nda::zeros<dcomplex>(r, Nmax, Nmax)), U(nda::zeros<dcomplex>(r, Nmax, Nmax)),
@@ -126,6 +126,7 @@ void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, n
   apply_kernel_product(GKt_ep, kernels.edges[e_ix]);
 
   nda::array_view<dcomplex, 3> T_ep = T_buf(_, range(0, path.dimension(e_ix + 1)), range(0, n_col_r));
+  auto const &itops = action.tau_mesh.dlr_it();
   T_ep = itops.convolve(beta, itops.vals2coefs(GKt_ep), itops.vals2coefs(T_ep), cppdlr::TIME_ORDERED);
 }
 
@@ -235,9 +236,9 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
   for (int i = 0; i < sig.get_num_block_cols(); ++i) {
     if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, 0 * Gt.get_block(i)); // zero block
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
     } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, sig.get_block(i));
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
     }
   }
   reset();
@@ -269,9 +270,9 @@ DiagramEvaluator::compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::
   std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
   for (int i = 0; i < sig.get_num_block_cols(); ++i) {
     if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, 0 * Gt.get_block(i)); // zero block
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
     } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, sig.get_block(i));
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
     }
   }
   reset();
@@ -313,9 +314,9 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
   for (int i = 0; i < sig.get_num_block_cols(); ++i) {
     if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, 0 * Gt.get_block(i)); // zero block
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
     } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, sig.get_block(i));
+      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
     }
   }
   reset();
@@ -352,6 +353,7 @@ void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, 
 
   nda::array_view<dcomplex, 3> U_e = U_buf(_, range(0, n_row_l), range(0, path.dimension(e_ix + 1)));
 
+  auto const &itops = action.tau_mesh.dlr_it();
   U_e = itops.convolve(beta, itops.vals2coefs(U_e), itops.vals2coefs(GKt_ep), cppdlr::TIME_ORDERED);
 }
 
@@ -436,7 +438,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
     auto result = eval_backbone_backward(kernels, operands);
     tau_to_beta_paths.push_back(path);
     // cppdlr::reflect reshapes its input; an active block in U can be strided.
-    tau_to_beta_results.emplace_back(itops.reflect(nda::make_regular(result)));
+    tau_to_beta_results.emplace_back(action.tau_mesh.dlr_it().reflect(nda::make_regular(result)));
   });
   triqs_xca::block_sparse::visit_correlator_diagrams(Gt, zero_to_tau_paths, tau_to_beta_paths, mu_ops, kap_ops,
       [&](diagram::CorrelatorDiagram const &prepared) {

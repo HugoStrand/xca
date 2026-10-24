@@ -22,47 +22,30 @@ namespace triqs_xca::dense {
   using nda::linalg::matmul;
 
 
-  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops &itops, nda::vector_const_view<double> poles,
-                                               nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset)
-     : action(make_action(triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false), poles, hyb_coeffs, Fset)),
-       tau_mesh(action.tau_mesh),
-       beta(beta),
-       itops(itops),
-       dlr_it(itops.get_itnodes()),
-       r(itops.rank()),
-       n(hyb_coeffs.extent(1)),
-       n_hyb(n),
-       n_int(0), // No dynamic interactions in this constructor
-       //n(Fset.Fs.extent(0)),
-       N(Fset.Fs.extent(1)),
-       // allocate arrays
-       Sigma(nda::zeros<dcomplex>(r, N, N)),
-       T(nda::zeros<dcomplex>(r, N, N)),
-       U(nda::zeros<dcomplex>(r, N, N)),
-       GKt(nda::zeros<dcomplex>(r, N, N)),
-       Tkaps(nda::zeros<dcomplex>(n, r, N, N)), // Largest memory footprint, speeding up multiply_left_vertex_and_right_zero_vertex
-       Tmu(nda::zeros<dcomplex>(r, N, N)) {}
+  namespace {
+    triqs::mesh::dlr_imtime compatible_mesh(double beta, double eps, imtime_ops const &itops) {
+      auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false);
+      auto const &ops = mesh.dlr_it();
+      if (ops.rank() != itops.rank() || ops.get_itnodes() != itops.get_itnodes() || ops.get_rfnodes() != itops.get_rfnodes())
+        throw std::invalid_argument("DiagramEvaluator: supplied DLR grid differs from reconstructed mesh; construct from Action with the intended mesh");
+      return mesh;
+    }
+  }
+
+  DiagramEvaluator::DiagramEvaluator(Action<FSet> model)
+     : action(std::move(model)), beta(action.tau_mesh.beta()), r(action.tau_mesh.size()),
+       n(action.statistics.size()), n_hyb(action.n_hyb), n_int(n - n_hyb), N(action.block_dims(0)),
+       Sigma(nda::zeros<dcomplex>(r, N, N)), T(nda::zeros<dcomplex>(r, N, N)), U(nda::zeros<dcomplex>(r, N, N)),
+       GKt(nda::zeros<dcomplex>(r, N, N)), Tkaps(nda::zeros<dcomplex>(n, r, N, N)), Tmu(nda::zeros<dcomplex>(r, N, N)) {}
+
+  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops const &itops, nda::vector_const_view<double> poles,
+                                     nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset)
+     : DiagramEvaluator(make_action(compatible_mesh(beta, eps, itops), poles, hyb_coeffs, Fset)) {}
 
   template <bool isComplex>
   DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
                                                triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad)
-     : action(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)),
-       tau_mesh(action.tau_mesh),
-       beta(tau_mesh.beta()),
-       itops(tau_mesh.dlr_it()),
-       dlr_it(itops.get_itnodes()),
-       r(itops.rank()),
-       n(ad.get_fops().size()), // number of fermion flavours (spin-orbitals)
-       n_hyb(n),
-       n_int(0), // No dynamic interactions in this constructor
-       N(ad.get_full_hilbert_space_dim()),
-       // allocate arrays
-       Sigma(nda::zeros<dcomplex>(r, N, N)),
-       T(nda::zeros<dcomplex>(r, N, N)),
-       U(nda::zeros<dcomplex>(r, N, N)),
-       GKt(nda::zeros<dcomplex>(r, N, N)),
-       Tkaps(nda::zeros<dcomplex>(n, r, N, N)), // Largest memory footprint, speeding up multiply_left_vertex_and_right_zero_vertex
-       Tmu(nda::zeros<dcomplex>(r, N, N)) {}
+     : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)) {}
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
                                                         triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<true> const &ad);
@@ -75,23 +58,7 @@ namespace triqs_xca::dense {
                                      triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad,
                                      std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
                                      nda::array_const_view<dcomplex, 3> dynint_coeffs)
-     : action(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)),
-       tau_mesh(action.tau_mesh),
-       beta(tau_mesh.beta()),
-       itops(tau_mesh.dlr_it()),
-       dlr_it(itops.get_itnodes()),
-       r(itops.rank()),
-       n(ad.get_fops().size() + dynint_ops.size()), // number of fermion flavours (spin-orbitals)
-       n_hyb(ad.get_fops().size()),
-       n_int(dynint_ops.size()), // Number of dynamic interactions
-       N(ad.get_full_hilbert_space_dim()),
-       // allocate arrays
-       Sigma(nda::zeros<dcomplex>(r, N, N)),
-       T(nda::zeros<dcomplex>(r, N, N)),
-       U(nda::zeros<dcomplex>(r, N, N)),
-       GKt(nda::zeros<dcomplex>(r, N, N)),
-       Tkaps(nda::zeros<dcomplex>(n, r, N, N)), // Largest memory footprint, speeding up multiply_left_vertex_and_right_zero_vertex
-       Tmu(nda::zeros<dcomplex>(r, N, N)) {}
+     : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)) {}
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
                                               triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<true> const &ad,
@@ -134,7 +101,7 @@ namespace triqs_xca::dense {
     reset();
     triqs_xca::diagram::Topology topology{topology_arr};
     eval_self_energy_fixed_indices(Gt, topology, f_ix); // evaluate the diagram with these directions, poles, and orbital indices
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
@@ -145,7 +112,7 @@ namespace triqs_xca::dense {
     reset();
     triqs_xca::diagram::Topology topology{topology_arr};
     flat_indices.for_each([&](long f_ix) { eval_self_energy_fixed_indices(Gt, topology, f_ix); });
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
@@ -171,7 +138,7 @@ namespace triqs_xca::dense {
     reset();
     triqs_xca::diagram::Topology topology{topology_arr};
     eval_self_energy_fixed_index_pair(Gt, topology, f_ix);
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
@@ -188,7 +155,7 @@ namespace triqs_xca::dense {
     flat_indices.for_each([&](long f_ix) {
       if (!flat_indices.is_range() || (f_ix / stride) % 2 == 0) eval_self_energy_fixed_index_pair(Gt, topology, f_ix);
     });
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
@@ -215,6 +182,7 @@ namespace triqs_xca::dense {
                                                   int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, kernels.edges[e_ix]);
+    auto const &itops = action.tau_mesh.dlr_it();
     T_buf = itops.convolve(beta, itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
   }
 
@@ -364,6 +332,7 @@ namespace triqs_xca::dense {
                                                    int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, kernels.edges[e_ix]);
+    auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
@@ -416,7 +385,7 @@ namespace triqs_xca::dense {
       integrate_right_edge(U, Gt, kernels, v - 1);
     }
 
-    U = itops.reflect(U);
+    U = action.tau_mesh.dlr_it().reflect(U);
 
     T *= kernels.prefactor;
     int diag_order_sign = 1; // (m % 2 == 1) ? -1 : 1;
@@ -460,7 +429,7 @@ namespace triqs_xca::dense {
 
     /*
       auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
-        tau_mesh, eval_correlator(diagram, mu_ops, kap_ops, f_ix));
+        action.tau_mesh, eval_correlator(diagram, mu_ops, kap_ops, f_ix));
       return correlator;
       */
 

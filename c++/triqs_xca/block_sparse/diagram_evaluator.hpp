@@ -33,9 +33,6 @@ class DiagramEvaluator {
   C2PY_IGNORE const Action<BlockOpSymQuartet> action;
 
   private:
-  triqs::mesh::dlr_imtime tau_mesh;  // imaginary time mesh
-  imtime_ops itops;           // DLR imaginary time object
-  nda::vector<double> dlr_it; // DLR imaginary time nodes in relative ordering
   OperatorSupportTable support_ = OperatorSupportTable(action.operators); // immutable model support; no propagator data
   BlockDiagOpFun Sigma;       // array for storing self-energy contribution (final result)
 
