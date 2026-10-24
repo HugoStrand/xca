@@ -75,3 +75,24 @@ was a test matching the old constructor's diagnostic wording. Action diagnostics
 now report expected and actual dimensions; the adjusted mask test and Action
 tests both pass (0.35 s). Numerical results required no changes or tolerance
 adjustments. Logs: `/tmp/xca-action-sparse-{build,test,focused}.log`.
+
+## Checkpoint 4: one DLR owner
+
+Both evaluators now use action.tau_mesh for transforms, convolutions, reflection
+and output meshes. Removed their independent imtime_ops, node arrays and mesh
+members. Dense construction also delegates to one numerical Action constructor.
+The old C++ dense adapter validates both real-frequency and imaginary-time nodes
+before accepting its reconstructed mesh. Direct Action construction accepts an
+explicit mesh, including symmetric grids. Block-sparse strided reflection still
+makes a contiguous temporary before calling cppdlr.
+
+Python constructor signatures remain unchanged. Dense tau_mesh, itops and dlr_it
+reads remain available as derived, read-only properties; operation/node reads
+return copies on demand. Independent setters are intentionally removed. Numerical
+methods borrow the mesh operations directly and never call these copying getters.
+Shared mesh lazy caches retain the sequential-use constraint documented in the
+plan; no concurrent-first-use guarantee has been added.
+
+New tests cover grid rejection, explicit mesh adoption, evaluator copies surviving
+source destruction, and Python property reads/immutability. Full CPU build and
+all 76 CTest entries passed (56.87 s). Logs: `/tmp/xca-action-dlr-{build,test}.log`.
