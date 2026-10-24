@@ -3,7 +3,8 @@
 
 #include <triqs_xca/diagram/arc.hpp>
 #include <triqs_xca/action.hpp>
-#include <triqs_xca/diagram/sign.hpp>
+#include <triqs_xca/diagram/topology.hpp>
+#include <triqs_xca/diagram/diagram.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 
@@ -110,7 +111,7 @@ TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
 
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
                                        triqs_xca::diagram::Arcs{{1, 1}, {0}, {1}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
-  auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
+  auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics);
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.
   triqs_xca::diagram::CorrelatorStatistics fermionic{triqs_xca::Statistics::fermionic, triqs_xca::Statistics::fermionic};

@@ -1,6 +1,6 @@
 #pragma once
 #include "backbone_operands.hpp"
-#include "triqs_xca/diagram/sign.hpp"
+#include "triqs_xca/diagram/topology.hpp"
 
 namespace triqs_xca::block_sparse {
   struct EndpointOperand {

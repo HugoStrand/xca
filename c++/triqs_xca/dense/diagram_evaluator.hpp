@@ -11,7 +11,7 @@
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"
-#include "triqs_xca/diagram/sign.hpp"
+#include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/diagram/arc.hpp"
 #include "triqs_xca/atom_diag.hpp"
 

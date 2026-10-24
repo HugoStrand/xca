@@ -255,7 +255,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     T = Gt;
@@ -289,7 +289,7 @@ namespace triqs_xca::dense {
   void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
@@ -361,7 +361,7 @@ namespace triqs_xca::dense {
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));

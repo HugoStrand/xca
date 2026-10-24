@@ -8,7 +8,7 @@
 #include "triqs_xca/action.hpp"
 #include "triqs_xca/diagram/diagram.hpp"
 #include "triqs_xca/flat_index_selection.hpp"
-#include "triqs_xca/diagram/sign.hpp"
+#include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/diagram/arc.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/bind/self_energy.hpp"

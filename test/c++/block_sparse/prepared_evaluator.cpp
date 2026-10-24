@@ -90,7 +90,7 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   constexpr auto all = nda::range::all;
   for (int direction : {0, 1}) {
     auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{direction, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
-    auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment, statistics);
+    auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics);
     triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
     std::optional<SelfEnergyOperands> retained;
     nda::vector<int> dimensions;

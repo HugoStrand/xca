@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "triqs_xca/diagram/topology.hpp"
+#include "arcs.hpp"
 
 #include <nda/layout_transforms.hpp>
 
@@ -119,6 +120,28 @@ namespace triqs_xca::diagram {
     std::ranges::sort(vertices);
     for (int v = 0; v < 2 * m; ++v)
       if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
+  }
+
+  int permutation_sign(Topology const &topology, std::span<Statistics const> vertices) {
+    if (vertices.size() != static_cast<std::size_t>(2 * topology.order())) throw std::invalid_argument("wrong number of vertex statistics");
+    nda::vector<bool> fermionic(vertices.size());
+    for (std::size_t v = 0; v < vertices.size(); ++v) fermionic(v) = vertices[v] == Statistics::fermionic;
+    return topology::topology_parity(topology::fermionic_topology(topology.arcs, fermionic));
+  }
+
+  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs, std::span<Statistics const> statistics) {
+    int order = topology.order();
+    if (arcs.flavours.size() != order - 1) throw std::invalid_argument("wrong number of internal arc flavours");
+    std::vector<Statistics> vertices(2 * order, Statistics::bosonic);
+    for (int a = 1; a < order; ++a) {
+      int flavour = arcs.flavours(a - 1);
+      if (flavour < 0 || static_cast<std::size_t>(flavour) >= statistics.size())
+        throw std::invalid_argument("internal arc has no valid operator statistics");
+      vertices[topology.arcs(a, 0)] = vertices[topology.arcs(a, 1)] = statistics[flavour];
+    }
+    int without = permutation_sign(topology, vertices);
+    vertices[0] = vertices[topology.special_vertex()] = Statistics::fermionic;
+    return {permutation_sign(topology, vertices), without};
   }
 
 } // namespace triqs_xca::diagram

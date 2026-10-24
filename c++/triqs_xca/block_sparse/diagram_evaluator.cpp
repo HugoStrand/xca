@@ -159,7 +159,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace) {
-  auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+  auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
   double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
   triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, action.operators, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
     auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, diagram, prepared, action.operators, support_, action.tau_values, action.tau_values_reflect, action.statistics, signs);
@@ -445,7 +445,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
     eval_correlator_completion(operands, tau_to_beta_results[operands.tau_to_beta_path],
                                zero_to_tau_results[operands.zero_to_tau_path], scratch, correlator);
   });
-  auto signs = triqs_xca::diagram::prepare_permutation_signs(diagram, action.statistics);
+  auto signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
   correlator *= signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
   return correlator;
 }

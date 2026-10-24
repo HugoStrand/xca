@@ -1,7 +1,46 @@
 #pragma once
 
 #include <nda/nda.hpp>
+#include <span>
+#include "triqs_xca/action.hpp"
 
+namespace triqs_xca::diagram {
+
+  struct Arcs;
+
+  /// Diagram connectivity, independent of operator representation and sector layout.
+  struct Topology {
+    nda::array<int, 2> arcs;
+
+    explicit Topology(nda::array<int, 2> topology_arr);
+
+    int order() const { return static_cast<int>(arcs.extent(0)); }
+    int special_vertex() const { return arcs(0, 1); }
+  };
+
+  /// Permutation parity after removing every arc with a bosonic endpoint.
+  /// Order, direction, kernel, and Python observable prefactors are separate.
+  int permutation_sign(Topology const &topology, std::span<Statistics const> vertices);
+
+  /// The unresolved special arc has only two parity cases, independent of the
+  /// number of endpoint orbitals. No orbital-pair enumeration is needed here.
+  struct PermutationSigns {
+    int with_fermionic_arc;
+    int without_fermionic_arc;
+
+    int operator()(Statistics at_zero, Statistics at_special) const {
+      return at_zero == Statistics::fermionic && at_special == Statistics::fermionic ? with_fermionic_arc : without_fermionic_arc;
+    }
+  };
+
+  /// Internal arc flavours select operator statistics; each barred contraction
+  /// must couple operators of the same parity as its retained flavour.
+  /// Directions and poles do not enter the permutation sign.
+  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs, std::span<Statistics const> statistics);
+
+} // namespace triqs_xca::diagram
+
+// Array-based topology helpers.
 namespace triqs_xca::diagram::topology {
 
   /**
@@ -56,17 +95,3 @@ namespace triqs_xca::diagram::topology {
   nda::array<int, 2> fermionic_topology(nda::array_const_view<int, 2> topology, nda::array_const_view<bool, 1> fermionic);
 
 } // namespace triqs_xca::diagram::topology
-
-namespace triqs_xca::diagram {
-
-  /// Diagram connectivity, independent of operator representation and sector layout.
-  struct Topology {
-    nda::array<int, 2> arcs;
-
-    explicit Topology(nda::array<int, 2> topology_arr);
-
-    int order() const { return static_cast<int>(arcs.extent(0)); }
-    int special_vertex() const { return arcs(0, 1); }
-  };
-
-} // namespace triqs_xca::diagram
