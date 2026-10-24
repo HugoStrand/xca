@@ -14,7 +14,7 @@ operator-storage type:
 template <typename OperatorStorage>
 struct Action {
   triqs::mesh::dlr_imtime tau_mesh;
-  TauKernelValues kernel;
+  TauKernel kernel;
   nda::vector<double> poles;
   nda::array<nda::dcomplex, 3> pole_coeffs;
   nda::array<nda::dcomplex, 3> tau_values;
@@ -140,7 +140,7 @@ Construct scalar tables directly in Action:
 - `poles` stores physical frequencies unchanged.
 - `tau_values` contains the combined scalar functions at the mesh nodes.
 - `tau_values_reflect` is unsigned `C(beta-tau)`.
-- `kernel` contains the existing TauKernelValues evaluated at `beta*poles`.
+- `kernel` contains the existing TauKernel evaluated at `beta*poles`.
 
 The symbolic adapter establishes statistics from the supported operator
 expressions; the matrix adapter receives them. Preserve the current supported

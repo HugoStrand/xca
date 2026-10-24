@@ -143,3 +143,43 @@ Each code commit is followed by a separate documentation checkpoint.
 | `85bcee0` | Remove obsolete model types and migrate remaining consumers |
 
 Unrelated initial worktree changes and untracked files were preserved.
+
+
+## Follow-up: direct kernel access (2026-10-24)
+
+Code: `b1b8c9a` — `[diagram] simplify kernel access`.
+
+Removed VertexKernelView, KernelView and TauKernelViews, together with the root
+bind/tau_kernel files. Both evaluators now apply the existing Diagram recipes
+directly against action.kernel. Numerical helpers accept the recipe, pole indices
+and kernel tables; they do not depend on the Action template. Table selection
+happens outside the time/matrix loop. The scalar prefactor is still calculated
+once per diagram and reused across block-sparse paths. Backbone, endpoint and
+correlator operand binding are unchanged.
+
+Renamed TauKernelValues to TauKernel, its header to tau_kernel.hpp, and its
+factory to make_tau_kernel. Numerical parameters and the factory result are
+named kernel. The class comment identifies the contents as precomputed tables;
+logical placement and prefactor types retain their diagram namespace and names.
+The Action plan has been updated to reflect this naming.
+
+Review confirmed that reflection reverses only vertex argument signs, zero
+recipes remain identities (including order-one diagrams with no internal poles),
+and edge factors are applied in the original pole-slot order. Existing kernel
+tests now check numerical application rather than retained pointers. Additional
+coverage detects factor reordering and premature product formation through
+avoidable overflow/underflow. Changed tables are read directly, without rebinding.
+
+The initial refactor passed all 76 CTest entries (57.10 s). After the naming
+refinement, configure/build and all 76 CPU/Python entries passed again (57.16 s),
+with OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1 and test parallelism 2. Generated
+Python bindings are unchanged. The backbone_cpu benchmark target compiles; its
+preparation row is now sign_and_kernel_prefactor, documented separately from the
+older binding measurement. No benchmarks were run and no speedup is claimed:
+removing bound containers trades their allocations for repeated direct lookups
+and scans of an edge's placement row.
+
+Final logs: `/tmp/xca-kernel-renamed-configure.log`,
+`/tmp/xca-kernel-renamed-build.log`, `/tmp/xca-kernel-renamed-test.log`, and
+`/tmp/xca-kernel-renamed-benchmark-build.log`. Unrelated worktree changes remain
+untouched.

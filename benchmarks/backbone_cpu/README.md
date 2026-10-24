@@ -45,7 +45,10 @@ and model diagonalization are outside the timed regions.
 
 - `flat_preparation` includes decoding and shared recipe preparation;
   `logical_preparation` starts from already decoded indices.
-- `sign_and_kernel_binding` starts from prepared assignments.
+- `sign_and_kernel_prefactor` evaluates signs and the scalar kernel prefactor
+  from prepared assignments. Vertex and edge kernels are read directly during
+  execution. Results labelled `sign_and_kernel_binding` also include construction
+  of bound view containers and measure a different preparation operation.
 - `path_discovery` counts candidates without matrix arithmetic.
 - `paths_and_operand_binding` includes sign preparation, discovery, operand
   binding, and the diagonal-output closure check. It overlaps the preceding
