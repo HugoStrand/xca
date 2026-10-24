@@ -24,7 +24,7 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
   auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, Lambda / beta, eps, false);
   auto itops = mesh.dlr_it();
   auto tau = cppdlr::rel2abs(itops.get_itnodes());
-  nda::vector<double> physical_poles{-0.8, 1.3};
+  nda::vector<double> poles{-0.8, 1.3};
   tensor coefficients(2, 2, 2);
   coefficients(0, all, all) = nda::array<dcomplex, 2>{{dcomplex(2, 1), dcomplex(3, -2)}, {dcomplex(-1, 4), dcomplex(5, 3)}};
   coefficients(1, all, all) = nda::array<dcomplex, 2>{{dcomplex(-1, 2), dcomplex(2, 3)}, {dcomplex(4, -1), dcomplex(1, -2)}};
@@ -34,19 +34,19 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
   F(1, 1, 3) = -1.;
   for (int a = 0; a < 2; ++a) Fdag(a, all, all) = nda::dagger(F(a, all, all));
   dense::FSet fset(F, Fdag, coefficients);
-  dense::DiagramEvaluator dense(beta, eps, itops, physical_poles, coefficients, fset);
+  dense::DiagramEvaluator dense(beta, eps, itops, poles, coefficients, fset);
   nda::vector<int> connection{0};
   std::vector<tensor> blocks{F}, dag_blocks{Fdag};
   block_sparse::BlockOpSymSet grouped_F(connection, blocks), grouped_Fdag(connection, dag_blocks);
   block_sparse::BlockOpSymQuartet quartet({grouped_F}, {grouped_Fdag}, coefficients, nda::vector<long>{0, 0});
-  block_sparse::DiagramEvaluator sparse(beta, Lambda, eps, physical_poles, coefficients, quartet);
+  block_sparse::DiagramEvaluator sparse(beta, Lambda, eps, poles, coefficients, quartet);
 
   tensor values = nda::zeros<dcomplex>(mesh.size(), 2, 2), reflected = values;
   for (int t = 0; t < mesh.size(); ++t)
     for (int a = 0; a < 2; ++a)
       for (int b = 0; b < 2; ++b)
-        for (int p = 0; p < physical_poles.size(); ++p) {
-          double omega = beta * physical_poles(p);
+        for (int p = 0; p < poles.size(); ++p) {
+          double omega = beta * poles(p);
           values(t, a, b) -= coefficients(p, a, b) * std::exp(-tau(t) * omega) / (1. + std::exp(-omega));
           reflected(t, a, b) -= coefficients(p, a, b) * std::exp(-(1. - tau(t)) * omega) / (1. + std::exp(-omega));
         }
@@ -97,7 +97,7 @@ TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {
     block_sparse::DiagramEvaluator sparse_ops(beta, Lambda, eps, model.hyb_poles, model.hyb_coeffs, quartet);
 
     for (auto const *data : {&dense_atom.arc_data, &sparse_atom.arc_data, &dense_ops.arc_data, &sparse_ops.arc_data}) {
-      for (int p = 0; p < model.hyb_poles.size(); ++p) EXPECT_DOUBLE_EQ(data->poles(p), beta * model.hyb_poles(p));
+      for (int p = 0; p < model.hyb_poles.size(); ++p) EXPECT_DOUBLE_EQ(data->poles(p), model.hyb_poles(p));
       EXPECT_EQ(nda::max_element(nda::abs(data->coeffs - model.hyb_coeffs)), 0.);
       expect_close(data->values, dense_atom.arc_data.values);
       expect_close(data->values_reflect, dense_atom.arc_data.values_reflect);

@@ -132,12 +132,12 @@ namespace triqs_xca::dense::manual {
           for (int l = 0; l < p; l++) {
             T = 0;
             U = 0;
-            spgf_oca_right(beta, itops, dlr_it, hyb_poles(l), fb, Gt, F1(lam, _, _), T);
-            spgf_oca_left(beta, itops, dlr_it, hyb_poles(l), fb, Gt, Fbar(lam, l, _, _), U);
+            spgf_oca_right(beta, itops, dlr_it, beta * hyb_poles(l), fb, Gt, F1(lam, _, _), T);
+            spgf_oca_left(beta, itops, dlr_it, beta * hyb_poles(l), fb, Gt, Fbar(lam, l, _, _), U);
             if (hyb_poles(l) <= 0) {
-              for (int t = 0; t < r; t++) { Tnu(t, _, _) += matmul(U(t, _, _), matmul(Fs(nu, _, _), T(t, _, _))) / cppdlr::k_it(0, -hyb_poles(l)); }
+              for (int t = 0; t < r; t++) { Tnu(t, _, _) += matmul(U(t, _, _), matmul(Fs(nu, _, _), T(t, _, _))) / cppdlr::k_it(0, -beta * hyb_poles(l)); }
             } else {
-              for (int t = 0; t < r; t++) { Tnu(t, _, _) += matmul(U(t, _, _), matmul(Fs(nu, _, _), T(t, _, _))) / cppdlr::k_it(0, hyb_poles(l)); }
+              for (int t = 0; t < r; t++) { Tnu(t, _, _) += matmul(U(t, _, _), matmul(Fs(nu, _, _), T(t, _, _))) / cppdlr::k_it(0, beta * hyb_poles(l)); }
             }
           }
         }

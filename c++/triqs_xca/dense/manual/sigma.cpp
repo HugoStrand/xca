@@ -269,26 +269,26 @@ namespace triqs_xca::dense::manual {
           Sigma_l = 0;
           // initialize summand assoc'd with index l
           for (int lam = 0; lam < n; lam++) {
-            sigma_oca_right_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt, F2list(lam, _, _), T);
+            sigma_oca_right_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt, F2list(lam, _, _), T);
             sigma_oca_middle_in_place((fb1 == 1), hyb, hyb_refl, F1list, F3list, T, Tkaps, Tmu);
-            sigma_oca_left_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt, Fbar_array(lam, l, _, _), T, GKt);
+            sigma_oca_left_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt, Fbar_array(lam, l, _, _), T, GKt);
             Sigma_l += T;
           } // sum over lambda
 
           // prefactor with Ks
           if (fb2 == 1) {
             if (hyb_poles(l) <= 0) {
-              for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), hyb_poles(l)) * Sigma_l(t, _, _); }
-              Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+              for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+              Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
             } else {
-              Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+              Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
             }
           } else {
             if (hyb_poles(l) >= 0) {
-              for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -hyb_poles(l)) * Sigma_l(t, _, _); }
-              Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+              for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+              Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
             } else {
-              Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+              Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
             }
           }
           Sigma += sfM * Sigma_l;

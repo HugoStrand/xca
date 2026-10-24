@@ -469,10 +469,10 @@ namespace triqs_xca::block_sparse::manual {
             for (int l = 0; l < p; l++) {
               Sigma_l = 0;
               for (int lam = 0; lam < n; lam++) {
-                sigma_oca_right_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(0)), Gt.get_block(ind_path(1)),
+                sigma_oca_right_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(0)), Gt.get_block(ind_path(1)),
                                       F2[0].get_block(ind_path(0))(lam, _, _), Tright);
                 sigma_oca_middle_in_place((fb1 == 1), hyb, hyb_refl, Fkaps, Fmus, Tright, Tmid, Tkaps, Tmu);
-                sigma_oca_left_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(2)),
+                sigma_oca_left_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(2)),
                                      Fbar[0].get_block(ind_path(2))(lam, l, _, _), Tmid, Tleft, GKt);
                 Sigma_l += Tleft;
               } // sum over lambda
@@ -480,17 +480,17 @@ namespace triqs_xca::block_sparse::manual {
               // prefactor with Ks
               if (fb2 == 1) {
                 if (hyb_poles(l) <= 0) {
-                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), hyb_poles(l)) * Sigma_l(t, _, _); }
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
                 } else {
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
                 }
               } else {
                 if (hyb_poles(l) >= 0) {
-                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -hyb_poles(l)) * Sigma_l(t, _, _); }
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
                 } else {
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
                 }
               }
               Sigma_block_i += nda::make_regular(sfM * Sigma_l);
@@ -614,10 +614,10 @@ namespace triqs_xca::block_sparse::manual {
             for (int l = 0; l < p; l++) {
               Sigma_l = 0;
               for (int lam = 0; lam < n; lam++) {
-                sigma_oca_right_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(0)), Gt.get_block(ind_path(1)),
+                sigma_oca_right_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(0)), Gt.get_block(ind_path(1)),
                                       F2list[lam].get_block(ind_path(0)), Tright);
                 sigma_oca_middle_in_place((fb1 == 1), hyb, hyb_refl, Fkaps, Fmus, Tright, Tmid, Tkaps, Tmu);
-                sigma_oca_left_in_place(beta, itops, dlr_it, hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(2)),
+                sigma_oca_left_in_place(beta, itops, dlr_it, beta * hyb_poles(l), (fb2 == 1), Gt.get_block(ind_path(2)),
                                      Fbar_array[lam][l].get_block(ind_path(2)), Tmid, Tleft, GKt);
                 Sigma_l += Tleft;
               } // sum over lambda
@@ -625,17 +625,17 @@ namespace triqs_xca::block_sparse::manual {
               // prefactor with Ks
               if (fb2 == 1) {
                 if (hyb_poles(l) <= 0) {
-                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), hyb_poles(l)) * Sigma_l(t, _, _); }
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
                 } else {
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
                 }
               } else {
                 if (hyb_poles(l) >= 0) {
-                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -hyb_poles(l)) * Sigma_l(t, _, _); }
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, hyb_poles(l));
+                  for (int t = 0; t < r; t++) { Sigma_l(t, _, _) = cppdlr::k_it(dlr_it(t), -beta * hyb_poles(l)) * Sigma_l(t, _, _); }
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, beta * hyb_poles(l));
                 } else {
-                  Sigma_l = Sigma_l / cppdlr::k_it(0, -hyb_poles(l));
+                  Sigma_l = Sigma_l / cppdlr::k_it(0, -beta * hyb_poles(l));
                 }
               }
               Sigma_block_i += nda::make_regular(sfM * Sigma_l);

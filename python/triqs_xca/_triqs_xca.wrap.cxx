@@ -736,7 +736,7 @@ hyb_refl : {par_6}
 hyb_refl_coeffs : {par_7}
    hybridization coefficients at negative imag. times
 hyb_poles : {par_8}
-   hybridization poles
+   hybridization poles in physical frequency units (not beta-scaled)
 
 Returns
 -------

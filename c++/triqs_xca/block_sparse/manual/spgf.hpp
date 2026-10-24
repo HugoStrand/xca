@@ -18,7 +18,7 @@ namespace triqs_xca::block_sparse::manual {
 
   /**
  * @brief Evaluate OCA Green's function using block-sparse storage
- * @param[in] hyb_poles hybridization poles
+ * @param[in] hyb_poles hybridization poles in physical frequency units (not beta-scaled)
  * @param[in] itops cppdlr imaginary time object
  * @param[in] beta inverse temperature
  * @param[in] Gt pseudoparticle Green's function as a BDOF

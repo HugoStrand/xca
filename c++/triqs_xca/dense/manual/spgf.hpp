@@ -22,7 +22,7 @@ namespace triqs_xca::dense::manual {
  * @brief Evaluate OCA Green's function using dense storage
  * @param[in] hyb_coeffs hybridization coefficients
  * @param[in] hyb_refl_coeffs hybridization coefficients at negative imag. times
- * @param[in] hyb_poles hybridization poles
+ * @param[in] hyb_poles hybridization poles in physical frequency units (not beta-scaled)
  * @param[in] itops cppdlr imaginary time object
  * @param[in] beta inverse temperature
  * @param[in] Gt pseudoparticle Green's function

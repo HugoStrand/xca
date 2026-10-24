@@ -231,21 +231,21 @@ namespace triqs_xca::block_sparse::manual {
                     for (int l = 0; l < p; l++) {
                       T = 0;
                       U = 0;
-                      spgf_oca_right(beta, itops, dlr_it, hyb_poles(l), fb, Gt, F1[p_lam], lam, T, ind_path, block_dims);
-                      spgf_oca_left(beta, itops, dlr_it, hyb_poles(l), fb, Gt, Fbar[p_lam], lam, l, U, ind_path, block_dims);
+                      spgf_oca_right(beta, itops, dlr_it, beta * hyb_poles(l), fb, Gt, F1[p_lam], lam, T, ind_path, block_dims);
+                      spgf_oca_left(beta, itops, dlr_it, beta * hyb_poles(l), fb, Gt, Fbar[p_lam], lam, l, U, ind_path, block_dims);
                       if (hyb_poles(l) <= 0) {
                         for (int t = 0; t < r; t++) {
                           Tmu(t, range(0, block_dims(4)), range(0, block_dims(1))) +=
                              matmul(U(t, range(0, block_dims(4)), range(0, block_dims(3))),
                                     matmul(Fq.Fs[p_mu].get_block(ind_path(1))(mu, _, _), T(t, range(0, block_dims(2)), range(0, block_dims(1)))))
-                             / cppdlr::k_it(0, -hyb_poles(l));
+                             / cppdlr::k_it(0, -beta * hyb_poles(l));
                         }
                       } else {
                         for (int t = 0; t < r; t++) {
                           Tmu(t, range(0, block_dims(4)), range(0, block_dims(1))) +=
                              matmul(U(t, range(0, block_dims(4)), range(0, block_dims(3))),
                                     matmul(Fq.Fs[p_mu].get_block(ind_path(1))(mu, _, _), T(t, range(0, block_dims(2)), range(0, block_dims(1)))))
-                             / cppdlr::k_it(0, hyb_poles(l));
+                             / cppdlr::k_it(0, beta * hyb_poles(l));
                         }
                       }
                     }
