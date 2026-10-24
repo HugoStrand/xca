@@ -28,7 +28,7 @@ namespace triqs_xca::dense {
        beta(beta),
        itops(itops),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, nda::make_regular(hyb_poles / beta), hyb_coeffs, -1.0), // Scaling of poles by beta?
+       arc_data(tau_mesh, nda::make_regular(hyb_poles / beta), hyb_coeffs), // Scaling of poles by beta?
        Fset(Fset),
        r(itops.rank()),
        n(hyb_coeffs.extent(1)),
@@ -51,7 +51,7 @@ namespace triqs_xca::dense {
        beta(tau_mesh.beta()),
        itops(tau_mesh.dlr_it()),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, hyb_poles, hyb_coeffs, -1.0),
+       arc_data(tau_mesh, hyb_poles, hyb_coeffs),
        Fset(atom_diag::get_operators(ad, hyb_coeffs)),
        r(itops.rank()),
        n(ad.get_fops().size()), // number of fermion flavours (spin-orbitals)
@@ -81,7 +81,7 @@ namespace triqs_xca::dense {
        beta(tau_mesh.beta()),
        itops(tau_mesh.dlr_it()),
        dlr_it(itops.get_itnodes()),
-       arc_data(tau_mesh, hyb_poles, hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs), -1.0),
+       arc_data(tau_mesh, hyb_poles, hyb::get_extended_coefficients(hyb_coeffs, dynint_coeffs)),
        Fset(dynint::get_operators_and_interactions(ad, hyb_coeffs, dynint_coeffs, dynint_ops)),
        r(itops.rank()),
        n(ad.get_fops().size() + dynint_ops.size()), // number of fermion flavours (spin-orbitals)
@@ -225,7 +225,7 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::SelfEnergyEndpointSum const &endpoint_sum, triqs_xca::diagram::PermutationSigns const &signs) {
 
-    // Dense values_reflect already contains the interaction reflection sign.
+    // Time reflection and the arc orientation sign are separate, as in block_sparse.
     nda::array_const_view<dcomplex, 3> hyb_too = endpoint_sum.orientation.reflected() ? arc_data.values_reflect : arc_data.values;
 
     // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
@@ -244,9 +244,9 @@ namespace triqs_xca::dense {
         auto [row, column] = endpoint_sum.orientation.coefficient_indices(mu, kap);
         nda::array_const_view<dcomplex, 1> hyb_t = hyb_too(_, row, column);
 
-        int fermionic_parity = signs(arc_catalog_.statistics()[kap], arc_catalog_.statistics()[mu]);
+        int sign = signs(arc_catalog_.statistics()[kap], arc_catalog_.statistics()[mu]) * endpoint_sum.orientation.reflection_sign();
 
-        for (int t = 0; t < r; t++) Tmu(t, _, _) += fermionic_parity * hyb_t(t) * Tkaps(kap, t, _, _);
+        for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
       }
       nda::array_const_view<dcomplex, 2> F_mu = Fset.get_operator(endpoint_sum.orientation.late_operator(mu).adjoint, mu);
       for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
