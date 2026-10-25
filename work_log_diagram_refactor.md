@@ -48,3 +48,25 @@ Logs: /tmp/xca-diagram-step1-corrected-build.log,
 /tmp/xca-diagram-step1-benchmark.log. git diff --check passed.
 
 Status: checkpoint 1 complete; arc-object migration next.
+
+## Checkpoint 2 — unified arc indexing
+
+Code: `[diagram] store arc choices together` (the preceding source commit).
+
+Arcs is now a vector of Arc objects, including an explicit special entry at zero.
+Direction, retained_flavour and pole_index live together. Both vertices of an arc
+refer to its topology row through arc_idx; duplicated vertex flavours and both
+operator/kernel pole slots are gone. Numerical kernel and operator helpers resolve
+choices through that arc. Prefactor arrays use the same arc indexing, with an
+identity entry for the special arc. The decoder retains its original digit order.
+
+Updated dense and sparse consumers, independent indexing/sign fixtures and the
+benchmark. Tests check special metadata, both vertex references and copy ownership.
+The correlator sign oracle still uses its independent parity computation; only
+its lookup of a vertex's flavour changed. No numerical conventions were changed.
+
+Validation: CPU build and all 76 CPU/Python CTest entries passed (57.13 s);
+backbone_cpu compiles; generated Python bindings unchanged; git diff --check passed.
+Logs: /tmp/xca-diagram-step2-{build,test,benchmark}.log.
+
+Status: checkpoint 2 complete; explicit endpoint operations next.
