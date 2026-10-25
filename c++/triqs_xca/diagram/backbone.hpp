@@ -10,15 +10,22 @@ namespace triqs_xca::diagram {
     bool adjoint;
     int flavour;
     int pole_slot;
+    VertexTauKernel kernel;
+  };
+
+  struct Edge {
+    std::vector<KernelFactor> kernels; // increasing arc order; an empty list is identity
   };
 
   /// Ordered operator vertices and local scalar-kernel prescriptions. A missing
   /// edge factor means the identity, including the trailing correlator edge.
-  /// Whole-diagram signs and scalar prefactors belong to Diagram, not this chain.
+  /// The normalization recipe belongs to the whole backbone, not each segment.
   struct Backbone {
     std::vector<Vertex> vertices;
-    TauKernelPlacement kernel_placement;
+    std::vector<Edge> edges;
+    TauKernelPrefactor kernel_prefactor;
 
-    BackboneRange range() const { return {0, static_cast<int>(vertices.size()), 0, static_cast<int>(kernel_placement.edges.extent(0))}; }
+    BackboneRange range() const { return {0, static_cast<int>(vertices.size()), 0, static_cast<int>(edges.size())}; }
   };
+  Backbone prepare_backbone(Topology const &topology, Arcs const &arcs, nda::vector_const_view<double> poles, Kind kind);
 } // namespace triqs_xca::diagram

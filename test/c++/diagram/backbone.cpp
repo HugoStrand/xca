@@ -41,12 +41,12 @@ TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
   EXPECT_TRUE(corr.backbone.range().contains(tau_to_beta));
   EXPECT_FALSE(sigma.backbone.range().contains(tau_to_beta));
   // Internal arc (1,3) occupies edges 1 and 2, never the edge from vertex 3 to beta.
-  EXPECT_EQ(corr.backbone.kernel_placement.edges(1, 0), 1);
-  EXPECT_EQ(corr.backbone.kernel_placement.edges(2, 0), 1);
-  EXPECT_EQ(corr.backbone.kernel_placement.edges(3, 0), 0);
+  EXPECT_EQ(corr.backbone.edges[1].kernels, (std::vector<diagram::KernelFactor>{{1, 1}}));
+  EXPECT_EQ(corr.backbone.edges[2].kernels, (std::vector<diagram::KernelFactor>{{1, 1}}));
+  EXPECT_TRUE(corr.backbone.edges[3].kernels.empty());
   auto copy = corr.backbone;
   copy.vertices[1].flavour = 9;
-  copy.kernel_placement.edges(1, 0) = 0;
+  copy.edges[1].kernels.clear();
   EXPECT_EQ(corr.backbone.vertices[1].flavour, 0);
-  EXPECT_EQ(corr.backbone.kernel_placement.edges(1, 0), 1);
+  EXPECT_EQ(corr.backbone.edges[1].kernels, (std::vector<diagram::KernelFactor>{{1, 1}}));
 }

@@ -112,7 +112,7 @@ void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, 
   for (int t = 0; t < r; t++) T_vp(t, _, _) = matmul(F, T_v(t, _, _));
 
   // Multiply with scalar K(\tau) factor of the pole with index l_ix
-  apply_kernel(T_vp, diagram.backbone.kernel_placement.vertices[v_ix], diagram.arcs.pole_indices, action.kernel);
+  apply_kernel(T_vp, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel);
 }
 
 
@@ -122,7 +122,7 @@ void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, n
   nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, path.dimension(e_ix + 1)), range(0, path.dimension(e_ix + 1)));
   GKt_ep = propagator;
 
-  apply_kernel_product(GKt_ep, diagram.backbone.kernel_placement.edges(e_ix, _), diagram.arcs.pole_indices, action.kernel);
+  apply_kernel_product(GKt_ep, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
 
   nda::array_view<dcomplex, 3> T_ep = T_buf(_, range(0, path.dimension(e_ix + 1)), range(0, n_col_r));
   auto const &itops = action.tau_mesh.dlr_it();
@@ -160,7 +160,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace) {
   auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-  double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+  double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
   triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, action.operators, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
     auto contribution = triqs_xca::block_sparse::bind::self_energy(Gt, diagram, prepared, action.operators, support_, action.tau_values, action.tau_values_reflect, action.statistics, signs);
     if (!select_diagonal_self_energy(contribution)) return;
@@ -336,7 +336,7 @@ void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf,
   // Multiply with the operator matrix F from the right
   for (int t = 0; t < r; t++) U_v(t, _, _) = matmul(U_vp(t, _, _), F);
 
-  apply_kernel(U_v, diagram.backbone.kernel_placement.vertices[v_ix], diagram.arcs.pole_indices, action.kernel, true);
+  apply_kernel(U_v, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel, true);
 }
 
 void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Diagram const &diagram, int e_ix,
@@ -348,7 +348,7 @@ void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, 
 
   GKt_ep = propagator;
 
-  apply_kernel_product(GKt_ep, diagram.backbone.kernel_placement.edges(e_ix, _), diagram.arcs.pole_indices, action.kernel);
+  apply_kernel_product(GKt_ep, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
 
   nda::array_view<dcomplex, 3> U_e = U_buf(_, range(0, n_row_l), range(0, path.dimension(e_ix + 1)));
 
@@ -382,7 +382,7 @@ nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_forward(
   int columns = path.dimension(interval.first_vertex);
   auto initial = T(_, range(0, columns), range(0, columns));
   initial = backbone.propagator(interval.first_edge);
-  apply_kernel_product(initial, diagram.backbone.kernel_placement.edges(interval.first_edge, _), diagram.arcs.pole_indices, action.kernel);
+  apply_kernel_product(initial, diagram.backbone.edges[interval.first_edge].kernels, diagram.arcs.pole_indices, action.kernel);
   for (int v = interval.first_vertex; v < interval.vertex_end; ++v) {
     multiply_left_vertex(T, diagram, v, backbone.vertex(v), path, columns);
     integrate_left_edge(T, backbone.propagator(v), diagram, v, path, columns);
@@ -397,7 +397,7 @@ nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_backward(
   int rows = path.dimension(interval.vertex_end);
   auto initial = U(_, range(0, rows), range(0, rows));
   initial = backbone.propagator(interval.edge_end - 1);
-  apply_kernel_product(initial, diagram.backbone.kernel_placement.edges(interval.edge_end - 1, _), diagram.arcs.pole_indices, action.kernel);
+  apply_kernel_product(initial, diagram.backbone.edges[interval.edge_end - 1].kernels, diagram.arcs.pole_indices, action.kernel);
   for (int v = interval.vertex_end - 1; v >= interval.first_vertex; --v) {
     multiply_right_vertex(U, diagram, v, backbone.vertex(v), path);
     integrate_right_edge(U, backbone.propagator(v - 1), diagram, v - 1, path);
@@ -417,7 +417,7 @@ void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &oper
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
   check_propagator(Gt);
-  double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+  double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   std::vector<diagram::BackbonePath> zero_to_tau_paths, tau_to_beta_paths;

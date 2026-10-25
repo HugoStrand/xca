@@ -25,6 +25,14 @@ using namespace triqs_xca;
  * and edge kernel placements, using one negative and one positive pole.
  * Logical selection and flat decoding must each satisfy the same expectations.
  */
+namespace {
+  int edge_sign(triqs_xca::diagram::Edge const &edge, int arc_idx) {
+    for (auto const &factor : edge.kernels)
+      if (factor.arc_idx == arc_idx) return factor.argument_sign;
+    return 0;
+  }
+}
+
 TEST(Diagram, indexing) {
   nda::array<int, 2> topology = {{0, 2}, {1, 4}, {3, 5}}; // a third-order diagram topology
   int n                       = 4;
@@ -127,15 +135,15 @@ TEST(Diagram, indexing) {
         EXPECT_EQ(vertex.barred, exp_bar[v]);
         EXPECT_EQ(vertex.adjoint, exp_dag[v]);
         if (vertex.barred) EXPECT_EQ(vertex.pole_slot, exp_hyb(v));
-        if (exp_Ksgn(v) != 0) EXPECT_EQ(assignment.backbone.kernel_placement.vertices[v].pole_slot, exp_hyb(v));
-        EXPECT_EQ(assignment.backbone.kernel_placement.vertices[v].argument_sign, exp_Ksgn(v));
+        if (exp_Ksgn(v) != 0) EXPECT_EQ(assignment.backbone.vertices[v].kernel.pole_slot, exp_hyb(v));
+        EXPECT_EQ(assignment.backbone.vertices[v].kernel.argument_sign, exp_Ksgn(v));
         EXPECT_EQ(vertex.flavour, (v == 0 || v == topology(0, 1)) ? -1 : exp_orb(v));
       }
       for (int p = 0; p < m - 1; ++p) {
         EXPECT_EQ(assignment.arcs.pole_indices(p), pole_inds(p));
-        EXPECT_EQ(assignment.kernel_prefactor.argument_signs(p), exp_pKsign(p));
-        EXPECT_EQ(assignment.kernel_prefactor.exponents(p), exp_pKexp(p));
-        for (int e = 0; e < 2 * m - 1; ++e) EXPECT_EQ(assignment.backbone.kernel_placement.edges(e, p), exp_edges(e, p));
+        EXPECT_EQ(assignment.backbone.kernel_prefactor.argument_signs(p), exp_pKsign(p));
+        EXPECT_EQ(assignment.backbone.kernel_prefactor.exponents(p), exp_pKexp(p));
+        for (int e = 0; e < 2 * m - 1; ++e) EXPECT_EQ(edge_sign(assignment.backbone.edges[e], p + 1), exp_edges(e, p));
       }
       EXPECT_EQ(assignment.direction_sign, exp_psign);
     };
@@ -166,24 +174,24 @@ TEST(Diagram, correlator_data_survives_its_source_and_copies_are_independent) {
   EXPECT_EQ(assignment.backbone.vertices[2].flavour, -1);
   EXPECT_EQ(assignment.backbone.vertices[1].flavour, 1);
   EXPECT_EQ(assignment.backbone.vertices[3].flavour, 1);
-  EXPECT_EQ(assignment.backbone.kernel_placement.edges(1, 0), 1);
-  EXPECT_EQ(assignment.backbone.kernel_placement.edges(2, 0), 1);
+  EXPECT_EQ(edge_sign(assignment.backbone.edges[1], 1), 1);
+  EXPECT_EQ(edge_sign(assignment.backbone.edges[2], 1), 1);
 
   auto copy = assignment;
   copy.topology.arcs(0, 1) = 3;
   copy.backbone.vertices[1].flavour = 0;
   copy.arcs.pole_indices(0) = 0;
   copy.arcs.directions(1) = 0;
-  copy.backbone.kernel_placement.edges(1, 0) = 0;
-  copy.kernel_prefactor.argument_signs(0) = 0;
-  copy.kernel_prefactor.exponents(0) = 0;
+  copy.backbone.edges[1].kernels.clear();
+  copy.backbone.kernel_prefactor.argument_signs(0) = 0;
+  copy.backbone.kernel_prefactor.exponents(0) = 0;
   EXPECT_EQ(assignment.topology.special_vertex(), 2);
   EXPECT_EQ(assignment.backbone.vertices[1].flavour, 1);
   EXPECT_EQ(assignment.arcs.pole_indices(0), 1);
   EXPECT_EQ(assignment.arcs.directions(1), 1);
-  EXPECT_EQ(assignment.backbone.kernel_placement.edges(1, 0), 1);
-  EXPECT_EQ(assignment.kernel_prefactor.argument_signs(0), 1);
-  EXPECT_EQ(assignment.kernel_prefactor.exponents(0), 1);
+  EXPECT_EQ(edge_sign(assignment.backbone.edges[1], 1), 1);
+  EXPECT_EQ(assignment.backbone.kernel_prefactor.argument_signs(0), 1);
+  EXPECT_EQ(assignment.backbone.kernel_prefactor.exponents(0), 1);
 }
 
 /**
@@ -275,12 +283,12 @@ TEST(Diagram, logical_and_flat_selections_have_explicit_semantics) {
   for (auto const *a : {&logical, &flat}) {
     EXPECT_EQ(a->backbone.vertices[1].flavour, 2);
     EXPECT_EQ(a->backbone.vertices[3].flavour, 1);
-    EXPECT_EQ(a->backbone.kernel_placement.vertices[1].argument_sign, 1);
-    EXPECT_EQ(a->backbone.kernel_placement.vertices[4].argument_sign, -1);
-    EXPECT_EQ(a->backbone.kernel_placement.vertices[3].argument_sign, -1);
-    EXPECT_EQ(a->backbone.kernel_placement.vertices[5].argument_sign, 1);
+    EXPECT_EQ(a->backbone.vertices[1].kernel.argument_sign, 1);
+    EXPECT_EQ(a->backbone.vertices[4].kernel.argument_sign, -1);
+    EXPECT_EQ(a->backbone.vertices[3].kernel.argument_sign, -1);
+    EXPECT_EQ(a->backbone.vertices[5].kernel.argument_sign, 1);
     EXPECT_EQ(a->direction_sign, -1);
-    EXPECT_EQ(nda::sum(nda::abs(a->backbone.kernel_placement.edges)), 0);
+    for (auto const &edge : a->backbone.edges) EXPECT_TRUE(edge.kernels.empty());
   }
   auto correlator = triqs_xca::diagram::prepare_diagram(topology, 3, poles, 86, triqs_xca::diagram::Kind::correlator);
   EXPECT_EQ(correlator.arcs.directions(0), -1);
@@ -298,10 +306,10 @@ TEST(Diagram, zero_poles_use_vertex_kernels_in_both_directions) {
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   for (int direction : {0, 1}) {
     auto a = triqs_xca::diagram::prepare_diagram(topology, 1, triqs_xca::diagram::Arcs{{0, direction}, {0}, {0}}, nda::vector<double>{0.0}, triqs_xca::diagram::Kind::self_energy);
-    EXPECT_EQ(a.backbone.kernel_placement.vertices[1].argument_sign, direction == 0 ? 1 : -1);
-    EXPECT_EQ(a.backbone.kernel_placement.vertices[3].argument_sign, direction == 0 ? -1 : 1);
-    EXPECT_EQ(a.kernel_prefactor.exponents(0), 1);
-    EXPECT_EQ(nda::sum(nda::abs(a.backbone.kernel_placement.edges)), 0);
+    EXPECT_EQ(a.backbone.vertices[1].kernel.argument_sign, direction == 0 ? 1 : -1);
+    EXPECT_EQ(a.backbone.vertices[3].kernel.argument_sign, direction == 0 ? -1 : 1);
+    EXPECT_EQ(a.backbone.kernel_prefactor.exponents(0), 1);
+    for (auto const &edge : a.backbone.edges) EXPECT_TRUE(edge.kernels.empty());
   }
 }
 
@@ -311,17 +319,17 @@ TEST(Diagram, independent_preparation_has_no_reset_state) {
   auto vertex = triqs_xca::diagram::prepare_diagram(topology, 1, poles, 1, triqs_xca::diagram::Kind::self_energy);
   auto edge = triqs_xca::diagram::prepare_diagram(topology, 1, poles, 5, triqs_xca::diagram::Kind::self_energy);
   EXPECT_EQ(edge.direction_sign, 1);
-  EXPECT_EQ(edge.backbone.kernel_placement.vertices[1].argument_sign, 0);
-  EXPECT_EQ(edge.backbone.kernel_placement.vertices[3].argument_sign, 0);
-  EXPECT_EQ(edge.backbone.kernel_placement.edges(1, 0), 1);
-  EXPECT_EQ(edge.backbone.kernel_placement.edges(2, 0), 1);
+  EXPECT_EQ(edge.backbone.vertices[1].kernel.argument_sign, 0);
+  EXPECT_EQ(edge.backbone.vertices[3].kernel.argument_sign, 0);
+  EXPECT_EQ(edge_sign(edge.backbone.edges[1], 1), 1);
+  EXPECT_EQ(edge_sign(edge.backbone.edges[2], 1), 1);
   EXPECT_THROW(triqs_xca::diagram::prepare_diagram(topology, 1, poles, 8, triqs_xca::diagram::Kind::self_energy), std::invalid_argument);
   EXPECT_EQ(edge.direction_sign, 1);
-  EXPECT_EQ(edge.backbone.kernel_placement.edges(1, 0), 1);
+  EXPECT_EQ(edge_sign(edge.backbone.edges[1], 1), 1);
   EXPECT_EQ(vertex.direction_sign, -1);
-  EXPECT_EQ(vertex.backbone.kernel_placement.vertices[1].argument_sign, 1);
-  EXPECT_EQ(vertex.backbone.kernel_placement.vertices[3].argument_sign, -1);
-  EXPECT_EQ(nda::sum(nda::abs(vertex.backbone.kernel_placement.edges)), 0);
+  EXPECT_EQ(vertex.backbone.vertices[1].kernel.argument_sign, 1);
+  EXPECT_EQ(vertex.backbone.vertices[3].kernel.argument_sign, -1);
+  for (auto const &edge : vertex.backbone.edges) EXPECT_TRUE(edge.kernels.empty());
 }
 
 TEST(Diagram, logical_preparation_does_not_require_a_representable_flat_count) {
@@ -335,8 +343,8 @@ TEST(Diagram, logical_preparation_does_not_require_a_representable_flat_count) {
   ASSERT_EQ(assignment.backbone.vertices.size(), 2 * order);
   EXPECT_EQ(assignment.backbone.vertices[1].flavour, 13);
   EXPECT_EQ(assignment.backbone.vertices[order + 1].flavour, 13);
-  EXPECT_EQ(assignment.backbone.kernel_placement.vertices[1].argument_sign, -1);
-  EXPECT_EQ(assignment.backbone.kernel_placement.vertices[order + 1].argument_sign, 1);
+  EXPECT_EQ(assignment.backbone.vertices[1].kernel.argument_sign, -1);
+  EXPECT_EQ(assignment.backbone.vertices[order + 1].kernel.argument_sign, 1);
 }
 
 TEST(Diagram, correlator_arcs_keep_one_layout_through_preparation) {
@@ -368,7 +376,7 @@ TEST(Diagram, correlator_arcs_keep_one_layout_through_preparation) {
   EXPECT_EQ(empty.pole_indices.size(), 0);
   EXPECT_EQ(empty.flavours.size(), 0);
   auto first = prepare_diagram(Topology{nda::array<int, 2>{{0, 1}}}, 0, empty, nda::vector<double>{}, Kind::correlator);
-  EXPECT_EQ(first.backbone.kernel_placement.edges.extent(0), 2);
+  EXPECT_EQ(first.backbone.edges.size(), 2);
 }
 
 TEST(Diagram, arc_preparation_rejects_ambiguous_or_incomplete_layouts) {
@@ -377,7 +385,7 @@ TEST(Diagram, arc_preparation_rejects_ambiguous_or_incomplete_layouts) {
   nda::vector<double> poles{1.};
   auto reject = [&](Arcs const &arcs, Kind kind) {
     EXPECT_THROW(prepare_vertices(topology, arcs, kind), std::invalid_argument);
-    EXPECT_THROW(prepare_tau_kernels(topology, arcs, poles, kind), std::invalid_argument);
+    EXPECT_THROW(prepare_backbone(topology, arcs, poles, kind), std::invalid_argument);
     EXPECT_THROW(prepare_diagram(topology, 1, arcs, poles, kind), std::invalid_argument);
   };
   reject(Arcs{{1}, {0}, {0}}, Kind::correlator); // formerly compact directions

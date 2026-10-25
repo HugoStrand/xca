@@ -73,10 +73,10 @@ namespace triqs_xca {
     multiply_factor(target, kernel, pole_indices(recipe.pole_slot), reflected ? -recipe.argument_sign : recipe.argument_sign);
   }
 
-  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, nda::vector_const_view<int> argument_signs,
+  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<diagram::KernelFactor const> factors,
                             nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {
-    for (long p = 0; p < pole_indices.size(); ++p)
-      if (argument_signs(p) != 0) multiply_factor(target, kernel, pole_indices(p), argument_signs(p));
+    for (auto const &factor : factors)
+      if (factor.argument_sign != 0) multiply_factor(target, kernel, pole_indices(factor.arc_idx - 1), factor.argument_sign);
   }
 
   double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {

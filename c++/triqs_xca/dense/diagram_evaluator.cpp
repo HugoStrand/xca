@@ -174,13 +174,13 @@ namespace triqs_xca::dense {
     int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
     auto F = action.operators.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    apply_kernel(T_buf, diagram.backbone.kernel_placement.vertices[v_ix], diagram.arcs.pole_indices, action.kernel);
+    apply_kernel(T_buf, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel);
   }
 
   void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                   int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.kernel_placement.edges(e_ix, _), diagram.arcs.pole_indices, action.kernel);
+    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     T_buf = itops.convolve(beta, itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
   }
@@ -256,7 +256,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -290,7 +290,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -324,13 +324,13 @@ namespace triqs_xca::dense {
     int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
     auto F = action.operators.get_operator(vertex, l_ix);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    apply_kernel(U_buf, diagram.backbone.kernel_placement.vertices[v_ix], diagram.arcs.pole_indices, action.kernel, true);
+    apply_kernel(U_buf, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel, true);
   }
 
   void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                    int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.kernel_placement.edges(e_ix, _), diagram.arcs.pole_indices, action.kernel);
+    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
@@ -362,7 +362,7 @@ namespace triqs_xca::dense {
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 

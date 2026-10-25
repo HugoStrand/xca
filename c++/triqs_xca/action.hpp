@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <span>
 
 namespace triqs_xca {
 
@@ -22,6 +23,7 @@ namespace triqs_xca {
   namespace diagram {
     struct VertexTauKernel;
     struct TauKernelPrefactor;
+    struct KernelFactor;
   } // namespace diagram
 
   /// Apply a vertex recipe directly from the numerical tables. A zero argument
@@ -30,7 +32,7 @@ namespace triqs_xca {
                     TauKernel const &kernel, bool reflected = false);
 
   /// Apply an edge's nonzero factors in pole-slot order, without forming a product table.
-  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, nda::vector_const_view<int> argument_signs,
+  void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<diagram::KernelFactor const> factors,
                             nda::vector_const_view<int> pole_indices, TauKernel const &kernel);
 
   /// Evaluate once per diagram and reuse across its backbone paths.

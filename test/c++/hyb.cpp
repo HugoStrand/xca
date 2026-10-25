@@ -67,7 +67,7 @@ TEST(Hybridization, vertex_kernels_include_reflection_and_identity) {
   for (bool reflected : {false, true}) {
     for (int vertex = 0; vertex < 4; ++vertex) {
       auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-      apply_kernel(values, diagram.backbone.kernel_placement.vertices[vertex], diagram.arcs.pole_indices, kernel, reflected);
+      apply_kernel(values, diagram.backbone.vertices[vertex].kernel, diagram.arcs.pole_indices, kernel, reflected);
       for (int t = 0; t < nodes.size(); ++t) {
         // Forward internal arc, negative pole: earlier vertex K(-pole), later K(+pole).
         double argument = (vertex == 1 ? 0.8 : -0.8) * beta * (reflected ? -1 : 1);
@@ -76,11 +76,11 @@ TEST(Hybridization, vertex_kernels_include_reflection_and_identity) {
       }
     }
   }
-  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, kernel),
+  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, kernel),
                    std::pow(cppdlr::k_it(0., 0.8 * beta), -1));
   for (int edge = 0; edge < 3; ++edge) {
     auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-    apply_kernel_product(values, diagram.backbone.kernel_placement.edges(edge, range::all), diagram.arcs.pole_indices, kernel);
+    apply_kernel_product(values, diagram.backbone.edges[edge].kernels, diagram.arcs.pole_indices, kernel);
     EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
   }
 }
@@ -94,11 +94,11 @@ TEST(Hybridization, edge_products_read_the_supplied_tables) {
                                           diagram::Arcs{{1, 1, 1}, {0, 1}, {0, 0}}, poles, diagram::Kind::self_energy);
   auto nodes = mesh.dlr_it().get_itnodes();
   auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-  auto edge = diagram.backbone.kernel_placement.edges(2, range::all);
+  auto edge = diagram.backbone.edges[2].kernels;
   apply_kernel_product(values, edge, diagram.arcs.pole_indices, kernel);
   for (int t = 0; t < nodes.size(); ++t)
     EXPECT_EQ(values(t, 0, 0), dcomplex(cppdlr::k_it(nodes(t), 1.4) * cppdlr::k_it(nodes(t), 2.6)));
-  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, kernel),
+  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, kernel),
                    std::pow(cppdlr::k_it(0., 1.4), -2) * std::pow(cppdlr::k_it(0., 2.6), -2));
 
   // The recipe remains valid when pole magnitudes change without changing signs.
@@ -120,11 +120,11 @@ TEST(Hybridization, edge_factors_preserve_slot_order_and_skip_identity_slots) {
   kernel.at_tau_plus(0, 1) = 1e-200;
   nda::array<dcomplex, 3> values(1, 1, 1);
   values = 1e200;
-  apply_kernel_product(values, nda::vector<int>{1, 0, -1}, nda::vector<int>{1, 0, 1}, kernel);
+  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {3, -1}}, nda::vector<int>{1, 0, 1}, kernel);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).real(), 1e200);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).imag(), 0.);
   values = 1e200;
-  apply_kernel_product(values, nda::vector<int>{1, 1}, nda::vector<int>{1, 1}, kernel);
+  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {2, 1}}, nda::vector<int>{1, 1}, kernel);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).real(), 1e-200);
 }
 
@@ -136,14 +136,14 @@ TEST(Hybridization, trailing_correlator_edge_is_identity) {
   for (auto topology_arr : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
     diagram::Topology topology{topology_arr};
     auto diagram = diagram::prepare_diagram(topology, 1, poles, 0, diagram::Kind::correlator);
-    auto const &edges = diagram.backbone.kernel_placement.edges;
-    ASSERT_EQ(edges.extent(0), 2 * topology.order());
+    auto const &edges = diagram.backbone.edges;
+    ASSERT_EQ(edges.size(), 2 * topology.order());
     auto values = nda::ones<dcomplex>(data.at_tau_plus.extent(0), 1, 1);
-    apply_kernel_product(values, edges(edges.extent(0) - 1, range::all), diagram.arcs.pole_indices, data);
+    apply_kernel_product(values, edges.back().kernels, diagram.arcs.pole_indices, data);
     EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
     if (topology.order() == 1) {
-      EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.kernel_prefactor, diagram.arcs.pole_indices, data), 1.);
-      apply_kernel(values, diagram.backbone.kernel_placement.vertices[0], diagram.arcs.pole_indices, data);
+      EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, data), 1.);
+      apply_kernel(values, diagram.backbone.vertices[0].kernel, diagram.arcs.pole_indices, data);
       EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
     }
   }

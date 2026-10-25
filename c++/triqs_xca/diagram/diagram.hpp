@@ -18,7 +18,6 @@ namespace triqs_xca::diagram {
     Topology topology;
     Arcs arcs;
     Backbone backbone;
-    TauKernelPrefactor kernel_prefactor;
     int direction_sign;
   };
 
