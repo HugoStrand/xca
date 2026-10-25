@@ -45,14 +45,14 @@ namespace triqs_xca::dense {
     }
   }
 
-  nda::array_const_view<dcomplex, 2> FSet::get_operator(triqs_xca::diagram::Vertex const &vertex, int l_ix) const {
+  nda::array_const_view<dcomplex, 2> FSet::get_operator(triqs_xca::diagram::Vertex const &vertex, triqs_xca::diagram::Arc const &arc) const {
 
     bool has_bar = vertex.barred;
-    int o_ix = vertex.flavour;
+    int o_ix = arc.retained_flavour;
     bool has_dag = vertex.adjoint;
 
     if (has_bar)
-      return has_dag ? F_dag_bars(o_ix, l_ix, _, _) : F_bars_refl(o_ix, l_ix, _, _);
+      return has_dag ? F_dag_bars(o_ix, arc.pole_index, _, _) : F_bars_refl(o_ix, arc.pole_index, _, _);
     else
       return has_dag ? F_dags(o_ix, _, _) : Fs(o_ix, _, _);
   }

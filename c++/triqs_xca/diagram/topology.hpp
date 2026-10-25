@@ -2,11 +2,10 @@
 
 #include <nda/nda.hpp>
 #include <span>
+#include "arcs.hpp"
 #include "triqs_xca/action.hpp"
 
 namespace triqs_xca::diagram {
-
-  struct Arcs;
 
   /// Diagram connectivity, independent of operator representation and sector layout.
   struct Topology {

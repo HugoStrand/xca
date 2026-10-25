@@ -2,6 +2,8 @@
 #include <triqs_xca/diagram/correlator.hpp>
 #include <triqs_xca/diagram/diagram.hpp>
 
+using triqs_xca::diagram::Direction;
+
 namespace diagram = triqs_xca::diagram;
 
 TEST(BackboneRange, correlator_geometry_is_shared) {
@@ -33,8 +35,8 @@ TEST(BackboneRange, rejects_disconnected_or_reversed_intervals) {
 
 TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
   diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  auto sigma = diagram::prepare_diagram(topology, 1, diagram::Arcs{{1, 1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::self_energy);
-  auto corr = diagram::prepare_diagram(topology, 1, diagram::Arcs{{-1, 1}, {0}, {0}}, nda::vector<double>{1.}, diagram::Kind::correlator);
+  auto sigma = diagram::prepare_diagram(topology, 1, diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}}, nda::vector<double>{1.}, diagram::Kind::self_energy);
+  auto corr = diagram::prepare_diagram(topology, 1, diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, nda::vector<double>{1.}, diagram::Kind::correlator);
   EXPECT_EQ(sigma.backbone.range(), (diagram::BackboneRange{0, 4, 0, 3}));
   EXPECT_EQ(corr.backbone.range(), (diagram::BackboneRange{0, 4, 0, 4}));
   auto [zero_to_tau, tau_to_beta] = diagram::correlator_backbone_ranges(topology);
@@ -45,8 +47,8 @@ TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
   EXPECT_EQ(corr.backbone.edges[2].kernels, (std::vector<diagram::KernelFactor>{{1, 1}}));
   EXPECT_TRUE(corr.backbone.edges[3].kernels.empty());
   auto copy = corr.backbone;
-  copy.vertices[1].flavour = 9;
+  copy.vertices[1].arc_idx = 0;
   copy.edges[1].kernels.clear();
-  EXPECT_EQ(corr.backbone.vertices[1].flavour, 0);
+  EXPECT_EQ(corr.arcs[corr.backbone.vertices[1].arc_idx].retained_flavour, 0);
   EXPECT_EQ(corr.backbone.edges[1].kernels, (std::vector<diagram::KernelFactor>{{1, 1}}));
 }

@@ -131,10 +131,10 @@ namespace triqs_xca::diagram {
 
   PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs, std::span<Statistics const> statistics) {
     int order = topology.order();
-    if (arcs.flavours.size() != order - 1) throw std::invalid_argument("wrong number of internal arc flavours");
+    if (arcs.size() != static_cast<std::size_t>(order)) throw std::invalid_argument("wrong number of internal arc flavours");
     std::vector<Statistics> vertices(2 * order, Statistics::bosonic);
     for (int a = 1; a < order; ++a) {
-      int flavour = arcs.flavours(a - 1);
+      int flavour = arcs[a].retained_flavour;
       if (flavour < 0 || static_cast<std::size_t>(flavour) >= statistics.size())
         throw std::invalid_argument("internal arc has no valid operator statistics");
       vertices[topology.arcs(a, 0)] = vertices[topology.arcs(a, 1)] = statistics[flavour];

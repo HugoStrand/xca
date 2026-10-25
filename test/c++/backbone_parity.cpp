@@ -6,6 +6,8 @@
 #include <triqs_xca/diagram/diagram.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 
+using triqs_xca::diagram::Direction;
+
 /**
  * @file backbone_parity.cpp
  *
@@ -33,7 +35,8 @@ namespace {
   int parity_of(int n_int_arg, int orb_kap, int orb_mu, int orb1, int orb2) {
     nda::vector<int> fb = {1, 0, 1};
     auto assignment = triqs_xca::diagram::prepare_diagram(
-      triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{fb, {0, 0}, {orb1, orb2}}, nda::vector<double>{1.0},
+      triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{{static_cast<Direction>(fb(0)), -1, -1},
+        {static_cast<Direction>(fb(1)), orb1, 0}, {static_cast<Direction>(fb(2)), orb2, 0}}, nda::vector<double>{1.0},
       triqs_xca::diagram::Kind::self_energy);
     auto statistics = triqs_xca::action_statistics(n_ext, n_ext - n_int_arg);
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics);
@@ -104,7 +107,7 @@ TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
   constexpr auto F = triqs_xca::Statistics::fermionic, B = triqs_xca::Statistics::bosonic;
   auto correlator_parity = [](int n_int_arg, triqs_xca::Statistics external, int orb1, int orb2) {
     auto assignment = triqs_xca::diagram::prepare_diagram(
-      triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{{-1, 0, 1}, {0, 0}, {orb1, orb2}},
+      triqs_xca::diagram::Topology{crossing3}, n_ext, triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, orb1, 0}, {Direction::forward, orb2, 0}},
       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
     auto statistics = triqs_xca::action_statistics(n_ext, n_ext - n_int_arg);
     return triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics)(external, external);
@@ -129,7 +132,7 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   using namespace triqs_xca;
   constexpr auto F = triqs_xca::Statistics::fermionic, B = triqs_xca::Statistics::bosonic;
   std::vector<triqs_xca::Statistics> interactions{B, F, B, F};
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Arcs{{1, 0, 1}, {0, 0}, {1, 0}},
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::backward, 1, 0}, {Direction::forward, 0, 0}},
                                       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::self_energy);
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, interactions);
   // Internal line 1 is fermionic, line 2 bosonic: retaining external line 0
@@ -138,10 +141,10 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   EXPECT_EQ(signs(B, F), 1);
   EXPECT_EQ(signs(F, B), 1);
   EXPECT_EQ(signs(B, B), 1);
-  EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
-  EXPECT_EQ(assignment.backbone.vertices[2].flavour, -1);
+  EXPECT_EQ(assignment.arcs[assignment.backbone.vertices[0].arc_idx].retained_flavour, -1);
+  EXPECT_EQ(assignment.arcs[assignment.backbone.vertices[2].arc_idx].retained_flavour, -1);
 
-  auto correlator = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Arcs{{-1, 0, 1}, {0, 0}, {1, 0}},
+  auto correlator = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{crossing3}, 4, triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 1, 0}, {Direction::forward, 0, 0}},
                                       nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
   auto external = triqs_xca::diagram::prepare_permutation_signs(correlator.topology, correlator.arcs, interactions);
   EXPECT_EQ(external(F, F), -1);
@@ -151,13 +154,13 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   interactions[1] = B;
   EXPECT_EQ(triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, interactions)(F, F), 1); // now internal line 1 is omitted
   EXPECT_EQ(signs(F, F), -1); // prepared signs retain no borrowed catalogue data
-  assignment.arcs.flavours(0) = -1;
+  assignment.arcs[1].retained_flavour = -1;
   EXPECT_THROW(triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, interactions), std::invalid_argument);
 }
 
 TEST(DiagramSigns, first_order_has_no_internal_statistics) {
   using namespace triqs_xca;
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 0, triqs_xca::diagram::Arcs{{0}, {}, {}},
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 0, triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}},
                                       nda::vector<double>{}, triqs_xca::diagram::Kind::self_energy);
   auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, {});
   EXPECT_EQ(signs(triqs_xca::Statistics::fermionic, triqs_xca::Statistics::fermionic), 1);
@@ -169,7 +172,7 @@ TEST(DiagramSigns, preparation_needs_only_topology_flavours_and_statistics) {
   constexpr auto F = Statistics::fermionic, B = Statistics::bosonic;
   diagram::Topology topology{crossing3};
   // No backbone, pole assignments or directions are required for permutation signs.
-  diagram::Arcs arcs{{}, {}, {1, 0}};
+  diagram::Arcs arcs{{}, {diagram::Direction::external, 1, -1}, {diagram::Direction::external, 0, -1}};
   std::vector<Statistics> statistics{B, F};
   auto signs = diagram::prepare_permutation_signs(topology, arcs, statistics);
   EXPECT_EQ(signs(F, F), -1);
@@ -177,10 +180,10 @@ TEST(DiagramSigns, preparation_needs_only_topology_flavours_and_statistics) {
   EXPECT_EQ(signs(F, B), 1);
   EXPECT_EQ(signs(B, B), 1);
 
-  arcs.flavours(0) = 2;
+  arcs[1].retained_flavour = 2;
   EXPECT_THROW(diagram::prepare_permutation_signs(topology, arcs, statistics), std::invalid_argument);
-  arcs.flavours = nda::vector<int>{1};
+  arcs.resize(2);
   EXPECT_THROW(diagram::prepare_permutation_signs(topology, arcs, statistics), std::invalid_argument);
-  arcs.flavours = nda::vector<int>{1, 0, 1};
+  arcs.resize(4);
   EXPECT_THROW(diagram::prepare_permutation_signs(topology, arcs, statistics), std::invalid_argument);
 }

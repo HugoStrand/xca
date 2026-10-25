@@ -41,7 +41,7 @@ namespace triqs_xca::dense {
        */
     void update_hybridization(nda::array_const_view<dcomplex, 3> hyb_coeffs);
 
-    nda::array_const_view<dcomplex, 2> get_operator(triqs_xca::diagram::Vertex const &vertex, int l_ix) const;
+    nda::array_const_view<dcomplex, 2> get_operator(triqs_xca::diagram::Vertex const &vertex, triqs_xca::diagram::Arc const &arc) const;
     nda::array_const_view<dcomplex, 2> get_operator(bool dagger, int o_ix) const;
   };
 

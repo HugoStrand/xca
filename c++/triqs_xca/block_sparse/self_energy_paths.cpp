@@ -27,7 +27,7 @@ namespace triqs_xca::block_sparse {
   */
 
     auto F_selector_p_ix = [&](int w, int p_ix) -> BlockOpSymSet const & { return diagram.backbone.vertices[w].adjoint ? Fq.F_dags[p_ix] : Fq.Fs[p_ix]; };
-    auto F_selector      = [&](int w) -> BlockOpSymSet const      &{ return F_selector_p_ix(w, Fq.sym_set_labels(diagram.backbone.vertices[w].flavour)); };
+    auto F_selector      = [&](int w) -> BlockOpSymSet const      &{ return F_selector_p_ix(w, Fq.sym_set_labels(diagram.arcs[diagram.backbone.vertices[w].arc_idx].retained_flavour)); };
 
     bool incomplete_path    = false;
     auto is_path_incomplete = [&](int w, int ip) { return (ip == -1 || (w < 2 * m - 1 && Gt.get_zero_block_index(ip) == -1)); };

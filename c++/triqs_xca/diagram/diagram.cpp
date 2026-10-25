@@ -10,11 +10,11 @@ namespace triqs_xca::diagram {
   Diagram prepare_diagram(Topology const &topology, int flavours, Arcs const &arcs, nda::vector_const_view<double> poles, Kind kind) {
     if (flavours < 0) throw std::invalid_argument("negative flavour count");
     auto backbone = prepare_backbone(topology, arcs, poles, kind);
-    for (int flavour : arcs.flavours)
-      if (flavour >= flavours) throw std::invalid_argument("flavour index out of range");
+    for (int a = 1; a < arcs.size(); ++a)
+      if (arcs[a].retained_flavour >= flavours) throw std::invalid_argument("flavour index out of range");
     int direction_sign = 1;
     for (int a = 1; a < topology.order(); ++a)
-      if (arcs.directions(a) == 0) direction_sign *= -1;
+      if (arcs[a].direction == Direction::backward) direction_sign *= -1;
     return {topology, arcs, std::move(backbone), direction_sign};
   }
 
@@ -24,13 +24,11 @@ namespace triqs_xca::diagram {
   }
 
   std::ostream &operator<<(std::ostream &out, Diagram const &diagram) {
-    out << "Topology:\n"
-        << diagram.topology.arcs << "\nDirections: " << diagram.arcs.directions << "\nPoles: " << diagram.arcs.pole_indices
-        << "\nFlavours: " << diagram.arcs.flavours << "\nVertices (flavour, adjoint, bar, pole slot):\n";
-    for (int v = 0; v < diagram.backbone.vertices.size(); ++v) {
-      auto const &vertex = diagram.backbone.vertices[v];
-      out << v << ": " << vertex.flavour << ' ' << vertex.adjoint << ' ' << vertex.barred << ' ' << vertex.pole_slot << '\n';
-    }
+    out << "Topology:\n" << diagram.topology.arcs << "\nArcs (direction, retained flavour, pole):\n";
+    for (auto const &arc : diagram.arcs) out << static_cast<int>(arc.direction) << ' ' << arc.retained_flavour << ' ' << arc.pole_index << '\n';
+    out << "Vertices (arc, adjoint, bar, kernel sign):\n";
+    for (auto const &vertex : diagram.backbone.vertices)
+      out << vertex.arc_idx << ' ' << vertex.adjoint << ' ' << vertex.barred << ' ' << vertex.kernel_sign << '\n';
     out << "Edge kernels (arc, sign):\n";
     for (int e = 0; e < diagram.backbone.edges.size(); ++e) {
       out << e << ":";

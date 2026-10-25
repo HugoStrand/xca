@@ -1,5 +1,5 @@
 #include "action.hpp"
-#include "diagram/tau_kernel.hpp"
+#include "diagram/backbone.hpp"
 #include <cmath>
 
 namespace triqs_xca {
@@ -67,24 +67,24 @@ namespace triqs_xca {
     }
   } // namespace
 
-  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::VertexTauKernel const &recipe, nda::vector_const_view<int> pole_indices,
+  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::Vertex const &vertex, std::span<diagram::Arc const> arcs,
                     TauKernel const &kernel, bool reflected) {
-    if (recipe.argument_sign == 0) return;
-    multiply_factor(target, kernel, pole_indices(recipe.pole_slot), reflected ? -recipe.argument_sign : recipe.argument_sign);
+    if (vertex.kernel_sign == 0) return;
+    multiply_factor(target, kernel, arcs[vertex.arc_idx].pole_index, reflected ? -vertex.kernel_sign : vertex.kernel_sign);
   }
 
   void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<diagram::KernelFactor const> factors,
-                            nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {
+                            std::span<diagram::Arc const> arcs, TauKernel const &kernel) {
     for (auto const &factor : factors)
-      if (factor.argument_sign != 0) multiply_factor(target, kernel, pole_indices(factor.arc_idx - 1), factor.argument_sign);
+      if (factor.argument_sign != 0) multiply_factor(target, kernel, arcs[factor.arc_idx].pole_index, factor.argument_sign);
   }
 
-  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, nda::vector_const_view<int> pole_indices, TauKernel const &kernel) {
+  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, std::span<diagram::Arc const> arcs, TauKernel const &kernel) {
     double result = 1;
-    for (long p = 0; p < pole_indices.size(); ++p) {
+    for (long p = 1; p < arcs.size(); ++p) {
       int exponent = recipe.exponents(p);
       if (exponent != 0) {
-        int pole     = pole_indices(p);
+        int pole     = arcs[p].pole_index;
         double value = recipe.argument_signs(p) > 0 ? kernel.at_zero_plus(pole) : kernel.at_zero_minus(pole);
         result *= std::pow(value, -exponent);
       }

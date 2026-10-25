@@ -9,11 +9,11 @@ namespace triqs_xca::block_sparse {
     range.validate();
     if (!diagram.backbone.range().contains(range)) throw std::invalid_argument("backbone range is outside diagram");
     for (int v = range.first_vertex; v < range.vertex_end; ++v)
-      if (diagram.backbone.vertices[v].flavour < 0) throw std::invalid_argument("backbone range contains an unresolved endpoint");
+      if (diagram.backbone.vertices[v].arc_idx == 0) throw std::invalid_argument("backbone range contains an unresolved endpoint");
     block_sparse::diagram::BackbonePath path(range);
     auto op = [&](int vertex) -> BlockOpSymSet const & {
       auto const &v = diagram.backbone.vertices[vertex];
-      int set = operators.sym_set_labels(v.flavour);
+      int set = operators.sym_set_labels(diagram.arcs[v.arc_idx].retained_flavour);
       return v.adjoint ? operators.F_dags[set] : operators.Fs[set];
     };
     for (int start = 0; start < propagator.get_num_block_cols(); ++start) {

@@ -3,14 +3,13 @@
 #include "tau_kernel.hpp"
 
 namespace triqs_xca::diagram {
-  /// One vertex in an assigned diagram. A flavour of -1 is an unresolved special
-  /// endpoint, to be supplied by the remaining endpoint sum or observable.
+  /// A vertex refers to its topology arc, including the distinguished endpoints.
+  /// Flavour and pole choices belong to Arcs. Only barred operators need a pole.
   struct Vertex {
-    bool barred;
-    bool adjoint;
-    int flavour;
-    int pole_slot;
-    VertexTauKernel kernel;
+    int arc_idx     = -1;
+    bool barred     = false;
+    bool adjoint    = false;
+    int kernel_sign = 0;
   };
 
   struct Edge {

@@ -171,16 +171,16 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, int v_ix) {
     auto const &vertex = diagram.backbone.vertices[v_ix];
-    int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
-    auto F = action.operators.get_operator(vertex, l_ix);
+    auto const &arc = diagram.arcs[vertex.arc_idx];
+    auto F = action.operators.get_operator(vertex, arc);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    apply_kernel(T_buf, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel);
+    apply_kernel(T_buf, diagram.backbone.vertices[v_ix], diagram.arcs, action.kernel);
   }
 
   void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                   int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
+    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     T_buf = itops.convolve(beta, itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
   }
@@ -256,7 +256,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
     T = Gt;
     for (int v = 1; v < vct0; v++) {
@@ -264,8 +264,8 @@ namespace triqs_xca::dense {
       integrate_left_edge(T, Gt, diagram, v);
     }
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs.directions(0) == 1}, n}, signs);
-    multiply_left_vertex_and_right_zero_vertex(U, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs.directions(0) != 1}, n}, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward}, n}, signs);
+    multiply_left_vertex_and_right_zero_vertex(U, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction != triqs_xca::diagram::Direction::forward}, n}, signs);
     T = T - U;
 
     for (int v = vct0 + 1; v < 2 * m; v++) {
@@ -275,7 +275,7 @@ namespace triqs_xca::dense {
 
     T *= kernel_prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (diagram.arcs.directions(0) == 0) diag_order_sign *= -1;
+    if (diagram.arcs[0].direction == triqs_xca::diagram::Direction::backward) diag_order_sign *= -1;
     T *= diag_order_sign * diagram.direction_sign;
     Sigma += T;
 
@@ -290,7 +290,7 @@ namespace triqs_xca::dense {
     int m = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
     // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
     // containing the undecomposed hybridization line Delta_{mu kappa}.
@@ -303,7 +303,7 @@ namespace triqs_xca::dense {
 
     // 2. For each kappa, multiply by F_kappa(^dag). Then for each mu, kappa, multiply by Delta_{mu kappa}, and sum over kappa. Finally for each mu,
     // multiply F_mu[^dag] and sum over mu.
-    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs.directions(0) == 1}, n}, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward}, n}, signs);
 
     // 3. Continue right to left until the final vertex multiplication is complete.
     for (int v = vct0 + 1; v < 2 * m; v++) { // loop from the special vertex to the last vertex
@@ -313,7 +313,7 @@ namespace triqs_xca::dense {
 
     T *= kernel_prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (diagram.arcs.directions(0) == 0) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
+    if (diagram.arcs[0].direction == triqs_xca::diagram::Direction::backward) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
     T *= diag_order_sign * diagram.direction_sign;
     Sigma += T;
 
@@ -321,16 +321,16 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, int v_ix) {
     auto const &vertex = diagram.backbone.vertices[v_ix];
-    int l_ix = diagram.arcs.pole_indices(vertex.pole_slot);
-    auto F = action.operators.get_operator(vertex, l_ix);
+    auto const &arc = diagram.arcs[vertex.arc_idx];
+    auto F = action.operators.get_operator(vertex, arc);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    apply_kernel(U_buf, diagram.backbone.vertices[v_ix].kernel, diagram.arcs.pole_indices, action.kernel, true);
+    apply_kernel(U_buf, diagram.backbone.vertices[v_ix], diagram.arcs, action.kernel, true);
   }
 
   void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                    int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs.pole_indices, action.kernel);
+    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
@@ -362,7 +362,7 @@ namespace triqs_xca::dense {
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs.pole_indices, action.kernel);
+    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 

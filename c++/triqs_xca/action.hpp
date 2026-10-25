@@ -21,22 +21,23 @@ namespace triqs_xca {
   };
 
   namespace diagram {
-    struct VertexTauKernel;
+    struct Vertex;
+    struct Arc;
     struct TauKernelPrefactor;
     struct KernelFactor;
   } // namespace diagram
 
   /// Apply a vertex recipe directly from the numerical tables. A zero argument
   /// sign is the identity; reflection exchanges the plus/minus tables.
-  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::VertexTauKernel const &recipe, nda::vector_const_view<int> pole_indices,
+  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::Vertex const &vertex, std::span<diagram::Arc const> arcs,
                     TauKernel const &kernel, bool reflected = false);
 
-  /// Apply an edge's nonzero factors in pole-slot order, without forming a product table.
+  /// Apply an edge's nonzero factors in arc order, without forming a product table.
   void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<diagram::KernelFactor const> factors,
-                            nda::vector_const_view<int> pole_indices, TauKernel const &kernel);
+                            std::span<diagram::Arc const> arcs, TauKernel const &kernel);
 
   /// Evaluate once per diagram and reuse across its backbone paths.
-  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, nda::vector_const_view<int> pole_indices, TauKernel const &kernel);
+  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, std::span<diagram::Arc const> arcs, TauKernel const &kernel);
 
   /// Evaluate fitted-pole coefficients at the supplied DLR time nodes. The physical
   /// poles need not coincide with itops' own DLR poles, so itops.coefs2vals is not equivalent.

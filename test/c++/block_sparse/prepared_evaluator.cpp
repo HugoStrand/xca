@@ -7,6 +7,8 @@
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
 #include "test_utils/evaluators.hpp"
 
+using triqs_xca::diagram::Direction;
+
 namespace {
 using namespace triqs_xca;
 using namespace triqs_xca::block_sparse;
@@ -39,7 +41,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{0, 1}, {1}, {n - 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::self_energy);
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
   auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology.arcs, f), model.ad);
   auto actual = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, assignment), model.ad);
@@ -49,7 +51,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   changed_G *= 1.1;
   auto changed = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(changed_G, assignment), model.ad);
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(assignment.arcs.directions(0), 0);
+  EXPECT_EQ(static_cast<int>(assignment.arcs[0].direction), 0);
   EXPECT_TRUE(assignment.backbone.vertices[0].adjoint);
 }
 
@@ -59,7 +61,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{-1, 1}, {1}, {n - 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::correlator);
+  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action.poles, triqs_xca::diagram::Kind::correlator);
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto op = identity(G);
   auto expected = evaluator.eval_correlator(G, topology, {op}, {op}, f, false);
@@ -70,8 +72,8 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   changed_G *= 1.1;
   auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(assignment.arcs.directions(0), -1);
-  EXPECT_EQ(assignment.backbone.vertices[0].flavour, -1);
+  EXPECT_EQ(static_cast<int>(assignment.arcs[0].direction), -1);
+  EXPECT_EQ(assignment.arcs[assignment.backbone.vertices[0].arc_idx].retained_flavour, -1);
 }
 
 
@@ -89,7 +91,7 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
   constexpr auto all = nda::range::all;
   for (int direction : {0, 1}) {
-    auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{direction, 1}, {1}, {n - 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
+    auto assignment = triqs_xca::diagram::prepare_diagram(topology, n, triqs_xca::diagram::Arcs{{static_cast<Direction>(direction), -1, -1}, {Direction::forward, n - 1, 1}}, model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
     auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics);
     triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
     std::optional<SelfEnergyOperands> retained;
@@ -170,7 +172,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
   std::vector<tensor> coarse_blocks{full_G};
   BlockDiagOpFun coarse_G(coarse_blocks, nda::vector<int>{0});
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 2,
-                                      triqs_xca::diagram::Arcs{{1, 1}, {0}, {1}}, poles, triqs_xca::diagram::Kind::self_energy);
+                                      triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, poles, triqs_xca::diagram::Kind::self_energy);
   auto sigma = coarse.compute_self_energy(coarse_G, assignment);
   // G=I, both scalar interactions are -1/2, and the ordered integration area
   // is tau^2/2. The raw order-two bosonic sign gives -(tau^2/8)*(BABA+I).
@@ -198,7 +200,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
 
   // Recovery after rejection: first-order paths do close for this model.
   auto first_order = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 2,
-                                       triqs_xca::diagram::Arcs{{1}, {}, {}}, poles, triqs_xca::diagram::Kind::self_energy);
+                                       triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}}, poles, triqs_xca::diagram::Kind::self_energy);
   auto recovered = fine.compute_self_energy(fine_G, first_order);
   for (int sector = 0; sector < 3; ++sector)
     EXPECT_LE(nda::max_element(nda::abs(recovered[sector].data() + 1.)), 1e-12);

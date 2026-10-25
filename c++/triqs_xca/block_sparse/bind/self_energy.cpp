@@ -18,7 +18,7 @@ namespace triqs_xca::block_sparse::bind {
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                    std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int special = diagram.topology.special_vertex();
-    triqs_xca::diagram::ArcOrientation orientation{diagram.arcs.directions(0) == 1};
+    triqs_xca::diagram::ArcOrientation orientation{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward};
     EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), signs};
     auto present = [&](int group, int index, int source, bool adjoint) {
       int flavour = operators.sym_set_to_orb(group, index);
@@ -49,7 +49,7 @@ namespace triqs_xca::block_sparse::bind {
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                  std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int m    = diagram.topology.order();
-    int sign = (m % 2 == 0 ? -1 : 1) * (diagram.arcs.directions(0) == 1 ? 1 : -1) * diagram.direction_sign;
+    int sign = (m % 2 == 0 ? -1 : 1) * (diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward ? 1 : -1) * diagram.direction_sign;
     return {backbone(propagator, diagram, operators, prepared.path), endpoint_sum(diagram, prepared, operators, support, tau_values, tau_values_reflect, statistics, signs),
             prepared.output_sector, sign};
   }
