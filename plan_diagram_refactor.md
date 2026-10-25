@@ -130,3 +130,11 @@ pack these descriptions differently. The eventual optimization target is high-en
 hardware such as GH200, not specifically the local RTX A4000.
 
 Preserve all unrelated worktree changes, local build scripts and dependency caches.
+
+## Completion
+
+Implemented and reviewed on 2026-10-25. Source checkpoints: `0f9c8fe`
+(backbone kernels), `6e84f1a` (arc objects), and `91d5a68` (endpoint operations).
+All 76 CPU/Python CTest entries pass on the final source; backbone_cpu compiles.
+See work_log_diagram_refactor.md for per-checkpoint evidence, review findings and
+remaining tradeoffs. No GPU performance or validation claim is part of this work.
