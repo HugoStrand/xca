@@ -218,3 +218,20 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
     ++t;
   }
 }
+
+TEST(BlockSparsePrepared, wrong_kind_is_rejected_before_buffers_change) {
+  auto model = test_utils::build_eval_model("unequal_sets_nA0");
+  DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
+  BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  auto sigma = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, 0, triqs_xca::diagram::Kind::self_energy);
+  auto corr = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, 0, triqs_xca::diagram::Kind::correlator);
+  auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, sigma), model.ad);
+  evaluator.T = 2.; evaluator.U = 3.;
+  EXPECT_THROW(evaluator.compute_self_energy(G, corr), std::invalid_argument);
+  EXPECT_THROW(evaluator.eval_correlator(G, sigma, {}, {}, triqs_xca::diagram::CorrelatorStatistics{}), std::invalid_argument);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.T - 2.)), 0.);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.U - 3.)), 0.);
+  auto recovered = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, sigma), model.ad);
+  expect_close(recovered, expected);
+}

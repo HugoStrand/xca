@@ -66,3 +66,18 @@ TEST(DensePrepared, logical_correlator_has_no_flat_index_or_mutable_backbone) {
   EXPECT_EQ(static_cast<int>(assignment.arcs[0].direction), -1);
   EXPECT_EQ(assignment.arcs[assignment.backbone.vertices[0].arc_idx].retained_flavour, -1);
 }
+
+TEST(DensePrepared, wrong_kind_is_rejected_before_buffers_change) {
+  auto model = test_utils::build_eval_model("unequal_sets_nA0");
+  dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  auto sigma = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, 0, triqs_xca::diagram::Kind::self_energy);
+  auto corr = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, 0, triqs_xca::diagram::Kind::correlator);
+  evaluator.T = 2.; evaluator.U = 3.; evaluator.Sigma = 4.;
+  EXPECT_THROW(evaluator.eval_self_energy(model.G, corr), std::invalid_argument);
+  EXPECT_THROW(evaluator.eval_self_energy_pair(model.G, corr), std::invalid_argument);
+  EXPECT_THROW(evaluator.eval_correlator(model.G, sigma, tensor{}, tensor{}, triqs_xca::diagram::CorrelatorStatistics{}), std::invalid_argument);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.T - 2.)), 0.);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.U - 3.)), 0.);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.Sigma - 4.)), 0.);
+}

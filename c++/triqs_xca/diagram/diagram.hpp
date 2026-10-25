@@ -19,6 +19,13 @@ namespace triqs_xca::diagram {
     Arcs arcs;
     Backbone backbone;
     int direction_sign;
+    Kind kind;
+
+    void require_kind(Kind expected) const;
+    /// Ranges exclude vertex zero and its partner. The self-energy tail may be empty.
+    EndpointRanges endpoint_ranges() const;
+    /// Describe the special arc sum; observable endpoints cannot be summed this way.
+    SelfEnergyEndpointSum self_energy_endpoint_sum(int flavours) const;
   };
 
   std::ostream &operator<<(std::ostream &out, Diagram const &diagram);

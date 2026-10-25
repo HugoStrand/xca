@@ -8,6 +8,7 @@ namespace triqs_xca::block_sparse {
                                OperatorSupportTable const &support, diagram::SelfEnergyDiagram &prepared,
                                std::function<void(diagram::SelfEnergyDiagram const &)> const &visit) {
 
+    diagram.require_kind(triqs_xca::diagram::Kind::self_energy);
     int m    = diagram.topology.order();
     int vct0 = diagram.topology.special_vertex();
 

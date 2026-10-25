@@ -159,6 +159,7 @@ void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_vie
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace) {
+  diagram.require_kind(triqs_xca::diagram::Kind::self_energy);
   auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
   double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
   triqs_xca::block_sparse::visit_self_energy_paths(Gt, diagram, action.operators, support_, workspace, [&](triqs_xca::block_sparse::diagram::SelfEnergyDiagram const &prepared) {
@@ -299,6 +300,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
   BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram)
   {
+  diagram.require_kind(triqs_xca::diagram::Kind::self_energy);
   check_propagator(Gt);
   // Allocate Sigma and set to zero
   Sigma = Gt;
@@ -379,6 +381,7 @@ nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_forward(
   triqs_xca::diagram::Diagram const &diagram, BackboneOperands const &backbone) {
   auto const &path = backbone.path;
   auto const &interval = path.range;
+  if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
   int columns = path.dimension(interval.first_vertex);
   auto initial = T(_, range(0, columns), range(0, columns));
   initial = backbone.propagator(interval.first_edge);
@@ -394,6 +397,7 @@ nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_backward(
   triqs_xca::diagram::Diagram const &diagram, BackboneOperands const &backbone) {
   auto const &path = backbone.path;
   auto const &interval = path.range;
+  if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
   int rows = path.dimension(interval.vertex_end);
   auto initial = U(_, range(0, rows), range(0, rows));
   initial = backbone.propagator(interval.edge_end - 1);
@@ -416,13 +420,14 @@ void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &oper
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Diagram const &diagram,
   std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
+  diagram.require_kind(triqs_xca::diagram::Kind::correlator);
   check_propagator(Gt);
   double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
   auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
   auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
   std::vector<diagram::BackbonePath> zero_to_tau_paths, tau_to_beta_paths;
   std::vector<nda::array<dcomplex, 3>> zero_to_tau_results, tau_to_beta_results;
-  auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
+  auto [zero_to_tau, tau_to_beta] = diagram.endpoint_ranges();
   visit_backbone_paths(Gt, diagram, action.operators, support_, zero_to_tau, [&](diagram::BackbonePath const &path) {
     auto operands = bind::backbone(Gt, diagram, action.operators, path);
     auto result = eval_backbone_forward(diagram, operands);

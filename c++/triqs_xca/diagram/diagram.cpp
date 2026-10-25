@@ -15,12 +15,28 @@ namespace triqs_xca::diagram {
     int direction_sign = 1;
     for (int a = 1; a < topology.order(); ++a)
       if (arcs[a].direction == Direction::backward) direction_sign *= -1;
-    return {topology, arcs, std::move(backbone), direction_sign};
+    return {topology, arcs, std::move(backbone), direction_sign, kind};
   }
 
   Diagram prepare_diagram(Topology const &topology, int flavours, nda::vector_const_view<double> poles, long flat_index, Kind kind) {
     auto arcs = decode_arcs(topology.order(), flavours, poles.size(), flat_index, kind);
     return prepare_diagram(topology, flavours, arcs, poles, kind);
+  }
+
+  void Diagram::require_kind(Kind expected) const {
+    if (kind != expected) throw std::invalid_argument("diagram kind does not match evaluation");
+  }
+
+  EndpointRanges Diagram::endpoint_ranges() const {
+    int special = topology.special_vertex();
+    return {{1, special, 0, special},
+            {special + 1, static_cast<int>(backbone.vertices.size()), special, static_cast<int>(backbone.edges.size())}};
+  }
+
+  SelfEnergyEndpointSum Diagram::self_energy_endpoint_sum(int flavours) const {
+    require_kind(Kind::self_energy);
+    if (flavours < 0) throw std::invalid_argument("negative endpoint flavour count");
+    return {{arcs[0].direction == Direction::forward}, flavours};
   }
 
   std::ostream &operator<<(std::ostream &out, Diagram const &diagram) {

@@ -82,6 +82,14 @@ namespace triqs_xca::dense {
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
     nda::array_const_view<dcomplex, 3> native_propagator(gf_vt G_ppsc) const;
 
+    // Traversals of the endpoint ranges; normalization remains caller-owned.
+    void evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                            triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range);
+    void extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                            triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range);
+    void evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                            triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range);
+
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a diagram using dense storage

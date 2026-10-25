@@ -88,11 +88,11 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   EXPECT_EQ(surviving[0].sector(surviving[0].range.vertex_end), 1);
 }
 
-TEST(CorrelatorPlan, empty_fragments_survive_a_failed_walk_on_the_other_side) {
+TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_side) {
   Ladder model;
   auto G = model.propagator();
   // The [tau,beta] side has no internal vertices. The preceding right walk
-  // fails at its last starting sector; that must not poison the empty side.
+  // fails at its last starting sector; that must not poison the single-edge side.
   auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
                                        triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 0, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
   auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
@@ -174,4 +174,14 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
   }
   EXPECT_THROW(fragments(G, assignment, model.operators, {3, 5, 2, 5}), std::invalid_argument);
   EXPECT_THROW(fragments(G, assignment, model.operators, {0, 2, 0, 2}), std::invalid_argument); // external operator unresolved
+}
+
+TEST(CorrelatorPlan, empty_range_has_no_independent_path_contribution) {
+  Ladder model;
+  auto G = model.propagator();
+  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
+      nda::vector<double>{1.}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto tail = assignment.endpoint_ranges().after_special;
+  ASSERT_TRUE(tail.empty());
+  EXPECT_TRUE(fragments(G, assignment, model.operators, tail).empty());
 }

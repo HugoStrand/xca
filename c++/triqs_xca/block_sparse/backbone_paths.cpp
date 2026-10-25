@@ -8,6 +8,7 @@ namespace triqs_xca::block_sparse {
                             std::function<void(block_sparse::diagram::BackbonePath const &)> const &visit) {
     range.validate();
     if (!diagram.backbone.range().contains(range)) throw std::invalid_argument("backbone range is outside diagram");
+    if (range.empty()) return; // no propagator or operator contribution to visit
     for (int v = range.first_vertex; v < range.vertex_end; ++v)
       if (diagram.backbone.vertices[v].arc_idx == 0) throw std::invalid_argument("backbone range contains an unresolved endpoint");
     block_sparse::diagram::BackbonePath path(range);

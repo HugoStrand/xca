@@ -169,6 +169,38 @@ namespace triqs_xca::dense {
     return compute_self_energy_by_pairs_selected(G_ppsc, topology_arr, FlatIndexSelection{first, last, get_num_self_energy_backbones(topology_arr)});
   }
 
+  // The initial segment starts at edge zero, whose kernel is identity:
+  // internal arcs never touch vertex zero.
+  void DiagramEvaluator::evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                                                 triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+    result = Gt;
+    for (int v = range.first_vertex; v < range.vertex_end; ++v) {
+      multiply_left_vertex(result, diagram, v);
+      integrate_left_edge(result, Gt, diagram, v);
+    }
+  }
+
+  // Extend an existing endpoint result; an empty self-energy tail does no work.
+  void DiagramEvaluator::extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                                       triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+    for (int v = range.first_vertex; v < range.vertex_end; ++v) {
+      integrate_left_edge(result, Gt, diagram, v - 1);
+      multiply_left_vertex(result, diagram, v);
+    }
+  }
+
+  // The correlator segment starts at the beta edge in this traversal.
+  // Its kernel is identity because all internal arcs end before beta.
+  void DiagramEvaluator::evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+                                                   triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+    result = Gt;
+    for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
+      multiply_right_vertex(result, diagram, v);
+      integrate_right_edge(result, Gt, diagram, v - 1);
+    }
+    result = action.tau_mesh.dlr_it().reflect(result);
+  }
+
   void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, int v_ix) {
     auto const &vertex = diagram.backbone.vertices[v_ix];
     auto const &arc = diagram.arcs[vertex.arc_idx];
@@ -254,28 +286,23 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
-    int vct0 = diagram.topology.special_vertex();
+    auto endpoint_sum = diagram.self_energy_endpoint_sum(n);
+    auto ranges = diagram.endpoint_ranges();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
-    T = Gt;
-    for (int v = 1; v < vct0; v++) {
-      multiply_left_vertex(T, diagram, v);
-      integrate_left_edge(T, Gt, diagram, v);
-    }
+    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward}, n}, signs);
-    multiply_left_vertex_and_right_zero_vertex(U, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction != triqs_xca::diagram::Direction::forward}, n}, signs);
+    multiply_left_vertex_and_right_zero_vertex(T, endpoint_sum, signs);
+    auto opposite = endpoint_sum;
+    opposite.orientation.forward = !opposite.orientation.forward;
+    multiply_left_vertex_and_right_zero_vertex(U, opposite, signs);
     T = T - U;
-
-    for (int v = vct0 + 1; v < 2 * m; v++) {
-      integrate_left_edge(T, Gt, diagram, v - 1);
-      multiply_left_vertex(T, diagram, v);
-    }
+    extend_segment(T, Gt, diagram, ranges.after_special);
 
     T *= kernel_prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (diagram.arcs[0].direction == triqs_xca::diagram::Direction::backward) diag_order_sign *= -1;
+    if (endpoint_sum.orientation.reflected()) diag_order_sign *= -1;
     T *= diag_order_sign * diagram.direction_sign;
     Sigma += T;
 
@@ -288,32 +315,18 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
     int m = diagram.topology.order();
-    int vct0 = diagram.topology.special_vertex();
+    auto endpoint_sum = diagram.self_energy_endpoint_sum(n);
+    auto ranges = diagram.endpoint_ranges();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
-    // 1. Starting from tau_1, proceed right to left, performing multiplications at vertices and convolutions at edges, until reaching the vertex
-    // containing the undecomposed hybridization line Delta_{mu kappa}.
-    T = Gt;
-    // T is initialized to Gt, which is always the function at the rightmost edge
-    for (int v = 1; v < vct0; v++) { // loop from the first vertex to before the special vertex
-      multiply_left_vertex(T, diagram, v);
-      integrate_left_edge(T, Gt, diagram, v);
-    }
-
-    // 2. For each kappa, multiply by F_kappa(^dag). Then for each mu, kappa, multiply by Delta_{mu kappa}, and sum over kappa. Finally for each mu,
-    // multiply F_mu[^dag] and sum over mu.
-    multiply_left_vertex_and_right_zero_vertex(T, triqs_xca::diagram::SelfEnergyEndpointSum{{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward}, n}, signs);
-
-    // 3. Continue right to left until the final vertex multiplication is complete.
-    for (int v = vct0 + 1; v < 2 * m; v++) { // loop from the special vertex to the last vertex
-      integrate_left_edge(T, Gt, diagram, v - 1);
-      multiply_left_vertex(T, diagram, v);
-    }
+    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
+    multiply_left_vertex_and_right_zero_vertex(T, endpoint_sum, signs);
+    extend_segment(T, Gt, diagram, ranges.after_special);
 
     T *= kernel_prefactor;
     int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (diagram.arcs[0].direction == triqs_xca::diagram::Direction::backward) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
+    if (endpoint_sum.orientation.reflected()) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
     T *= diag_order_sign * diagram.direction_sign;
     Sigma += T;
 
@@ -360,31 +373,15 @@ namespace triqs_xca::dense {
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
                                                           nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
-    auto [zero_to_tau, tau_to_beta] = triqs_xca::diagram::correlator_backbone_ranges(diagram.topology);
+    diagram.require_kind(triqs_xca::diagram::Kind::correlator);
+    auto ranges = diagram.endpoint_ranges();
     auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
     double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    // evaluate the first sequence of diagram products and convolutions from tau_1 to tau, proceeding right to left, not inculding the creation and
-    // annihilation matrices at the end points. the result is an N x N matrix-valued function of tau.
-    T = Gt;
-    // T is initialized to Gt, which is always the function at the rightmost edge
-    for (int v = zero_to_tau.first_vertex; v < zero_to_tau.vertex_end; ++v) { // loop from the first vertex to before the special vertex
-      multiply_left_vertex(T, diagram, v);
-      integrate_left_edge(T, Gt, diagram, v);
-    }
-
-    // evaluate the second sequence of diagram products and convolutions from tau to beta, using a change of variables to perform convolutions. the
-    // result is another N x N matrix-valued function of tau.
-    U = Gt;
-
-    for (int v = tau_to_beta.vertex_end - 1; v >= tau_to_beta.first_vertex; --v) {
-      multiply_right_vertex(U, diagram, v);
-      integrate_right_edge(U, Gt, diagram, v - 1);
-    }
-
-    U = action.tau_mesh.dlr_it().reflect(U);
+    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
+    evaluate_reflected_segment(U, Gt, diagram, ranges.after_special);
 
     T *= kernel_prefactor;
     int diag_order_sign = 1; // (m % 2 == 1) ? -1 : 1;

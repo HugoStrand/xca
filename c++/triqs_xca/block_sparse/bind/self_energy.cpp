@@ -18,7 +18,7 @@ namespace triqs_xca::block_sparse::bind {
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                    std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
     int special = diagram.topology.special_vertex();
-    triqs_xca::diagram::ArcOrientation orientation{diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward};
+    auto orientation = diagram.self_energy_endpoint_sum(statistics.size()).orientation;
     EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), signs};
     auto present = [&](int group, int index, int source, bool adjoint) {
       int flavour = operators.sym_set_to_orb(group, index);
