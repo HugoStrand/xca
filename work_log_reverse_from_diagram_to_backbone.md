@@ -195,3 +195,19 @@ Read each source commit with the immediately following documentation commit.
 The initial plan is `8b188e8` `[docs] plan self-contained backbones`. All work is on
 dev_backbone above the user's `522ad52` header consolidation. Unrelated worktree
 changes were preserved.
+
+## Follow-up — one preparation call in evaluators
+
+2026-10-31. Source: `e0852f7` `[diag] simplify backbone preparation`.
+
+Dense and sparse evaluators now call
+`prepare_backbone(topology, action, flat_index, kind)`. The overload composes the
+existing arc decoding and backbone preparation; all nine evaluator call sites
+use it. As requested, this is an evaluator API simplification: the lower-level
+`prepare_backbone(topology, arcs)` and arc APIs remain available, and tests and
+benchmarks are unchanged.
+
+Independent review found no issues with overload resolution, ownership or argument
+preservation. The library and both focused test targets built successfully;
+dense/prepared_evaluator and block_sparse/path_evaluator passed (2/2 CTest entries).
+Diff --check passed. Logs: /tmp/xca-backbone-prepare-api-{build,test}.log.
