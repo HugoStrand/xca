@@ -1,4 +1,6 @@
 #include "arcs.hpp"
+#include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -56,6 +58,31 @@ namespace triqs_xca::diagram {
       remaining /= 2;
     }
     return result;
+  }
+
+  Arcs prepare_arcs(Arcs choices, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, Kind kind) {
+    if (kind != Kind::self_energy && kind != Kind::correlator) throw std::invalid_argument("invalid arc preparation kind");
+    if (choices.size() > std::numeric_limits<int>::max()) throw std::invalid_argument("too many arcs");
+    validate_arcs(choices, static_cast<int>(choices.size()), kind);
+    choices[0].statistics = Statistics::bosonic; // unresolved endpoint parity; not used by preparation
+    choices[0].pole_sign = 0;
+    for (std::size_t a = 1; a < choices.size(); ++a) {
+      auto &arc = choices[a];
+      if (arc.retained_flavour >= statistics.size()) throw std::invalid_argument("arc flavour index out of range");
+      if (arc.pole_index >= poles.size()) throw std::invalid_argument("arc pole index out of range");
+      arc.statistics = statistics[arc.retained_flavour];
+      if (arc.statistics != Statistics::bosonic && arc.statistics != Statistics::fermionic)
+        throw std::invalid_argument("invalid arc operator statistics");
+      double pole = poles(arc.pole_index);
+      if (!std::isfinite(pole)) throw std::invalid_argument("selected arc pole must be finite");
+      arc.pole_sign = (pole > 0) - (pole < 0);
+    }
+    return choices;
+  }
+
+  Arcs decode_arcs(int order, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, long flat_index, Kind kind) {
+    if (statistics.size() > std::numeric_limits<int>::max()) throw std::invalid_argument("too many operator flavours");
+    return prepare_arcs(decode_arcs(order, static_cast<int>(statistics.size()), poles.size(), flat_index, kind), statistics, poles, kind);
   }
 
 } // namespace triqs_xca::diagram

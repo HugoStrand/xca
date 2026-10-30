@@ -1,5 +1,4 @@
 #include "diagram.hpp"
-#include "arc.hpp"
 #include <stdexcept>
 
 namespace triqs_xca::diagram {
@@ -15,9 +14,9 @@ namespace triqs_xca::diagram {
         early.adjoint = true; // external operators are supplied separately
         continue;
       }
-      ArcOrientation orientation{arcs[a].direction == Direction::forward};
-      early.adjoint = orientation.early_operator(-1).adjoint;
-      late.adjoint  = orientation.late_operator(-1).adjoint;
+      bool forward = arcs[a].direction == Direction::forward;
+      early.adjoint = !forward;
+      late.adjoint  = forward;
       late.barred   = a != 0;
     }
     return result;

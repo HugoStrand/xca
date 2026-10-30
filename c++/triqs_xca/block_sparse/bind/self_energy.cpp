@@ -1,5 +1,5 @@
 #include "self_energy.hpp"
-#include "triqs_xca/diagram/arc.hpp"
+#include "triqs_xca/action.hpp"
 
 namespace triqs_xca::block_sparse::bind {
   namespace {

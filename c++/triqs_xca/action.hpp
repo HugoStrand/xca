@@ -14,6 +14,48 @@ namespace triqs_xca {
   /// Fermion parity of an operator coupled to the action or an external observable.
   enum class Statistics { bosonic, fermionic };
 
+  /// A numerical operator reference, before choosing dense or block-sparse storage.
+  /// Adjoint acts on the operator, never on the scalar coefficient.
+  struct OperatorReference {
+    int flavour;
+    bool adjoint;
+  };
+
+  /// Shared coefficient convention for F-bar construction and endpoint sums.
+  /// Forward: O_late^dag C(late, early; tau) O_early.
+  /// Backward: -O_late C(early, late; beta-tau) O_early^dag.
+  /// Reflection, permutation statistics and expansion-order signs remain separate.
+  struct OperatorPairOrientation {
+    bool forward;
+
+    OperatorReference early_operator(int flavour) const { return {flavour, !forward}; }
+    OperatorReference late_operator(int flavour) const { return {flavour, forward}; }
+    std::pair<int, int> coefficient_indices(int late, int early) const { return forward ? std::pair{late, early} : std::pair{early, late}; }
+    bool reflected() const { return !forward; }
+    int reflection_sign() const { return forward ? 1 : -1; }
+  };
+
+  struct WeightedOperatorTerm {
+    OperatorReference op;
+    int pole;
+    int coefficient_row;
+    int coefficient_column;
+    int sign;
+  };
+
+  /// Partial contraction over the later operator. The earlier flavour and pole
+  /// are fixed; the retained flavour is not the later operator's flavour.
+  struct BarredOperatorContraction {
+    OperatorPairOrientation orientation;
+    int retained_flavour;
+    int pole;
+
+    WeightedOperatorTerm term(int summed_flavour) const {
+      auto [row, column] = orientation.coefficient_indices(summed_flavour, retained_flavour);
+      return {orientation.late_operator(summed_flavour), pole, row, column, orientation.reflection_sign()};
+    }
+  };
+
   /// Precomputed numerical time-kernel tables. Plus/minus selects the beta-scaled pole argument.
   struct TauKernel {
     nda::vector<double> at_zero_plus, at_zero_minus;

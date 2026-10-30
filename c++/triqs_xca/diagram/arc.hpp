@@ -1,61 +1,13 @@
 #pragma once
 
-#include <utility>
+#include "triqs_xca/action.hpp"
 
 namespace triqs_xca::diagram {
 
-  /// A model operator, before choosing dense or block-sparse storage. Adjoint acts
-  /// on the operator, never on the scalar interaction coefficient.
-  struct OperatorReference {
-    int flavour;
-    bool adjoint;
-  };
-
-  /// One directed interaction between an earlier and a later backbone vertex.
-  /// Forward: O_late^dag C(late, early; tau) O_early.
-  /// Backward: -O_late C(early, late; beta-tau) O_early^dag.
-  /// The minus is the existing reflected-kernel convention for both interaction
-  /// families. Permutation statistics and diagram-order signs are separate.
-  struct ArcOrientation {
-    bool forward;
-
-    OperatorReference early_operator(int flavour) const { return {flavour, !forward}; }
-    OperatorReference late_operator(int flavour) const { return {flavour, forward}; }
-    std::pair<int, int> coefficient_indices(int late, int early) const { return forward ? std::pair{late, early} : std::pair{early, late}; }
-    bool reflected() const { return !forward; }
-    int reflection_sign() const { return forward ? 1 : -1; }
-  };
-
-  struct WeightedOperatorTerm {
-    OperatorReference op;
-    int pole;
-    int coefficient_row;
-    int coefficient_column;
-    int sign;
-  };
-
-  /// A partial contraction at the later vertex. The earlier flavour and pole are
-  /// fixed; the later flavour is still summed over the interaction space. A
-  /// representation may materialize this sum or bind its terms for execution.
-  /// It must not interpret the retained flavour as the later operator's flavour.
-  struct BarredOperatorContraction {
-    ArcOrientation orientation;
-    int retained_flavour;
-    int pole;
-
-    WeightedOperatorTerm term(int summed_flavour) const {
-      auto [row, column] = orientation.coefficient_indices(summed_flavour, retained_flavour);
-      return {orientation.late_operator(summed_flavour), pole, row, column, orientation.reflection_sign()};
-    }
-  };
-
-  /// The special self-energy arc leaves both endpoint flavours summed over
-  /// [0, flavours). This describes the sum without expanding its Cartesian
-  /// product. A block planner may restrict candidates using exact support.
-  /// Unlike BarredOperatorContraction, its coefficient is a time-dependent function and
-  /// carries no assigned pole.
+  /// Transitional endpoint description, pending integration into Backbone.
+  /// Both endpoint flavours are summed over [0, flavours), with no selected pole.
   struct SelfEnergyEndpointSum {
-    ArcOrientation orientation;
+    OperatorPairOrientation orientation;
     int flavours;
   };
 

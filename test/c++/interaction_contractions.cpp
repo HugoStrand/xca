@@ -1,7 +1,6 @@
 #include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
 
-#include <triqs_xca/diagram/arc.hpp>
 #include <triqs_xca/action.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 #include <triqs_xca/diagram/diagram.hpp>
@@ -21,7 +20,7 @@ void expect_close(nda::array_const_view<dcomplex, 2> actual, nda::array_const_vi
 }
 
 TEST(InteractionContractions, directed_line_assigns_operators_coefficients_and_reflection) {
-  triqs_xca::diagram::ArcOrientation forward{true}, backward{false};
+  triqs_xca::OperatorPairOrientation forward{true}, backward{false};
   EXPECT_FALSE(forward.early_operator(2).adjoint);
   EXPECT_TRUE(forward.late_operator(5).adjoint);
   EXPECT_EQ(forward.coefficient_indices(5, 2), (std::pair{5, 2}));
@@ -35,7 +34,7 @@ TEST(InteractionContractions, directed_line_assigns_operators_coefficients_and_r
 
   // The label retained by the bar is the earlier operator's label; the
   // actual later operator is supplied by the sum, and no conjugation of C occurs.
-  auto term = triqs_xca::diagram::BarredOperatorContraction{backward, 2, 3}.term(5);
+  auto term = triqs_xca::BarredOperatorContraction{backward, 2, 3}.term(5);
   EXPECT_EQ(term.op.flavour, 5);
   EXPECT_FALSE(term.op.adjoint);
   EXPECT_EQ(term.pole, 3);
