@@ -81,3 +81,32 @@ contributions. Discovery will own one streamed workspace per Backbone call rathe
 than expose a caller workspace that initially has no recipe. This simplifies the
 API, at the cost of no longer amortizing its small array allocations across
 different assignments; no performance claim is made for that tradeoff.
+
+## Checkpoint 3 — one owning sparse path
+
+2026-10-31. Source commit: [bs] prepare self-contained backbone paths.
+
+BackbonePath now owns a Backbone, selected range, sector/dimension arrays and
+ordered endpoint selections. SelfEnergyDiagram and CorrelatorDiagram are removed.
+Self-energy discovery resolves exact supported endpoint flavour IDs in the same
+group/member order as before and owns its reusable callback workspace.
+
+Correlator completion creates a full path containing both segment walks and the
+closing sector. Cache indices accompany the callback only; they are absent from
+the path and its temporary numerical-view operands. The CPU still evaluates each
+segment once. Existing nonclosing self-energy checks and numerical accumulation
+order remain unchanged. Binding now derives all logical information from Path;
+its removal is the next independently reviewable change.
+
+Geometry tests cover full slot/dimension composition, source/table destruction,
+copy independence, empty segment tables, exact endpoint support and interleaved
+global flavour labels. The obsolete wrong-workspace-order case disappears with
+the caller-supplied workspace API.
+
+Validation: full CPU build and backbone_cpu compilation passed; all 77 CPU/Python
+CTest entries passed in 57.02 s. Generated binding delta is an updated class
+docstring only; source diff --check clean. No benchmark measurements. Logs:
+/tmp/xca-backbone-reverse-3-{configure,build,test,benchmark-build}.log.
+
+Next: direct Path execution, removal of binding/operand containers, and standalone
+numerical comparisons after all planning/cache owners have been destroyed.
