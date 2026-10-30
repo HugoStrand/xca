@@ -10,9 +10,8 @@
 #include "triqs_xca/flat_index_selection.hpp"
 #include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
-#include "triqs_xca/block_sparse/bind/self_energy.hpp"
+#include "triqs_xca/block_sparse/diagram/backbone_path.hpp"
 #include "triqs_xca/block_sparse/operator_support.hpp"
-#include "triqs_xca/block_sparse/bind/correlator.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -42,46 +41,37 @@ class DiagramEvaluator {
   // the same check for a propagator already in block-sparse storage
   void check_propagator(BlockDiagOpFun const &Gt) const;
 
-  // Diagram composition routines
+  // Direct numerical lookup; no bound-view container or discovery workspace is required.
+  nda::array_const_view<dcomplex, 2> vertex_matrix(diagram::BackbonePath const &path, int vertex) const;
+  nda::array_const_view<dcomplex, 2> endpoint_matrix(int flavour, bool adjoint, int source_sector) const;
+  nda::array_const_view<dcomplex, 2> endpoint_coefficients(int late_flavour, bool reflected) const;
 
-  // Compose already resolved vertices and propagator edges.
-  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix,
-                            nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path, int n_col_r);
-  void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                           triqs_xca::diagram::Backbone const &backbone, int e_ix, diagram::BackbonePath const &path, int n_col_r);
+  // Compose resolved vertices and propagator edges using evaluator-owned scratch.
+  void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath const &path, int vertex, int columns);
+  void integrate_left_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> T_buf,
+                           diagram::BackbonePath const &path, int edge, int columns);
+  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, diagram::BackbonePath const &path, int vertex);
+  void integrate_right_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> U_buf, diagram::BackbonePath const &path, int edge);
+  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath const &path);
 
-  // Composition routines specific for correlator diagrams (used in the left part on [beta, tau])
-
-  // multiply vertex (v_ix) from the right, in a backbone (for block b_ix)
-  void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix, nda::array_const_view<dcomplex, 2> F,
-                             diagram::BackbonePath const &path);
-
-  // integrate edge (e_ix) from the right, in a backbone (for block b_ix)
-  void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Backbone const &backbone, int e_ix,
-                            diagram::BackbonePath const &path);
-
-  // routines for self-energy diagrams
-  
-  // multiply by the zero vertex (from the right) and the vertex connected to zero (from the left)
-  void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
-                                                  diagram::BackbonePath const &path, EndpointSumOperands const &endpoints);
-
+  // Nonclosing nonzero endpoint couplings cannot contribute to block-diagonal output.
+  bool select_diagonal_self_energy(diagram::BackbonePath const &path) const;
+  void add_self_energy_path(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor);
   void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone);
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix); // evaluate a particular backbone
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology);           // evaluate a backbone of a given order and topology in block-sparse storage
+  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix);
+  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology);
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    double kernel_prefactor, SelfEnergyOperands const &contribution);
+    BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor);
+  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> self_energy_result(BlockDiagOpFun const &Gt);
 
-
-  // CPU traversal of edge-ended intervals with all internal operators bound.
-  // Results borrow scratch storage; reflection and global factors belong to the caller.
-  nda::array_view<dcomplex, 3> eval_backbone_forward(BackboneOperands const &operands);
-  nda::array_view<dcomplex, 3> eval_backbone_backward(BackboneOperands const &operands);
-  void eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,
-                            nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
-                            nda::array_view<dcomplex, 3> correlator);
+  // Edge-ended range traversal borrows scratch storage and applies no global factors.
+  nda::array_view<dcomplex, 3> eval_backbone_forward(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path);
+  nda::array_view<dcomplex, 3> eval_backbone_backward(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path);
+  void eval_correlator_completion(diagram::BackbonePath const &path, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
+                                  nda::array_const_view<dcomplex, 3> left, nda::array_const_view<dcomplex, 3> right,
+                                  nda::array_view<dcomplex, 3> scratch, nda::array_view<dcomplex, 3> correlator);
 
   std::vector<BlockOp> setup_mu_ops_for_single_ptcle_gf();
   std::vector<BlockOp> setup_kap_ops_for_single_ptcle_gf();
@@ -129,6 +119,13 @@ class DiagramEvaluator {
   // Assignment indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone);
 
+  // Execute one complete path without discovery; reset the accumulator each call.
+  // Paths must use this Action's indices/support and sector basis. This CPU routine
+  // accepts endpoint lists from one discovered symmetry group, or subsets thereof.
+  // Either empty endpoint list gives zero. G values may change with the same layout;
+  // a complete saved path set needs rediscovery when G's activity mask changes.
+  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, diagram::BackbonePath const &path);
+
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
@@ -144,14 +141,23 @@ class DiagramEvaluator {
   long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology); // get number of backbones for given topology
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, bool is_fermionic = true);
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, long f_ix, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, long f_ix, bool is_fermionic = true);
 
   // Evaluate a prepared backbone; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
+    BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
+
+  // Execute one complete path without discovery or external segment caches.
+  // Path indices/support and sector basis must match Action and G.
+  // Observable indices/bases must match the supplied lists; values are borrowed
+  // only during this call. One tau selection is supported, with any closing subset.
+  // Either empty selection gives zero; more than one tau selection is rejected.
+  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
+    BlockDiagOpFun &Gt, diagram::BackbonePath const &path, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
+    triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
   // compute single particle Green's function for given topology (and flat index)
   C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);

@@ -32,6 +32,24 @@ namespace {
   // the leading index kap of Tkaps runs within one symmetry set, so the largest set is the bound rather than n
   long max_sym_set_size(BlockOpSymQuartet const &Fq) { return nda::max_element(Fq.sym_set_sizes); }
 
+  void require_complete_path(diagram::BackbonePath const &path) {
+    path.range.validate();
+    if (path.range != path.backbone.range()) throw std::invalid_argument("evaluation requires a complete backbone path");
+    if (path.sectors.size() != path.range.vertex_end - path.range.first_vertex + 1 || path.sector_dimensions.size() != path.sectors.size())
+      throw std::invalid_argument("backbone path sector storage does not match its range");
+  }
+
+  // A standalone completion has no segment cache. Copy only logical metadata;
+  // numerical blocks remain in Action, G and the separately supplied observables.
+  diagram::BackbonePath segment_path(diagram::BackbonePath const &path, triqs_xca::diagram::BackboneRange interval) {
+    diagram::BackbonePath segment(path.backbone, interval);
+    for (int slot = interval.first_vertex; slot <= interval.vertex_end; ++slot) {
+      segment.sector(slot) = path.sector(slot);
+      segment.dimension(slot) = path.dimension(slot);
+    }
+    return segment;
+  }
+
 } // namespace
 
 DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model)
@@ -100,72 +118,109 @@ template DiagramEvaluator::DiagramEvaluator(
 // ----------- Private routines for any backbone ==========
 
 
-void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix,
-                                            nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path, int n_col_r) {
-
-  // Get views on temporary storage for input and output
-
-  nda::array_view<dcomplex, 3> T_v  = T_buf(_, range(0, path.dimension(v_ix)), range(0, n_col_r));
-  nda::array_view<dcomplex, 3> T_vp = T_buf(_, range(0, path.dimension(v_ix + 1)), range(0, n_col_r));
-
-  // Multiply with the operator matrix F from the left
-  for (int t = 0; t < r; t++) T_vp(t, _, _) = matmul(F, T_v(t, _, _));
-
-  // Multiply with scalar K(\tau) factor of the pole with index l_ix
-  apply_kernel(T_vp, backbone.vertices[v_ix], action.kernel);
+nda::array_const_view<dcomplex, 2> DiagramEvaluator::vertex_matrix(diagram::BackbonePath const &path, int vertex) const {
+  auto const &v = path.backbone.vertices[vertex];
+  auto const &operators = action.operators;
+  int set = operators.sym_set_labels(v.flavour), index = operators.sym_set_inds(v.flavour);
+  if (v.barred) {
+    auto const &op = v.adjoint ? operators.F_dag_bars[set] : operators.F_bars_refl[set];
+    return op.get_block(path.sector(vertex))(index, v.pole_index, _, _);
+  }
+  return endpoint_matrix(v.flavour, v.adjoint, path.sector(vertex));
 }
 
+nda::array_const_view<dcomplex, 2> DiagramEvaluator::endpoint_matrix(int flavour, bool adjoint, int source_sector) const {
+  auto const &operators = action.operators;
+  int set = operators.sym_set_labels(flavour), index = operators.sym_set_inds(flavour);
+  auto const &op = adjoint ? operators.F_dags[set] : operators.Fs[set];
+  return op.get_block(source_sector)(index, _, _);
+}
 
-void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> propagator,
-                                           triqs_xca::diagram::Backbone const &backbone, int e_ix, diagram::BackbonePath const &path, int n_col_r) {
+nda::array_const_view<dcomplex, 2> DiagramEvaluator::endpoint_coefficients(int late_flavour, bool reflected) const {
+  if (reflected) return action.tau_values_reflect(_, _, late_flavour);
+  return action.tau_values(_, late_flavour, _);
+}
 
-  nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, path.dimension(e_ix + 1)), range(0, path.dimension(e_ix + 1)));
-  GKt_ep = propagator;
+void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath const &path, int vertex, int columns) {
+  auto before = T_buf(_, range(0, path.dimension(vertex)), range(0, columns));
+  auto after = T_buf(_, range(0, path.dimension(vertex + 1)), range(0, columns));
+  auto F = vertex_matrix(path, vertex);
+  for (int t = 0; t < r; ++t) after(t, _, _) = matmul(F, before(t, _, _));
+  apply_kernel(after, path.backbone.vertices[vertex], action.kernel);
+}
 
-  apply_kernel_product(GKt_ep, backbone.edges[e_ix].kernels, action.kernel);
-
-  nda::array_view<dcomplex, 3> T_ep = T_buf(_, range(0, path.dimension(e_ix + 1)), range(0, n_col_r));
+void DiagramEvaluator::integrate_left_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> T_buf,
+                                           diagram::BackbonePath const &path, int edge, int columns) {
+  auto GKt_ep = GKt(_, range(0, path.dimension(edge + 1)), range(0, path.dimension(edge + 1)));
+  GKt_ep = Gt.get_block(path.edge_sector(edge));
+  apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
+  auto T_ep = T_buf(_, range(0, path.dimension(edge + 1)), range(0, columns));
   auto const &itops = action.tau_mesh.dlr_it();
   T_ep = itops.convolve(beta, itops.vals2coefs(GKt_ep), itops.vals2coefs(T_ep), cppdlr::TIME_ORDERED);
 }
 
-
-
 // ========== Private self-energy routines ==========
 
-void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
-                                                                  diagram::BackbonePath const &path, EndpointSumOperands const &endpoints) {
-  nda::array_view<dcomplex, 3> T_v  = T_buf(_, range(0, path.dimension(v_ix)), range(0, path.dimension(1)));
-  nda::array_view<dcomplex, 3> T_vp = T_buf(_, range(0, path.dimension(v_ix + 1)), range(0, path.dimension(0)));
-  nda::array_view<dcomplex, 4> Tkaps_v = Tkaps(_, _, range(0, path.dimension(v_ix)), range(0, path.dimension(0)));
-  nda::array_view<dcomplex, 3> Tmu_v = Tmu(_, range(0, path.dimension(v_ix)), range(0, path.dimension(0)));
+void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath const &path) {
+  int special = path.backbone.endpoints.special_vertex;
+  OperatorPairOrientation orientation{path.backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+  auto signs = path.backbone.endpoints.signs;
+  auto T_v = T_buf(_, range(0, path.dimension(special)), range(0, path.dimension(1)));
+  auto T_vp = T_buf(_, range(0, path.dimension(special + 1)), range(0, path.dimension(0)));
+  auto Tkaps_v = Tkaps(_, _, range(0, path.dimension(special)), range(0, path.dimension(0)));
+  auto Tmu_v = Tmu(_, range(0, path.dimension(special)), range(0, path.dimension(0)));
 
-  for (int kap = 0; kap < endpoints.early.size(); ++kap) {
-    auto const &F_kap = endpoints.early[kap].matrix;
+  for (int kap = 0; kap < path.zero_operators.size(); ++kap) {
+    int flavour = path.zero_operators[kap];
+    auto F_kap = endpoint_matrix(flavour, orientation.early_operator(flavour).adjoint, path.sector(0));
     for (int t = 0; t < r; ++t) Tkaps_v(kap, t, _, _) = matmul(T_v(t, _, _), F_kap);
   }
   T_vp = 0;
-  for (int mu_index = 0; mu_index < endpoints.late.size(); ++mu_index) {
-    auto const &mu = endpoints.late[mu_index];
+  for (int mu : path.special_operators) {
+    auto coefficients = endpoint_coefficients(mu, orientation.reflected());
+    auto F_mu = endpoint_matrix(mu, orientation.late_operator(mu).adjoint, path.sector(special));
     Tmu_v = 0;
-    for (int kap = 0; kap < endpoints.early.size(); ++kap) {
-      auto const &early = endpoints.early[kap];
-      auto coefficient = endpoints.coefficients[mu_index](_, early.coefficient_index);
-      int sign = endpoints.signs(early.statistics, mu.statistics) * endpoints.reflection_sign;
+    for (int kap = 0; kap < path.zero_operators.size(); ++kap) {
+      int early = path.zero_operators[kap];
+      auto coefficient = coefficients(_, early);
+      int sign = signs(action.statistics[early], action.statistics[mu]) * orientation.reflection_sign();
       for (int t = 0; t < r; ++t) Tmu_v(t, _, _) += sign * coefficient(t) * Tkaps_v(kap, t, _, _);
     }
-    for (int t = 0; t < r; ++t) T_vp(t, _, _) += matmul(mu.matrix, Tmu_v(t, _, _));
+    for (int t = 0; t < r; ++t) T_vp(t, _, _) += matmul(F_mu, Tmu_v(t, _, _));
   }
+}
+
+bool DiagramEvaluator::select_diagonal_self_energy(diagram::BackbonePath const &path) const {
+  if (path.sector(path.range.vertex_end) == path.sector(0)) return true;
+  // Inspect exact input coefficients before arithmetic. No magnitude cutoff or
+  // cancellation between distinct contributions is assumed here.
+  bool reflected = path.backbone.endpoints.direction == triqs_xca::diagram::Direction::backward;
+  for (int late : path.special_operators) {
+    auto coefficients = endpoint_coefficients(late, reflected);
+    for (int early : path.zero_operators) {
+      auto values = coefficients(_, early);
+      if (std::any_of(values.begin(), values.end(), [](dcomplex z) { return z != dcomplex{}; }))
+        throw std::invalid_argument("block_sparse self-energy: path from sector " + std::to_string(path.sector(0))
+                                    + " ends in sector " + std::to_string(path.sector(path.range.vertex_end))
+                                    + "; this partition does not close the indexed self-energy contribution. "
+                                      "Use a coarser Hilbert-space partition for block-diagonal output.");
+    }
+  }
+  return false;
+}
+
+void DiagramEvaluator::add_self_energy_path(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor) {
+  if (path.zero_operators.empty() || path.special_operators.empty()) return;
+  if (!select_diagonal_self_energy(path)) return;
+  auto result = eval_self_energy_contribution(Gt, path, kernel_prefactor);
+  Sigma.add_block(path.sector(0), result);
 }
 
 void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone) {
   backbone.require_self_energy();
   double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
   triqs_xca::block_sparse::visit_self_energy_paths(Gt, backbone, action.operators, support_, [&](diagram::BackbonePath const &path) {
-    auto contribution = bind::self_energy(Gt, path, action.operators, action.tau_values, action.tau_values_reflect, action.statistics);
-    if (!select_diagonal_self_energy(contribution)) return;
-    auto result = eval_self_energy_contribution(kernel_prefactor, contribution);
-    Sigma.add_block(contribution.output_sector, result);
+    add_self_energy_path(Gt, path, kernel_prefactor);
   });
 }
 
@@ -189,29 +244,27 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::
 }
 
 nda::array_const_view<dcomplex, 3> DiagramEvaluator::eval_self_energy_contribution(
-  double kernel_prefactor, SelfEnergyOperands const &contribution) {
-  auto const &path = contribution.backbone.path;
+  BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor) {
   auto const &backbone = path.backbone;
-  int m = backbone.order(), vct0 = backbone.endpoints.special_vertex; // vertex connnected to time zero
+  int m = backbone.order(), special = backbone.endpoints.special_vertex;
 
-  T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = contribution.backbone.propagator(0);
-  for (int v = 1; v < vct0; v++) {
-    multiply_left_vertex(T, backbone, v, contribution.backbone.vertex(v), path, path.dimension(v < vct0 ? 1 : 0));
-    integrate_left_edge(T, contribution.backbone.propagator(v), backbone, v, path, path.dimension(1));
+  T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = Gt.get_block(path.edge_sector(0));
+  for (int v = 1; v < special; ++v) {
+    multiply_left_vertex(T, path, v, path.dimension(1));
+    integrate_left_edge(Gt, T, path, v, path.dimension(1));
   }
 
-  multiply_left_vertex_and_right_zero_vertex(T, vct0, path, contribution.endpoints);
+  multiply_left_vertex_and_right_zero_vertex(T, path);
 
-  for (int v = vct0 + 1; v < 2 * m; v++) {
-    integrate_left_edge(T, contribution.backbone.propagator(v - 1), backbone, v - 1, path, path.dimension(0));
-    multiply_left_vertex(T, backbone, v, contribution.backbone.vertex(v), path, path.dimension(v < vct0 ? 1 : 0));
+  for (int v = special + 1; v < 2 * m; ++v) {
+    integrate_left_edge(Gt, T, path, v - 1, path.dimension(0));
+    multiply_left_vertex(T, path, v, path.dimension(0));
   }
 
   T *= kernel_prefactor;
-
-  nda::array_view<dcomplex, 3> T_out = T(_, range(0, path.dimension(2 * m)), range(0, path.dimension(0)));
-  T_out *= contribution.sign;
-  return T_out;
+  auto result = T(_, range(0, path.dimension(2 * m)), range(0, path.dimension(0)));
+  result *= backbone.self_energy_sign();
+  return result;
 }
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
@@ -231,18 +284,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   triqs_xca::diagram::Topology topology{topology_arr};
   eval_self_energy(Gt, topology);
 
-  // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
-  auto sig = Sigma;
-  std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
-  for (int i = 0; i < sig.get_num_block_cols(); ++i) {
-    if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
-    } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
-    }
-  }
-  reset();
-  return {sig_blocks};
+  return self_energy_result(Gt);
 }
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
@@ -265,18 +307,7 @@ DiagramEvaluator::compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::
 
   flat_indices.for_each([&](long f_ix) { eval_self_energy(Gt, topology, f_ix); });
 
-  // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
-  auto sig = Sigma;
-  std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
-  for (int i = 0; i < sig.get_num_block_cols(); ++i) {
-    if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
-    } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
-    }
-  }
-  reset();
-  return {sig_blocks};
+  return self_energy_result(Gt);
 }
 
 triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
@@ -311,119 +342,125 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   eval_self_energy_paths(Gt, backbone);
   Sigma.set_zero_block_indices();
 
-  // This converts a BlockDiagOpFun to a triqs::gfs::block_gf (move into BlockDiagOpFun?)
-  auto sig = Sigma;
-  std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> sig_blocks(sig.get_num_block_cols());
-  for (int i = 0; i < sig.get_num_block_cols(); ++i) {
-    if (sig.get_zero_block_index(i) == -1) {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i)); // zero block
-    } else {
-      sig_blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, sig.get_block(i));
-    }
+  return self_energy_result(Gt);
+}
+
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(
+  BlockDiagOpFun &Gt, diagram::BackbonePath const &path) {
+  path.backbone.require_self_energy();
+  require_complete_path(path);
+  check_propagator(Gt);
+  if (!path.special_operators.empty() && path.zero_operators.size() > Tkaps.extent(0))
+    throw std::invalid_argument("self-energy endpoint selection exceeds this CPU evaluator's symmetry-group capacity");
+  Sigma = Gt;
+  Sigma *= 0;
+  if (!path.zero_operators.empty() && !path.special_operators.empty())
+    add_self_energy_path(Gt, path, tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel));
+  Sigma.set_zero_block_indices();
+  return self_energy_result(Gt);
+}
+
+triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::self_energy_result(BlockDiagOpFun const &Gt) {
+  std::vector<triqs::gfs::gf<triqs::mesh::dlr_imtime>> blocks(Sigma.get_num_block_cols());
+  for (int i = 0; i < Sigma.get_num_block_cols(); ++i) {
+    if (Sigma.get_zero_block_index(i) == -1)
+      blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, 0 * Gt.get_block(i));
+    else
+      blocks[i] = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, Sigma.get_block(i));
   }
   reset();
-  return {sig_blocks};
+  return {blocks};
 }
 
 // ========== Private correlator routines ==========
 
-void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix,
-                                             nda::array_const_view<dcomplex, 2> F, diagram::BackbonePath const &path) {
-  int n_row_l = path.dimension(path.range.vertex_end);
-
-  // Get views on temporary storage for input and output
-
-  nda::array_view<dcomplex, 3> U_v  = U_buf(_, range(0, n_row_l), range(0, path.dimension(v_ix)));
-  nda::array_view<dcomplex, 3> U_vp = U_buf(_, range(0, n_row_l), range(0, path.dimension(v_ix + 1)));
-
-  // Multiply with the operator matrix F from the right
-  for (int t = 0; t < r; t++) U_v(t, _, _) = matmul(U_vp(t, _, _), F);
-
-  apply_kernel(U_v, backbone.vertices[v_ix], action.kernel, true);
+void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, diagram::BackbonePath const &path, int vertex) {
+  int rows = path.dimension(path.range.vertex_end);
+  auto before = U_buf(_, range(0, rows), range(0, path.dimension(vertex)));
+  auto after = U_buf(_, range(0, rows), range(0, path.dimension(vertex + 1)));
+  auto F = vertex_matrix(path, vertex);
+  for (int t = 0; t < r; ++t) before(t, _, _) = matmul(after(t, _, _), F);
+  apply_kernel(before, path.backbone.vertices[vertex], action.kernel, true);
 }
 
-void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> propagator, triqs_xca::diagram::Backbone const &backbone, int e_ix,
-                                            diagram::BackbonePath const &path) {
-
-  int n_row_l = path.dimension(path.range.vertex_end); // number of rows for the left-hand side of the backbone
-
-  nda::array_view<dcomplex, 3> GKt_ep = GKt(_, range(0, path.dimension(e_ix + 1)), range(0, path.dimension(e_ix + 1)));
-
-  GKt_ep = propagator;
-
-  apply_kernel_product(GKt_ep, backbone.edges[e_ix].kernels, action.kernel);
-
-  nda::array_view<dcomplex, 3> U_e = U_buf(_, range(0, n_row_l), range(0, path.dimension(e_ix + 1)));
-
+void DiagramEvaluator::integrate_right_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> U_buf,
+                                            diagram::BackbonePath const &path, int edge) {
+  int rows = path.dimension(path.range.vertex_end);
+  auto GKt_ep = GKt(_, range(0, path.dimension(edge + 1)), range(0, path.dimension(edge + 1)));
+  GKt_ep = Gt.get_block(path.edge_sector(edge));
+  apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
+  auto U_e = U_buf(_, range(0, rows), range(0, path.dimension(edge + 1)));
   auto const &itops = action.tau_mesh.dlr_it();
   U_e = itops.convolve(beta, itops.vals2coefs(U_e), itops.vals2coefs(GKt_ep), cppdlr::TIME_ORDERED);
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology,
-    std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, bool is_fermionic) {
+    std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, bool is_fermionic) {
   check_propagator(Gt);
 
   long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
 
-  nda::array<dcomplex, 3> correlator(r, mu_ops.size(), kap_ops.size()), Tmuop(r, Nmax, Nmax);
+  nda::array<dcomplex, 3> correlator(r, mu_ops.size(), kap_ops.size());
   correlator = 0;
 
   for (long f_ix = 0; f_ix < f_ix_max; ++f_ix) { correlator += eval_correlator(Gt, topology, mu_ops, kap_ops, f_ix, is_fermionic); }
   return correlator;
 }
 
-nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops,
+nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
                                                           long f_ix, bool is_fermionic) {
   auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::correlator);
   auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
-  return eval_correlator(Gt, backbone, std::move(mu_ops), std::move(kap_ops), triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
+  return eval_correlator(Gt, backbone, mu_ops, kap_ops, triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
 }
 
-nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_forward(
-  BackboneOperands const &operands) {
-  auto const &path = operands.path;
+nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_forward(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path) {
   auto const &backbone = path.backbone;
   auto const &interval = path.range;
   if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
   int columns = path.dimension(interval.first_vertex);
   auto initial = T(_, range(0, columns), range(0, columns));
-  initial = operands.propagator(interval.first_edge);
+  initial = Gt.get_block(path.edge_sector(interval.first_edge));
   apply_kernel_product(initial, backbone.edges[interval.first_edge].kernels, action.kernel);
   for (int v = interval.first_vertex; v < interval.vertex_end; ++v) {
-    multiply_left_vertex(T, backbone, v, operands.vertex(v), path, columns);
-    integrate_left_edge(T, operands.propagator(v), backbone, v, path, columns);
+    multiply_left_vertex(T, path, v, columns);
+    integrate_left_edge(Gt, T, path, v, columns);
   }
   return T(_, range(0, path.dimension(interval.vertex_end)), range(0, columns));
 }
 
-nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_backward(
-  BackboneOperands const &operands) {
-  auto const &path = operands.path;
+nda::array_view<dcomplex, 3> DiagramEvaluator::eval_backbone_backward(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path) {
   auto const &backbone = path.backbone;
   auto const &interval = path.range;
   if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
   int rows = path.dimension(interval.vertex_end);
   auto initial = U(_, range(0, rows), range(0, rows));
-  initial = operands.propagator(interval.edge_end - 1);
+  initial = Gt.get_block(path.edge_sector(interval.edge_end - 1));
   apply_kernel_product(initial, backbone.edges[interval.edge_end - 1].kernels, action.kernel);
   for (int v = interval.vertex_end - 1; v >= interval.first_vertex; --v) {
-    multiply_right_vertex(U, backbone, v, operands.vertex(v), path);
-    integrate_right_edge(U, operands.propagator(v - 1), backbone, v - 1, path);
+    multiply_right_vertex(U, path, v);
+    integrate_right_edge(Gt, U, path, v - 1);
   }
   return U(_, range(0, rows), range(0, path.dimension(interval.first_vertex)));
 }
 
-void DiagramEvaluator::eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,
-                                           nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
-                                           nda::array_view<dcomplex, 3> correlator) {
+void DiagramEvaluator::eval_correlator_completion(diagram::BackbonePath const &path, std::vector<BlockOp> const &mu_ops,
+                                                  std::vector<BlockOp> const &kap_ops, nda::array_const_view<dcomplex, 3> left,
+                                                  nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
+                                                  nda::array_view<dcomplex, 3> correlator) {
+  if (path.zero_operators.empty() || path.special_operators.empty()) return;
+  int mu = path.special_operators.front();
+  auto F_mu = mu_ops[mu].get_block(path.sector(path.backbone.endpoints.special_vertex));
   auto product = scratch(_, range(0, left.extent(1)), range(0, right.extent(2)));
-  for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(operands.at_tau_matrix, right(t, _, _)));
-  for (auto const &closing : operands.closures)
-    for (int t = 0; t < r; ++t) correlator(t, operands.at_tau_operator, closing.at_zero_operator) += trace(matmul(product(t, _, _), closing.matrix));
+  for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(F_mu, right(t, _, _)));
+  for (int kap : path.zero_operators) {
+    auto F_kap = kap_ops[kap].get_block(path.sector(0));
+    for (int t = 0; t < r; ++t) correlator(t, mu, kap) += trace(matmul(product(t, _, _), F_kap));
+  }
 }
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone,
-  std::vector<BlockOp> mu_ops, std::vector<BlockOp> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
+  std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
   backbone.require_correlator();
   check_propagator(Gt);
   double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
@@ -433,28 +470,49 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
   std::vector<nda::array<dcomplex, 3>> zero_to_tau_results, tau_to_beta_results;
   auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   visit_backbone_paths(Gt, backbone, action.operators, support_, zero_to_tau, [&](diagram::BackbonePath const &path) {
-    auto operands = bind::backbone(Gt, action.operators, path);
-    auto result = eval_backbone_forward(operands);
-    // Correlator normalization is a caller decision, not a property of the range.
+    auto result = eval_backbone_forward(Gt, path);
+    // Global factors belong to the completion, applied once to each cached right result.
     result *= kernel_prefactor;
     result *= backbone.direction_sign;
     zero_to_tau_paths.push_back(path);
     zero_to_tau_results.emplace_back(result);
   });
   visit_backbone_paths(Gt, backbone, action.operators, support_, tau_to_beta, [&](diagram::BackbonePath const &path) {
-    auto operands = bind::backbone(Gt, action.operators, path);
-    auto result = eval_backbone_backward(operands);
+    auto result = eval_backbone_backward(Gt, path);
     tau_to_beta_paths.push_back(path);
     // cppdlr::reflect reshapes its input; an active block in U can be strided.
     tau_to_beta_results.emplace_back(action.tau_mesh.dlr_it().reflect(nda::make_regular(result)));
   });
   triqs_xca::block_sparse::visit_correlator_paths(Gt, zero_to_tau_paths, tau_to_beta_paths, mu_ops, kap_ops,
       [&](diagram::BackbonePath const &path, int before_result, int after_result) {
-    auto operands = bind::correlator(path, mu_ops, kap_ops);
-    eval_correlator_completion(operands, tau_to_beta_results[after_result],
-                               zero_to_tau_results[before_result], scratch, correlator);
+    eval_correlator_completion(path, mu_ops, kap_ops, tau_to_beta_results[after_result], zero_to_tau_results[before_result], scratch, correlator);
   });
   auto signs = backbone.endpoints.signs;
+  correlator *= signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
+  return correlator;
+}
+
+nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, diagram::BackbonePath const &path,
+  std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
+  path.backbone.require_correlator();
+  require_complete_path(path);
+  if (path.special_operators.size() > 1) throw std::invalid_argument("correlator path supports one tau observable");
+  check_propagator(Gt);
+  auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
+  if (path.zero_operators.empty() || path.special_operators.empty()) return correlator;
+
+  auto [zero_to_tau, tau_to_beta] = path.backbone.endpoint_ranges();
+  auto before = segment_path(path, zero_to_tau);
+  auto after = segment_path(path, tau_to_beta);
+  auto right = eval_backbone_forward(Gt, before);
+  right *= tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel);
+  right *= path.backbone.direction_sign;
+  // Forward and backward traversals use separate T/U storage. Reflecting U needs
+  // a regular copy, just as in the cached execution route above.
+  auto left = action.tau_mesh.dlr_it().reflect(nda::make_regular(eval_backbone_backward(Gt, after)));
+  auto scratch = nda::zeros<dcomplex>(r, Nmax, Nmax);
+  eval_correlator_completion(path, mu_ops, kap_ops, left, right, scratch, correlator);
+  auto signs = path.backbone.endpoints.signs;
   correlator *= signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
   return correlator;
 }

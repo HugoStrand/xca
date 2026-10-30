@@ -1,7 +1,6 @@
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include "triqs_xca/diagram/correlator.hpp"
 #include <gtest/gtest.h>
-#include <optional>
 #include <triqs_xca/block_sparse/dynint.hpp>
 
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
@@ -82,72 +81,6 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   EXPECT_EQ(assignment.vertices[0].flavour, -1);
 }
 
-
-TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata) {
-  auto model = test_utils::build_eval_model("unequal_sets_nA0");
-  auto [operators, labels] = block_sparse::dynint::get_operators_and_interactions(model.ad, model.hyb_coeffs, model.dynint_coeffs, model.dynint_ops);
-  auto coefficients = get_extended_coefficients(model.hyb_coeffs, model.dynint_coeffs);
-  auto values = coefs2vals(model.mesh.beta(), model.mesh.dlr_it(), coefficients, model.hyb_poles);
-  auto reflected = model.mesh.dlr_it().reflect(values);
-  BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
-  auto changed_G = G;
-  changed_G *= 1.3;
-  int n = coefficients.extent(1);
-  auto statistics = action_statistics(n, model.n_hyb());
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  constexpr auto all = nda::range::all;
-  for (int direction : {0, 1}) {
-    auto assignment = triqs_xca::diagram::prepare_backbone(
-       topology,
-       triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{static_cast<Direction>(direction), -1, -1}, {Direction::forward, n - 1, 1}},
-                                        statistics, model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
-    std::optional<SelfEnergyOperands> retained;
-    nda::vector<int> dimensions;
-    int count = 0;
-    triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, path, operators, values, reflected, statistics);
-      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, path, operators, values, reflected, statistics);
-      ++count;
-      ASSERT_EQ(bound.backbone.vertices.size(), 4);
-      EXPECT_FALSE(bound.backbone.vertices[0].has_value());
-      EXPECT_FALSE(bound.backbone.vertices[2].has_value());
-      ASSERT_EQ(bound.backbone.propagators.size(), 3);
-      auto invalid_path = path;
-      invalid_path.range.edge_end = 4; // a correlator-only trailing edge
-      EXPECT_THROW(triqs_xca::block_sparse::bind::backbone(G, operators, invalid_path), std::invalid_argument);
-      for (int e = 0; e < 3; ++e) {
-        EXPECT_EQ(bound.backbone.propagator(e).data(), G.get_block(path.edge_sector(e)).data());
-        expect_close(tensor(changed.backbone.propagator(e)), nda::make_regular(1.3 * bound.backbone.propagator(e)));
-      }
-      for (int v : {1, 3}) {
-        EXPECT_EQ(bound.backbone.vertex(v).extent(0), path.dimension(v + 1));
-        EXPECT_EQ(bound.backbone.vertex(v).extent(1), path.dimension(v));
-      }
-      EXPECT_EQ(bound.endpoints.coefficients.size(), bound.endpoints.late.size());
-      for (int mu = 0; mu < bound.endpoints.late.size(); ++mu) {
-        auto const &late = bound.endpoints.late[mu];
-        EXPECT_EQ(late.statistics, statistics[late.coefficient_index]);
-        for (auto const &early : bound.endpoints.early) {
-          EXPECT_EQ(early.statistics, statistics[early.coefficient_index]);
-          auto expected = direction == 1 ? values(all, late.coefficient_index, early.coefficient_index)
-                                         : reflected(all, early.coefficient_index, late.coefficient_index);
-          auto actual = bound.endpoints.coefficients[mu](all, early.coefficient_index);
-          EXPECT_EQ(nda::max_element(nda::abs(actual - expected)), 0.0);
-        }
-      }
-      if (!retained) {
-        dimensions = path.sector_dimensions;
-        retained.emplace(bound);
-      }
-    });
-    ASSERT_GT(count, 0);
-    assignment.vertices[1].flavour = -99;
-    ASSERT_TRUE(retained);
-    EXPECT_EQ(retained->backbone.path.sector_dimensions, dimensions);
-    EXPECT_NE(retained->backbone.path.backbone.vertices[1].flavour, assignment.vertices[1].flavour);
-    EXPECT_EQ(retained->endpoints.reflection_sign, direction == 1 ? 1 : -1);
-  }
-}
 
 TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
   double beta = 2., Lambda = 40., eps = 1e-12;

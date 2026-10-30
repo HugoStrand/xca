@@ -11,7 +11,6 @@
 
 #include "test_utils/evaluators.hpp"
 #include <triqs_xca/block_sparse/dynint.hpp>
-#include <triqs_xca/block_sparse/bind/self_energy.hpp>
 #include <triqs_xca/action.hpp>
 
 using namespace triqs_xca;
@@ -101,12 +100,6 @@ int main(int argc, char **argv) try {
   });
   time("path_discovery", [&](long i) {
     triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, [&](auto const &path) { checksum += path.sector(0) + 1; });
-  });
-  time("paths_and_operand_binding", [&](long i) {
-    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, path, operators, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics);
-      checksum += bs::select_diagonal_self_energy(bound);
-    });
   });
   time("prepared_self_energy_call", [&](long i) {
     auto result = evaluator.compute_self_energy(G, backbones[i]);

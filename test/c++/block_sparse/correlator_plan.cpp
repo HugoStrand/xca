@@ -1,9 +1,7 @@
 #include <triqs_xca/block_sparse/backbone_paths.hpp>
 #include <triqs_xca/diagram/correlator.hpp>
 #include <triqs_xca/block_sparse/correlator_paths.hpp>
-#include "triqs_xca/block_sparse/bind/backbone.hpp"
 #include <gtest/gtest.h>
-#include <triqs_xca/block_sparse/bind/correlator.hpp>
 
 using triqs_xca::diagram::Direction;
 
@@ -71,19 +69,10 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
     EXPECT_EQ(left[i].edge_sector(2), i);
     EXPECT_EQ(left[i].edge_sector(3), i + 1);
   }
-  auto bound = triqs_xca::block_sparse::bind::backbone(G, model.operators, right[0]);
-  EXPECT_EQ(bound.vertices.size(), 1);
-  EXPECT_EQ(bound.propagators.size(), 2);
-  EXPECT_EQ(bound.propagator(0).data(), G.get_block(1).data());
-  auto beta_bound = triqs_xca::block_sparse::bind::backbone(G, model.operators, left[0]);
-  EXPECT_EQ(beta_bound.vertices.size(), 1);
-  EXPECT_EQ(beta_bound.propagators.size(), 2);
-  EXPECT_EQ(beta_bound.propagator(3).data(), G.get_block(1).data());
-  EXPECT_EQ(bound.vertex(1).extent(0), 1);
-  EXPECT_EQ(bound.vertex(1).extent(1), 2);
+  auto retained              = right[0];
   right[0].sector_dimensions = -99;
-  EXPECT_EQ(bound.path.dimension(1), 2);
-  EXPECT_EQ(bound.path.dimension(2), 1);
+  EXPECT_EQ(retained.dimension(1), 2);
+  EXPECT_EQ(retained.dimension(2), 1);
 
   auto masked    = model.propagator({-1, 0, 0});
   auto surviving = fragments(masked, assignment, model.operators, assignment.endpoint_ranges().before_special);
@@ -109,10 +98,7 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ(left[i].sectors.size(), 1);
     EXPECT_EQ(left[i].range.first_vertex, left[i].range.vertex_end);
-    auto bound = triqs_xca::block_sparse::bind::backbone(G, model.operators, left[i]);
-    EXPECT_TRUE(bound.vertices.empty());
-    ASSERT_EQ(bound.propagators.size(), 1);
-    EXPECT_EQ(bound.propagator(3).data(), G.get_block(i).data());
+    EXPECT_EQ(left[i].dimension(left[i].range.first_vertex), i == 1 ? 2 : 1);
     EXPECT_EQ(left[i].range.first_edge, (left[i].range.edge_end - 1));
     EXPECT_EQ(left[i].sector(left[i].range.first_vertex), i);
     EXPECT_EQ(left[i].sector(left[i].range.vertex_end), i);
@@ -146,9 +132,8 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
     EXPECT_EQ(result_indices[i].second, i + 1);
     ASSERT_EQ(joins[i].zero_operators.size(), 1);
     EXPECT_EQ(joins[i].zero_operators[0], 1);
-    auto operands = triqs_xca::block_sparse::bind::correlator(joins[i], mu, kap);
-    EXPECT_EQ(operands.at_tau_matrix.data(), mu[0].get_block(i).data());
-    EXPECT_EQ(operands.closures[0].matrix.data(), kap[1].get_block(i + 1).data());
+    EXPECT_EQ(joins[i].sector(joins[i].backbone.endpoints.special_vertex), i);
+    EXPECT_EQ(joins[i].sector(0), i + 1);
   }
   auto masked = model.propagator({0, -1, 0});
   int count   = 0;
@@ -164,9 +149,8 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   ASSERT_EQ(joins.size(), 1);
   EXPECT_EQ(result_indices[0].first, 1);
   EXPECT_EQ(result_indices[0].second, 1); // retained table index, not sector 2
-  auto operands = triqs_xca::block_sparse::bind::correlator(joins[0], mu, kap);
-  EXPECT_EQ(operands.at_tau_matrix.data(), mu[0].get_block(1).data());
-  EXPECT_EQ(operands.closures[0].matrix.data(), kap[1].get_block(2).data());
+  EXPECT_EQ(joins[0].sector(joins[0].backbone.endpoints.special_vertex), 1);
+  EXPECT_EQ(joins[0].sector(0), 2);
 }
 
 TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_labels) {
@@ -183,10 +167,7 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(paths[i].sector(1), i + 1);
     EXPECT_EQ(paths[i].sector(2), i);
-    auto bound = triqs_xca::block_sparse::bind::backbone(G, model.operators, paths[i]);
-    ASSERT_EQ(bound.propagators.size(), 1);
-    ASSERT_EQ(bound.vertices.size(), 1);
-    EXPECT_EQ(bound.propagator(1).data(), G.get_block(i).data());
+    EXPECT_EQ(paths[i].edge_sector(1), i);
   }
   auto edge_only = fragments(G, assignment, model.operators, {2, 2, 1, 2});
   ASSERT_EQ(edge_only.size(), 3);
