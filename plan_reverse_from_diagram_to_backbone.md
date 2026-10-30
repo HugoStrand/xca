@@ -145,6 +145,9 @@ changes and must then be rediscovered. Cross-Action validation is out of scope.
 Dense core methods take Backbone, G and any observables, using evaluator-owned
 Action. Sparse core methods take BackbonePath and numerical inputs, without an
 additional Diagram/Backbone argument or an external path table for semantics.
+Full-contribution entry points require path.range == path.backbone.range();
+selected-range traversal is separate. Check endpoint cardinality before selecting
+a tau observable. Empty endpoint lists produce no completed contribution.
 
 Read operator and propagator blocks directly through the resolved identifiers.
 Replace the mandatory `bind::*` stage and its numerical-view containers where

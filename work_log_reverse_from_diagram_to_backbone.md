@@ -20,3 +20,27 @@ checkpoints must also keep the benchmark consumer compiling.
 
 Status: reviewed plan ready. Source implementation starts with numerical operator
 conventions and enriched arc metadata; no source changes yet.
+
+## Checkpoint 1 — operator conventions and enriched arcs
+
+2026-10-31. Source commit: [action] separate operator conventions.
+
+The F-bar partial-contraction and operator-pair orientation descriptions now live
+in action.hpp, beside the numerical data they describe. Diagram vertex preparation
+uses direction flags directly. The old endpoint-sum descriptor is a temporary
+bridge and will disappear when endpoints move into Backbone.
+
+Arc preparation now resolves statistics and three-way pole signs from explicit
+metadata or Action, validates selected indices, and replaces stale derived fields.
+The existing flat digit order and numerical contraction formulas are unchanged.
+
+Validation: CPU reconfigure and focused build passed; diagram/arcs (six cases),
+interaction_contractions, backbone_indexing and backbone_parity all passed.
+No Python binding changes; source diff --check clean. Logs:
+/tmp/xca-backbone-reverse-1-{configure,build}.log.
+
+Final plan-review clarification: full-path execution must reject selected ranges;
+empty endpoint lists never imply identity and observable cardinality is checked.
+
+Next: resolve Backbone instructions and migrate dense/sparse consumers, preserving
+the specialized sparse completion wrappers only through the transition.
