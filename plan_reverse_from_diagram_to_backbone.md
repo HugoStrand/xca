@@ -97,6 +97,11 @@ Use one owning value for complete contributions and selected backbone ranges:
   There is no separate SelfEnergyPath/CorrelatorPath class or required external
   SelfEnergyDiagram/CorrelatorDiagram wrapper.
 
+Self-energy discovery owns one reusable workspace per Backbone call, matching the
+segment-discovery visitor. Callers need no uninitialized path workspace; retained
+results are copied explicitly. This initially gives up amortizing path-array
+allocation across different arc assignments, a bounded implementation tradeoff.
+
 A complete self-energy path contains the current full walk and endpoint candidates
 filtered by exact support, preserving symmetry-group and within-group order.
 Resolve group IDs to ordered flavour lists during discovery rather than storing

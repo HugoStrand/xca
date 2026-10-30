@@ -44,13 +44,15 @@ five trials after warm-up. Setup, operator materialization, support construction
 and model diagonalization are outside the timed regions.
 
 - `flat_preparation` includes decoding and shared recipe preparation;
-  `logical_preparation` starts from already decoded indices.
-- `sign_and_kernel_prefactor` evaluates signs and the scalar kernel prefactor
-  from prepared assignments. Vertex and edge kernels are read directly during
-  execution. Results labelled `sign_and_kernel_binding` also include construction
-  of bound view containers and measure a different preparation operation.
+  `logical_preparation` starts from enriched Arcs (statistics and pole signs
+  already resolved). Both prepare a self-contained Backbone, including signs.
+- `kernel_prefactor` evaluates the scalar normalization from a prepared Backbone.
+  Permutation signs are prepared with Backbone; vertex and edge kernels are read
+  directly during execution. Older result rows named `sign_and_kernel_prefactor`
+  or `sign_and_kernel_binding` include additional preparation work and are not
+  directly equivalent to this phase.
 - `path_discovery` counts candidates without matrix arithmetic.
-- `paths_and_operand_binding` includes sign preparation, discovery, operand
+- `paths_and_operand_binding` includes discovery, operand
   binding, and the diagonal-output closure check. It overlaps the preceding
   phases; these rows must not be added together as a profiler breakdown.
 - `prepared_self_energy_call` includes path planning, binding, numerical work,
