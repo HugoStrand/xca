@@ -2,7 +2,7 @@
 
 A small diagnostic for the preparation/execution boundaries introduced by
 `plan_backbone.md`. It measures shared assignment preparation, block-sparse path
-planning and operand binding, complete self-energy calls, and single-particle
+planning, complete self-energy calls, and single-particle
 correlator range calls. It uses the C++ test models and a fixed, bounded sample
 of indexed assignments. It does not compare against the pre-refactoring code or
 measure solver convergence, MPI throughput, or GPU performance.
@@ -52,13 +52,13 @@ and model diagonalization are outside the timed regions.
   or `sign_and_kernel_binding` include additional preparation work and are not
   directly equivalent to this phase.
 - `path_discovery` counts candidates without matrix arithmetic.
-- `paths_and_operand_binding` includes discovery, operand
-  binding, and the diagonal-output closure check. It overlaps the preceding
-  phases; these rows must not be added together as a profiler breakdown.
-- `prepared_self_energy_call` includes path planning, binding, numerical work,
+- `prepared_self_energy_call` includes path planning, direct numerical work,
   result packing, and reset, using a native block propagator. The flat call also
   constructs the topology and prepares the assignment. Differences between these
-  two measurements can be smaller than timing noise.
+  two measurements can be smaller than timing noise. The phases overlap and must
+  not be added together as a profiler breakdown. Stored results that include a
+  `paths_and_operand_binding` row measured the previous binding stage; that stage
+  is absent from the current implementation.
 - `single_particle_range_call` also includes public propagator conversion and
   observable setup, then fragment planning, execution, and joins.
 

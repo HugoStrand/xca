@@ -3,6 +3,10 @@
 2026-10-30. Branch dev_backbone; source baseline 522ad52.
 Plan: plan_reverse_from_diagram_to_backbone.md.
 
+Current status (2026-10-31): implementation, adversarial review and validation
+complete. Source checkpoints are listed at the end; documentation commits are
+separate. No push or benchmark measurements.
+
 The requested design makes enriched Arcs independent preparation inputs,
 Backbone the complete dense instruction description, and one owning BackbonePath
 the complete sparse description for self-energy and correlator work. Numerical
@@ -18,8 +22,8 @@ metadata validity, numerical-owner compatibility, propagator-mask rediscovery,
 and exactly-once correlator normalization with cached segments. Interface-changing
 checkpoints must also keep the benchmark consumer compiling.
 
-Status: reviewed plan ready. Source implementation starts with numerical operator
-conventions and enriched arc metadata; no source changes yet.
+Initial status: reviewed plan ready. Source implementation starts with numerical
+operator conventions and enriched arc metadata.
 
 ## Checkpoint 1 — operator conventions and enriched arcs
 
@@ -110,3 +114,84 @@ docstring only; source diff --check clean. No benchmark measurements. Logs:
 
 Next: direct Path execution, removal of binding/operand containers, and standalone
 numerical comparisons after all planning/cache owners have been destroyed.
+
+## Checkpoint 4 — direct sparse path execution
+
+2026-10-31. Source commit: [bs] evaluate backbone paths directly.
+
+Sparse numerical routines now read operator matrices, propagator blocks and
+endpoint coefficients directly from Action/G using BackbonePath identifiers.
+The bind directory and BackboneOperands, SelfEnergyOperands and CorrelatorOperands
+containers are removed. Numerical owners are borrowed only during execution;
+observable vectors are passed by const reference throughout the native chain.
+
+The new native full-path entry points execute either endpoint operation without
+rediscovery. Self-energy preserves the exact nonclosing-path coefficient check,
+endpoint accumulation order and block-diagonal result policy. Correlator execution
+can slice a retained full path into its two local traversals. It uses separate T/U
+scratch and the same completion routine as cached evaluation. Normalization and
+internal direction factors are applied once to the before-special result;
+external permutation parity is applied after accumulation.
+
+The Backbone-level correlator API still discovers and evaluates each segment once
+and reuses its result across observable joins. Cache indices remain local to that
+execution strategy. Full paths do not store or require them.
+
+Four new numerical tests exercise retained paths after topology/arcs/backbone,
+discovery workspaces and segment tables are destroyed. They cover first and
+crossed second order, both self-energy directions, multiple joins sharing cached
+segments, non-unit normalization, physical fermionic observables with odd crossing
+parity, and changed-propagator scaling. Wrong-role/incomplete paths and multiple
+tau selections are rejected before scratch mutation; empty selections give zero.
+The removed binding-specific pointer tests are replaced by these execution tests.
+
+The benchmark source is adapted for compilation only. Its obsolete binding phase
+is removed and the README distinguishes stored results for that former stage.
+No timing measurements were made.
+
+Validation: full CPU reconfigure/build and backbone_cpu compilation passed. All
+78 CPU/Python CTest entries passed in 57.11 s, including all four cases in
+block_sparse/path_evaluator. Binding regeneration produced no additional changes
+at this checkpoint; Python-facing signatures remain unchanged. Diff --check
+passed. Logs: /tmp/xca-backbone-reverse-4-{configure,build,benchmark-build,test}.log.
+
+## Final adversarial review
+
+Independent read-only reviews covered direct sparse execution and the shared
+preparation/Action boundary. No blocking correctness findings remained. Checks
+included exact coefficient axes/reflection signs, rectangular path geometry,
+normalization placement, separate traversal scratch, cache independence, selected
+range rejection, zero-pole placement and repeated kernel-factor ordering. Literal
+flat-index/parity fixtures and independent manual numerical oracles remain intact.
+
+Deliberate limits and tradeoffs:
+
+- A retained path owns a full Backbone copy and sector metadata. No numerical
+  matrices are copied into it. Discovery can stream one workspace; constructing
+  all paths in advance is not required.
+- The current CPU self-energy routine accepts the endpoint list from a discovered
+  symmetry group or a subset; its scratch-capacity bound is checked. Correlator
+  completion accepts one tau observable and an ordered closing subset. Neither
+  restriction requires a separate path class or constrains a future GPU scheduler.
+- Prepared objects assume compatible Action indices, statistics, pole signs and
+  sector/basis layout. Individual paths can execute with changed G values; a
+  saved path set needs rediscovery if G's activity mask changes. Forged public
+  aggregates and cross-model compatibility are outside this refactoring's checks.
+- Numerical work and public result/accumulation behavior are preserved. The
+  benefit established here is the simpler preparation/execution boundary; no
+  performance improvement or GPU execution claim is made.
+
+## Commit reading guide
+
+Read each source commit with the immediately following documentation commit.
+
+| Source commit | Main change | Work-log section |
+| --- | --- | --- |
+| `0ed77bd` `[action] separate operator conventions` | Separate numerical F-bar conventions; enrich arc inputs | Checkpoint 1 |
+| `912cdb4` `[diag] evaluate prepared backbones` | Resolve instructions in Backbone; remove Diagram | Checkpoint 2 |
+| `e8af49e` `[bs] prepare self-contained backbone paths` | Own sparse geometry and endpoint selections in one path type | Checkpoint 3 |
+| `1e565e0` `[bs] evaluate backbone paths directly` | Remove bind/operand layers; execute retained paths directly | Checkpoint 4 |
+
+The initial plan is `8b188e8` `[docs] plan self-contained backbones`. All work is on
+dev_backbone above the user's `522ad52` header consolidation. Unrelated worktree
+changes were preserved.

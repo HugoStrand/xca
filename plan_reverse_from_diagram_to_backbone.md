@@ -5,6 +5,11 @@ header consolidation). Implementation evidence belongs in
 `work_log_reverse_from_diagram_to_backbone.md`. Keep source and documentation
 commits separate, with terse house-style messages; do not push.
 
+Status: implemented and independently reviewed on 2026-10-31. All five checkpoints
+are complete. Source checkpoints end at `1e565e0`; the work log records the commit
+sequence, validation and remaining implementation tradeoffs. Final CPU/Python
+validation passed all 78 CTest entries, and backbone_cpu compiles.
+
 ## Objective and preparation flow
 
 Restore Backbone as the complete diagram-specific description consumed by dense
@@ -153,6 +158,11 @@ additional Diagram/Backbone argument or an external path table for semantics.
 Full-contribution entry points require path.range == path.backbone.range();
 selected-range traversal is separate. Check endpoint cardinality before selecting
 a tau observable. Empty endpoint lists produce no completed contribution.
+The current CPU self-energy scratch supports a discovered symmetry group's
+endpoint list or a subset; check that capacity at the native path entry point.
+The current correlator completion selects one tau observable and any ordered
+closing subset. These are execution limits, not distinct path types or requirements
+on a future GPU scheduler.
 
 Read operator and propagator blocks directly through the resolved identifiers.
 Replace the mandatory `bind::*` stage and its numerical-view containers where
@@ -240,4 +250,7 @@ and the numerical/F-bar boundary. No architectural blocker was found. Revisions:
   benchmark compiling at each interface-changing checkpoint. Allow a building
   subdivision of the broad Backbone migration if it improves reviewability.
 
-Reviewed and revised 2026-10-30; ready for implementation.
+Reviewed and revised before implementation on 2026-10-30. The completed source was
+reviewed again on 2026-10-31, with no blocking correctness findings. The standalone
+path tests explicitly verify lifetime independence, cached-result equivalence,
+changed-propagator scaling and fermionic crossing parity.
