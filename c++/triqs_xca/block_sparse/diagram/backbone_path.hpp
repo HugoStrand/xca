@@ -1,6 +1,6 @@
 #pragma once
 #include <nda/nda.hpp>
-#include "triqs_xca/diagram/backbone_range.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 
 namespace triqs_xca::block_sparse::diagram {
   /// A sector realization of a shared backbone range. Owned metadata never

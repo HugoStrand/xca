@@ -1,6 +1,6 @@
 #pragma once
 #include "triqs_xca/action.hpp"
-#include "backbone_range.hpp"
+#include "backbone.hpp"
 #include "topology.hpp"
 #include <utility>
 

@@ -5,6 +5,7 @@
 
 #include <nda/nda.hpp>
 #include "topology.hpp"
+#include "arc.hpp"
 #include "arcs.hpp"
 #include "backbone.hpp"
 
