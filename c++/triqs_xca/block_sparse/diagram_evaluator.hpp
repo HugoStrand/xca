@@ -11,6 +11,7 @@
 #include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/bind/self_energy.hpp"
+#include "triqs_xca/block_sparse/operator_support.hpp"
 #include "triqs_xca/block_sparse/bind/correlator.hpp"
 
 namespace triqs_xca::block_sparse {
@@ -21,10 +22,11 @@ using cppdlr::imtime_ops;
 
 /**
  * @class DiagramEvaluator
- * @brief Class for evaluating a backbone of a given order and topology in block-sparse storage
- * This class is used to evaluate all the backbone decompositions of a given order and topology. It consumes immutable backbone descriptions
- * and contains the Green's functions and creation/annihilation operators needed to actually compute the backbone. It also contains temporary
- * data structures required for computation.
+ * @brief Evaluate diagram contributions using block-sparse numerical storage.
+ * Public selection adapters prepare a Backbone and discover its sector paths.
+ * The evaluator owns persistent Action data and scratch arrays; each call supplies
+ * the current propagator and any observable operators. Paths own their instructions
+ * and endpoint selections, independently of discovery workspaces or result caches.
  */
 class DiagramEvaluator {
   public:
@@ -64,19 +66,19 @@ class DiagramEvaluator {
   void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, int v_ix,
                                                   diagram::BackbonePath const &path, EndpointSumOperands const &endpoints);
 
-  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone, triqs_xca::block_sparse::diagram::SelfEnergyDiagram &workspace);
+  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone);
   void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix); // evaluate a particular backbone
   void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology);           // evaluate a backbone of a given order and topology in block-sparse storage
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
-    triqs_xca::diagram::Backbone const &backbone, double kernel_prefactor, SelfEnergyOperands const &contribution);
+    double kernel_prefactor, SelfEnergyOperands const &contribution);
 
 
   // CPU traversal of edge-ended intervals with all internal operators bound.
   // Results borrow scratch storage; reflection and global factors belong to the caller.
-  nda::array_view<dcomplex, 3> eval_backbone_forward(triqs_xca::diagram::Backbone const &backbone, BackboneOperands const &operands);
-  nda::array_view<dcomplex, 3> eval_backbone_backward(triqs_xca::diagram::Backbone const &backbone, BackboneOperands const &operands);
+  nda::array_view<dcomplex, 3> eval_backbone_forward(BackboneOperands const &operands);
+  nda::array_view<dcomplex, 3> eval_backbone_backward(BackboneOperands const &operands);
   void eval_correlator_completion(CorrelatorOperands const &operands, nda::array_const_view<dcomplex, 3> left,
                             nda::array_const_view<dcomplex, 3> right, nda::array_view<dcomplex, 3> scratch,
                             nda::array_view<dcomplex, 3> correlator);

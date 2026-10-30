@@ -5,52 +5,40 @@ namespace triqs_xca::block_sparse::bind {
   namespace {
     constexpr auto all = nda::range::all;
 
-    EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int set, int index, int source_sector, bool adjoint,
+    EndpointOperand bind_endpoint(BlockOpSymQuartet const &operators, int flavour, int source_sector, bool adjoint,
                                   std::span<triqs_xca::Statistics const> statistics) {
-      int flavour    = operators.sym_set_to_orb(set, index);
+      int set = operators.sym_set_labels(flavour), index = operators.sym_set_inds(flavour);
       auto const &op = adjoint ? operators.F_dags[set] : operators.Fs[set];
       return {op.get_block(source_sector)(index, all, all), flavour, statistics[flavour]};
     }
   } // namespace
 
-  EndpointSumOperands endpoint_sum(triqs_xca::diagram::Backbone const &backbone, block_sparse::diagram::SelfEnergyDiagram const &prepared,
-                                   BlockOpSymQuartet const &operators, OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
-                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                   std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
-    int special = backbone.endpoints.special_vertex;
+  EndpointSumOperands endpoint_sum(block_sparse::diagram::BackbonePath const &path, BlockOpSymQuartet const &operators,
+                                   nda::array_const_view<nda::dcomplex, 3> tau_values, nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
+                                   std::span<triqs_xca::Statistics const> statistics) {
+    auto const &backbone = path.backbone;
     backbone.require_self_energy();
+    if (path.range != backbone.range()) throw std::invalid_argument("endpoint sum requires a complete backbone path");
+    int special = backbone.endpoints.special_vertex;
     OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
-    EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), signs};
-    auto present = [&](int group, int index, int source, bool adjoint) {
-      int flavour = operators.sym_set_to_orb(group, index);
-      return (adjoint ? support.adjoint : support.plain)[flavour].single_target(source) >= 0;
-    };
-    for (int i = 0; i < operators.sym_set_sizes(prepared.early_symmetry_set); ++i) {
-      bool adjoint = orientation.early_operator(-1).adjoint;
-      if (present(prepared.early_symmetry_set, i, prepared.output_sector, adjoint))
-        endpoints.early.push_back(bind_endpoint(operators, prepared.early_symmetry_set, i, prepared.output_sector, adjoint, statistics));
-    }
-    for (int i = 0; i < operators.sym_set_sizes(prepared.late_symmetry_set); ++i) {
-      if (!present(prepared.late_symmetry_set, i, prepared.path.edge_sector(special - 1), orientation.late_operator(-1).adjoint)) continue;
-      endpoints.late.push_back(bind_endpoint(operators, prepared.late_symmetry_set, i, prepared.path.edge_sector(special - 1),
-                                             orientation.late_operator(-1).adjoint, statistics));
-      int flavour = endpoints.late.back().coefficient_index;
+    EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), backbone.endpoints.signs};
+    for (int flavour : path.zero_operators)
+      endpoints.early.push_back(bind_endpoint(operators, flavour, path.sector(0), orientation.early_operator(flavour).adjoint, statistics));
+    for (int flavour : path.special_operators) {
+      endpoints.late.push_back(bind_endpoint(operators, flavour, path.sector(special), orientation.late_operator(flavour).adjoint, statistics));
       if (orientation.reflected())
         endpoints.coefficients.emplace_back(tau_values_reflect(all, all, flavour));
       else
         endpoints.coefficients.emplace_back(tau_values(all, flavour, all));
     }
-
     return endpoints;
   }
 
-  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone const &backbone,
-                                 block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
-                                 OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
-                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                 std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
-    int sign = backbone.self_energy_sign();
-    return {bind::backbone(propagator, backbone, operators, prepared.path), endpoint_sum(backbone, prepared, operators, support, tau_values, tau_values_reflect, statistics, signs),
-            prepared.output_sector, sign};
+  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, block_sparse::diagram::BackbonePath const &path,
+                                 BlockOpSymQuartet const &operators, nda::array_const_view<nda::dcomplex, 3> tau_values,
+                                 nda::array_const_view<nda::dcomplex, 3> tau_values_reflect, std::span<triqs_xca::Statistics const> statistics) {
+    int sign = path.backbone.self_energy_sign();
+    return {bind::backbone(propagator, operators, path), endpoint_sum(path, operators, tau_values, tau_values_reflect, statistics), path.sector(0),
+            sign};
   }
 } // namespace triqs_xca::block_sparse::bind

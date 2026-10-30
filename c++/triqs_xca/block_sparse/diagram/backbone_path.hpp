@@ -3,18 +3,27 @@
 #include "triqs_xca/diagram/backbone.hpp"
 
 namespace triqs_xca::block_sparse::diagram {
-  /// A sector realization of a shared backbone range. Owned metadata never
-  /// borrows the discovery workspace; global slots translate to compact storage.
+  /// Owned instructions and sector realization for a complete contribution or
+  /// selected range. Copying retains no discovery workspace or numerical views.
   struct BackbonePath {
+    triqs_xca::diagram::Backbone backbone;
     triqs_xca::diagram::BackboneRange range;
     nda::vector<int> sectors, sector_dimensions;
+    /// Ordered Action flavour IDs for an interaction sum, or observable-list
+    /// indices for external endpoints. Uncompleted segments leave these empty;
+    /// an empty endpoint selection never stands for an identity contribution.
+    std::vector<int> zero_operators, special_operators;
 
-    explicit BackbonePath(triqs_xca::diagram::BackboneRange range)
-       : range(range) {
+    BackbonePath(triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) : backbone(backbone), range(range) {
       range.validate();
-      sectors = nda::vector<int>(range.vertex_end - range.first_vertex + 1);
+      if (!backbone.range().contains(range)) throw std::invalid_argument("path range is outside backbone");
+      sectors           = nda::vector<int>(range.vertex_end - range.first_vertex + 1);
       sector_dimensions = nda::vector<int>(sectors.size());
+      sectors           = -1;
+      sector_dimensions = -1;
     }
+
+    explicit BackbonePath(triqs_xca::diagram::Backbone const &backbone) : BackbonePath(backbone, backbone.range()) {}
 
     int &sector(int slot) { return sectors(slot - range.first_vertex); }
     int sector(int slot) const { return sectors(slot - range.first_vertex); }

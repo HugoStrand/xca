@@ -5,18 +5,15 @@
 namespace triqs_xca::block_sparse {
 
   void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Backbone const &backbone, BlockOpSymQuartet const &Fq,
-                               OperatorSupportTable const &support, diagram::SelfEnergyDiagram &prepared,
-                               std::function<void(diagram::SelfEnergyDiagram const &)> const &visit) {
+                               OperatorSupportTable const &support, std::function<void(diagram::BackbonePath const &)> const &visit) {
 
     backbone.require_self_energy();
     int m    = backbone.order();
     int vct0 = backbone.endpoints.special_vertex;
 
-    if (prepared.path.range.first_vertex != 0 || prepared.path.range.vertex_end != 2 * m || prepared.path.range.first_edge != 0 || prepared.path.range.edge_end != 2 * m - 1
-        || prepared.path.sectors.size() != 2 * m + 1 || prepared.path.sector_dimensions.size() != 2 * m + 1)
-      throw std::invalid_argument("visit_self_energy_paths: workspace does not match backbone order");
-    auto ind_path    = [&](int edge) -> int    &{ return prepared.path.edge_sector(edge); };
-    auto &block_dims = prepared.path.sector_dimensions;
+    diagram::BackbonePath path(backbone);
+    auto ind_path    = [&](int edge) -> int    &{ return path.edge_sector(edge); };
+    auto &block_dims = path.sector_dimensions;
     int q            = static_cast<int>(Fq.Fs.size());
 
     /*  Example of block_dims for m = 2 (OCA): each number is an index of block_dims, and each square represents a block of a matrix
@@ -32,6 +29,14 @@ namespace triqs_xca::block_sparse {
 
     bool incomplete_path    = false;
     auto is_path_incomplete = [&](int w, int ip) { return (ip == -1 || (w < 2 * m - 1 && Gt.get_zero_block_index(ip) == -1)); };
+
+    auto append_supported = [&](int group, int source, bool adjoint, std::vector<int> &selected) {
+      auto const &members = adjoint ? support.adjoint : support.plain;
+      for (int index = 0; index < Fq.sym_set_sizes(group); ++index) {
+        int flavour = Fq.sym_set_to_orb(group, index);
+        if (members[flavour].single_target(source) >= 0) selected.push_back(flavour);
+      }
+    };
 
     for (int b_ix = 0; b_ix < Gt.get_num_block_cols(); b_ix++) { // loop over blocks of self-energy
 
@@ -89,12 +94,13 @@ namespace triqs_xca::block_sparse {
 
           for (int w = vct0; w < 2 * m - 1; w++) { block_dims(w + 2) = F_selector(w + 1).get_block_size(ind_path(w), 0); }
 
-          prepared.output_sector      = b_ix;
-          prepared.path.sector(0)     = b_ix;
-          prepared.path.sector(2 * m) = ip;
-          prepared.early_symmetry_set = p_kap;
-          prepared.late_symmetry_set  = p_mu;
-          visit(prepared);
+          path.sector(0)     = b_ix;
+          path.sector(2 * m) = ip;
+          path.zero_operators.clear();
+          path.special_operators.clear();
+          append_supported(p_kap, b_ix, backbone.vertices[0].adjoint, path.zero_operators);
+          append_supported(p_mu, path.sector(vct0), backbone.vertices[vct0].adjoint, path.special_operators);
+          visit(path);
         }
       }
     }

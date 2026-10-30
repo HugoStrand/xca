@@ -1,18 +1,13 @@
 #include "correlator.hpp"
 
 namespace triqs_xca::block_sparse::bind {
-  CorrelatorOperands correlator(block_sparse::diagram::CorrelatorDiagram const &prepared,
-                                std::span<block_sparse::diagram::BackbonePath const> zero_to_tau,
-                                std::span<block_sparse::diagram::BackbonePath const> tau_to_beta, std::span<BlockOp const> at_tau,
-                                std::span<BlockOp const> at_zero) {
-    auto const &right = zero_to_tau[prepared.zero_to_tau_path];
-    auto const &left  = tau_to_beta[prepared.tau_to_beta_path];
-    CorrelatorOperands result{prepared.zero_to_tau_path,
-                              prepared.tau_to_beta_path,
-                              prepared.at_tau_operator,
-                              at_tau[prepared.at_tau_operator].get_block(right.sector(right.range.vertex_end)),
-                              {}};
-    for (int kap : prepared.at_zero_operators) result.closures.push_back({kap, at_zero[kap].get_block(left.sector(left.range.vertex_end))});
+  CorrelatorOperands correlator(block_sparse::diagram::BackbonePath const &path, std::span<BlockOp const> at_tau, std::span<BlockOp const> at_zero) {
+    path.backbone.require_correlator();
+    if (path.range != path.backbone.range()) throw std::invalid_argument("correlator completion requires a complete backbone path");
+    if (path.special_operators.size() != 1) throw std::invalid_argument("correlator completion requires one tau observable");
+    int mu = path.special_operators.front();
+    CorrelatorOperands result{mu, at_tau[mu].get_block(path.sector(path.backbone.endpoints.special_vertex)), {}};
+    for (int kap : path.zero_operators) result.closures.push_back({kap, at_zero[kap].get_block(path.sector(0))});
     return result;
   }
 } // namespace triqs_xca::block_sparse::bind

@@ -1,17 +1,12 @@
 #pragma once
-#include "triqs_xca/block_sparse/diagram/self_energy.hpp"
 #include "triqs_xca/block_sparse/self_energy_operands.hpp"
 #include "backbone.hpp"
-#include "triqs_xca/block_sparse/operator_support.hpp"
 
 namespace triqs_xca::block_sparse::bind {
-  EndpointSumOperands endpoint_sum(triqs_xca::diagram::Backbone const &backbone, block_sparse::diagram::SelfEnergyDiagram const &prepared,
-                                   BlockOpSymQuartet const &operators, OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
-                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                   std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
-  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone const &backbone,
-                                 block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
-                                 OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
-                                   nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
-                                 std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs);
+  EndpointSumOperands endpoint_sum(block_sparse::diagram::BackbonePath const &path, BlockOpSymQuartet const &operators,
+                                   nda::array_const_view<nda::dcomplex, 3> tau_values, nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
+                                   std::span<triqs_xca::Statistics const> statistics);
+  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, block_sparse::diagram::BackbonePath const &path,
+                                 BlockOpSymQuartet const &operators, nda::array_const_view<nda::dcomplex, 3> tau_values,
+                                 nda::array_const_view<nda::dcomplex, 3> tau_values_reflect, std::span<triqs_xca::Statistics const> statistics);
 } // namespace triqs_xca::block_sparse::bind

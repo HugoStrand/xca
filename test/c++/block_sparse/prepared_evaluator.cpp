@@ -101,29 +101,27 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
        topology,
        triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{static_cast<Direction>(direction), -1, -1}, {Direction::forward, n - 1, 1}},
                                         statistics, model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
-    auto signs = assignment.endpoints.signs;
-    triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
     std::optional<SelfEnergyOperands> retained;
     nda::vector<int> dimensions;
     int count = 0;
-    triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, assignment, path, operators, OperatorSupportTable(operators), values, reflected, statistics, signs);
-      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, assignment, path, operators, OperatorSupportTable(operators), values, reflected, statistics, signs);
+    triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, operators, OperatorSupportTable(operators), [&](auto const &path) {
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, path, operators, values, reflected, statistics);
+      auto changed = triqs_xca::block_sparse::bind::self_energy(changed_G, path, operators, values, reflected, statistics);
       ++count;
       ASSERT_EQ(bound.backbone.vertices.size(), 4);
       EXPECT_FALSE(bound.backbone.vertices[0].has_value());
       EXPECT_FALSE(bound.backbone.vertices[2].has_value());
       ASSERT_EQ(bound.backbone.propagators.size(), 3);
-      auto invalid_path = path.path;
+      auto invalid_path = path;
       invalid_path.range.edge_end = 4; // a correlator-only trailing edge
-      EXPECT_THROW(triqs_xca::block_sparse::bind::backbone(G, assignment, operators, invalid_path), std::invalid_argument);
+      EXPECT_THROW(triqs_xca::block_sparse::bind::backbone(G, operators, invalid_path), std::invalid_argument);
       for (int e = 0; e < 3; ++e) {
-        EXPECT_EQ(bound.backbone.propagator(e).data(), G.get_block(path.path.edge_sector(e)).data());
+        EXPECT_EQ(bound.backbone.propagator(e).data(), G.get_block(path.edge_sector(e)).data());
         expect_close(tensor(changed.backbone.propagator(e)), nda::make_regular(1.3 * bound.backbone.propagator(e)));
       }
       for (int v : {1, 3}) {
-        EXPECT_EQ(bound.backbone.vertex(v).extent(0), path.path.dimension(v + 1));
-        EXPECT_EQ(bound.backbone.vertex(v).extent(1), path.path.dimension(v));
+        EXPECT_EQ(bound.backbone.vertex(v).extent(0), path.dimension(v + 1));
+        EXPECT_EQ(bound.backbone.vertex(v).extent(1), path.dimension(v));
       }
       EXPECT_EQ(bound.endpoints.coefficients.size(), bound.endpoints.late.size());
       for (int mu = 0; mu < bound.endpoints.late.size(); ++mu) {
@@ -138,14 +136,15 @@ TEST(BlockSparsePrepared, bound_operands_borrow_model_data_and_own_path_metadata
         }
       }
       if (!retained) {
-        dimensions = path.path.sector_dimensions;
+        dimensions = path.sector_dimensions;
         retained.emplace(bound);
       }
     });
     ASSERT_GT(count, 0);
-    workspace.path.sector_dimensions = -99;
+    assignment.vertices[1].flavour = -99;
     ASSERT_TRUE(retained);
     EXPECT_EQ(retained->backbone.path.sector_dimensions, dimensions);
+    EXPECT_NE(retained->backbone.path.backbone.vertices[1].flavour, assignment.vertices[1].flavour);
     EXPECT_EQ(retained->endpoints.reflection_sign, direction == 1 ? 1 : -1);
   }
 }

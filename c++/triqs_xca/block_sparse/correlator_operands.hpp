@@ -8,9 +8,8 @@ namespace triqs_xca::block_sparse {
     nda::array_const_view<nda::dcomplex, 2> matrix;
   };
   /// External numerical operators for a prepared correlator completion. Backbone
-  /// results remain separate execution inputs, indexed in the caller's tables.
+  /// results remain separate execution inputs; cache indices belong to the caller.
   struct CorrelatorOperands {
-    int zero_to_tau_path, tau_to_beta_path;
     int at_tau_operator;
     nda::array_const_view<nda::dcomplex, 2> at_tau_matrix;
     std::vector<CorrelatorClosureOperand> closures;

@@ -1,11 +1,11 @@
 #include "backbone.hpp"
 
 namespace triqs_xca::block_sparse::bind {
-  BackboneOperands backbone(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone const &backbone, BlockOpSymQuartet const &operators,
-                            block_sparse::diagram::BackbonePath const &path) {
+  BackboneOperands backbone(BlockDiagOpFun const &propagator, BlockOpSymQuartet const &operators, block_sparse::diagram::BackbonePath const &path) {
+    auto const &backbone = path.backbone;
     path.range.validate();
-    if (!backbone.range().contains(path.range)
-        || path.sectors.size() != path.range.vertex_end - path.range.first_vertex + 1 || path.sector_dimensions.size() != path.sectors.size())
+    if (!backbone.range().contains(path.range) || path.sectors.size() != path.range.vertex_end - path.range.first_vertex + 1
+        || path.sector_dimensions.size() != path.sectors.size())
       throw std::invalid_argument("backbone path does not match backbone interval");
     BackboneOperands result{path, {}, {}};
     result.vertices.reserve(path.range.vertex_end - path.range.first_vertex);

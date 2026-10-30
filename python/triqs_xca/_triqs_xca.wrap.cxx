@@ -544,10 +544,11 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {c2py::getsetdef_from_mem
                                                         {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Class for evaluating a backbone of a given order and topology in block-sparse storage
-This class is used to evaluate all the backbone decompositions of a given order and topology. It consumes immutable backbone descriptions
-and contains the Green's functions and creation/annihilation operators needed to actually compute the backbone. It also contains temporary
-data structures required for computation.)DOC"
+const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Evaluate diagram contributions using block-sparse numerical storage.
+Public selection adapters prepare a Backbone and discover its sector paths.
+The evaluator owns persistent Action data and scratch arrays; each call supplies
+the current propagator and any observable operators. Paths own their instructions
+and endpoint selections, independently of discovery workspaces or result caches.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 
 // ==================== module functions ====================

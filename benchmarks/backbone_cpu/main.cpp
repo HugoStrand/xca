@@ -66,11 +66,10 @@ int main(int argc, char **argv) try {
     logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
     backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, logical.back()));
   }
-  triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(order);
   double checksum = 0;
   long paths      = 0;
   for (auto const &backbone : backbones)
-    triqs_xca::block_sparse::visit_self_energy_paths(G, backbone, operators, support, workspace, [&](auto const &) { ++paths; });
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbone, operators, support, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
             << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
             << ',' << paths << '\n';
@@ -101,12 +100,11 @@ int main(int argc, char **argv) try {
     checksum += std::abs(prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
-    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, [&](auto const &path) { checksum += path.sector(0) + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
-    auto signs = backbones[i].endpoints.signs;
-    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, backbones[i], path, operators, support, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics, signs);
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, [&](auto const &path) {
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, path, operators, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics);
       checksum += bs::select_diagonal_self_energy(bound);
     });
   });
