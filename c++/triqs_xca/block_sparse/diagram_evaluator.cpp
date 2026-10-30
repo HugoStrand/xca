@@ -225,8 +225,7 @@ void DiagramEvaluator::eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::dia
 }
 
 void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-  auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
   eval_self_energy_paths(Gt, backbone);
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
 }
@@ -236,8 +235,7 @@ void DiagramEvaluator::eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::
   // loop over all flat indices
   long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::self_energy);
   for (long f_ix = 0; f_ix < f_ix_max; f_ix++) {
-    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-    auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy_paths(Gt, backbone);
   }
   Sigma.set_zero_block_indices(); // set zero_block_indices according to current blocks
@@ -325,8 +323,7 @@ triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_ene
   BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology_arr, long f_ix)
   {
   triqs_xca::diagram::Topology topology{topology_arr};
-  auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
   return compute_self_energy(Gt, backbone);
 }
 
@@ -409,8 +406,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, tr
 
 nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
                                                           long f_ix, bool is_fermionic) {
-  auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::correlator);
-  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::correlator);
   return eval_correlator(Gt, backbone, mu_ops, kap_ops, triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
 }
 
@@ -567,8 +563,7 @@ long DiagramEvaluator::get_num_self_energy_backbones(nda::array_const_view<int, 
 
 void DiagramEvaluator::print_self_energy_backbone(nda::array_const_view<int, 2> topology_arr, long f_ix) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
   std::cout << "Self-energy backbone for f_ix = " << f_ix << ":\n";
   std::cout << backbone << std::endl;
 }
@@ -675,8 +670,7 @@ nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(triqs::gfs::bl
 
 void DiagramEvaluator::print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology_arr, long f_ix) {
   triqs_xca::diagram::Topology topology{topology_arr};
-  auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::correlator);
-  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto const backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::correlator);
   std::cout << "Single-particle Green's function backbone for f_ix = " << f_ix << ":\n";
   std::cout << backbone << std::endl;
 }

@@ -98,6 +98,12 @@ namespace triqs_xca::diagram {
   };
 
   Backbone prepare_backbone(Topology const &topology, Arcs const &arcs);
+
+  /// Evaluator entry point: decode the selected arc choices and prepare their backbone.
+  template <typename Storage> Backbone prepare_backbone(Topology const &topology, Action<Storage> const &action, long flat_index, Kind kind) {
+    return prepare_backbone(topology, decode_arcs(topology.order(), action, flat_index, kind));
+  }
+
   /// Construction helper; returned vertices do not yet have kernel placement.
   std::vector<Vertex> prepare_vertices(Topology const &topology, Arcs const &arcs);
   std::ostream &operator<<(std::ostream &out, Backbone const &backbone);

@@ -280,8 +280,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy_pair(Gt, backbone);
   }
 
@@ -307,8 +306,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
-    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::self_energy);
     eval_self_energy(Gt, backbone);
   }
 
@@ -364,8 +362,7 @@ namespace triqs_xca::dense {
                                                             nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, long f_ix,
                                                             bool is_fermionic) {
 
-    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::correlator);
-    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, f_ix, triqs_xca::diagram::Kind::correlator);
     return eval_correlator(Gt, backbone, mu_ops, kap_ops, triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
   }
 
