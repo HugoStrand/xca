@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace triqs_xca::diagram {
-  
+
   enum class Direction { external = -1, backward = 0, forward = 1 };
 
   /// One arc choice. Arc zero has no retained flavour or pole; for a correlator
@@ -23,10 +23,9 @@ namespace triqs_xca::diagram {
   /// Arc choices indexed exactly like Topology::arcs, including the special row zero.
   using Arcs = std::vector<Arc>;
 
-  void validate_arcs(Arcs const &arcs, int order, Kind kind);
+  /// Validate enriched choices without consulting their original Action.
+  void validate_arcs(Arcs const &arcs, int order);
   long count_diagrams(int order, int flavours, long pole_count, Kind kind);
-  /// Decode choices only; retained temporarily for callers migrating to metadata preparation.
-  Arcs decode_arcs(int order, int flavours, long pole_count, long flat_index, Kind kind);
 
   /// Resolve selected statistics and three-way pole signs. Special-arc metadata
   /// is unresolved and never indexed. Existing metadata in choices is replaced.

@@ -32,10 +32,9 @@ namespace triqs_xca::diagram {
     }
   };
 
-  /// Internal arc flavours select operator statistics; each barred contraction
-  /// must couple operators of the same parity as its retained flavour.
-  /// Directions and poles do not enter the permutation sign.
-  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs, std::span<Statistics const> statistics);
+  /// Enriched internal arcs carry their operator statistics. Each barred
+  /// contraction must have that parity. Directions and poles do not enter here.
+  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs);
 
 } // namespace triqs_xca::diagram
 

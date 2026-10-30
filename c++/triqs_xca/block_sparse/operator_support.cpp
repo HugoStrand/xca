@@ -66,11 +66,10 @@ OperatorSupportTable::OperatorSupportTable(BlockOpSymQuartet const &operators) :
   }
 }
 
-OperatorSupport const &OperatorSupportTable::vertex(triqs_xca::diagram::Diagram const &diagram, int vertex) const {
-  auto const &v = diagram.backbone.vertices.at(vertex);
-  if (!v.barred) return (v.adjoint ? adjoint : plain).at(diagram.arcs[v.arc_idx].retained_flavour);
-  int pole = diagram.arcs[v.arc_idx].pole_index;
-  return (v.adjoint ? barred_adjoint : reflected_bar).at(diagram.arcs[v.arc_idx].retained_flavour * poles + pole);
+OperatorSupport const &OperatorSupportTable::vertex(triqs_xca::diagram::Vertex const &v) const {
+  if (!v.barred) return (v.adjoint ? adjoint : plain).at(v.flavour);
+  int pole = v.pole_index;
+  return (v.adjoint ? barred_adjoint : reflected_bar).at(v.flavour * poles + pole);
 }
 
 } // namespace triqs_xca::block_sparse

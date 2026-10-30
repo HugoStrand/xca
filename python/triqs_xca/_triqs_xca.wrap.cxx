@@ -279,9 +279,9 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
 template <>
 const std::string c2py::tp_doc<_c2py_cls_0> = R"DOC(Class for evaluating a diagram of a given order and topology
 This class is used to evaluate all the diagram decompositions of a given
-order and topology. It consumes immutable diagram descriptions and
+order and topology. It consumes immutable backbone descriptions and
 contains the Green's functions and creation/annihilation operators needed to
-actually compute the diagram. It also contains temporary arrays required for
+actually compute the backbone. It also contains temporary arrays required for
 computation.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_0>;
 // --------- class _c2py_cls_1 -----------
@@ -544,9 +544,9 @@ constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {c2py::getsetdef_from_mem
                                                         {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
 template <>
-const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Class for evaluating a diagram of a given order and topology in block-sparse storage
-This class is used to evaluate all the diagram decompositions of a given order and topology. It consumes immutable diagram descriptions
-and contains the Green's functions and creation/annihilation operators needed to actually compute the diagram. It also contains temporary 
+const std::string c2py::tp_doc<_c2py_cls_1> = R"DOC(Class for evaluating a backbone of a given order and topology in block-sparse storage
+This class is used to evaluate all the backbone decompositions of a given order and topology. It consumes immutable backbone descriptions
+and contains the Green's functions and creation/annihilation operators needed to actually compute the backbone. It also contains temporary
 data structures required for computation.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_1>;
 

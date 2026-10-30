@@ -56,21 +56,21 @@ int main(int argc, char **argv) try {
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
   std::vector<triqs_xca::diagram::Arcs> logical;
-  std::vector<triqs_xca::diagram::Diagram> diagrams;
+  std::vector<triqs_xca::diagram::Backbone> backbones;
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
   std::mt19937_64 random{1789};
   for (long i = 0; i < samples; ++i) {
     long first = (count / samples) * i + (count % samples) * i / samples;
     long last  = (count / samples) * (i + 1) + (count % samples) * (i + 1) / samples;
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
-    logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.n, model.hyb_poles.size(), indices(i), triqs_xca::diagram::Kind::self_energy));
-    diagrams.push_back(triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical.back(), model.hyb_poles, triqs_xca::diagram::Kind::self_energy));
+    logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
+    backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, logical.back()));
   }
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(order);
   double checksum = 0;
   long paths      = 0;
-  for (auto const &diagram : diagrams)
-    triqs_xca::block_sparse::visit_self_energy_paths(G, diagram, operators, support, workspace, [&](auto const &) { ++paths; });
+  for (auto const &backbone : backbones)
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbone, operators, support, workspace, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
             << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
             << ',' << paths << '\n';
@@ -88,30 +88,30 @@ int main(int argc, char **argv) try {
     std::cout << phase << ',' << timings[2] << ',' << timings.front() << ',' << timings.back() << '\n';
   };
   time("flat_preparation", [&](long i) {
-    auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, model.hyb_poles, indices(i), triqs_xca::diagram::Kind::self_energy);
+    auto a = triqs_xca::diagram::prepare_backbone(topology, triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
     checksum += a.direction_sign;
   });
   time("logical_preparation", [&](long i) {
-    auto a = triqs_xca::diagram::prepare_diagram(topology, evaluator.n, logical[i], model.hyb_poles, triqs_xca::diagram::Kind::self_energy);
+    auto a = triqs_xca::diagram::prepare_backbone(topology, logical[i]);
     checksum += a.direction_sign;
   });
-  time("sign_and_kernel_prefactor", [&](long i) {
-    auto signs   = triqs_xca::diagram::prepare_permutation_signs(diagrams[i].topology, diagrams[i].arcs, evaluator.action.statistics);
-    double prefactor = tau_kernel_prefactor(diagrams[i].backbone.kernel_prefactor, diagrams[i].arcs, evaluator.action.kernel);
+  time("kernel_prefactor", [&](long i) {
+    auto signs   = backbones[i].endpoints.signs;
+    double prefactor = tau_kernel_prefactor(backbones[i].kernel_prefactor, evaluator.action.kernel);
     checksum += std::abs(prefactor) + signs.with_fermionic_arc;
   });
   time("path_discovery", [&](long i) {
-    triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, workspace, [&](auto const &path) { checksum += path.output_sector + 1; });
   });
   time("paths_and_operand_binding", [&](long i) {
-    auto signs = triqs_xca::diagram::prepare_permutation_signs(diagrams[i].topology, diagrams[i].arcs, evaluator.action.statistics);
-    triqs_xca::block_sparse::visit_self_energy_paths(G, diagrams[i], operators, support, workspace, [&](auto const &path) {
-      auto bound = triqs_xca::block_sparse::bind::self_energy(G, diagrams[i], path, operators, support, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics, signs);
+    auto signs = backbones[i].endpoints.signs;
+    triqs_xca::block_sparse::visit_self_energy_paths(G, backbones[i], operators, support, workspace, [&](auto const &path) {
+      auto bound = triqs_xca::block_sparse::bind::self_energy(G, backbones[i], path, operators, support, evaluator.action.tau_values, evaluator.action.tau_values_reflect, evaluator.action.statistics, signs);
       checksum += bs::select_diagonal_self_energy(bound);
     });
   });
   time("prepared_self_energy_call", [&](long i) {
-    auto result = evaluator.compute_self_energy(G, diagrams[i]);
+    auto result = evaluator.compute_self_energy(G, backbones[i]);
     checksum += nda::sum(nda::abs(result[0].data()));
   });
   time("flat_self_energy_call", [&](long i) {

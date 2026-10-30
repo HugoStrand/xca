@@ -172,79 +172,79 @@ namespace triqs_xca::dense {
   // The initial segment starts at edge zero, whose kernel is identity:
   // internal arcs never touch vertex zero.
   void DiagramEvaluator::evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                                 triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+                                                 triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
     result = Gt;
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-      multiply_left_vertex(result, diagram, v);
-      integrate_left_edge(result, Gt, diagram, v);
+      multiply_left_vertex(result, backbone, v);
+      integrate_left_edge(result, Gt, backbone, v);
     }
   }
 
   // Extend an existing endpoint result; an empty self-energy tail does no work.
   void DiagramEvaluator::extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                       triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+                                       triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-      integrate_left_edge(result, Gt, diagram, v - 1);
-      multiply_left_vertex(result, diagram, v);
+      integrate_left_edge(result, Gt, backbone, v - 1);
+      multiply_left_vertex(result, backbone, v);
     }
   }
 
   // The correlator segment starts at the beta edge in this traversal.
   // Its kernel is identity because all internal arcs end before beta.
   void DiagramEvaluator::evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                                   triqs_xca::diagram::Diagram const &diagram, triqs_xca::diagram::BackboneRange range) {
+                                                   triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
     result = Gt;
     for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
-      multiply_right_vertex(result, diagram, v);
-      integrate_right_edge(result, Gt, diagram, v - 1);
+      multiply_right_vertex(result, backbone, v);
+      integrate_right_edge(result, Gt, backbone, v - 1);
     }
     result = action.tau_mesh.dlr_it().reflect(result);
   }
 
-  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Diagram const &diagram, int v_ix) {
-    auto const &vertex = diagram.backbone.vertices[v_ix];
-    auto const &arc = diagram.arcs[vertex.arc_idx];
-    auto F = action.operators.get_operator(vertex, arc);
+  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
+    auto const &vertex = backbone.vertices[v_ix];
+    auto F = vertex.barred ? action.operators.get_barred_operator(vertex.adjoint, vertex.flavour, vertex.pole_index)
+                          : action.operators.get_operator(vertex.adjoint, vertex.flavour);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    apply_kernel(T_buf, diagram.backbone.vertices[v_ix], diagram.arcs, action.kernel);
+    apply_kernel(T_buf, backbone.vertices[v_ix], action.kernel);
   }
 
-  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
+  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
                                                   int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs, action.kernel);
+    apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     T_buf = itops.convolve(beta, itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
   }
 
 
 
-  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::SelfEnergyEndpointSum const &endpoint_sum, triqs_xca::diagram::PermutationSigns const &signs) {
+  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, OperatorPairOrientation orientation, triqs_xca::diagram::PermutationSigns const &signs) {
 
     // Time reflection and the arc orientation sign are separate, as in block_sparse.
-    nda::array_const_view<dcomplex, 3> hyb_too = endpoint_sum.orientation.reflected() ? action.tau_values_reflect : action.tau_values;
+    nda::array_const_view<dcomplex, 3> hyb_too = orientation.reflected() ? action.tau_values_reflect : action.tau_values;
 
     // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
     // at the cost of storing an n x r x N x N array (Tkaps) instead of an r x N x N array
 
-    for (int kap = 0; kap < endpoint_sum.flavours; kap++) {
-      nda::array_const_view<dcomplex, 2> F_kap = action.operators.get_operator(endpoint_sum.orientation.early_operator(kap).adjoint, kap);
+    for (int kap = 0; kap < action.statistics.size(); kap++) {
+      nda::array_const_view<dcomplex, 2> F_kap = action.operators.get_operator(orientation.early_operator(kap).adjoint, kap);
       for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
     }
 
     T_buf = 0;
 
-    for (int mu = 0; mu < endpoint_sum.flavours; mu++) {
+    for (int mu = 0; mu < action.statistics.size(); mu++) {
       Tmu = 0;
-      for (int kap = 0; kap < endpoint_sum.flavours; kap++) {
-        auto [row, column] = endpoint_sum.orientation.coefficient_indices(mu, kap);
+      for (int kap = 0; kap < action.statistics.size(); kap++) {
+        auto [row, column] = orientation.coefficient_indices(mu, kap);
         nda::array_const_view<dcomplex, 1> hyb_t = hyb_too(_, row, column);
 
-        int sign = signs(action.statistics[kap], action.statistics[mu]) * endpoint_sum.orientation.reflection_sign();
+        int sign = signs(action.statistics[kap], action.statistics[mu]) * orientation.reflection_sign();
 
         for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
       }
-      nda::array_const_view<dcomplex, 2> F_mu = action.operators.get_operator(endpoint_sum.orientation.late_operator(mu).adjoint, mu);
+      nda::array_const_view<dcomplex, 2> F_mu = action.operators.get_operator(orientation.late_operator(mu).adjoint, mu);
       for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
     }
   }
@@ -280,76 +280,73 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
-    eval_self_energy_pair(Gt, diagram);
+    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    eval_self_energy_pair(Gt, backbone);
   }
 
-  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
-    int m = diagram.topology.order();
-    auto endpoint_sum = diagram.self_energy_endpoint_sum(n);
-    auto ranges = diagram.endpoint_ranges();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
+  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
+    backbone.require_self_energy();
+    OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+    auto ranges = backbone.endpoint_ranges();
+    auto const &signs = backbone.endpoints.signs;
+    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, endpoint_sum, signs);
-    auto opposite = endpoint_sum;
-    opposite.orientation.forward = !opposite.orientation.forward;
+    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs);
+    OperatorPairOrientation opposite{!orientation.forward};
     multiply_left_vertex_and_right_zero_vertex(U, opposite, signs);
     T = T - U;
-    extend_segment(T, Gt, diagram, ranges.after_special);
+    extend_segment(T, Gt, backbone, ranges.after_special);
 
     T *= kernel_prefactor;
-    int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (endpoint_sum.orientation.reflected()) diag_order_sign *= -1;
-    T *= diag_order_sign * diagram.direction_sign;
+    T *= backbone.self_energy_sign();
     Sigma += T;
 
   }
 
   void DiagramEvaluator::eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix) {
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::self_energy);
-    eval_self_energy(Gt, diagram);
+    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::self_energy);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    eval_self_energy(Gt, backbone);
   }
 
-  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram) {
-    int m = diagram.topology.order();
-    auto endpoint_sum = diagram.self_energy_endpoint_sum(n);
-    auto ranges = diagram.endpoint_ranges();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
+  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
+    backbone.require_self_energy();
+    OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+    auto ranges = backbone.endpoint_ranges();
+    auto const &signs = backbone.endpoints.signs;
+    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
-    multiply_left_vertex_and_right_zero_vertex(T, endpoint_sum, signs);
-    extend_segment(T, Gt, diagram, ranges.after_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
+    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs);
+    extend_segment(T, Gt, backbone, ranges.after_special);
 
     T *= kernel_prefactor;
-    int diag_order_sign = (m % 2 == 0) ? -1 : 1;
-    if (endpoint_sum.orientation.reflected()) diag_order_sign *= -1; // if the first hybridization line is backward, there is an additional sign change
-    T *= diag_order_sign * diagram.direction_sign;
+    T *= backbone.self_energy_sign();
     Sigma += T;
 
   }
 
-  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Diagram const &diagram, int v_ix) {
-    auto const &vertex = diagram.backbone.vertices[v_ix];
-    auto const &arc = diagram.arcs[vertex.arc_idx];
-    auto F = action.operators.get_operator(vertex, arc);
+  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
+    auto const &vertex = backbone.vertices[v_ix];
+    auto F = vertex.barred ? action.operators.get_barred_operator(vertex.adjoint, vertex.flavour, vertex.pole_index)
+                          : action.operators.get_operator(vertex.adjoint, vertex.flavour);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    apply_kernel(U_buf, diagram.backbone.vertices[v_ix], diagram.arcs, action.kernel, true);
+    apply_kernel(U_buf, backbone.vertices[v_ix], action.kernel, true);
   }
 
-  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
+  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
                                                    int e_ix) {
     GKt = Gt;
-    apply_kernel_product(GKt, diagram.backbone.edges[e_ix].kernels, diagram.arcs, action.kernel);
+    apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(beta, itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology,
-                                                                 nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, bool is_fermionic) {
+                                                                 nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, bool is_fermionic) {
     long f_ix_max = triqs_xca::diagram::count_diagrams(topology.order(), n, action.poles.size(), triqs_xca::diagram::Kind::correlator);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
@@ -364,28 +361,28 @@ namespace triqs_xca::dense {
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology,
-                                                            nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, long f_ix,
+                                                            nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, long f_ix,
                                                             bool is_fermionic) {
 
-    auto diagram = triqs_xca::diagram::prepare_diagram(topology, n, action.poles, f_ix, triqs_xca::diagram::Kind::correlator);
-    return eval_correlator(Gt, diagram, std::move(mu_ops), std::move(kap_ops), triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
+    auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), action, f_ix, triqs_xca::diagram::Kind::correlator);
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+    return eval_correlator(Gt, backbone, mu_ops, kap_ops, triqs_xca::diagram::uniform_correlator_statistics(is_fermionic));
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Diagram const &diagram,
-                                                          nda::array<dcomplex, 3> mu_ops, nda::array<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
-    diagram.require_kind(triqs_xca::diagram::Kind::correlator);
-    auto ranges = diagram.endpoint_ranges();
-    auto const signs = triqs_xca::diagram::prepare_permutation_signs(diagram.topology, diagram.arcs, action.statistics);
-    double kernel_prefactor = tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, action.kernel);
+  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
+                                                          nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
+    backbone.require_correlator();
+    auto ranges = backbone.endpoint_ranges();
+    auto const &signs = backbone.endpoints.signs;
+    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    evaluate_initial_segment(T, Gt, diagram, ranges.before_special);
-    evaluate_reflected_segment(U, Gt, diagram, ranges.after_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
+    evaluate_reflected_segment(U, Gt, backbone, ranges.after_special);
 
     T *= kernel_prefactor;
-    int diag_order_sign = 1; // (m % 2 == 1) ? -1 : 1;
-    T *= diag_order_sign * diagram.direction_sign;
+    T *= backbone.direction_sign;
 
     nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
 
@@ -423,13 +420,7 @@ namespace triqs_xca::dense {
     auto mu_ops  = single_particle_operators(false);
     auto kap_ops = single_particle_operators(true);
 
-    /*
-      auto correlator = triqs::gfs::gf<triqs::mesh::dlr_imtime>(
-        action.tau_mesh, eval_correlator(diagram, mu_ops, kap_ops, f_ix));
-      return correlator;
-      */
-
-    return eval_correlator(Gt, topology, std::move(mu_ops), std::move(kap_ops), f_ix);
+    return eval_correlator(Gt, topology, mu_ops, kap_ops, f_ix);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology_arr,

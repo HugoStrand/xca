@@ -129,15 +129,15 @@ namespace triqs_xca::diagram {
     return topology::topology_parity(topology::fermionic_topology(topology.arcs, fermionic));
   }
 
-  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs, std::span<Statistics const> statistics) {
+  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs) {
     int order = topology.order();
-    if (arcs.size() != static_cast<std::size_t>(order)) throw std::invalid_argument("wrong number of internal arc flavours");
+    if (arcs.size() != static_cast<std::size_t>(order)) throw std::invalid_argument("wrong number of arcs");
     std::vector<Statistics> vertices(2 * order, Statistics::bosonic);
     for (int a = 1; a < order; ++a) {
-      int flavour = arcs[a].retained_flavour;
-      if (flavour < 0 || static_cast<std::size_t>(flavour) >= statistics.size())
+      auto statistics = arcs[a].statistics;
+      if (statistics != Statistics::fermionic && statistics != Statistics::bosonic)
         throw std::invalid_argument("internal arc has no valid operator statistics");
-      vertices[topology.arcs(a, 0)] = vertices[topology.arcs(a, 1)] = statistics[flavour];
+      vertices[topology.arcs(a, 0)] = vertices[topology.arcs(a, 1)] = statistics;
     }
     int without = permutation_sign(topology, vertices);
     vertices[0] = vertices[topology.special_vertex()] = Statistics::fermionic;

@@ -1,4 +1,4 @@
-#include "triqs_xca/diagram/diagram.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 #include "triqs_xca/action.hpp"
 #include "triqs_xca/dense/action.hpp"
 #include <gtest/gtest.h>
@@ -63,13 +63,14 @@ TEST(Hybridization, vertex_kernels_include_reflection_and_identity) {
   auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, 20., 1e-10, false);
   nda::vector<double> poles{-0.8};
   auto kernel = make_tau_kernel(mesh, poles);
-  auto diagram = diagram::prepare_diagram(diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-                                          diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}}, poles, diagram::Kind::self_energy);
+  auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}},
+                                    std::vector{Statistics::fermionic}, poles, diagram::Kind::self_energy);
+  auto backbone = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, arcs);
   auto nodes = mesh.dlr_it().get_itnodes();
   for (bool reflected : {false, true}) {
     for (int vertex = 0; vertex < 4; ++vertex) {
       auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-      apply_kernel(values, diagram.backbone.vertices[vertex], diagram.arcs, kernel, reflected);
+      apply_kernel(values, backbone.vertices[vertex], kernel, reflected);
       for (int t = 0; t < nodes.size(); ++t) {
         // Forward internal arc, negative pole: earlier vertex K(-pole), later K(+pole).
         double argument = (vertex == 1 ? 0.8 : -0.8) * beta * (reflected ? -1 : 1);
@@ -78,11 +79,11 @@ TEST(Hybridization, vertex_kernels_include_reflection_and_identity) {
       }
     }
   }
-  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, kernel),
+  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(backbone.kernel_prefactor, kernel),
                    std::pow(cppdlr::k_it(0., 0.8 * beta), -1));
   for (int edge = 0; edge < 3; ++edge) {
     auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-    apply_kernel_product(values, diagram.backbone.edges[edge].kernels, diagram.arcs, kernel);
+    apply_kernel_product(values, backbone.edges[edge].kernels, kernel);
     EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
   }
 }
@@ -92,26 +93,27 @@ TEST(Hybridization, edge_products_read_the_supplied_tables) {
   auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-10, false);
   nda::vector<double> poles{0.7, 1.3};
   auto kernel = make_tau_kernel(mesh, poles);
-  auto diagram = diagram::prepare_diagram(diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, 1,
-                                          diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}, {Direction::forward, 0, 1}}, poles, diagram::Kind::self_energy);
+  auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}, {Direction::forward, 0, 1}},
+                                    std::vector{Statistics::fermionic}, poles, diagram::Kind::self_energy);
+  auto backbone = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, arcs);
   auto nodes = mesh.dlr_it().get_itnodes();
   auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
-  auto edge = diagram.backbone.edges[2].kernels;
-  apply_kernel_product(values, edge, diagram.arcs, kernel);
+  auto edge = backbone.edges[2].kernels;
+  apply_kernel_product(values, edge, kernel);
   for (int t = 0; t < nodes.size(); ++t)
     EXPECT_EQ(values(t, 0, 0), dcomplex(cppdlr::k_it(nodes(t), 1.4) * cppdlr::k_it(nodes(t), 2.6)));
-  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, kernel),
+  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(backbone.kernel_prefactor, kernel),
                    std::pow(cppdlr::k_it(0., 1.4), -2) * std::pow(cppdlr::k_it(0., 2.6), -2));
 
   // The recipe remains valid when pole magnitudes change without changing signs.
   auto changed = make_tau_kernel(mesh, nda::vector<double>{0.9, 1.5});
   values = 1;
-  apply_kernel_product(values, edge, diagram.arcs, changed);
+  apply_kernel_product(values, edge, changed);
   for (int t = 0; t < nodes.size(); ++t)
     EXPECT_EQ(values(t, 0, 0), dcomplex(cppdlr::k_it(nodes(t), 1.8) * cppdlr::k_it(nodes(t), 3.0)));
 }
 
-TEST(Hybridization, edge_factors_preserve_slot_order_and_skip_identity_slots) {
+TEST(Hybridization, edge_factors_preserve_order_and_repeated_poles) {
   using namespace triqs_xca;
   // Reordering the active factors overflows; combining them before multiplication
   // underflows in the second case. Keep the existing sequential arithmetic.
@@ -122,11 +124,11 @@ TEST(Hybridization, edge_factors_preserve_slot_order_and_skip_identity_slots) {
   kernel.at_tau_plus(0, 1) = 1e-200;
   nda::array<dcomplex, 3> values(1, 1, 1);
   values = 1e200;
-  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {3, -1}}, diagram::Arcs{{}, {diagram::Direction::forward, 0, 1}, {diagram::Direction::forward, 0, 0}, {diagram::Direction::forward, 0, 1}}, kernel);
+  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {1, -1}}, kernel);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).real(), 1e200);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).imag(), 0.);
   values = 1e200;
-  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {2, 1}}, diagram::Arcs{{}, {diagram::Direction::forward, 0, 1}, {diagram::Direction::forward, 0, 1}}, kernel);
+  apply_kernel_product(values, std::vector<diagram::KernelFactor>{{1, 1}, {1, 1}}, kernel);
   EXPECT_DOUBLE_EQ(values(0, 0, 0).real(), 1e-200);
 }
 
@@ -137,16 +139,33 @@ TEST(Hybridization, trailing_correlator_edge_is_identity) {
   auto data = make_tau_kernel(mesh, poles);
   for (auto topology_arr : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
     diagram::Topology topology{topology_arr};
-    auto diagram = diagram::prepare_diagram(topology, 1, poles, 0, diagram::Kind::correlator);
-    auto const &edges = diagram.backbone.edges;
+    auto backbone = diagram::prepare_backbone(topology, diagram::decode_arcs(topology.order(), std::vector{Statistics::fermionic}, poles, 0, diagram::Kind::correlator));
+    auto const &edges = backbone.edges;
     ASSERT_EQ(edges.size(), 2 * topology.order());
     auto values = nda::ones<dcomplex>(data.at_tau_plus.extent(0), 1, 1);
-    apply_kernel_product(values, edges.back().kernels, diagram.arcs, data);
+    apply_kernel_product(values, edges.back().kernels, data);
     EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
     if (topology.order() == 1) {
-      EXPECT_DOUBLE_EQ(tau_kernel_prefactor(diagram.backbone.kernel_prefactor, diagram.arcs, data), 1.);
-      apply_kernel(values, diagram.backbone.vertices[0], diagram.arcs, data);
+      EXPECT_DOUBLE_EQ(tau_kernel_prefactor(backbone.kernel_prefactor, data), 1.);
+      apply_kernel(values, backbone.vertices[0], data);
       EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
     }
   }
+}
+
+TEST(Hybridization, normalization_preserves_order_and_repeated_poles) {
+  using namespace triqs_xca;
+  diagram::Topology topology{nda::array<int, 2>{{0, 4}, {1, 5}, {2, 6}, {3, 7}}};
+  auto arcs = diagram::prepare_arcs(
+    diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0},
+                  {Direction::forward, 0, 1}, {Direction::forward, 0, 0}},
+    std::vector{Statistics::bosonic}, nda::vector<double>{-1., -2.}, diagram::Kind::self_energy);
+  auto backbone = diagram::prepare_backbone(topology, arcs);
+  EXPECT_EQ(backbone.kernel_prefactor.factors, (std::vector<diagram::KernelPower>{{0, -1, 1}, {1, -1, 1}, {0, -1, 1}}));
+
+  // Ordered inverses stay finite. Grouping the repeated first pole would raise
+  // 1e-200 to power -2 before cancellation and overflow.
+  TauKernel kernel;
+  kernel.at_zero_minus = nda::vector<double>{-1e-200, -1e200};
+  EXPECT_DOUBLE_EQ(tau_kernel_prefactor(backbone.kernel_prefactor, kernel), -1e200);
 }

@@ -3,7 +3,7 @@
 
 #include <triqs_xca/action.hpp>
 #include <triqs_xca/diagram/topology.hpp>
-#include <triqs_xca/diagram/diagram.hpp>
+#include <triqs_xca/diagram/backbone.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 
@@ -110,9 +110,11 @@ TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
   using triqs_xca::Statistics;
   std::vector<Statistics> statistics{Statistics::bosonic, Statistics::fermionic, Statistics::bosonic, Statistics::fermionic};
 
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 4,
-                                       triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
-  auto signs = triqs_xca::diagram::prepare_permutation_signs(assignment.topology, assignment.arcs, statistics);
+  auto arcs = triqs_xca::diagram::prepare_arcs(
+    triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, statistics,
+    nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
+  auto backbone = triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, arcs);
+  auto signs = backbone.endpoints.signs;
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.
   triqs_xca::diagram::CorrelatorStatistics fermionic{triqs_xca::Statistics::fermionic, triqs_xca::Statistics::fermionic};

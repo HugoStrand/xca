@@ -67,26 +67,23 @@ namespace triqs_xca {
     }
   } // namespace
 
-  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::Vertex const &vertex, std::span<diagram::Arc const> arcs,
-                    TauKernel const &kernel, bool reflected) {
+  void apply_kernel(nda::array_view<nda::dcomplex, 3> target, diagram::Vertex const &vertex, TauKernel const &kernel, bool reflected) {
     if (vertex.kernel_sign == 0) return;
-    multiply_factor(target, kernel, arcs[vertex.arc_idx].pole_index, reflected ? -vertex.kernel_sign : vertex.kernel_sign);
+    multiply_factor(target, kernel, vertex.pole_index, reflected ? -vertex.kernel_sign : vertex.kernel_sign);
   }
 
   void apply_kernel_product(nda::array_view<nda::dcomplex, 3> target, std::span<diagram::KernelFactor const> factors,
-                            std::span<diagram::Arc const> arcs, TauKernel const &kernel) {
+                            TauKernel const &kernel) {
     for (auto const &factor : factors)
-      if (factor.argument_sign != 0) multiply_factor(target, kernel, arcs[factor.arc_idx].pole_index, factor.argument_sign);
+      if (factor.argument_sign != 0) multiply_factor(target, kernel, factor.pole_index, factor.argument_sign);
   }
 
-  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, std::span<diagram::Arc const> arcs, TauKernel const &kernel) {
+  double tau_kernel_prefactor(diagram::TauKernelPrefactor const &recipe, TauKernel const &kernel) {
     double result = 1;
-    for (long p = 1; p < arcs.size(); ++p) {
-      int exponent = recipe.exponents(p);
-      if (exponent != 0) {
-        int pole     = arcs[p].pole_index;
-        double value = recipe.argument_signs(p) > 0 ? kernel.at_zero_plus(pole) : kernel.at_zero_minus(pole);
-        result *= std::pow(value, -exponent);
+    for (auto const &factor : recipe.factors) {
+      if (factor.exponent != 0) {
+        double value = factor.argument_sign > 0 ? kernel.at_zero_plus(factor.pole_index) : kernel.at_zero_minus(factor.pole_index);
+        result *= std::pow(value, -factor.exponent);
       }
     }
     return result;

@@ -7,7 +7,7 @@
 #include <triqs/operators/many_body_operator.hpp>
 
 #include <triqs_xca/block_sparse/atom_diag.hpp>
-#include <triqs_xca/diagram/diagram.hpp>
+#include <triqs_xca/diagram/backbone.hpp>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
 #include <triqs_xca/diagram/topology.hpp>
 

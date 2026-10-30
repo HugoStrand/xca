@@ -8,7 +8,6 @@ using triqs_xca::diagram::Direction;
 namespace {
 
 using namespace triqs_xca::block_sparse;
-using triqs_xca::diagram::prepare_diagram;
 using triqs_xca::diagram::Topology;
 using triqs_xca::diagram::Kind;
 
@@ -55,7 +54,10 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
   auto G = propagator();
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
   nda::vector<double> poles{1.0};
-  auto assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 0, triqs_xca::diagram::Kind::self_energy); // creation at vertex 0, annihilation at vertex 1
+  auto assignment = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 0,
+                                     triqs_xca::diagram::Kind::self_energy)); // creation at vertex 0, annihilation at vertex 1
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -77,7 +79,10 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(values(path.path.sector_dimensions), (i / 2 == 0 ? std::vector<int>{1, 2, 1} : std::vector<int>{2, 1, 2}));
   }
 
-  assignment = triqs_xca::diagram::prepare_diagram(topology, 2, poles, 1, triqs_xca::diagram::Kind::self_energy); // annihilation first
+  assignment = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 1,
+                                     triqs_xca::diagram::Kind::self_energy)); // annihilation first
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> reversed;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
@@ -93,7 +98,10 @@ TEST(SelfEnergyDiagram, first_order_paths_are_owned_and_ordered) {
 TEST(SelfEnergyDiagram, nested_paths_use_every_propagator_mask_but_not_the_output_mask) {
   auto F = ladder();
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 3}, {1, 2}}};
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+                                     nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
   auto G = propagator();
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
@@ -129,7 +137,10 @@ TEST(SelfEnergyDiagram, terminal_sector_is_recorded_without_a_new_closure_filter
   F.Fs = F.F_dags;
   auto G = propagator();
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+                                     nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -143,7 +154,10 @@ TEST(SelfEnergyDiagram, crossing_path_continues_after_the_special_vertex) {
   auto F = ladder();
   auto G = propagator();
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  auto const assignment = triqs_xca::diagram::prepare_diagram(topology, 1, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto const assignment = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+                                     nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) { paths.push_back(path); });
@@ -158,13 +172,19 @@ TEST(SelfEnergyDiagram, discovery_is_independent_of_source_assignment_mutation) 
   auto F = ladder(2);
   auto G = propagator();
   triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
-  auto source = triqs_xca::diagram::prepare_diagram(topology, 2, nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto source = triqs_xca::diagram::prepare_backbone(
+     topology,
+     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
+                                     nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   auto const assignment = source;
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(1);
   std::vector<triqs_xca::block_sparse::diagram::SelfEnergyDiagram> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), workspace, [&](auto const &path) {
     paths.push_back(path);
-    source = triqs_xca::diagram::prepare_diagram(topology, 2, nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy);
+    source = triqs_xca::diagram::prepare_backbone(
+       topology,
+       triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
+                                       nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy));
   });
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -184,8 +204,11 @@ TEST(SelfEnergyDiagram, internal_member_support_and_barred_support_filter_candid
   BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
   std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
   BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 2,
-                                      triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::backward, 0, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
+  auto assignment = triqs_xca::diagram::prepare_backbone(
+     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}},
+     triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::backward, 0, 0}},
+                                      std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
+                                      triqs_xca::diagram::Kind::self_energy));
   triqs_xca::block_sparse::diagram::SelfEnergyDiagram workspace(2);
   int count = 0;
   // Internal flavour 0 is nonzero only in sector 0, while its bar is flavour 1,

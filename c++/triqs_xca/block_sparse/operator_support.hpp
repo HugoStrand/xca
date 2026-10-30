@@ -3,7 +3,7 @@
 #include <span>
 #include <vector>
 #include "block_op.hpp"
-#include "triqs_xca/diagram/diagram.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 
 namespace triqs_xca::block_sparse {
 
@@ -26,7 +26,7 @@ struct OperatorSupportTable {
   std::vector<OperatorSupport> plain, adjoint, barred_adjoint, reflected_bar;
   int poles;
   explicit OperatorSupportTable(BlockOpSymQuartet const &operators);
-  OperatorSupport const &vertex(triqs_xca::diagram::Diagram const &diagram, int vertex) const;
+  OperatorSupport const &vertex(triqs_xca::diagram::Vertex const &vertex) const;
 };
 
 } // namespace triqs_xca::block_sparse

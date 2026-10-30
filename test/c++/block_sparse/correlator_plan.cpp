@@ -32,7 +32,7 @@ struct Ladder {
   }
 };
 
-std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Diagram const &assignment,
+std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Backbone const &assignment,
                                          BlockOpSymQuartet const &operators, triqs_xca::diagram::BackboneRange range) {
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
   triqs_xca::block_sparse::visit_backbone_paths(G, assignment, operators, OperatorSupportTable(operators), range, [&](auto const &p) { result.push_back(p); });
@@ -43,10 +43,13 @@ std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagO
 TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-                                       triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
+  auto assignment = triqs_xca::diagram::prepare_backbone(
+     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
+                                      std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
+                                      triqs_xca::diagram::Kind::correlator));
+  auto right = fragments(G, assignment, model.operators, assignment.endpoint_ranges().before_special);
+  auto left = fragments(G, assignment, model.operators, assignment.endpoint_ranges().after_special);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 2);
   for (int i = 0; i < 2; ++i) {
@@ -82,7 +85,7 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   EXPECT_EQ(bound.path.dimension(2), 1);
 
   auto masked = model.propagator({-1, 0, 0});
-  auto surviving = fragments(masked, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
+  auto surviving = fragments(masked, assignment, model.operators, assignment.endpoint_ranges().before_special);
   ASSERT_EQ(surviving.size(), 1);
   EXPECT_EQ(surviving[0].sector(surviving[0].range.first_vertex), 2);
   EXPECT_EQ(surviving[0].sector(surviving[0].range.vertex_end), 1);
@@ -93,10 +96,13 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
   auto G = model.propagator();
   // The [tau,beta] side has no internal vertices. The preceding right walk
   // fails at its last starting sector; that must not poison the single-edge side.
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}}, 1,
-                                       triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 0, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
+  auto assignment = triqs_xca::diagram::prepare_backbone(
+     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}},
+     triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 0, 0}},
+                                      std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
+                                      triqs_xca::diagram::Kind::correlator));
+  auto right = fragments(G, assignment, model.operators, assignment.endpoint_ranges().before_special);
+  auto left = fragments(G, assignment, model.operators, assignment.endpoint_ranges().after_special);
   ASSERT_EQ(right.size(), 2);
   ASSERT_EQ(left.size(), 3);
   for (int i = 0; i < 3; ++i) {
@@ -115,10 +121,13 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
 TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destinations) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
-                                       triqs_xca::diagram::Arcs{{Direction::external, -1, -1}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
-  auto right = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).first);
-  auto left = fragments(G, assignment, model.operators, triqs_xca::diagram::correlator_backbone_ranges(assignment.topology).second);
+  auto assignment =
+     triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}},
+                                          triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}},
+                                                                           std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+                                                                           nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator));
+  auto right = fragments(G, assignment, model.operators, assignment.endpoint_ranges().before_special);
+  auto left = fragments(G, assignment, model.operators, assignment.endpoint_ranges().after_special);
   ASSERT_EQ(right.size(), 3);
   ASSERT_EQ(left.size(), 3);
   std::vector<BlockOp> mu{model.raising}, kap{model.raising, model.lowering};
@@ -153,8 +162,11 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
 TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_labels) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, 1,
-      triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, nda::vector<double>{1.}, triqs_xca::diagram::Kind::correlator);
+  auto assignment = triqs_xca::diagram::prepare_backbone(
+     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
+                                      std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
+                                      triqs_xca::diagram::Kind::correlator));
   // Leading selected vertex 1 followed by edge 1: neither complete correlator half.
   auto paths = fragments(G, assignment, model.operators, {1, 2, 1, 2});
   ASSERT_EQ(paths.size(), 2);
@@ -179,8 +191,11 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
 TEST(CorrelatorPlan, empty_range_has_no_independent_path_contribution) {
   Ladder model;
   auto G = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_diagram(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}, 1,
-      nda::vector<double>{1.}, 0, triqs_xca::diagram::Kind::self_energy);
+  auto assignment =
+     triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}},
+                                          triqs_xca::diagram::decode_arcs((triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}}).order(),
+                                                                          std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+                                                                          nda::vector<double>{1.}, 0, triqs_xca::diagram::Kind::self_energy));
   auto tail = assignment.endpoint_ranges().after_special;
   ASSERT_TRUE(tail.empty());
   EXPECT_TRUE(fragments(G, assignment, model.operators, tail).empty());

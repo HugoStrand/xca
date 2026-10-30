@@ -13,12 +13,13 @@ namespace triqs_xca::block_sparse::bind {
     }
   } // namespace
 
-  EndpointSumOperands endpoint_sum(triqs_xca::diagram::Diagram const &diagram, block_sparse::diagram::SelfEnergyDiagram const &prepared,
+  EndpointSumOperands endpoint_sum(triqs_xca::diagram::Backbone const &backbone, block_sparse::diagram::SelfEnergyDiagram const &prepared,
                                    BlockOpSymQuartet const &operators, OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                    std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
-    int special = diagram.topology.special_vertex();
-    auto orientation = diagram.self_energy_endpoint_sum(statistics.size()).orientation;
+    int special = backbone.endpoints.special_vertex;
+    backbone.require_self_energy();
+    OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
     EndpointSumOperands endpoints{{}, {}, {}, orientation.reflection_sign(), signs};
     auto present = [&](int group, int index, int source, bool adjoint) {
       int flavour = operators.sym_set_to_orb(group, index);
@@ -43,14 +44,13 @@ namespace triqs_xca::block_sparse::bind {
     return endpoints;
   }
 
-  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Diagram const &diagram,
+  SelfEnergyOperands self_energy(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone const &backbone,
                                  block_sparse::diagram::SelfEnergyDiagram const &prepared, BlockOpSymQuartet const &operators,
                                  OperatorSupportTable const &support, nda::array_const_view<nda::dcomplex, 3> tau_values,
                                    nda::array_const_view<nda::dcomplex, 3> tau_values_reflect,
                                  std::span<triqs_xca::Statistics const> statistics, triqs_xca::diagram::PermutationSigns signs) {
-    int m    = diagram.topology.order();
-    int sign = (m % 2 == 0 ? -1 : 1) * (diagram.arcs[0].direction == triqs_xca::diagram::Direction::forward ? 1 : -1) * diagram.direction_sign;
-    return {backbone(propagator, diagram, operators, prepared.path), endpoint_sum(diagram, prepared, operators, support, tau_values, tau_values_reflect, statistics, signs),
+    int sign = backbone.self_energy_sign();
+    return {bind::backbone(propagator, backbone, operators, prepared.path), endpoint_sum(backbone, prepared, operators, support, tau_values, tau_values_reflect, statistics, signs),
             prepared.output_sector, sign};
   }
 } // namespace triqs_xca::block_sparse::bind
