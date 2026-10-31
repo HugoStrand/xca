@@ -9,7 +9,6 @@ namespace {
 
   using namespace triqs_xca::block_sparse;
   using triqs_xca::diagram::Kind;
-  using triqs_xca::diagram::Topology;
 
   // A synthetic ladder of sectors with dimensions 1,2,1. Only connectivity
   // matters here: operator blocks are ones, and zero propagator storage is explicitly
@@ -52,11 +51,11 @@ namespace {
 TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
   auto F = ladder(2);
   auto G = propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   nda::vector<double> poles{1.0};
   auto assignment = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 0,
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 0,
                                      triqs_xca::diagram::Kind::self_energy)); // creation at vertex 0, annihilation at vertex 1
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
@@ -80,7 +79,7 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
 
   assignment = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 1,
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 1,
                                      triqs_xca::diagram::Kind::self_energy)); // annihilation first
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> reversed;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { reversed.push_back(path); });
@@ -102,10 +101,10 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
 
 TEST(BackbonePath, nested_paths_use_every_propagator_mask_but_not_the_output_mask) {
   auto F = ladder();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 3}, {1, 2}}};
+  nda::array<int, 2> topology{{0, 3}, {1, 2}};
   auto const assignment = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   auto G = propagator();
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
@@ -139,10 +138,10 @@ TEST(BackbonePath, terminal_sector_is_recorded_without_a_new_closure_filter) {
   // This characterizes discovery only, not a physically admissible evaluator.
   F.Fs   = F.F_dags;
   auto G = propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto const assignment = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
@@ -155,10 +154,10 @@ TEST(BackbonePath, terminal_sector_is_recorded_without_a_new_closure_filter) {
 TEST(BackbonePath, crossing_path_continues_after_the_special_vertex) {
   auto F = ladder();
   auto G = propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   auto const assignment = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
@@ -172,10 +171,10 @@ TEST(BackbonePath, crossing_path_continues_after_the_special_vertex) {
 TEST(BackbonePath, discovery_is_independent_of_source_assignment_mutation) {
   auto F = ladder(2);
   auto G = propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto source = triqs_xca::diagram::prepare_backbone(
      topology,
-     triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
+     triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   auto const assignment = source;
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
@@ -183,7 +182,7 @@ TEST(BackbonePath, discovery_is_independent_of_source_assignment_mutation) {
     paths.push_back(path);
     source = triqs_xca::diagram::prepare_backbone(
        topology,
-       triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
+       triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
                                        nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy));
   });
   ASSERT_EQ(paths.size(), 4);
@@ -205,7 +204,7 @@ TEST(BackbonePath, internal_member_support_and_barred_support_filter_candidate_p
   std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
   BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
   auto assignment = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}},
+     nda::array<int, 2>{{0, 3}, {1, 2}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::backward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
                                       triqs_xca::diagram::Kind::self_energy));
@@ -251,7 +250,7 @@ TEST(BackbonePath, endpoint_lists_resolve_interleaved_groups_and_exact_member_su
       if (labels(a) == labels(b)) coefficients(0, a, b) = 1.;
   BlockOpSymQuartet operators(plain, adjoint, coefficients, labels);
   auto backbone =
-     triqs_xca::diagram::prepare_backbone(Topology{nda::array<int, 2>{{0, 1}}},
+     triqs_xca::diagram::prepare_backbone(nda::array<int, 2>{{0, 1}},
                                           triqs_xca::diagram::decode_arcs(1, std::vector<triqs_xca::Statistics>(4, triqs_xca::Statistics::bosonic),
                                                                           nda::vector<double>{1.}, 0, Kind::self_energy));
   std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;

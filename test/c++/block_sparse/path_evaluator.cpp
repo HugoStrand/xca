@@ -47,8 +47,8 @@ namespace {
     return {destinations, blocks};
   }
 
-  logical::Topology topology_for_order(int order) {
-    return logical::Topology{order == 1 ? nda::array<int, 2>{{0, 1}} : nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology_for_order(int order) {
+    return order == 1 ? nda::array<int, 2>{{0, 1}} : nda::array<int, 2>{{0, 2}, {1, 3}};
   }
 
   class BlockSparsePathEvaluator : public ::testing::Test {
@@ -97,7 +97,7 @@ TEST_F(BlockSparsePathEvaluator, retained_self_energy_paths_match_selection_apis
                             : (evaluator.n - 1) + evaluator.n * (1 + model.hyb_poles.size() * (2 + static_cast<int>(direction)));
         auto arcs = logical::decode_arcs(order, evaluator.action, f, logical::Kind::self_energy);
         auto backbone = logical::prepare_backbone(topology, arcs);
-        expected = triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology.arcs, f), model.ad);
+        expected = triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology, f), model.ad);
         expect_close(triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, backbone), model.ad), expected);
         if (order == 2) EXPECT_GT(std::abs(triqs_xca::tau_kernel_prefactor(backbone.kernel_prefactor, evaluator.action.kernel) - 1.), 0.1);
         sparse::OperatorSupportTable support(evaluator.action.operators);

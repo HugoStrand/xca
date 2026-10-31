@@ -112,7 +112,7 @@ TEST(ArcStatistics, explicit_statistics_determine_crossing_signs) {
   auto arcs = triqs_xca::diagram::prepare_arcs(
     triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, statistics,
     nda::vector<double>{1.}, triqs_xca::diagram::Kind::self_energy);
-  auto backbone = triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, arcs);
+  auto backbone = triqs_xca::diagram::prepare_backbone(nda::array<int, 2>{{0, 2}, {1, 3}}, arcs);
   auto signs = backbone.endpoints.signs;
   // Two crossing fermionic arcs give a minus; removing the external fermionic
   // arc leaves one arc with positive parity. Direction/kernel signs are separate.

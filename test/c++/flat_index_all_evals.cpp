@@ -420,3 +420,47 @@ TEST_P(FlatIndexStateAllEvals, failed_calls_leave_no_state) {
 INSTANTIATE_TEST_SUITE_P(, FlatIndexStateAllEvals,
                          ::testing::Combine(::testing::ValuesIn(test_utils::all_evaluators()), ::testing::ValuesIn(state_models())),
                          [](auto const &info) { return std::get<0>(info.param).name + "__" + std::get<1>(info.param); });
+
+TEST(TopologyAllEvals, invalid_connectivity_is_rejected_even_for_empty_selections) {
+  auto const &model = test_utils::eval_model("unequal_sets_nA0");
+  nda::vector<long> empty(0);
+  std::vector<nda::array<int, 2>> invalid{
+     nda::array<int, 2>(0, 2), nda::array<int, 2>{{0}}, nda::array<int, 2>{{1, 3}, {0, 2}}, nda::array<int, 2>{{0, 2}, {1, 2}}};
+  for (auto const &entry : test_utils::all_evaluators()) {
+    SCOPED_TRACE(entry.name);
+    auto evaluator = test_utils::make_if_available(entry, model);
+    if (!evaluator) continue;
+    for (auto const &topology : invalid) {
+      for (auto const &quantity : quantities) {
+        SCOPED_TRACE(quantity.name);
+        EXPECT_THROW(quantity.count(*evaluator, topology), std::invalid_argument);
+        EXPECT_THROW(quantity.vec(*evaluator, model.G, topology, empty), std::invalid_argument);
+      }
+      EXPECT_THROW(evaluator->correlator(model.G, model.dynint_ops, model.dynint_ops, topology, empty), std::invalid_argument);
+    }
+  }
+}
+
+TEST(TopologyAllEvals, strided_connectivity_matches_contiguous_input) {
+  auto const &model = test_utils::eval_model("unequal_sets_nA0");
+  nda::array<int, 2> storage(4, 4);
+  storage = -1;
+  auto topology = storage(nda::range(0, 4, 2), nda::range(0, 4, 2));
+  topology = oca_crossing.topology;
+  nda::vector<long> selected{0};
+  for (auto const &entry : test_utils::all_evaluators()) {
+    SCOPED_TRACE(entry.name);
+    auto evaluator = test_utils::make_if_available(entry, model);
+    if (!evaluator) continue;
+    for (auto const &quantity : quantities) {
+      SCOPED_TRACE(quantity.name);
+      EXPECT_EQ(quantity.count(*evaluator, topology), quantity.count(*evaluator, oca_crossing.topology));
+      auto expected = quantity.single(*evaluator, model.G, oca_crossing.topology, 0);
+      auto actual   = quantity.single(*evaluator, model.G, topology, 0);
+      EXPECT_TRUE(test_utils::close_to(actual, expected, entry.rel_tol, min_scale));
+    }
+    auto expected = evaluator->correlator(model.G, model.dynint_ops, model.dynint_ops, oca_crossing.topology, selected);
+    auto actual   = evaluator->correlator(model.G, model.dynint_ops, model.dynint_ops, topology, selected);
+    EXPECT_TRUE(test_utils::close_to(actual, expected, entry.rel_tol, min_scale));
+  }
+}

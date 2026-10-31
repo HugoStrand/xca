@@ -9,6 +9,21 @@
 
 namespace triqs_xca::diagram::topology {
 
+  void validate(nda::array_const_view<int, 2> topology) {
+    int m = topology.extent(0);
+    if (m < 1 || topology.extent(1) != 2) throw std::invalid_argument("topology must contain at least one pair of vertices");
+    std::vector<int> vertices(2 * m);
+    for (int a = 0; a < m; ++a) {
+      if (a > 0 && topology(a, 0) <= topology(a - 1, 0)) throw std::invalid_argument("first pair indices must be in increasing order");
+      if (topology(a, 0) >= topology(a, 1)) throw std::invalid_argument("first endpoint of each arc must have the smaller vertex index");
+      vertices[2 * a]     = topology(a, 0);
+      vertices[2 * a + 1] = topology(a, 1);
+    }
+    std::ranges::sort(vertices);
+    for (int v = 0; v < 2 * m; ++v)
+      if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
+  }
+
   int permutation_parity(nda::array_const_view<int, 1> perm) {
 
     int n = perm.extent(0);
@@ -107,40 +122,25 @@ namespace triqs_xca::diagram::topology {
 
 namespace triqs_xca::diagram {
 
-  Topology::Topology(nda::array<int, 2> topology_arr) : arcs(std::move(topology_arr)) {
-    int m = order();
-    if (m < 1 || arcs.extent(1) != 2) throw std::invalid_argument("topology must contain at least one pair of vertices");
-    std::vector<int> vertices(2 * m);
-    for (int a = 0; a < m; ++a) {
-      if (a > 0 && arcs(a, 0) <= arcs(a - 1, 0)) throw std::invalid_argument("first pair indices must be in increasing order");
-      if (arcs(a, 0) >= arcs(a, 1)) throw std::invalid_argument("first row of topology must contain smaller-numbered vertices");
-      vertices[2 * a]     = arcs(a, 0);
-      vertices[2 * a + 1] = arcs(a, 1);
-    }
-    std::ranges::sort(vertices);
-    for (int v = 0; v < 2 * m; ++v)
-      if (vertices[v] != v) throw std::invalid_argument("topology must contain each vertex index from 0 to 2m-1 exactly once");
-  }
-
-  int permutation_sign(Topology const &topology, std::span<Statistics const> vertices) {
-    if (vertices.size() != static_cast<std::size_t>(2 * topology.order())) throw std::invalid_argument("wrong number of vertex statistics");
+  int permutation_sign(nda::array_const_view<int, 2> topology, std::span<Statistics const> vertices) {
+    if (vertices.size() != static_cast<std::size_t>(2 * topology.extent(0))) throw std::invalid_argument("wrong number of vertex statistics");
     nda::vector<bool> fermionic(vertices.size());
     for (std::size_t v = 0; v < vertices.size(); ++v) fermionic(v) = vertices[v] == Statistics::fermionic;
-    return topology::topology_parity(topology::fermionic_topology(topology.arcs, fermionic));
+    return topology::topology_parity(topology::fermionic_topology(topology, fermionic));
   }
 
-  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs) {
-    int order = topology.order();
+  PermutationSigns prepare_permutation_signs(nda::array_const_view<int, 2> topology, Arcs const &arcs) {
+    int order = topology.extent(0);
     if (arcs.size() != static_cast<std::size_t>(order)) throw std::invalid_argument("wrong number of arcs");
     std::vector<Statistics> vertices(2 * order, Statistics::bosonic);
     for (int a = 1; a < order; ++a) {
       auto statistics = arcs[a].statistics;
       if (statistics != Statistics::fermionic && statistics != Statistics::bosonic)
         throw std::invalid_argument("internal arc has no valid operator statistics");
-      vertices[topology.arcs(a, 0)] = vertices[topology.arcs(a, 1)] = statistics;
+      vertices[topology(a, 0)] = vertices[topology(a, 1)] = statistics;
     }
     int without = permutation_sign(topology, vertices);
-    vertices[0] = vertices[topology.special_vertex()] = Statistics::fermionic;
+    vertices[0] = vertices[topology(0, 1)] = Statistics::fermionic;
     return {permutation_sign(topology, vertices), without};
   }
 

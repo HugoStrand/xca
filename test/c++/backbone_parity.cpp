@@ -37,7 +37,7 @@ namespace {
     auto arcs       = triqs_xca::diagram::prepare_arcs(
        triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::backward, orb1, 0}, {Direction::forward, orb2, 0}}, statistics,
        nda::vector<double>{1.0}, triqs_xca::diagram::Kind::self_energy);
-    auto backbone = triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{crossing3}, arcs);
+    auto backbone = triqs_xca::diagram::prepare_backbone(crossing3, arcs);
     return backbone.endpoints.signs(statistics[orb_kap], statistics[orb_mu]); // checked against the hand-derived table
   }
 
@@ -107,7 +107,7 @@ TEST(DiagramSigns, correlator_boundary_agrees_with_explicit_model_statistics) {
     auto arcs       = triqs_xca::diagram::prepare_arcs(
        triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, orb1, 0}, {Direction::forward, orb2, 0}}, statistics,
        nda::vector<double>{1.0}, triqs_xca::diagram::Kind::correlator);
-    auto backbone = triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{crossing3}, arcs);
+    auto backbone = triqs_xca::diagram::prepare_backbone(crossing3, arcs);
     return backbone.endpoints.signs(external, external);
   };
 
@@ -131,7 +131,7 @@ TEST(DiagramSigns, explicit_statistics_do_not_require_fermions_first) {
   constexpr auto F = Statistics::fermionic, B = Statistics::bosonic;
   std::vector<Statistics> interactions{B, F, B, F};
   Arcs choices{{Direction::forward, -1, -1}, {Direction::backward, 1, 0}, {Direction::forward, 0, 0}};
-  Topology topology{crossing3};
+  nda::array<int, 2> topology{crossing3};
   auto arcs     = prepare_arcs(choices, interactions, nda::vector<double>{1.0}, Kind::self_energy);
   auto backbone = prepare_backbone(topology, arcs);
   auto signs    = backbone.endpoints.signs;
@@ -163,7 +163,7 @@ TEST(DiagramSigns, first_order_has_no_internal_statistics) {
   using namespace triqs_xca;
   using namespace triqs_xca::diagram;
   auto arcs     = prepare_arcs(Arcs{{Direction::backward, -1, -1}}, {}, nda::vector<double>{}, Kind::self_energy);
-  auto backbone = prepare_backbone(Topology{nda::array<int, 2>{{0, 1}}}, arcs);
+  auto backbone = prepare_backbone(nda::array<int, 2>{{0, 1}}, arcs);
   EXPECT_EQ(backbone.endpoints.signs(Statistics::fermionic, Statistics::fermionic), 1);
   EXPECT_EQ(backbone.endpoints.signs(Statistics::bosonic, Statistics::bosonic), 1);
 }
@@ -171,7 +171,7 @@ TEST(DiagramSigns, first_order_has_no_internal_statistics) {
 TEST(DiagramSigns, preparation_needs_only_topology_and_stored_statistics) {
   using namespace triqs_xca;
   constexpr auto F = Statistics::fermionic, B = Statistics::bosonic;
-  diagram::Topology topology{crossing3};
+  nda::array<int, 2> topology{crossing3};
   // Permutation signs need only each arc's endpoint statistics, without
   // numerical poles, operator indices or directed kernel placement.
   diagram::Arcs arcs(3);

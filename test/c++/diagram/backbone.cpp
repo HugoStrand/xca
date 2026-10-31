@@ -6,7 +6,7 @@ using triqs_xca::diagram::Direction;
 namespace diagram = triqs_xca::diagram;
 
 TEST(BackboneRange, correlator_geometry_is_shared) {
-  diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
   auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, statistics,
                                    nda::vector<double>{1.}, diagram::Kind::correlator);
@@ -21,7 +21,7 @@ TEST(BackboneRange, correlator_geometry_is_shared) {
 }
 
 TEST(BackboneRange, first_order_has_two_single_edge_segments) {
-  diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto backbone = diagram::prepare_backbone(topology, diagram::Arcs{{Direction::external, -1, -1}});
   auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   EXPECT_EQ(zero_to_tau, (diagram::BackboneRange{1, 1, 0, 1}));
@@ -38,7 +38,7 @@ TEST(BackboneRange, rejects_disconnected_or_reversed_intervals) {
 }
 
 TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
-  diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
   auto sigma = diagram::prepare_backbone(topology,
                                          diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}}, statistics,
@@ -64,13 +64,12 @@ TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
 
 TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
   std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
-  for (auto topology_arr : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 3}, {1, 2}}}) {
-    diagram::Topology topology{topology_arr};
-    int end = 2 * topology.order(), special = end - 1;
+  for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 3}, {1, 2}}}) {
+    int end = 2 * topology.extent(0), special = end - 1;
     for (long direction : {0, 1}) {
       // One flavour and pole makes the least significant digit the special direction.
       auto sigma = diagram::prepare_backbone(
-         topology, diagram::decode_arcs(topology.order(), statistics, nda::vector<double>{1.}, direction, diagram::Kind::self_energy));
+         topology, diagram::decode_arcs(topology.extent(0), statistics, nda::vector<double>{1.}, direction, diagram::Kind::self_energy));
       EXPECT_EQ(static_cast<int>(sigma.endpoints.direction), direction);
       EXPECT_EQ(sigma.endpoints.special_vertex, special);
       EXPECT_NO_THROW(sigma.require_self_energy());
@@ -85,7 +84,7 @@ TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
       EXPECT_EQ(sigma.self_energy_sign(), direction == 0 ? -1 : 1);
     }
     auto corr =
-       diagram::prepare_backbone(topology, diagram::decode_arcs(topology.order(), statistics, nda::vector<double>{1.}, 0, diagram::Kind::correlator));
+       diagram::prepare_backbone(topology, diagram::decode_arcs(topology.extent(0), statistics, nda::vector<double>{1.}, 0, diagram::Kind::correlator));
     EXPECT_EQ(corr.endpoints.direction, Direction::external);
     EXPECT_NO_THROW(corr.require_correlator());
     EXPECT_THROW(corr.require_self_energy(), std::invalid_argument);
@@ -95,7 +94,7 @@ TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
     EXPECT_EQ(ranges.after_special, (diagram::BackboneRange{end, end, special, end}));
     EXPECT_FALSE(ranges.after_special.empty()); // the final propagator remains
   }
-  auto sigma = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+  auto sigma = diagram::prepare_backbone(nda::array<int, 2>{{0, 2}, {1, 3}},
                                          diagram::decode_arcs(2, statistics, nda::vector<double>{1.}, 0, diagram::Kind::self_energy));
   EXPECT_EQ(sigma.endpoint_ranges().after_special, (diagram::BackboneRange{3, 4, 2, 3}));
   EXPECT_FALSE(sigma.endpoint_ranges().after_special.empty());

@@ -109,14 +109,18 @@ namespace triqs_xca::diagram {
     int self_energy_sign() const;
   };
 
-  Backbone prepare_backbone(Topology const &topology, Arcs const &arcs);
+  /// Preparation functions borrow connectivity only for the duration of the call.
+  /// Validate it once with topology::validate() before preparing any backbones.
+  Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs);
 
   /// Evaluator entry point: decode the selected arc choices and prepare their backbone.
-  template <typename Storage> Backbone prepare_backbone(Topology const &topology, Action<Storage> const &action, long flat_index, Kind kind) {
-    return prepare_backbone(topology, decode_arcs(topology.order(), action, flat_index, kind));
+  /// Requires connectivity validated by topology::validate().
+  template <typename Storage> Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Action<Storage> const &action, long flat_index, Kind kind) {
+    return prepare_backbone(topology, decode_arcs(topology.extent(0), action, flat_index, kind));
   }
 
   /// Construction helper; returned vertices do not yet have kernel placement.
-  std::vector<Vertex> prepare_vertices(Topology const &topology, Arcs const &arcs);
+  /// Requires connectivity validated by topology::validate().
+  std::vector<Vertex> prepare_vertices(nda::array_const_view<int, 2> topology, Arcs const &arcs);
   std::ostream &operator<<(std::ostream &out, Backbone const &backbone);
 } // namespace triqs_xca::diagram

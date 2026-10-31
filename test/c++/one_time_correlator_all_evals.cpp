@@ -215,20 +215,19 @@ namespace {
    * @details The sign of a backbone is the parity of its topology without the lines that have a bosonic vertex. An evaluator that takes
    * the statistics the other way gives the reference minus twice the sum over these backbones.
    */
-  nda::vector<long> sign_changing_backbones(test_utils::EvalModel const &m, topo_t t, bool fermionic_legs, Flip flip) {
+  nda::vector<long> sign_changing_backbones(test_utils::EvalModel const &m, topo_t topology, bool fermionic_legs, Flip flip) {
     long n_hyb = m.n_hyb();
-    triqs_xca::diagram::Topology topology{nda::array<int, 2>(t)};
     int flavours = n_hyb + m.n_int();
     auto sign = [&](triqs_xca::diagram::Backbone const &backbone, bool legs, bool interaction_lines_bosonic) {
-      nda::array<bool, 1> fermionic(t.size());
+      nda::array<bool, 1> fermionic(topology.size());
       for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || backbone.vertices[v].flavour < n_hyb;
       fermionic(0)       = legs;
-      fermionic(t(0, 1)) = legs;
-      return topology_parity(fermionic_topology(t, fermionic));
+      fermionic(topology(0, 1)) = legs;
+      return topology_parity(fermionic_topology(topology, fermionic));
     };
     std::vector<long> fs;
-    for (long f = 0; f < triqs_xca::diagram::count_diagrams(topology.order(), flavours, m.hyb_poles.size(), triqs_xca::diagram::Kind::correlator); ++f) {
-      auto arcs = triqs_xca::diagram::decode_arcs(topology.order(), triqs_xca::action_statistics(flavours, n_hyb),
+    for (long f = 0; f < triqs_xca::diagram::count_diagrams(topology.extent(0), flavours, m.hyb_poles.size(), triqs_xca::diagram::Kind::correlator); ++f) {
+      auto arcs = triqs_xca::diagram::decode_arcs(topology.extent(0), triqs_xca::action_statistics(flavours, n_hyb),
                                                  m.hyb_poles, f, triqs_xca::diagram::Kind::correlator);
       auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
       int alt = flip == Flip::legs ? sign(backbone, !fermionic_legs, true) : sign(backbone, fermionic_legs, false);

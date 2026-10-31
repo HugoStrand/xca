@@ -65,7 +65,7 @@ TEST(Hybridization, vertex_kernels_include_reflection_and_identity) {
   auto kernel = make_tau_kernel(mesh, poles);
   auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}},
                                     std::vector{Statistics::fermionic}, poles, diagram::Kind::self_energy);
-  auto backbone = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}}, arcs);
+  auto backbone = diagram::prepare_backbone(nda::array<int, 2>{{0, 2}, {1, 3}}, arcs);
   auto nodes = mesh.dlr_it().get_itnodes();
   for (bool reflected : {false, true}) {
     for (int vertex = 0; vertex < 4; ++vertex) {
@@ -95,7 +95,7 @@ TEST(Hybridization, edge_products_read_the_supplied_tables) {
   auto kernel = make_tau_kernel(mesh, poles);
   auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}, {Direction::forward, 0, 1}},
                                     std::vector{Statistics::fermionic}, poles, diagram::Kind::self_energy);
-  auto backbone = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}}, arcs);
+  auto backbone = diagram::prepare_backbone(nda::array<int, 2>{{0, 3}, {1, 4}, {2, 5}}, arcs);
   auto nodes = mesh.dlr_it().get_itnodes();
   auto values = nda::ones<dcomplex>(nodes.size(), 1, 1);
   auto edge = backbone.edges[2].kernels;
@@ -137,15 +137,14 @@ TEST(Hybridization, trailing_correlator_edge_is_identity) {
   auto mesh = triqs::mesh::dlr_imtime(2., triqs::mesh::Fermion, 20., 1e-10, false);
   nda::vector<double> poles{0.7};
   auto data = make_tau_kernel(mesh, poles);
-  for (auto topology_arr : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
-    diagram::Topology topology{topology_arr};
-    auto backbone = diagram::prepare_backbone(topology, diagram::decode_arcs(topology.order(), std::vector{Statistics::fermionic}, poles, 0, diagram::Kind::correlator));
+  for (auto topology : {nda::array<int, 2>{{0, 1}}, nda::array<int, 2>{{0, 2}, {1, 3}}}) {
+    auto backbone = diagram::prepare_backbone(topology, diagram::decode_arcs(topology.extent(0), std::vector{Statistics::fermionic}, poles, 0, diagram::Kind::correlator));
     auto const &edges = backbone.edges;
-    ASSERT_EQ(edges.size(), 2 * topology.order());
+    ASSERT_EQ(edges.size(), 2 * topology.extent(0));
     auto values = nda::ones<dcomplex>(data.at_tau_plus.extent(0), 1, 1);
     apply_kernel_product(values, edges.back().kernels, data);
     EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
-    if (topology.order() == 1) {
+    if (topology.extent(0) == 1) {
       EXPECT_DOUBLE_EQ(tau_kernel_prefactor(backbone.kernel_prefactor, data), 1.);
       apply_kernel(values, backbone.vertices[0], data);
       EXPECT_EQ(nda::max_element(nda::abs(values - dcomplex(1))), 0.);
@@ -155,7 +154,7 @@ TEST(Hybridization, trailing_correlator_edge_is_identity) {
 
 TEST(Hybridization, normalization_preserves_order_and_repeated_poles) {
   using namespace triqs_xca;
-  diagram::Topology topology{nda::array<int, 2>{{0, 4}, {1, 5}, {2, 6}, {3, 7}}};
+  nda::array<int, 2> topology{{0, 4}, {1, 5}, {2, 6}, {3, 7}};
   auto arcs = diagram::prepare_arcs(
     diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0},
                   {Direction::forward, 0, 1}, {Direction::forward, 0, 0}},

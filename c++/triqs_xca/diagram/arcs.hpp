@@ -20,7 +20,7 @@ namespace triqs_xca::diagram {
 
   enum class Kind { self_energy, correlator };
 
-  /// Arc choices indexed exactly like Topology::arcs, including the special row zero.
+  /// Arc choices indexed by connectivity-array row, including the special row zero.
   using Arcs = std::vector<Arc>;
 
   /// Validate enriched choices without consulting their original Action.

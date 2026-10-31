@@ -22,22 +22,22 @@ TEST(DensePrepared, self_energy_and_pair_outlive_preparation_inputs) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
-  nda::array<int, 2> topology_arr{{0, 2}, {1, 3}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
   auto const backbone = [&] {
-    triqs_xca::diagram::Topology topology{topology_arr};
+    nda::array<int, 2> preparation_topology{topology};
     auto arcs = triqs_xca::diagram::prepare_arcs(
       triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}},
       evaluator.action, triqs_xca::diagram::Kind::self_energy);
-    auto result = triqs_xca::diagram::prepare_backbone(topology, arcs);
-    topology.arcs() = 0;
+    auto result = triqs_xca::diagram::prepare_backbone(preparation_topology, arcs);
+    preparation_topology() = 0;
     arcs.clear();
     return result;
   }();
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
   long partner = f + n * model.hyb_poles.size();
-  auto expected = tensor(evaluator.compute_self_energy(G, topology_arr, f)[0].data());
-  auto expected_pair = nda::make_regular(expected + evaluator.compute_self_energy(G, topology_arr, partner)[0].data());
+  auto expected = tensor(evaluator.compute_self_energy(G, topology, f)[0].data());
+  auto expected_pair = nda::make_regular(expected + evaluator.compute_self_energy(G, topology, partner)[0].data());
 
   evaluator.reset();
   evaluator.eval_self_energy(model.G, backbone);
@@ -65,20 +65,20 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
-  nda::array<int, 2> topology_arr{{0, 2}, {1, 3}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
   auto const backbone = [&] {
-    triqs_xca::diagram::Topology topology{topology_arr};
+    nda::array<int, 2> preparation_topology{topology};
     auto arcs = triqs_xca::diagram::prepare_arcs(
       triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, n - 1, 1}},
       evaluator.action, triqs_xca::diagram::Kind::correlator);
-    auto result = triqs_xca::diagram::prepare_backbone(topology, arcs);
-    topology.arcs() = 0;
+    auto result = triqs_xca::diagram::prepare_backbone(preparation_topology, arcs);
+    preparation_topology() = 0;
     arcs.clear();
     return result;
   }();
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
-  auto expected = evaluator.compute_single_ptcle_gf(G, topology_arr, f);
+  auto expected = evaluator.compute_single_ptcle_gf(G, topology, f);
   auto annihilators = nda::make_regular(evaluator.action.operators.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
   auto creators = nda::make_regular(evaluator.action.operators.F_dags(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
   auto actual = evaluator.eval_correlator(model.G, backbone, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});
@@ -93,11 +93,11 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
 TEST(DensePrepared, wrong_endpoint_operation_is_rejected_before_buffers_change) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto sigma = triqs_xca::diagram::prepare_backbone(
-    topology, triqs_xca::diagram::decode_arcs(topology.order(), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
+    topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
   auto corr = triqs_xca::diagram::prepare_backbone(
-    topology, triqs_xca::diagram::decode_arcs(topology.order(), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
+    topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
   evaluator.T = 2.; evaluator.U = 3.; evaluator.Sigma = 4.;
   EXPECT_THROW(evaluator.eval_self_energy(model.G, corr), std::invalid_argument);
   EXPECT_THROW(evaluator.eval_self_energy_pair(model.G, corr), std::invalid_argument);

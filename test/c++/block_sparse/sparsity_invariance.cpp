@@ -66,7 +66,6 @@ TEST(SparsityInvariance, OCA_trivial_sparsity) {
 
   int n                       = 4; // number of flavors
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto B                      = triqs_xca::diagram::Topology{topology};
 
   // --- block-sparse evaluation, using the block structure of the atom_diag subspaces ---
   auto [Gt, Fq, sym_set_labels] = test_utils::two_band_helper(beta, Lambda, eps, hyb_coeffs);
@@ -78,7 +77,7 @@ TEST(SparsityInvariance, OCA_trivial_sparsity) {
   auto [Gt_dense, Fs_dense, F_dags_dense] = test_utils::two_band_dense_helper(beta, Lambda, eps);
   auto Fset                               = FSet(Fs_dense, F_dags_dense, hyb_coeffs);
   dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  DDE.eval_self_energy(Gt_dense, B);
+  DDE.eval_self_energy(Gt_dense, topology);
   auto OCA_dense_result = DDE.Sigma;
 
   // --- block-sparse evaluation with trivial sparsity: one block, one symmetry set ---
@@ -124,26 +123,25 @@ TEST(SparsityInvariance, OCA_correlator_trivial_sparsity) {
 
   // backbone
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto B                      = triqs_xca::diagram::Topology{topology};
 
   // --- block-sparse evaluation, using the block structure of the atom_diag subspaces ---
   auto [Gt, Fq, sym_set_labels] = test_utils::two_band_helper(beta, Lambda, eps, hyb_coeffs);
   DiagramEvaluator D(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
   auto [mu_ops, kap_ops] = test_utils::make_correlator_ops(Fq, n);
-  auto OCA_result        = D.eval_correlator(Gt, B, mu_ops, kap_ops);
+  auto OCA_result        = D.eval_correlator(Gt, topology, mu_ops, kap_ops);
 
   // --- dense evaluation ---
   // Both evaluators take physical poles; the DLR nodes are beta-scaled.
   auto [Gt_dense, Fs_dense, F_dags_dense] = test_utils::two_band_dense_helper(beta, Lambda, eps);
   auto Fset                               = FSet(Fs_dense, F_dags_dense, hyb_coeffs);
   dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  auto OCA_dense_result = D_dense.eval_correlator(Gt_dense, B, Fs_dense, F_dags_dense);
+  auto OCA_dense_result = D_dense.eval_correlator(Gt_dense, topology, Fs_dense, F_dags_dense);
 
   // --- block-sparse evaluation with trivial sparsity: one block, one symmetry set ---
   auto [Gt_triv, Fq_triv] = test_utils::trivial_sparsity_helper(Gt_dense, Fs_dense, F_dags_dense, hyb_coeffs, n);
   DiagramEvaluator D_triv(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq_triv);
   auto [mu_ops_triv, kap_ops_triv] = test_utils::make_correlator_ops(Fq_triv, n);
-  auto OCA_trivial_bs              = D_triv.eval_correlator(Gt_triv, B, mu_ops_triv, kap_ops_triv);
+  auto OCA_trivial_bs              = D_triv.eval_correlator(Gt_triv, topology, mu_ops_triv, kap_ops_triv);
 
   EXPECT_LE(nda::max_element(nda::abs(OCA_result - OCA_dense_result)), 1.0e-15);
   EXPECT_LE(nda::max_element(nda::abs(OCA_result - OCA_trivial_bs)), 1.0e-15);
@@ -181,7 +179,6 @@ static void check_spin_flip_fermion(bool use_particle_number_sym) {
 
   // set up backbone and diagram evaluator
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto B                      = triqs_xca::diagram::Topology{topology};
   DiagramEvaluator D(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
   auto result = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
 
@@ -190,7 +187,7 @@ static void check_spin_flip_fermion(bool use_particle_number_sym) {
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
 
   dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  DDE.eval_self_energy_by_pairs(Gt_dense, B);
+  DDE.eval_self_energy_by_pairs(Gt_dense, topology);
   auto result_dense = DDE.Sigma;
 
   for (int i = 0; i < Gt_block_sizes.size(); i++) {
@@ -238,15 +235,14 @@ static void check_spin_flip_fermion_correlator(bool use_particle_number_sym) {
 
   // set up backbone and diagram evaluator
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto B                      = triqs_xca::diagram::Topology{topology};
   DiagramEvaluator D(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
-  auto result = D.eval_correlator(Gt, B, mu_ops, kap_ops);
+  auto result = D.eval_correlator(Gt, topology, mu_ops, kap_ops);
 
   // compare to dense backbone result
   auto Gt_dense = test_utils::Hmat_to_Gtmat(test_utils::get_full_h_atomic(ad), beta, dlr_it_abs);
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
   dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  auto result_dense = D_dense.eval_correlator(Gt_dense, B, Fset.Fs, Fset.F_dags);
+  auto result_dense = D_dense.eval_correlator(Gt_dense, topology, Fset.Fs, Fset.F_dags);
 
   ASSERT_LE(nda::max_element(nda::abs(result - result_dense)), 1.0e-15);
 }
@@ -304,19 +300,18 @@ TEST(SparsityInvariance, spgf_is_indexed_by_orbital) {
   ASSERT_TRUE(interleaves) << "vacuous test: the symmetry sets of this model do not interleave with the orbital order";
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}}; // crossing: gives the largest permutation gap of the order-2 topologies
-  auto B                      = triqs_xca::diagram::Topology{topology};
 
   // dense reference, ordered per orbital by construction
   auto Gt_dense = test_utils::Hmat_to_Gtmat(test_utils::get_full_h_atomic(ad), beta, dlr_it_abs);
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
   dense::DiagramEvaluator D_dense(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  auto ref_dense = D_dense.eval_correlator(Gt_dense, B, Fset.Fs, Fset.F_dags);
+  auto ref_dense = D_dense.eval_correlator(Gt_dense, topology, Fset.Fs, Fset.F_dags);
 
   DiagramEvaluator D(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
 
   // second reference, the block-sparse evaluator with the operator list built per orbital by make_correlator_ops()
   auto [mu_ops, kap_ops] = test_utils::make_correlator_ops(Fq, nn);
-  auto ref_bs            = D.eval_correlator(Gt, B, mu_ops, kap_ops);
+  auto ref_bs            = D.eval_correlator(Gt, topology, mu_ops, kap_ops);
 
   double scale = nda::max_element(nda::abs(ref_dense));
   ASSERT_GT(scale, 1.0e-6) << "vacuous test: the correlator is zero";
@@ -430,12 +425,8 @@ TEST(SparsityInvariance, correlator_keeps_the_beta_tau_side_when_vertex_zero_pai
     auto ref     = D_dense.compute_single_ptcle_gf(G_flat, topology);
     double scale = nda::max_element(nda::abs(ref));
     ASSERT_GT(scale, 0.02) << "vacuous test: the correlator is too small to resolve a dropped half";
-
-    triqs_xca::diagram::Topology B{topology};
-    auto bs = D.eval_correlator(Gt, B, mu_ops, kap_ops);
-
-    triqs_xca::diagram::Topology B_triv{topology};
-    auto triv = D_triv.eval_correlator(Gt_triv, B_triv, mu_triv, kap_triv);
+    auto bs = D.eval_correlator(Gt, topology, mu_ops, kap_ops);
+    auto triv = D_triv.eval_correlator(Gt_triv, topology, mu_triv, kap_triv);
 
     // the single-block control has no absent path and is insensitive to the bug
     EXPECT_LE(nda::max_element(nda::abs(triv - ref)), 1.0e-13 * scale)

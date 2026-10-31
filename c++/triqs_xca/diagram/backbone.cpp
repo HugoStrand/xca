@@ -3,13 +3,13 @@
 #include <stdexcept>
 
 namespace triqs_xca::diagram {
-  std::vector<Vertex> prepare_vertices(Topology const &topology, Arcs const &arcs) {
-    int m = topology.order();
+  std::vector<Vertex> prepare_vertices(nda::array_const_view<int, 2> topology, Arcs const &arcs) {
+    int m = topology.extent(0);
     validate_arcs(arcs, m);
     std::vector<Vertex> result(2 * m);
     for (int a = 0; a < m; ++a) {
-      auto &early   = result[topology.arcs(a, 0)];
-      auto &late    = result[topology.arcs(a, 1)];
+      auto &early   = result[topology(a, 0)];
+      auto &late    = result[topology(a, 1)];
       early.flavour = late.flavour = arcs[a].retained_flavour;
       early.pole_index = late.pole_index = arcs[a].pole_index;
       if (a == 0 && arcs[a].direction == Direction::external) {
@@ -24,19 +24,19 @@ namespace triqs_xca::diagram {
     return result;
   }
 
-  Backbone prepare_backbone(Topology const &topology, Arcs const &arcs) {
-    int m          = topology.order();
+  Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs) {
+    int m          = topology.extent(0);
     auto vertices  = prepare_vertices(topology, arcs);
     int edge_count = 2 * m - (arcs[0].direction != Direction::external);
     Backbone result{std::move(vertices),
                     std::vector<Edge>(edge_count),
                     {},
-                    {topology.special_vertex(), arcs[0].direction, prepare_permutation_signs(topology, arcs)}};
+                    {topology(0, 1), arcs[0].direction, prepare_permutation_signs(topology, arcs)}};
     result.kernel_prefactor.factors.reserve(m - 1);
     for (int a = 1; a < m; ++a) {
       auto const &arc = arcs[a];
       bool forward    = arc.direction == Direction::forward;
-      int right = topology.arcs(a, 0), left = topology.arcs(a, 1);
+      int right = topology(a, 0), left = topology(a, 1);
       // Avoid exponentially growing kernels. Zero poles use vertex placement
       // in both directions; preparation needs only the selected pole's sign.
       if (forward ? arc.pole_sign <= 0 : arc.pole_sign >= 0) {

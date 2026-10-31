@@ -7,19 +7,10 @@
 
 namespace triqs_xca::diagram {
 
-  /// Diagram connectivity, independent of operator representation and sector layout.
-  struct Topology {
-    nda::array<int, 2> arcs;
-
-    explicit Topology(nda::array<int, 2> topology_arr);
-
-    int order() const { return static_cast<int>(arcs.extent(0)); }
-    int special_vertex() const { return arcs(0, 1); }
-  };
-
   /// Permutation parity after removing every arc with a bosonic endpoint.
   /// Order, direction, kernel, and Python observable prefactors are separate.
-  int permutation_sign(Topology const &topology, std::span<Statistics const> vertices);
+  /// Requires connectivity validated by topology::validate().
+  int permutation_sign(nda::array_const_view<int, 2> topology, std::span<Statistics const> vertices);
 
   /// The unresolved special arc has only two parity cases, independent of the
   /// number of endpoint orbitals. No orbital-pair enumeration is needed here.
@@ -34,12 +25,21 @@ namespace triqs_xca::diagram {
 
   /// Enriched internal arcs carry their operator statistics. Each barred
   /// contraction must have that parity. Directions and poles do not enter here.
-  PermutationSigns prepare_permutation_signs(Topology const &topology, Arcs const &arcs);
+  /// Requires connectivity validated by topology::validate().
+  PermutationSigns prepare_permutation_signs(nda::array_const_view<int, 2> topology, Arcs const &arcs);
 
 } // namespace triqs_xca::diagram
 
 // Array-based topology helpers.
 namespace triqs_xca::diagram::topology {
+
+  /// Validate diagram connectivity before preparing one or more backbones.
+  /// Requires at least one row, two columns, increasing endpoints in each row,
+  /// increasing first endpoints, and each vertex 0..2m-1 exactly once. Thus row
+  /// zero connects vertex zero to the special vertex. Rows are never reordered:
+  /// their order identifies the corresponding arc choices.
+  /// Throws std::invalid_argument for invalid connectivity.
+  void validate(nda::array_const_view<int, 2> topology);
 
   /**
    * @brief Parity (fermionic sign) of a permutation via cycle decomposition

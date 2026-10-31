@@ -117,17 +117,17 @@ namespace triqs_xca::dense {
       nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
       nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
+    // Native topology-taking eval_* helpers require topology::validate(topology)
+    // before the indexed loop. Public compute_* adapters perform that validation.
     // evaluate a diagram of a given order and topology in dense storage
     // (i.e., evaluate and sum all backbones with different orbital indices, poles, and hybridization line directions)
-    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology);
+    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology);
     // evaluate a diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE void eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix);
+    C2PY_IGNORE void eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology, long f_ix);
     // evaluate a pair of diagrams differing only in the direction of the line connected to the zero vertex
-    C2PY_IGNORE void eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology, long f_ix);
+    C2PY_IGNORE void eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology, long f_ix);
     // evaluate all pairs of diagrams for given topology
-    C2PY_IGNORE void eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology);
-    // get number of backbones for given topology
-    C2PY_IGNORE long get_num_self_energy_backbones(triqs_xca::diagram::Topology const &topology);
+    C2PY_IGNORE void eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology);
 
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
     compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for given topology
@@ -149,11 +149,12 @@ namespace triqs_xca::dense {
     // get number of backbones for given topology
     long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
 
+    // These native correlator helpers also require a validated topology.
     // evaluate the mu, kap entries of a correlator for a diagram of a given order and topology in dense storage
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology,
+    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology,
                                                         nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, bool is_fermionic = true);
     // evaluate a correlator diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Topology const &topology,
+    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology,
                                                         nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, long f_ix,
                                                         bool is_fermionic = true);
 

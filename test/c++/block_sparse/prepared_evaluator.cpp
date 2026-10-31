@@ -38,14 +38,14 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
   auto const assignment = triqs_xca::diagram::prepare_backbone(
      topology,
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
                                       triqs_xca::diagram::Kind::self_energy));
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
-  auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology.arcs, f), model.ad);
+  auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology, f), model.ad);
   auto actual = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, assignment), model.ad);
   expect_close(actual, expected);
 
@@ -61,7 +61,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
   auto const assignment = triqs_xca::diagram::prepare_backbone(
      topology,
@@ -113,7 +113,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
   std::vector<tensor> coarse_blocks{full_G};
   BlockDiagOpFun coarse_G(coarse_blocks, nda::vector<int>{0});
   auto assignment = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, fine.action.statistics,
                                       poles, triqs_xca::diagram::Kind::self_energy));
   auto sigma = coarse.compute_self_energy(coarse_G, assignment);
@@ -143,7 +143,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
 
   // Recovery after rejection: first-order paths do close for this model.
   auto first_order =
-     triqs_xca::diagram::prepare_backbone(triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 1}}},
+     triqs_xca::diagram::prepare_backbone(nda::array<int, 2>{{0, 1}},
                                           triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}},
                                                                            fine.action.statistics, poles, triqs_xca::diagram::Kind::self_energy));
   auto recovered = fine.compute_self_energy(fine_G, first_order);
@@ -168,11 +168,11 @@ TEST(BlockSparsePrepared, wrong_kind_is_rejected_before_buffers_change) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto sigma = triqs_xca::diagram::prepare_backbone(
-     topology, triqs_xca::diagram::decode_arcs(topology.order(), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
+     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
   auto corr = triqs_xca::diagram::prepare_backbone(
-     topology, triqs_xca::diagram::decode_arcs(topology.order(), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
+     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
   auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, sigma), model.ad);
   evaluator.T = 2.; evaluator.U = 3.;
   EXPECT_THROW(evaluator.compute_self_energy(G, corr), std::invalid_argument);

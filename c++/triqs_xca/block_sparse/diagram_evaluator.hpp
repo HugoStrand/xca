@@ -57,8 +57,9 @@ class DiagramEvaluator {
   bool select_diagonal_self_energy(diagram::BackbonePath const &path) const;
   void add_self_energy_path(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor);
   void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone);
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, long f_ix);
-  void eval_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology);
+  // The selection adapters validate topology once before calling these helpers.
+  void eval_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
+  void eval_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
@@ -139,11 +140,13 @@ class DiagramEvaluator {
   // routines for correlator diagrams
   long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology); // get number of backbones for given topology
 
+  // Native topology-taking helpers require topology::validate(topology) before
+  // the indexed loop. Public compute_* adapters perform that validation.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, bool is_fermionic = true);
 
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::Topology const &topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, long f_ix, bool is_fermionic = true);
+    BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, long f_ix, bool is_fermionic = true);
 
   // Evaluate a prepared backbone; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(

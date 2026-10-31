@@ -7,6 +7,43 @@
 
 using namespace triqs_xca::diagram::topology;
 
+TEST(test_topology, validate_canonical_connectivity) {
+  EXPECT_NO_THROW(validate(nda::array<int, 2>{{0, 1}}));
+  EXPECT_NO_THROW(validate(nda::array<int, 2>{{0, 2}, {1, 3}}));
+  EXPECT_NO_THROW(validate(nda::array<int, 2>{{0, 3}, {1, 2}}));
+  EXPECT_NO_THROW(validate(nda::array<int, 2>{{0, 2}, {1, 4}, {3, 5}}));
+}
+
+TEST(test_topology, validate_rejects_invalid_shape) {
+  EXPECT_THROW(validate(nda::array<int, 2>(0, 2)), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>(1, 0)), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0, 1, 2}}), std::invalid_argument);
+}
+
+TEST(test_topology, validate_rejects_noncanonical_or_incomplete_connectivity) {
+  // Row order fixes the association with arc choices; validation must not sort it.
+  nda::array<int, 2> reordered{{1, 3}, {0, 2}};
+  EXPECT_THROW(validate(reordered), std::invalid_argument);
+  EXPECT_EQ(reordered(0, 0), 1);
+  EXPECT_THROW(validate(nda::array<int, 2>{{1, 0}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0, 0}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0, 2}, {0, 3}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0, 2}, {1, 2}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{0, 4}, {1, 2}}), std::invalid_argument);
+  EXPECT_THROW(validate(nda::array<int, 2>{{-1, 1}}), std::invalid_argument);
+}
+
+TEST(test_topology, validate_accepts_strided_views) {
+  nda::array<int, 2> storage(4, 4);
+  storage = -1;
+  auto topology = storage(nda::range(0, 4, 2), nda::range(0, 4, 2));
+  topology = nda::array<int, 2>{{0, 2}, {1, 3}};
+  EXPECT_NO_THROW(validate(topology));
+  topology(1, 1) = 2;
+  EXPECT_THROW(validate(topology), std::invalid_argument);
+}
+
 TEST(test_topology, permutation_parity_identity) {
   // Identity: zero transpositions -> even -> +1
   EXPECT_EQ(permutation_parity(nda::array<int, 1>{0}), 1);

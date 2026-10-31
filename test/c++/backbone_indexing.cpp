@@ -29,9 +29,8 @@ namespace {
  * using one negative and one positive pole. Neither preparation route is an oracle.
  */
 TEST(Backbone, indexing) {
-  nda::array<int, 2> topology_arr = {{0, 2}, {1, 4}, {3, 5}};
-  Topology topology{topology_arr};
-  int n = 4, m = topology.order();
+  nda::array<int, 2> topology = {{0, 2}, {1, 4}, {3, 5}};
+  int n = 4, m = topology.extent(0);
   double beta = 2.0, Lambda = 100.0 * beta, eps = 1.0e-10;
   auto poles = cppdlr::build_dlr_rf(Lambda, eps);
   int r      = poles.size();
@@ -40,7 +39,7 @@ TEST(Backbone, indexing) {
   ASSERT_LT(poles(pole_inds(0)), 0.0);
   ASSERT_GT(poles(pole_inds(1)), 0.0);
   int p_ix = pole_inds(0) + r * pole_inds(1);
-  int o_ix = orb_inds(topology_arr(1, 0)) + n * orb_inds(topology_arr(2, 0));
+  int o_ix = orb_inds(topology(1, 0)) + n * orb_inds(topology(2, 0));
 
   for (int fb_ix = 0; fb_ix < (1 << m); ++fb_ix) {
     SCOPED_TRACE("fb_ix = " + std::to_string(fb_ix));
@@ -51,8 +50,8 @@ TEST(Backbone, indexing) {
     std::vector<bool> exp_bar = {false, false, false, false, true, true};
     std::vector<bool> exp_dag(2 * m, false);
     for (int a = 0; a < m; ++a) {
-      exp_dag[topology_arr(a, 0)] = fb(a) == 0;
-      exp_dag[topology_arr(a, 1)] = fb(a) == 1;
+      exp_dag[topology(a, 0)] = fb(a) == 0;
+      exp_dag[topology(a, 1)] = fb(a) == 1;
     }
     bool line1_on_vertices    = fb(1) == 1; // negative pole
     bool line2_on_vertices    = fb(2) == 0; // positive pole
@@ -112,11 +111,11 @@ TEST(Backbone, indexing) {
 
 TEST(Backbone, correlator_data_survives_its_source_and_copies_are_independent) {
   auto backbone = [] {
-    Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+    nda::array<int, 2> topology{{0, 2}, {1, 3}};
     nda::vector<double> poles{-1.0, 2.0};
     auto arcs                = decode_arcs(2, fermions(2), poles, 7, Kind::correlator);
     auto result              = prepare_backbone(topology, arcs);
-    topology.arcs(0, 1)      = 3;
+    topology(0, 1)          = 3;
     poles(1)                 = -2.0;
     arcs[1].retained_flavour = 0;
     arcs[1].pole_index       = 0;
@@ -146,7 +145,7 @@ TEST(Backbone, correlator_data_survives_its_source_and_copies_are_independent) {
 }
 
 TEST(Backbone, flat_index_out_of_range) {
-  Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = 3;
   nda::vector<double> poles{1.3, -0.8};
   auto check = [&](Kind kind, long expected_count) {
@@ -180,7 +179,7 @@ TEST(Backbone, flat_indices_beyond_int) {
   for (auto kind : {Kind::self_energy, Kind::correlator}) {
     long last     = count_diagrams(m, n, p, kind) - 1;
     auto arcs     = decode_arcs(m, fermions(n), poles(p), last, kind);
-    auto backbone = prepare_backbone(Topology{crossing(m)}, arcs);
+    auto backbone = prepare_backbone(crossing(m), arcs);
     for (int i = (kind == Kind::self_energy ? 0 : 1); i < m; ++i) EXPECT_EQ(arcs[i].direction, Direction::forward);
     for (int i = 1; i < m; ++i) EXPECT_EQ(arcs[i].pole_index, p - 1);
     for (int v = 1; v < 2 * m; ++v)
@@ -196,7 +195,7 @@ TEST(Backbone, flat_indices_beyond_int) {
   for (int i = 0; i < m9 - 1; ++i) n_o *= n9, n_p *= p9;
   ASSERT_GT(p_ix, long{std::numeric_limits<int>::max()});
   auto arcs     = decode_arcs(m9, fermions(n9), poles(p9), o_ix + n_o * (p_ix + n_p * fb_ix), Kind::self_energy);
-  auto backbone = prepare_backbone(Topology{crossing(m9)}, arcs);
+  auto backbone = prepare_backbone(crossing(m9), arcs);
   for (int i = 0; i < m9; ++i) EXPECT_EQ(static_cast<int>(arcs[i].direction), fb[i]);
   for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(arcs[i + 1].pole_index, pole[i]);
   for (int i = 1; i < m9; ++i) EXPECT_EQ(backbone.vertices[i].flavour, orb[i - 1]);
@@ -206,7 +205,7 @@ TEST(Backbone, flat_indices_beyond_int) {
 }
 
 TEST(Backbone, logical_and_flat_selections_have_explicit_semantics) {
-  Topology topology{nda::array<int, 2>{{0, 2}, {1, 4}, {3, 5}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 4}, {3, 5}};
   nda::vector<double> poles{-1.0, 2.0};
   // f = 5 + 3^2 * (1 + 2^2 * 5) = 194.
   auto decoded = decode_arcs(3, fermions(3), poles, 194, Kind::self_energy);
@@ -246,7 +245,7 @@ TEST(Backbone, logical_and_flat_selections_have_explicit_semantics) {
 }
 
 TEST(Backbone, zero_poles_use_vertex_kernels_in_both_directions) {
-  Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   for (int direction : {0, 1}) {
     auto backbone = prepare_backbone(topology,
                                      prepare_arcs(Arcs{{Direction::backward, -1, -1}, {static_cast<Direction>(direction), 0, 0}}, fermions(1),
@@ -259,7 +258,7 @@ TEST(Backbone, zero_poles_use_vertex_kernels_in_both_directions) {
 }
 
 TEST(Backbone, independent_preparation_has_no_reset_state) {
-  Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   nda::vector<double> poles{-1.0, 2.0};
   auto vertex = prepare_backbone(topology, decode_arcs(2, fermions(1), poles, 1, Kind::self_energy));
   auto edge   = prepare_backbone(topology, decode_arcs(2, fermions(1), poles, 5, Kind::self_energy));
@@ -279,12 +278,12 @@ TEST(Backbone, independent_preparation_has_no_reset_state) {
 
 TEST(Backbone, logical_preparation_does_not_require_a_representable_flat_count) {
   constexpr int order = 18, flavours = 14;
-  nda::array<int, 2> topology_arr(order, 2);
-  for (int a = 0; a < order; ++a) topology_arr(a, nda::range::all) = nda::vector<int>{a, a + order};
+  nda::array<int, 2> topology(order, 2);
+  for (int a = 0; a < order; ++a) topology(a, nda::range::all) = nda::vector<int>{a, a + order};
   Arcs choices(order, {Direction::forward, 13, 0});
   choices[0] = {Direction::forward, -1, -1};
   EXPECT_THROW(count_diagrams(order, flavours, 1, Kind::self_energy), std::overflow_error);
-  auto backbone = prepare_backbone(Topology{topology_arr}, prepare_arcs(choices, fermions(flavours), nda::vector<double>{-1.0}, Kind::self_energy));
+  auto backbone = prepare_backbone(topology, prepare_arcs(choices, fermions(flavours), nda::vector<double>{-1.0}, Kind::self_energy));
   ASSERT_EQ(backbone.vertices.size(), 2 * order);
   EXPECT_EQ(backbone.vertices[1].flavour, 13);
   EXPECT_EQ(backbone.vertices[order + 1].flavour, 13);
@@ -298,12 +297,12 @@ TEST(Backbone, first_order_correlator_has_no_internal_choices) {
   EXPECT_EQ(arcs[0].direction, Direction::external);
   EXPECT_EQ(arcs[0].pole_index, -1);
   EXPECT_EQ(arcs[0].retained_flavour, -1);
-  auto backbone = prepare_backbone(Topology{nda::array<int, 2>{{0, 1}}}, arcs);
+  auto backbone = prepare_backbone(nda::array<int, 2>{{0, 1}}, arcs);
   EXPECT_EQ(backbone.edges.size(), 2);
 }
 
 TEST(Backbone, rejects_incomplete_or_malformed_enriched_arcs) {
-  Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   auto valid = prepare_arcs(Arcs{{Direction::backward, -1, -1}, {Direction::forward, 0, 0}}, fermions(1), nda::vector<double>{1.}, Kind::self_energy);
   auto reject = [&](Arcs const &arcs) {
     EXPECT_THROW(prepare_vertices(topology, arcs), std::invalid_argument);
@@ -347,7 +346,7 @@ TEST(Backbone, rejects_incomplete_or_malformed_enriched_arcs) {
 }
 
 TEST(Backbone, repeated_poles_keep_factor_order_and_multiplicity) {
-  Topology topology{nda::array<int, 2>{{0, 5}, {1, 4}, {2, 3}}};
+  nda::array<int, 2> topology{{0, 5}, {1, 4}, {2, 3}};
   auto backbone = prepare_backbone(topology,
                                    prepare_arcs(Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}, {Direction::forward, 0, 0}},
                                                 fermions(1), nda::vector<double>{1.}, Kind::self_energy));

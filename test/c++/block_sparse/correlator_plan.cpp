@@ -43,7 +43,7 @@ TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   Ladder model;
   auto G          = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
                                       triqs_xca::diagram::Kind::correlator));
@@ -87,7 +87,7 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
   // The [tau,beta] side has no internal vertices. The preceding right walk
   // fails at its last starting sector; that must not poison the single-edge side.
   auto assignment = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 3}, {1, 2}}},
+     nda::array<int, 2>{{0, 3}, {1, 2}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
                                       triqs_xca::diagram::Kind::correlator));
@@ -108,7 +108,7 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
 TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destinations) {
   Ladder model;
   auto G = model.propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
+  nda::array<int, 2> topology{{0, 1}};
   auto arcs       = triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}},
                                                      std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic}, nda::vector<double>{1.},
                                                      triqs_xca::diagram::Kind::correlator);
@@ -157,7 +157,7 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
   Ladder model;
   auto G          = model.propagator();
   auto assignment = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
                                       triqs_xca::diagram::Kind::correlator));
@@ -182,8 +182,8 @@ TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_l
 TEST(CorrelatorPlan, empty_range_has_no_independent_path_contribution) {
   Ladder model;
   auto G = model.propagator();
-  triqs_xca::diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
-  auto arcs       = triqs_xca::diagram::decode_arcs(topology.order(), std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic},
+  nda::array<int, 2> topology{{0, 1}};
+  auto arcs       = triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic},
                                                     nda::vector<double>{1.}, 0, triqs_xca::diagram::Kind::self_energy);
   auto assignment = triqs_xca::diagram::prepare_backbone(topology, arcs);
   auto tail       = assignment.endpoint_ranges().after_special;
@@ -195,7 +195,7 @@ TEST(CorrelatorPlan, complete_paths_own_all_slots_and_endpoint_choices_after_tab
   Ladder model;
   auto G        = model.propagator();
   auto backbone = triqs_xca::diagram::prepare_backbone(
-     triqs_xca::diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
+     nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic}, nda::vector<double>{1.},
                                       triqs_xca::diagram::Kind::correlator));

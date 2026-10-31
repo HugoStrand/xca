@@ -66,7 +66,6 @@ namespace {
                                                std::vector<many_body_operator_complex> const &ops_tau,
                                                std::vector<many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
                                                nda::array_const_view<int, 2> topology, bool is_fermionic) {
-    triqs_xca::diagram::Topology diagram{topology};
     int N                           = D.N;
     auto U                          = ad.get_unitary_matrix(0);
     nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
@@ -78,7 +77,7 @@ namespace {
 
     nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.r, mu_ops.extent(0), kap_ops.extent(0));
     long nb                      = D.get_num_single_ptcle_gf_backbones(topology);
-    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), diagram, mu_ops, kap_ops, f_ix, is_fermionic);
+    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), topology, mu_ops, kap_ops, f_ix, is_fermionic);
     return corr;
   }
 
