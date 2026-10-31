@@ -252,3 +252,29 @@ independent closed-form one-fermion checks through third order, complex F-bar
 contraction checks and dense/sparse correlator comparisons. No new tests were
 needed for the delegated lookup. Diff --check passed. Logs:
 /tmp/xca-fset-vertex-{build,test}.log.
+
+## Follow-up — derived endpoint orientation
+
+2026-10-31. Source: `a71ac04` `[diag] expose endpoint orientation`.
+
+Backbone::endpoint_orientation() derives OperatorPairOrientation from the existing
+endpoint direction and rejects correlator endpoints through require_self_energy().
+OperatorPairOrientation stays in action.hpp for independent F-bar construction
+and gains opposite(), which returns the reversed value without changing its source.
+
+Dense self-energy and paired evaluation now obtain the orientation from Backbone;
+the pair uses orientation.opposite() for its second endpoint contraction. Sparse
+endpoint multiplication and exact nonclosing coefficient checks use the same
+accessor. No orientation state is duplicated. The pair retains T - U and applies
+the original Backbone's kernel prefactor and global sign exactly once.
+
+Independent review found no sign, wrong-role rejection or scope issues. Existing
+wrong-role tests check rejection before scratch changes; numerical pair and
+sparse nonclosing-path tests cover the affected behavior.
+
+Validation: the library and all seven selected test targets built successfully.
+diagram/backbone, interaction_contractions, dense/prepared_evaluator,
+block_sparse/prepared_evaluator, block_sparse/path_evaluator,
+one_fermion_se_spgf_all_evals and flat_index_all_evals passed (7/7 CTest entries,
+5.27 s). This includes independent one-fermion reference checks through third
+order. Diff --check passed. Logs: /tmp/xca-endpoint-orientation-{build,test}.log.
