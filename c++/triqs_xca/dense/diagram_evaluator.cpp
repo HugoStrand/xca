@@ -1,5 +1,4 @@
 #include "triqs_xca/action.hpp"
-#include "triqs_xca/diagram/correlator.hpp"
 #include <stdexcept>
 #include <string>
 

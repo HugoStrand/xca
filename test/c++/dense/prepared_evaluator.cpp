@@ -1,4 +1,4 @@
-#include "triqs_xca/diagram/correlator.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
 
 #include <triqs_xca/dense/diagram_evaluator.hpp>

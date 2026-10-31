@@ -77,6 +77,16 @@ namespace triqs_xca::diagram {
     PermutationSigns signs{1, 1};
   };
 
+  /// External operator lists have homogeneous statistics at each endpoint.
+  /// Supplied per evaluation to select a prepared endpoint sign; not Backbone state.
+  struct CorrelatorStatistics {
+    Statistics at_zero = Statistics::fermionic;
+    Statistics at_tau  = Statistics::fermionic;
+  };
+
+  /// Compatibility adapter for the existing uniform-statistics correlator API.
+  CorrelatorStatistics uniform_correlator_statistics(bool fermionic);
+
   /// Complete diagram-specific instructions, independent of construction inputs.
   /// No topology, arc catalogue, numerical arrays or sector layout are borrowed.
   /// Reprepare after changing source choices, statistics or pole signs.

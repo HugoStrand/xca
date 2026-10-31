@@ -1,6 +1,5 @@
 #pragma once
 #include "action.hpp"
-#include "triqs_xca/diagram/correlator.hpp"
 #include <nda/nda.hpp>
 
 #include <triqs/atom_diag/atom_diag.hpp>

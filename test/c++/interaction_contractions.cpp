@@ -1,9 +1,8 @@
-#include "triqs_xca/diagram/correlator.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
 
 #include <triqs_xca/action.hpp>
 #include <triqs_xca/diagram/topology.hpp>
-#include <triqs_xca/diagram/backbone.hpp>
 #include <triqs_xca/dense/fset.hpp>
 #include <triqs_xca/block_sparse/block_op.hpp>
 

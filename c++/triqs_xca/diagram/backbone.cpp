@@ -59,6 +59,11 @@ namespace triqs_xca::diagram {
     return {{1, special, 0, special}, {special + 1, static_cast<int>(vertices.size()), special, static_cast<int>(edges.size())}};
   }
 
+  CorrelatorStatistics uniform_correlator_statistics(bool fermionic) {
+    auto statistics = fermionic ? Statistics::fermionic : Statistics::bosonic;
+    return {statistics, statistics};
+  }
+
   void Backbone::require_self_energy() const {
     if (endpoints.direction != Direction::forward && endpoints.direction != Direction::backward)
       throw std::invalid_argument("backbone has no self-energy endpoint sum");

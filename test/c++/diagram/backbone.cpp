@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <triqs_xca/diagram/correlator.hpp>
 #include <triqs_xca/diagram/backbone.hpp>
 
 using triqs_xca::diagram::Direction;
@@ -8,7 +7,11 @@ namespace diagram = triqs_xca::diagram;
 
 TEST(BackboneRange, correlator_geometry_is_shared) {
   diagram::Topology topology{nda::array<int, 2>{{0, 2}, {1, 3}}};
-  auto [zero_to_tau, tau_to_beta] = diagram::correlator_backbone_ranges(topology);
+  std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
+  auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, statistics,
+                                   nda::vector<double>{1.}, diagram::Kind::correlator);
+  auto backbone = diagram::prepare_backbone(topology, arcs);
+  auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   EXPECT_EQ(zero_to_tau, (diagram::BackboneRange{1, 2, 0, 2}));
   EXPECT_EQ(tau_to_beta, (diagram::BackboneRange{3, 4, 2, 4}));
   diagram::BackboneRange full{0, 4, 0, 4};
@@ -19,7 +22,8 @@ TEST(BackboneRange, correlator_geometry_is_shared) {
 
 TEST(BackboneRange, first_order_has_two_single_edge_segments) {
   diagram::Topology topology{nda::array<int, 2>{{0, 1}}};
-  auto [zero_to_tau, tau_to_beta] = diagram::correlator_backbone_ranges(topology);
+  auto backbone = diagram::prepare_backbone(topology, diagram::Arcs{{Direction::external, -1, -1}});
+  auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   EXPECT_EQ(zero_to_tau, (diagram::BackboneRange{1, 1, 0, 1}));
   EXPECT_EQ(tau_to_beta, (diagram::BackboneRange{2, 2, 1, 2}));
   EXPECT_EQ((diagram::BackboneRange{0, 2, 0, 1}).vertex_end, 2); // full self-energy includes outer vertices
@@ -44,7 +48,7 @@ TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
                                                                nda::vector<double>{1.}, diagram::Kind::correlator));
   EXPECT_EQ(sigma.range(), (diagram::BackboneRange{0, 4, 0, 3}));
   EXPECT_EQ(corr.range(), (diagram::BackboneRange{0, 4, 0, 4}));
-  auto [zero_to_tau, tau_to_beta] = diagram::correlator_backbone_ranges(topology);
+  auto [zero_to_tau, tau_to_beta] = corr.endpoint_ranges();
   EXPECT_TRUE(corr.range().contains(tau_to_beta));
   EXPECT_FALSE(sigma.range().contains(tau_to_beta));
   // Internal arc (1,3) occupies edges 1 and 2, never the edge from vertex 3 to beta.
@@ -87,11 +91,9 @@ TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
     EXPECT_THROW(corr.require_self_energy(), std::invalid_argument);
     EXPECT_THROW(corr.self_energy_sign(), std::invalid_argument);
     auto ranges = corr.endpoint_ranges();
+    EXPECT_EQ(ranges.before_special, (diagram::BackboneRange{1, special, 0, special}));
     EXPECT_EQ(ranges.after_special, (diagram::BackboneRange{end, end, special, end}));
     EXPECT_FALSE(ranges.after_special.empty()); // the final propagator remains
-    auto legacy = diagram::correlator_backbone_ranges(topology);
-    EXPECT_EQ(ranges.before_special, legacy.first);
-    EXPECT_EQ(ranges.after_special, legacy.second);
   }
   auto sigma = diagram::prepare_backbone(diagram::Topology{nda::array<int, 2>{{0, 2}, {1, 3}}},
                                          diagram::decode_arcs(2, statistics, nda::vector<double>{1.}, 0, diagram::Kind::self_energy));

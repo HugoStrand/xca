@@ -2,7 +2,6 @@
 #include "self_energy_paths.hpp"
 #include "correlator_paths.hpp"
 #include "triqs_xca/action.hpp"
-#include "triqs_xca/diagram/correlator.hpp"
 #include <algorithm>
 #include <array>
 #include <stdexcept>

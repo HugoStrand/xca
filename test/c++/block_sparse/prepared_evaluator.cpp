@@ -1,5 +1,5 @@
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
-#include "triqs_xca/diagram/correlator.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
 #include <triqs_xca/block_sparse/dynint.hpp>
 

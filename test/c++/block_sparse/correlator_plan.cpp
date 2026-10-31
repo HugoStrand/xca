@@ -1,5 +1,5 @@
 #include <triqs_xca/block_sparse/backbone_paths.hpp>
-#include <triqs_xca/diagram/correlator.hpp>
+#include <triqs_xca/diagram/backbone.hpp>
 #include <triqs_xca/block_sparse/correlator_paths.hpp>
 #include <gtest/gtest.h>
 
