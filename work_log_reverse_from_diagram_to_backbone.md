@@ -311,3 +311,31 @@ CTest entries passed in 56.94 s. Binding regeneration produced no tracked change
 diff --check passed. No benchmark timings were run. Logs:
 /tmp/xca-topology-array-build.log, /tmp/xca-topology-array-test.log and
 /tmp/xca-topology-array-benchmark-build.log. Unrelated worktree changes were preserved.
+
+## Follow-up — dense metadata from Action
+
+2026-10-31. Source: `d1556ee` `[dense] use action metadata`.
+
+Added Action::n_flavours(), a simple accessor for the total operator-flavour
+count. Removed the dense evaluator's stored beta, r, n, n_hyb, n_int and N.
+Numerical methods now read Action directly, with local const r and N aliases
+where dimensions recur. Scratch allocation moved into the constructor body
+and retains the same zeroed shapes. Time rank comes from tau_mesh, independently
+of the fitted-pole count; Hilbert-space dimension comes from block_dims(0).
+Flavour loops and diagram counts use n_flavours(), while the single-particle
+subset remains identified by action.n_hyb.
+
+Audited tracked Python and notebook code, including reflection, serialization,
+tests and benchmarks: none consumes the six dense scalar attributes. As requested,
+their generated Python wrapping was removed without compatibility properties.
+The existing tau_mesh, itops and dlr_it properties remain. Generated-binding
+changes consist of the six attribute removals and documentation-index renumbering.
+Three C++ test files now read Action metadata; assertions and tolerances are
+unchanged. Sparse evaluator and FSet scalar storage were outside this cleanup.
+
+Independent review found no actionable dimension, allocation, numerical or API
+issues. Full CPU build, binding regeneration and backbone_cpu compilation passed;
+all 78 CPU/Python CTest entries passed in 56.91 s. Diff --check passed. No benchmark
+timings were run. Logs: /tmp/xca-dense-action-scalars-build.log,
+/tmp/xca-dense-action-scalars-test.log and
+/tmp/xca-dense-action-scalars-benchmark-build.log. Unrelated worktree changes were preserved.
