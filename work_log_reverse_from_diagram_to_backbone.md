@@ -232,3 +232,23 @@ Validation: CPU reconfigure and full build passed; all 78 CPU/Python CTest entri
 passed in 57.02 s. Binding regeneration produced no changes, no references to the
 removed files/helper remain in source consumers, and diff --check passed. Logs:
 /tmp/xca-correlator-cleanup-{configure,build,test}.log.
+
+## Follow-up — vertex-based dense operator lookup
+
+2026-10-31. Source: `7c5ac64` `[dense] fetch operators by vertex`.
+
+FSet now provides get_operator(diagram::Vertex const&), selecting the ordinary or
+barred matrix from the resolved vertex and returning a const view into its own
+storage. Both dense traversal directions use the getter and pass the same vertex
+to apply_kernel. Scalar accessors remain for F-bar construction and endpoint sums.
+This deliberately adds a small lookup dependency on Vertex: fset.hpp only forward
+declares it, and fset.cpp includes backbone.hpp. Construction arithmetic is unchanged.
+
+Independent review found no view-lifetime, overload or traversal issues. The
+library and four selected test targets built successfully; dense/prepared_evaluator,
+interaction_contractions, one_fermion_se_spgf_all_evals and
+one_time_correlator_all_evals passed (4/4 CTest entries, 3.48 s). These include
+independent closed-form one-fermion checks through third order, complex F-bar
+contraction checks and dense/sparse correlator comparisons. No new tests were
+needed for the delegated lookup. Diff --check passed. Logs:
+/tmp/xca-fset-vertex-{build,test}.log.
