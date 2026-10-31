@@ -100,6 +100,8 @@ namespace triqs_xca::diagram {
     int order() const { return static_cast<int>(vertices.size()) / 2; }
     BackboneRange range() const { return {0, static_cast<int>(vertices.size()), 0, static_cast<int>(edges.size())}; }
     EndpointRanges endpoint_ranges() const;
+    /// Derive the interaction endpoint orientation; rejects external correlator endpoints.
+    OperatorPairOrientation endpoint_orientation() const;
     void require_self_energy() const;
     void require_correlator() const;
     /// Global order/orientation sign, excluding endpoint coefficient reflection,

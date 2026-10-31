@@ -162,7 +162,7 @@ void DiagramEvaluator::integrate_left_edge(BlockDiagOpFun const &Gt, nda::array_
 
 void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath const &path) {
   int special = path.backbone.endpoints.special_vertex;
-  OperatorPairOrientation orientation{path.backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+  auto orientation = path.backbone.endpoint_orientation();
   auto signs = path.backbone.endpoints.signs;
   auto T_v = T_buf(_, range(0, path.dimension(special)), range(0, path.dimension(1)));
   auto T_vp = T_buf(_, range(0, path.dimension(special + 1)), range(0, path.dimension(0)));
@@ -193,7 +193,7 @@ bool DiagramEvaluator::select_diagonal_self_energy(diagram::BackbonePath const &
   if (path.sector(path.range.vertex_end) == path.sector(0)) return true;
   // Inspect exact input coefficients before arithmetic. No magnitude cutoff or
   // cancellation between distinct contributions is assumed here.
-  bool reflected = path.backbone.endpoints.direction == triqs_xca::diagram::Direction::backward;
+  bool reflected = path.backbone.endpoint_orientation().reflected();
   for (int late : path.special_operators) {
     auto coefficients = endpoint_coefficients(late, reflected);
     for (int early : path.zero_operators) {

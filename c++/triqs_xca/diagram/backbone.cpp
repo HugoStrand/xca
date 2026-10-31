@@ -59,6 +59,11 @@ namespace triqs_xca::diagram {
     return {{1, special, 0, special}, {special + 1, static_cast<int>(vertices.size()), special, static_cast<int>(edges.size())}};
   }
 
+  OperatorPairOrientation Backbone::endpoint_orientation() const {
+    require_self_energy();
+    return {endpoints.direction == Direction::forward};
+  }
+
   CorrelatorStatistics uniform_correlator_statistics(bool fermionic) {
     auto statistics = fermionic ? Statistics::fermionic : Statistics::bosonic;
     return {statistics, statistics};

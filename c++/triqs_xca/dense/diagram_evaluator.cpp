@@ -283,8 +283,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
-    backbone.require_self_energy();
-    OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+    auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
     double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
@@ -292,8 +291,7 @@ namespace triqs_xca::dense {
     evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
     U(_, _, _) = T(_, _, _);
     multiply_left_vertex_and_right_zero_vertex(T, orientation, signs);
-    OperatorPairOrientation opposite{!orientation.forward};
-    multiply_left_vertex_and_right_zero_vertex(U, opposite, signs);
+    multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs);
     T = T - U;
     extend_segment(T, Gt, backbone, ranges.after_special);
 
@@ -309,8 +307,7 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
-    backbone.require_self_energy();
-    OperatorPairOrientation orientation{backbone.endpoints.direction == triqs_xca::diagram::Direction::forward};
+    auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
     double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);

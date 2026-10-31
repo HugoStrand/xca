@@ -28,6 +28,7 @@ namespace triqs_xca {
   struct OperatorPairOrientation {
     bool forward;
 
+    OperatorPairOrientation opposite() const { return {!forward}; }
     OperatorReference early_operator(int flavour) const { return {flavour, !forward}; }
     OperatorReference late_operator(int flavour) const { return {flavour, forward}; }
     std::pair<int, int> coefficient_indices(int late, int early) const { return forward ? std::pair{late, early} : std::pair{early, late}; }
