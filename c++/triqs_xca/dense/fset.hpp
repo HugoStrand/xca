@@ -1,6 +1,10 @@
 #pragma once
 #include <nda/nda.hpp>
 
+namespace triqs_xca::diagram {
+  struct Vertex;
+}
+
 namespace triqs_xca::dense {
 
   using nda::dcomplex;
@@ -38,6 +42,9 @@ namespace triqs_xca::dense {
        * @param[in] hyb_coeffs DLR coefficients of hybridization
        */
     void update_hybridization(nda::array_const_view<dcomplex, 3> hyb_coeffs);
+
+    /// Operator for a resolved internal backbone vertex; the view borrows this FSet's storage.
+    nda::array_const_view<dcomplex, 2> get_operator(triqs_xca::diagram::Vertex const &vertex) const;
 
     /// A partial contraction indexed by the retained flavour and selected pole.
     nda::array_const_view<dcomplex, 2> get_barred_operator(bool adjoint, int flavour, int pole) const;

@@ -1,5 +1,6 @@
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/action.hpp"
+#include "triqs_xca/diagram/backbone.hpp"
 
 namespace triqs_xca::dense {
 
@@ -43,6 +44,11 @@ namespace triqs_xca::dense {
         }
       }
     }
+  }
+
+  nda::array_const_view<dcomplex, 2> FSet::get_operator(triqs_xca::diagram::Vertex const &vertex) const {
+    return vertex.barred ? get_barred_operator(vertex.adjoint, vertex.flavour, vertex.pole_index)
+                         : get_operator(vertex.adjoint, vertex.flavour);
   }
 
   nda::array_const_view<dcomplex, 2> FSet::get_barred_operator(bool adjoint, int flavour, int pole) const {

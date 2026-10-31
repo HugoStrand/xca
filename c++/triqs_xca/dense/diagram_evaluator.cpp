@@ -202,10 +202,9 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
     auto const &vertex = backbone.vertices[v_ix];
-    auto F = vertex.barred ? action.operators.get_barred_operator(vertex.adjoint, vertex.flavour, vertex.pole_index)
-                          : action.operators.get_operator(vertex.adjoint, vertex.flavour);
+    auto F = action.operators.get_operator(vertex);
     for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    apply_kernel(T_buf, backbone.vertices[v_ix], action.kernel);
+    apply_kernel(T_buf, vertex, action.kernel);
   }
 
   void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
@@ -328,10 +327,9 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
     auto const &vertex = backbone.vertices[v_ix];
-    auto F = vertex.barred ? action.operators.get_barred_operator(vertex.adjoint, vertex.flavour, vertex.pole_index)
-                          : action.operators.get_operator(vertex.adjoint, vertex.flavour);
+    auto F = action.operators.get_operator(vertex);
     for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    apply_kernel(U_buf, backbone.vertices[v_ix], action.kernel, true);
+    apply_kernel(U_buf, vertex, action.kernel, true);
   }
 
   void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
