@@ -278,3 +278,36 @@ block_sparse/prepared_evaluator, block_sparse/path_evaluator,
 one_fermion_se_spgf_all_evals and flat_index_all_evals passed (7/7 CTest entries,
 5.27 s). This includes independent one-fermion reference checks through third
 order. Diff --check passed. Logs: /tmp/xca-endpoint-orientation-{build,test}.log.
+
+## Follow-up — direct topology arrays
+
+2026-10-31. Source: `5fb0dc4` `[diag] use topology arrays`.
+
+Removed the owning diagram::Topology wrapper. Preparation, sign calculation and
+native evaluator helpers now borrow nda::array_const_view<int, 2> connectivity,
+named topology throughout. Backbone still owns all resolved instructions and
+endpoint information; no input array is retained. Removed redundant wrapper
+copies in callers and the duplicate dense count overload.
+
+The former constructor checks now live in diagram::topology::validate(topology).
+Public compute, count and print adapters preserve validation before indexed
+loops, including empty selections. Lower-level preparation and native eval
+helpers require valid connectivity, as documented in their headers. Standalone
+callers can validate once before preparing multiple backbones. Canonical row
+ordering is checked without reordering the input, preserving its association
+with arc choices and flat indices. Python-facing signatures are unchanged.
+
+Existing numerical and ownership tests were migrated without changing their
+reference values or tolerances. Added coverage for malformed connectivity,
+non-mutating validation, doubly strided views, and rejection of invalid topology
+with empty selections. Shared evaluator tests compare strided and contiguous
+inputs for self-energy, single-particle Green's functions and correlators.
+Independent review found no actionable ownership, validation, sign or binding
+issues. The benchmark consumer uses the array directly and validates outside
+its preparation timing loops.
+
+Validation: full CPU build and backbone_cpu compilation passed; all 78 CPU/Python
+CTest entries passed in 56.94 s. Binding regeneration produced no tracked changes;
+diff --check passed. No benchmark timings were run. Logs:
+/tmp/xca-topology-array-build.log, /tmp/xca-topology-array-test.log and
+/tmp/xca-topology-array-benchmark-build.log. Unrelated worktree changes were preserved.
