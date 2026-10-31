@@ -211,3 +211,24 @@ Independent review found no issues with overload resolution, ownership or argume
 preservation. The library and both focused test targets built successfully;
 dense/prepared_evaluator and block_sparse/path_evaluator passed (2/2 CTest entries).
 Diff --check passed. Logs: /tmp/xca-backbone-prepare-api-{build,test}.log.
+
+## Follow-up — consolidate correlator helpers
+
+2026-10-31. Source: `d604d5c` `[diag] consolidate correlator helpers`.
+
+CorrelatorStatistics and uniform_correlator_statistics now live in backbone.hpp
+and backbone.cpp with their existing names, defaults and behavior. Statistics
+remain a separate per-call observable argument; Backbone gains no new state.
+Removed diagram/correlator.hpp and diagram/correlator.cpp, including the redundant
+topology-only correlator_backbone_ranges helper.
+
+Its former test callers now prepare a Backbone and use endpoint_ranges(), keeping
+the literal range expectations. The legacy-to-current comparison is replaced by
+an explicit before-special range check. Includes are updated throughout the
+evaluators and tests. Independent review confirmed that evaluator signatures,
+statistics behavior and independent geometry expectations are preserved.
+
+Validation: CPU reconfigure and full build passed; all 78 CPU/Python CTest entries
+passed in 57.02 s. Binding regeneration produced no changes, no references to the
+removed files/helper remain in source consumers, and diff --check passed. Logs:
+/tmp/xca-correlator-cleanup-{configure,build,test}.log.
