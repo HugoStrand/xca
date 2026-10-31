@@ -114,9 +114,9 @@ TEST(DenseDynint, self_energy_by_pairs_agrees) {
 
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
 
-  ASSERT_EQ(D.n_hyb, 1);
-  ASSERT_EQ(D.n_int, 1);
-  ASSERT_EQ(D.n, 2);
+  ASSERT_EQ(D.action.n_hyb, 1);
+  ASSERT_EQ(D.action.n_flavours() - D.action.n_hyb, 1);
+  ASSERT_EQ(D.action.n_flavours(), 2);
 
   // check that some backbones carry the interaction operator on the internal line
   DiagramEvaluator D_no_dynint(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad);
@@ -176,7 +176,8 @@ TEST(DenseDynint, self_energy_by_pairs_flat_index_overloads_agree) {
   for (long i = 0; i < static_cast<long>(seeds.size()); ++i) f_ix_vec(i) = seeds[i];
   auto sigma_vec = D.compute_self_energy_by_pairs(m.G_ppsc, topology, f_ix_vec);
 
-  auto sigma_single = nda::zeros<dcomplex>(D.r, D.N, D.N);
+  int const N = D.action.block_dims(0);
+  auto sigma_single = nda::zeros<dcomplex>(D.action.tau_mesh.size(), N, N);
   for (int f_ix : seeds) sigma_single += D.compute_self_energy_by_pairs(m.G_ppsc, topology, f_ix)[0].data();
 
   EXPECT_LE(nda::max_element(nda::abs(sigma_all[0].data() - sigma_vec[0].data())), 1.0e-14)

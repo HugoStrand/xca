@@ -239,38 +239,26 @@ PyMethodDef c2py::tp_methods<_c2py_cls_0>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
-constexpr auto _c2py_doc_member_0  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_1  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_2  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_3  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_4  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_5  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_6  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_7  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_8  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_9  = R"DOC()DOC";
-constexpr auto _c2py_doc_member_10 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_11 = R"DOC()DOC";
-static constexpr auto prop_doc_0   = R"DOC()DOC";
-static constexpr auto prop_doc_1   = R"DOC()DOC";
-static constexpr auto prop_doc_2   = R"DOC()DOC";
+constexpr auto _c2py_doc_member_0 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_1 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_2 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_3 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_4 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_5 = R"DOC()DOC";
+static constexpr auto prop_doc_0  = R"DOC()DOC";
+static constexpr auto prop_doc_1  = R"DOC()DOC";
+static constexpr auto prop_doc_2  = R"DOC()DOC";
 
 // ----- Member and property table ----
 
 template <>
 constinit PyGetSetDef c2py::tp_getset<_c2py_cls_0>[] = {
-   c2py::getsetdef_from_member<&_c2py_cls_0::beta, _c2py_cls_0>("beta", _c2py_doc_member_0),
-   c2py::getsetdef_from_member<&_c2py_cls_0::r, _c2py_cls_0>("r", _c2py_doc_member_1),
-   c2py::getsetdef_from_member<&_c2py_cls_0::n, _c2py_cls_0>("n", _c2py_doc_member_2),
-   c2py::getsetdef_from_member<&_c2py_cls_0::n_hyb, _c2py_cls_0>("n_hyb", _c2py_doc_member_3),
-   c2py::getsetdef_from_member<&_c2py_cls_0::n_int, _c2py_cls_0>("n_int", _c2py_doc_member_4),
-   c2py::getsetdef_from_member<&_c2py_cls_0::N, _c2py_cls_0>("N", _c2py_doc_member_5),
-   c2py::getsetdef_from_member<&_c2py_cls_0::Sigma, _c2py_cls_0>("Sigma", _c2py_doc_member_6),
-   c2py::getsetdef_from_member<&_c2py_cls_0::T, _c2py_cls_0>("T", _c2py_doc_member_7),
-   c2py::getsetdef_from_member<&_c2py_cls_0::U, _c2py_cls_0>("U", _c2py_doc_member_8),
-   c2py::getsetdef_from_member<&_c2py_cls_0::GKt, _c2py_cls_0>("GKt", _c2py_doc_member_9),
-   c2py::getsetdef_from_member<&_c2py_cls_0::Tkaps, _c2py_cls_0>("Tkaps", _c2py_doc_member_10),
-   c2py::getsetdef_from_member<&_c2py_cls_0::Tmu, _c2py_cls_0>("Tmu", _c2py_doc_member_11),
+   c2py::getsetdef_from_member<&_c2py_cls_0::Sigma, _c2py_cls_0>("Sigma", _c2py_doc_member_0),
+   c2py::getsetdef_from_member<&_c2py_cls_0::T, _c2py_cls_0>("T", _c2py_doc_member_1),
+   c2py::getsetdef_from_member<&_c2py_cls_0::U, _c2py_cls_0>("U", _c2py_doc_member_2),
+   c2py::getsetdef_from_member<&_c2py_cls_0::GKt, _c2py_cls_0>("GKt", _c2py_doc_member_3),
+   c2py::getsetdef_from_member<&_c2py_cls_0::Tkaps, _c2py_cls_0>("Tkaps", _c2py_doc_member_4),
+   c2py::getsetdef_from_member<&_c2py_cls_0::Tmu, _c2py_cls_0>("Tmu", _c2py_doc_member_5),
    {"dlr_it", c2py::getter_from_method<c2py::castmc<>(&triqs_xca::dense::DiagramEvaluator::get_dlr_it)>, nullptr, prop_doc_0, nullptr},
    {"itops", c2py::getter_from_method<c2py::castmc<>(&triqs_xca::dense::DiagramEvaluator::get_itops)>, nullptr, prop_doc_1, nullptr},
    {"tau_mesh", c2py::getter_from_method<c2py::castmc<>(&triqs_xca::dense::DiagramEvaluator::get_tau_mesh)>, nullptr, prop_doc_2, nullptr},
@@ -512,34 +500,34 @@ PyMethodDef c2py::tp_methods<_c2py_cls_1>[] = {
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };
 
+constexpr auto _c2py_doc_member_6  = R"DOC()DOC";
+constexpr auto _c2py_doc_member_7  = R"DOC()DOC";
+constexpr auto _c2py_doc_member_8  = R"DOC()DOC";
+constexpr auto _c2py_doc_member_9  = R"DOC()DOC";
+constexpr auto _c2py_doc_member_10 = R"DOC()DOC";
+constexpr auto _c2py_doc_member_11 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_12 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_13 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_14 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_15 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_16 = R"DOC()DOC";
 constexpr auto _c2py_doc_member_17 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_18 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_19 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_20 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_21 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_22 = R"DOC()DOC";
-constexpr auto _c2py_doc_member_23 = R"DOC()DOC";
 
 // ----- Member and property table ----
 
 template <>
-constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {c2py::getsetdef_from_member<&_c2py_cls_1::beta, _c2py_cls_1>("beta", _c2py_doc_member_12),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::r, _c2py_cls_1>("r", _c2py_doc_member_13),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n, _c2py_cls_1>("n", _c2py_doc_member_14),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n_hyb, _c2py_cls_1>("n_hyb", _c2py_doc_member_15),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n_int, _c2py_cls_1>("n_int", _c2py_doc_member_16),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::q, _c2py_cls_1>("q", _c2py_doc_member_17),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Nmax, _c2py_cls_1>("Nmax", _c2py_doc_member_18),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::T, _c2py_cls_1>("T", _c2py_doc_member_19),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::U, _c2py_cls_1>("U", _c2py_doc_member_20),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::GKt, _c2py_cls_1>("GKt", _c2py_doc_member_21),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Tkaps, _c2py_cls_1>("Tkaps", _c2py_doc_member_22),
-                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Tmu, _c2py_cls_1>("Tmu", _c2py_doc_member_23),
+constinit PyGetSetDef c2py::tp_getset<_c2py_cls_1>[] = {c2py::getsetdef_from_member<&_c2py_cls_1::beta, _c2py_cls_1>("beta", _c2py_doc_member_6),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::r, _c2py_cls_1>("r", _c2py_doc_member_7),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n, _c2py_cls_1>("n", _c2py_doc_member_8),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n_hyb, _c2py_cls_1>("n_hyb", _c2py_doc_member_9),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::n_int, _c2py_cls_1>("n_int", _c2py_doc_member_10),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::q, _c2py_cls_1>("q", _c2py_doc_member_11),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Nmax, _c2py_cls_1>("Nmax", _c2py_doc_member_12),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::T, _c2py_cls_1>("T", _c2py_doc_member_13),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::U, _c2py_cls_1>("U", _c2py_doc_member_14),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::GKt, _c2py_cls_1>("GKt", _c2py_doc_member_15),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Tkaps, _c2py_cls_1>("Tkaps", _c2py_doc_member_16),
+                                                        c2py::getsetdef_from_member<&_c2py_cls_1::Tmu, _c2py_cls_1>("Tmu", _c2py_doc_member_17),
 
                                                         {nullptr, nullptr, nullptr, nullptr, nullptr}};
 

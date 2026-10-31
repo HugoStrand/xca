@@ -23,7 +23,7 @@ TEST(DensePrepared, self_energy_and_pair_outlive_preparation_inputs) {
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  int n = evaluator.n;
+  int const n = evaluator.action.n_flavours();
   auto const backbone = [&] {
     nda::array<int, 2> preparation_topology{topology};
     auto arcs = triqs_xca::diagram::prepare_arcs(
@@ -66,7 +66,7 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
   auto G = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{triqs::gfs::gf<triqs::mesh::dlr_imtime>(model.mesh, model.G)}};
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  int n = evaluator.n;
+  int const n = evaluator.action.n_flavours();
   auto const backbone = [&] {
     nda::array<int, 2> preparation_topology{topology};
     auto arcs = triqs_xca::diagram::prepare_arcs(
@@ -79,8 +79,8 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
   }();
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto expected = evaluator.compute_single_ptcle_gf(G, topology, f);
-  auto annihilators = nda::make_regular(evaluator.action.operators.Fs(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
-  auto creators = nda::make_regular(evaluator.action.operators.F_dags(nda::range(evaluator.n_hyb), nda::range::all, nda::range::all));
+  auto annihilators = nda::make_regular(evaluator.action.operators.Fs(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all));
+  auto creators = nda::make_regular(evaluator.action.operators.F_dags(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all));
   auto actual = evaluator.eval_correlator(model.G, backbone, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});
   expect_close(actual, expected);
   auto changed_G = nda::make_regular(1.1 * model.G);

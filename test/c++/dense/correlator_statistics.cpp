@@ -66,7 +66,7 @@ namespace {
                                                std::vector<many_body_operator_complex> const &ops_tau,
                                                std::vector<many_body_operator_complex> const &ops_0, triqs::atom_diag::atom_diag<true> const &ad,
                                                nda::array_const_view<int, 2> topology, bool is_fermionic) {
-    int N                           = D.N;
+    int const N                     = D.action.block_dims(0);
     auto U                          = ad.get_unitary_matrix(0);
     nda::array<dcomplex, 3> mu_ops  = nda::zeros<dcomplex>(ops_tau.size(), N, N);
     nda::array<dcomplex, 3> kap_ops = nda::zeros<dcomplex>(ops_0.size(), N, N);
@@ -75,7 +75,7 @@ namespace {
     for (auto [i, op] : itertools::enumerate(ops_0))
       kap_ops(i, range::all, range::all) = U * ad.get_op_mat(op).block_mat[0] * nda::conj(nda::transpose(U));
 
-    nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.r, mu_ops.extent(0), kap_ops.extent(0));
+    nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.action.tau_mesh.size(), mu_ops.extent(0), kap_ops.extent(0));
     long nb                      = D.get_num_single_ptcle_gf_backbones(topology);
     for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), topology, mu_ops, kap_ops, f_ix, is_fermionic);
     return corr;

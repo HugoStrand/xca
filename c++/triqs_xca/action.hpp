@@ -108,6 +108,9 @@ namespace triqs_xca {
     nda::vector<long> block_dims; // -1 only for legacy numerical inputs with an unobserved sector
     OperatorStorage operators;
 
+    /// All operator flavours, including hybridization and dynamical interactions.
+    int n_flavours() const { return static_cast<int>(statistics.size()); }
+
     /// The setup callback builds the operator storage from the owned coefficients.
     /// It is invoked once and is not stored; numerical evaluation has no callback.
     template <typename BuildOperators>
