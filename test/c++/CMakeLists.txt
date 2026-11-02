@@ -54,3 +54,16 @@ foreach(test ${all_tests})
     )
   endif()
 endforeach()
+
+# The serial entry above exercises the same executable without a launcher.
+# This entry initializes MPI explicitly and checks uneven/empty work partitions.
+set_tests_properties(mpi_evaluator PROPERTIES
+  TIMEOUT 180 ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
+if(MPIEXEC_EXECUTABLE)
+  add_test(NAME mpi_evaluator_3ranks
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:mpi_evaluator> ${MPIEXEC_POSTFLAGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_tests_properties(mpi_evaluator_3ranks PROPERTIES
+    PROCESSORS 3 TIMEOUT 180 ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;XCA_TEST_MPI_SIZE=3")
+endif()
