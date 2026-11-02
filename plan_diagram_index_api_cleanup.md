@@ -120,22 +120,26 @@ strided-topology checks when replacing old public-range tests.
 
 ## Reviewable implementation checkpoints
 
-1. **Isolate fixture indexing** (`[test] evaluate prepared backbones`).
+1. **Compact pair enumeration** (`[diag] enumerate self-energy pairs`).
+   Add the direct pair count/decoder with independent digit, coverage and overflow
+   tests, while existing production adapters remain usable.
+2. **Isolate fixture indexing** (`[test] evaluate prepared backbones`).
    Migrate shared and direct C++ numerical consumers to Backbone/BackbonePath
    execution while old production overloads still build. Adapt the benchmark
-   consumer if needed. Validate existing independent numerical references.
-2. **Own MPI work in the evaluators** (`[diag] distribute topology work`).
+   consumer, retaining historical measurements with their original labels and
+   naming the new prepared measurements accurately. Validate independent references.
+3. **Own MPI work in the evaluators** (`[diag] distribute topology work`).
    Add compact pair enumeration and private bounded partitioning using TRIQS MPI.
    Remove evaluator index/count/print overloads and obsolete selection plumbing;
    migrate Python Solver calls and move reductions in the same building commit.
    Regenerate bindings and migrate range/API tests. If reviewability improves,
    compact pair enumeration can be a separate preceding source checkpoint.
-3. **Validate distributed execution** (`[test] check distributed diagram sums`).
+4. **Validate distributed execution** (`[test] check distributed diagram sums`).
    Add genuine multi-rank checks for dense/sparse self-energy, pairs, SPGF and
    correlators against local prepared numerical references. Exercise uneven and
    empty assignments and delayed multi-topology reduction. Verify Solver public
    methods retain complete results and do not reduce once per topology.
-4. **Adversarial review and completion**.
+5. **Adversarial review and completion**.
    Audit numerical signs, pair coverage, MPI initialization, API leakage, topology
    validation before empty execution, generated wrappers and external callers.
    Correct findings and record final evidence and remaining limitations.
@@ -153,9 +157,15 @@ to build; explain any subdivision in the log.
 - Verify unique pair/ordinary coverage, empty ranks, uneven sizes, first order,
   zero choice spaces, counts above INT_MAX and checked count overflow without
   allocating arrays proportional to the count.
+  In particular, order 63 with one flavour/pole on a 64-bit long has 2^62 pairs
+  although the ordinary count overflows; sampled decoding must still work.
 - Use dedicated MPI tests with MPI initialized explicitly. Existing gtest_main
   executables are serial; launching them under mpiexec does not initialize MPI.
   Include an odd rank count (e.g. three) and more ranks than first-order pairs.
+  Register the three-rank CTest with a timeout and PROCESSORS 3. Check rank-local
+  ownership independently of the final sum, including exactly one active pair
+  rank at first order. Instrument Python reduction calls: the final reduction
+  count must not grow with the number of topologies or orders.
 - Check numerical equivalence after accumulating multiple topologies and orders,
   plus one final reduction phase in Python. No bitwise MPI-order requirement.
 - Configure CPU cbuild only when file/CMake changes require it; source
