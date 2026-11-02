@@ -90,3 +90,34 @@ Logs: /tmp/xca-index-api-configure.log, /tmp/xca-index-api-build-2.log,
 /tmp/xca-index-api-mpi-benchmark-build.log, /tmp/xca-index-api-test.log.
 Source edits were frozen during builds. Diff --check and a tracked Python/notebook
 audit for removed count/split APIs passed. Unrelated user work remains untouched.
+
+## MPI validation and final review — 2026-11-02
+
+Source: `71501fb` `[test] check distributed diagram sums`.
+
+Added an explicitly MPI-initialized C++ test executable, registered both serially
+and with three ranks. It compares rank-local self-energy, SPGF and bosonic
+correlator results to prepared numerical references, and compares compact pairs
+to explicit opposite endpoint Arcs. It accumulates several topologies before
+reducing and checks first-order empty ranks. Rank-zero-only evaluator calls
+followed by a barrier verify that topology evaluation performs no collective.
+Malformed topology, propagator, observable parity and atom_diag layout errors
+are rejected even by idle ranks; subsequent valid calls recover correctly.
+
+Independent adversarial review found no blocking numerical/ownership/reduction
+issues. It requested explicit assertions that MPI runs really have three ranks
+and observable-layout checks on idle ranks. Both were added before final
+validation. MPI CTests declare PROCESSORS 3 and a 180-second timeout. Prepared
+tests remain independent of MPI work assignment, and pair oracles use ordinary
+Backbone evaluation rather than the paired kernel.
+
+Final acceptance: 82/82 CTest entries passed (59.33 s), including mpi_evaluator,
+mpi_evaluator_3ranks, Py_mpi_evaluation and Py_mpi_evaluation_3. Full CPU/Python
+build and backbone_cpu compilation passed. No numerical tolerances were loosened.
+No benchmark timings, GPU runs, pushes, or history rewrites were performed.
+
+The implementation intentionally uses the existing world communicator and equal
+counts as its initial partition. Topology generation stays in Python. Future
+multi-topology scheduling/custom communicators can change orchestration without
+restoring public linear-index selection. Dense scratch/reset behavior remains
+unchanged at the local prepared interface. The persistent goal is complete.

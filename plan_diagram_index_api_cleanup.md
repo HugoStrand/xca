@@ -4,6 +4,12 @@ Drafted 2026-11-02 on `dev_backbone`, starting at `c4589ac`.
 Implementation evidence belongs in `work_log_diagram_index_api_cleanup.md`.
 Keep source and documentation in separate, terse commits; do not push.
 
+Status: completed 2026-11-02. Source checkpoints: `bdcad51` (compact pairs),
+`d6ea952` (topology API, callers and fixture migration), `71501fb` (C++ MPI
+validation). All 82 CPU/Python CTest entries passed, including actual three-rank
+C++ and Python runs; backbone_cpu compiled. Details and review fixes are in the
+work log. No performance benchmark was run.
+
 ## Objective
 
 Expose one topology at a time to Python and one prepared Backbone at a time to
@@ -201,5 +207,9 @@ Reviewed independently for MPI/paired scheduling and numerical test migration on
 - Decode pairs directly. A compact pair count must not depend on first forming
   the ordinary count, and there must be no rejected partner work slots.
 
-The plan is ready for implementation. Evidence and any necessary checkpoint
-adjustments will be recorded in the separate work log.
+The reviewed plan has been implemented. Fixture migration and topology API
+removal shared a source checkpoint so production symbolic-input validation tests
+could switch signatures in the same building commit. Independent final review
+found no blocking core issues; its two MPI coverage improvements (expected rank
+count and idle-rank atom_diag layout checks) were implemented before the passing
+full suite. Evidence is recorded in the separate work log.
