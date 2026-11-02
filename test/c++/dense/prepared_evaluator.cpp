@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
 
@@ -36,8 +37,8 @@ TEST(DensePrepared, self_energy_and_pair_outlive_preparation_inputs) {
   }();
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
   long partner = f + n * model.hyb_poles.size();
-  auto expected = tensor(evaluator.compute_self_energy(G, topology, f)[0].data());
-  auto expected_pair = nda::make_regular(expected + evaluator.compute_self_energy(G, topology, partner)[0].data());
+  auto expected = tensor(triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, f)[0].data());
+  auto expected_pair = nda::make_regular(expected + triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, partner)[0].data());
 
   evaluator.reset();
   evaluator.eval_self_energy(model.G, backbone);
@@ -78,7 +79,7 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
     return result;
   }();
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
-  auto expected = evaluator.compute_single_ptcle_gf(G, topology, f);
+  auto expected = triqs_xca::test_utils::fixture_single_ptcle_gf(evaluator, G, topology, f);
   auto annihilators = nda::make_regular(evaluator.action.operators.Fs(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all));
   auto creators = nda::make_regular(evaluator.action.operators.F_dags(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all));
   auto actual = evaluator.eval_correlator(model.G, backbone, annihilators, creators, triqs_xca::diagram::CorrelatorStatistics{});

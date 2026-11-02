@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <gtest/gtest.h>
 #include <triqs_xca/dense/action.hpp>
 #include <triqs_xca/block_sparse/action.hpp>
@@ -116,8 +117,8 @@ TEST(Action, evaluator_copies_own_operator_data_and_outlive_their_source) {
   auto G_dense = test_utils::subspace_blocks(model.G, model.ad_flat, model.mesh);
   auto G_sparse = test_utils::subspace_blocks(model.G, model.ad, model.mesh);
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  auto sigma_dense = dense.compute_self_energy(G_dense, topology, 0L, 8L);
-  auto sigma_sparse = sparse.compute_self_energy(G_sparse, topology, 0L, 8L);
+  auto sigma_dense = triqs_xca::test_utils::fixture_self_energy(dense, G_dense, topology, itertools::range(0L, 8L));
+  auto sigma_sparse = triqs_xca::test_utils::fixture_self_energy(sparse, G_sparse, topology, itertools::range(0L, 8L));
   auto expected = test_utils::get_tensor_in_full_hilbert_space(sigma_sparse, model.ad);
   EXPECT_LT(nda::max_element(nda::abs(sigma_dense[0].data() - expected)), 1e-12);
 }

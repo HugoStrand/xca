@@ -61,6 +61,7 @@ namespace triqs_xca::diagram {
 
   long count_diagrams(int order, int flavours, long pole_count, Kind kind) {
     if (order < 1 || flavours < 0 || pole_count < 0) throw std::invalid_argument("invalid assignment space dimensions");
+    if (order > 1 && (flavours == 0 || pole_count == 0)) return 0;
     long count    = checked_power(2, direction_count(order, kind));
     long orbitals = checked_power(flavours, order - 1);
     if (__builtin_mul_overflow(count, orbitals, &count)) throw std::overflow_error("assignment count does not fit in a long");

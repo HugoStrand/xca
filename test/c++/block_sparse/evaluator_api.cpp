@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <gtest/gtest.h>
 
 #include <triqs_xca/atom_diag.hpp>
@@ -28,7 +29,7 @@ namespace test_utils = triqs_xca::test_utils;
  *
  * @details Diagram evaluators can be constructed in two ways in C++, either from an atom_diag object, which derives the field operators and the 
  * block structure itself and takes the propagator as a block_gf, or from a BlockOpSymQuartet assembled by the caller, which takes the propagator as 
- * a BlockDiagOpFun. The flat-index overloads, through which the caller drives the backbone loop, are checked for every evaluator in
+ * a BlockDiagOpFun. Individual prepared Backbones, selected by test-only fixture ordinals, are checked for every evaluator in
  * flat_index_all_evals.cpp.
  *
  * These are consistency checks between code paths rather than checks of the diagram itself: the routes build the same Hybridization from the same
@@ -68,7 +69,7 @@ TEST(EvaluatorAPI, OCA_constructor_equivalence) {
   // --- old constructor, taking field operators as a BlockOpSymQuartet and the propagator as a BlockDiagOpFun ---
   auto [Gt, Fq, sym_set_labels] = test_utils::two_band_helper(beta, Lambda, eps, hyb_coeffs);
   DiagramEvaluator DDE(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
-  BlockDiagOpFun OCA_result_2(DDE.compute_self_energy(Gt, topology));
+  BlockDiagOpFun OCA_result_2(triqs_xca::test_utils::fixture_self_energy(DDE, Gt, topology));
 
   // the two constructors must assemble the same hybridization ...
   ASSERT_LE(nda::max_element(nda::abs(D.action.tau_values - DDE.action.tau_values)), 1.0e-15);
@@ -115,7 +116,7 @@ TEST(EvaluatorAPI, gf_constructor_equivalence) {
   // --- old constructor, taking field operators as a BlockOpSymQuartet and the propagator as a BlockDiagOpFun ---
   auto [Gt, Fq, sym_set_labels] = test_utils::two_band_helper(beta, Lambda, eps, hyb_coeffs);
   DiagramEvaluator D2(beta, Lambda, eps, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fq);
-  auto OCA_gf_2 = D2.compute_single_ptcle_gf(Gt, topology);
+  auto OCA_gf_2 = triqs_xca::test_utils::fixture_single_ptcle_gf(D2, Gt, topology);
 
   // the two constructors must assemble the same hybridization ...
   ASSERT_LE(nda::max_element(nda::abs(D.action.tau_values - D2.action.tau_values)), 1.0e-15);

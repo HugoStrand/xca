@@ -60,6 +60,8 @@ TEST(SelfEnergyPairs, first_order_and_empty_spaces) {
   // An empty space must be recognized before computing powers that would overflow.
   EXPECT_EQ(count_self_energy_pairs(std::numeric_limits<int>::max(), 0, 1), 0);
   EXPECT_EQ(count_self_energy_pairs(std::numeric_limits<int>::max(), 1, 0), 0);
+  EXPECT_EQ(count_diagrams(std::numeric_limits<int>::max(), 0, 1, Kind::self_energy), 0);
+  EXPECT_EQ(count_diagrams(std::numeric_limits<int>::max(), 1, 0, Kind::correlator), 0);
   EXPECT_THROW(decode_self_energy_pair_arcs(2, no_statistics, no_poles, 0), std::invalid_argument);
 }
 

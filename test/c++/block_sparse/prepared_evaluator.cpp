@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
@@ -45,7 +46,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
                                       triqs_xca::diagram::Kind::self_energy));
   long f = (n - 1) + n * (1 + model.hyb_poles.size() * 2);
-  auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, topology, f), model.ad);
+  auto expected = test_utils::get_tensor_in_full_hilbert_space(triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, f), model.ad);
   auto actual = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, assignment), model.ad);
   expect_close(actual, expected);
 
@@ -69,7 +70,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
                                       triqs_xca::diagram::Kind::correlator));
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto op = identity(G);
-  auto expected = evaluator.eval_correlator(G, topology, {op}, {op}, f, false);
+  auto expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, std::vector<BlockOp>{op}, std::vector<BlockOp>{op}, f, false);
   auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(actual, expected);
 

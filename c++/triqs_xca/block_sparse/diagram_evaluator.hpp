@@ -6,7 +6,6 @@
 
 #include "triqs_xca/action.hpp"
 #include "triqs_xca/diagram/backbone.hpp"
-#include "triqs_xca/flat_index_selection.hpp"
 #include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/block_sparse/block_op.hpp"
 #include "triqs_xca/block_sparse/diagram/backbone_path.hpp"
@@ -21,7 +20,8 @@ using cppdlr::imtime_ops;
 /**
  * @class DiagramEvaluator
  * @brief Evaluate diagram contributions using block-sparse numerical storage.
- * Public selection adapters prepare a Backbone and discover its sector paths.
+ * Topology calls prepare this MPI rank's Backbones and discover their sector paths.
+ * They return local sums; the caller owns reduction across ranks.
  * The evaluator owns persistent Action data and scratch arrays; each call supplies
  * the current propagator and any observable operators. Paths own their instructions
  * and endpoint selections, independently of discovery workspaces or result caches.
@@ -57,9 +57,6 @@ class DiagramEvaluator {
   bool select_diagonal_self_energy(diagram::BackbonePath const &path) const;
   void add_self_energy_path(BlockDiagOpFun const &Gt, diagram::BackbonePath const &path, double kernel_prefactor);
   void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::Backbone const &backbone);
-  // The selection adapters validate topology once before calling these helpers.
-  void eval_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
-  void eval_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
@@ -90,30 +87,8 @@ class DiagramEvaluator {
   nda::array<dcomplex, 4> Tkaps;       // intermediate storage array
   nda::array<dcomplex, 3> Tmu;         // intermediate storage array
 
-  private:
-  // Common selection adapters; numerical entry points consume prepared backbones.
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                                             nda::array_const_view<int, 2> topology,
-                                                                             FlatIndexSelection const &flat_indices);
-  nda::array<dcomplex, 3> compute_single_ptcle_gf_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                           nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
-  template <bool isComplex>
-  nda::array<dcomplex, 3> compute_one_time_correlator_selected(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                               std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                               std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                               triqs::atom_diag::atom_diag<isComplex> const &ad,
-                                                               nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
-
-
-  public:
   // routines for any backbone
-  void reset(); // reset all arrays to zero
-
-  // routines for self-energy diagrams
-  long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);                  // get number of backbones for given topology
-
-  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
-  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
+  C2PY_IGNORE void reset(); // reset all arrays to zero
 
   // Return one prepared backbone's contribution, resetting the accumulator each call.
   // Assignment indices refer to this evaluator's model and pole tables.
@@ -126,27 +101,9 @@ class DiagramEvaluator {
   // a complete saved path set needs rediscovery when G's activity mask changes.
   C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, diagram::BackbonePath const &path);
 
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);           // compute self-energy for given topology
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix); // compute self-energy for given topology and flat index
+  /// Return this MPI rank's self-energy sum for one topology, without reduction.
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                                    nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
-  /// Half-open flat-index range [first, last); empty ranges return zero.
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                                    nda::array_const_view<int, 2> topology, long first, long last);
-
-  void print_self_energy_backbone(nda::array_const_view<int, 2> topology,
-                                  long f_ix); // print the backbone corresponding to a given flat index for debugging
-
-  // routines for correlator diagrams
-  long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology); // get number of backbones for given topology
-
-  // Native topology-taking helpers require topology::validate(topology) before
-  // the indexed loop. Public compute_* adapters perform that validation.
-  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, bool is_fermionic = true);
-
-  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, long f_ix, bool is_fermionic = true);
+                                                               nda::array_const_view<int, 2> topology);
 
   // Evaluate a prepared backbone; indices refer to this evaluator's model and pole tables.
   C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
@@ -161,38 +118,18 @@ class DiagramEvaluator {
     BlockDiagOpFun &Gt, diagram::BackbonePath const &path, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
     triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
-  // compute single particle Green's function for given topology (and flat index)
-  C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology);
-  C2PY_IGNORE nda::array<dcomplex, 3> compute_single_ptcle_gf(BlockDiagOpFun &Gt, nda::array_const_view<int, 2> topology, long f_ix);
-
+  /// Return this MPI rank's single-particle GF sum for one topology, without reduction.
   nda::array<dcomplex, 3> compute_single_ptcle_gf(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);
-  nda::array<dcomplex, 3> compute_single_ptcle_gf(
-    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
-  nda::array<dcomplex, 3> compute_single_ptcle_gf(
-    triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
-  /// Half-open flat-index range [first, last); empty ranges return zero.
-  nda::array<dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology,
-                                                  long first, long last);
-
-  void print_single_ptcle_gf_backbone(nda::array_const_view<int, 2> topology,
-                                      long f_ix); // print the backbone corresponding to a given flat index for debugging
  
-  // compute one time correlator for given operators
+  /// Return this MPI rank's correlator sum for one topology, without reduction.
   template<bool isComplex>
   nda::array<dcomplex, 3> compute_one_time_correlator(
     triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc, 
     std::vector<triqs::operators::many_body_operator_complex> const &ops_tau, 
     std::vector<triqs::operators::many_body_operator_complex> const &ops_0, 
     triqs::atom_diag::atom_diag<isComplex> const &ad,
-    nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
-  /// Half-open flat-index range [first, last); empty ranges return zero.
-  template <bool isComplex>
-  nda::array<dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                      triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
-                                                      long first, long last);
+    nda::array_const_view<int, 2> topology);
 
   /// Direct numerical construction, including explicit statistics and sector dimensions.
   C2PY_IGNORE explicit DiagramEvaluator(Action<BlockOpSymQuartet> action);

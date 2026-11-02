@@ -420,7 +420,7 @@ TEST_P(OneTimeCorrelatorState, calls_leave_no_state) {
       v(nb[topo])             = nb[topo];
       EXPECT_THROW(E->correlator(G, ops, ops, t, v), std::invalid_argument) << "an out-of-range flat index";
     } else if (failure == statistics) {
-      EXPECT_THROW(E->correlator(G, {c("A", 0)}, ops, t, all), std::runtime_error) << "a fermionic and a bosonic list";
+      EXPECT_THROW(E->correlator_topology(G, {c("A", 0)}, ops, t), std::runtime_error) << "a fermionic and a bosonic list";
     } else {
       EXPECT_TRUE(test_utils::close_to(E->correlator(G, ops, ops, t, all), fresh.at({prop, topo}), entry.rel_tol, min_scale));
     }
@@ -446,7 +446,6 @@ TEST_P(OneTimeCorrelatorRejection, operators_without_one_statistics_throw) {
   if (!E) GTEST_SKIP() << entry.name << " is not available here";
 
   nda::array<int, 2> const t = {{0, 2}, {1, 3}};
-  auto const all             = test_utils::flat_indices(0, E->n_spgf_backbones(t));
   auto const mixed           = many_body_operator_complex{c("up", 0) * c("do", 0) * c("do", 1) + c_dag("do", 0) * c_dag("do", 1)};
   std::vector<std::tuple<std::string, ops_t, ops_t>> const rejected{
      {"an operator of mixed fermion parity against a bosonic one", {mixed}, {n("up", 0)}},
@@ -456,7 +455,7 @@ TEST_P(OneTimeCorrelatorRejection, operators_without_one_statistics_throw) {
      {"a fermionic and a bosonic list", {c("up", 0)}, {n("up", 0)}},
      {"a fermionic and a bosonic operator in one list", {c("up", 0), n("up", 0)}, {c_dag("up", 0)}},
   };
-  for (auto const &[what, ops_tau, ops_0] : rejected) EXPECT_THROW(E->correlator(m.G, ops_tau, ops_0, t, all), std::runtime_error) << what;
+  for (auto const &[what, ops_tau, ops_0] : rejected) EXPECT_THROW(E->correlator_topology(m.G, ops_tau, ops_0, t), std::runtime_error) << what;
 }
 
 /// @brief A flat index n_backbones or -1, after all the valid ones, throws std::invalid_argument

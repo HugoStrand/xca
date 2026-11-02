@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <string>
 #include <vector>
 
@@ -76,8 +77,8 @@ namespace {
       kap_ops(i, range::all, range::all) = U * ad.get_op_mat(op).block_mat[0] * nda::conj(nda::transpose(U));
 
     nda::array<dcomplex, 3> corr = nda::zeros<dcomplex>(D.action.tau_mesh.size(), mu_ops.extent(0), kap_ops.extent(0));
-    long nb                      = D.get_num_single_ptcle_gf_backbones(topology);
-    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += D.eval_correlator(G[0].data(), topology, mu_ops, kap_ops, f_ix, is_fermionic);
+    long nb                      = triqs_xca::test_utils::fixture_count(D, topology, triqs_xca::diagram::Kind::correlator);
+    for (long f_ix = 0; f_ix < nb; ++f_ix) corr += triqs_xca::test_utils::fixture_correlator(D, G[0].data(), topology, mu_ops, kap_ops, f_ix, is_fermionic);
     return corr;
   }
 
@@ -122,9 +123,7 @@ TEST(DenseCorrelatorStatistics, spin_flip_operators_are_classified_bosonic) {
      << "vacuous test: the two statistics give the same correlator on this topology, so nothing here "
         "constrains the classification";
 
-  nda::vector<long> f_ix_vec(h.D.get_num_single_ptcle_gf_backbones(topology));
-  for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
-  auto chosen = h.D.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology, f_ix_vec);
+  auto chosen = h.D.compute_one_time_correlator(h.G, ops_tau, ops_0, h.ad, topology);
 
   EXPECT_LE(maxabs(nda::make_regular(chosen - as_boson)), 1.0e-13 * std::max(1.0, maxabs(as_boson)))
      << "compute_one_time_correlator classified (S+, S-) as fermionic, but both have even fermion parity. max|chosen - bosonic| = "
@@ -138,13 +137,11 @@ TEST(DenseCorrelatorStatistics, density_operators_are_classified_bosonic) {
   auto h                      = make_harness(two_orbital_model());
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
 
-  nda::vector<long> f_ix_vec(h.D.get_num_single_ptcle_gf_backbones(topology));
-  for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
 
   std::vector<many_body_operator_complex> ops{n<double>("up", 0)};
   auto as_boson   = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, false);
   auto as_fermion = correlator_with_flag(h.D, h.G, ops, ops, h.ad, topology, true);
-  auto chosen     = h.D.compute_one_time_correlator(h.G, ops, ops, h.ad, topology, f_ix_vec);
+  auto chosen     = h.D.compute_one_time_correlator(h.G, ops, ops, h.ad, topology);
   ASSERT_GT(maxabs(as_boson), 1.0e-6) << "vacuous: chi_nn is zero on this model";
   ASSERT_GT(maxabs(nda::make_regular(as_boson - as_fermion)), 1.0e-3)
      << "vacuous test: the two statistics give the same correlator on this topology";

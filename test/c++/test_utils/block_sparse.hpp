@@ -223,7 +223,7 @@ std::pair<BlockDiagOpFun, BlockOpSymQuartet> trivial_sparsity_helper(nda::array<
  * @param[in] nflav Number of flavors
  * @return Pair of the annihilation and creation operators, one BlockOp per flavor
  */
-std::pair<std::vector<BlockOp>, std::vector<BlockOp>> make_correlator_ops(BlockOpSymQuartet &Fq, int nflav);
+std::pair<std::vector<BlockOp>, std::vector<BlockOp>> make_correlator_ops(BlockOpSymQuartet const &Fq, int nflav);
 
 /**
  * @brief Largest absolute value taken by any off-diagonal entry of a (time, n, n) tensor

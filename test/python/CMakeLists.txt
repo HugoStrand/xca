@@ -25,7 +25,7 @@ set(all_tests
   triqs_soehyb/analytic_diagrams
   solver_copy
   api
-  range_selection
+  mpi_evaluation
   api_one_fermion
   api_two_fermions
   bethe_self_cons
@@ -52,3 +52,16 @@ foreach(test ${all_tests})
     "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python")
   set_property(TEST Py_${test} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
 endforeach()
+
+# Exercise the normal package import and Solver reduction boundaries under MPI.
+add_test(NAME Py_mpi_evaluation_3
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS}
+    ${TRIQS_PYTHON_EXECUTABLE} ${MPIEXEC_POSTFLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/mpi_evaluation.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(Py_mpi_evaluation_3 PROPERTIES PROCESSORS 3 TIMEOUT 180)
+set_property(TEST Py_mpi_evaluation_3 APPEND PROPERTY ENVIRONMENT_MODIFICATION
+  "PYTHONPATH=path_list_prepend:${pyed_SOURCE_DIR}"
+  "PYTHONPATH=path_list_prepend:${adapol_SOURCE_DIR}/src"
+  "PYTHONPATH=path_list_prepend:${PROJECT_BINARY_DIR}/python")
+set_property(TEST Py_mpi_evaluation_3 APPEND PROPERTY ENVIRONMENT
+  "OMP_NUM_THREADS=1" "OPENBLAS_NUM_THREADS=1" "XCA_TEST_MPI_SIZE=3" ${SANITIZER_RT_PRELOAD})

@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <algorithm>
 
 #include <gtest/gtest.h>
@@ -147,25 +148,23 @@ TEST(BlockSparseDynintEvaluator, dynint_constructor_contract) {
   auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
 
-  auto Sa = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
-  auto Sb = BlockDiagOpFun(D_fq.compute_self_energy(Gt, topology));
+  auto Sa = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D, Gt, topology));
+  auto Sb = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D_fq, Gt, topology));
   for (int b = 0; b < Sa.get_num_block_cols(); ++b) EXPECT_EQ(nda::max_element(nda::abs(Sa.get_block(b) - Sb.get_block(b))), 0.0) << "block " << b;
 
-  auto ga = D.compute_single_ptcle_gf(Gt, topology);
-  auto gb = D_fq.compute_single_ptcle_gf(Gt, topology);
+  auto ga = triqs_xca::test_utils::fixture_single_ptcle_gf(D, Gt, topology);
+  auto gb = triqs_xca::test_utils::fixture_single_ptcle_gf(D_fq, Gt, topology);
   ASSERT_EQ(gb.shape(), ga.shape());
   ASSERT_GT(nda::max_element(nda::abs(ga)), 0.01) << "vacuous test: the spgf is zero";
   EXPECT_EQ(nda::max_element(nda::abs(ga - gb)), 0.0);
 
   // the same one-time correlator exactly, for fermionic legs, whose sign on this topology depends on the statistics of the interaction lines,
   // and for the interaction operators
-  nda::vector<long> f_ix_vec(D.get_num_single_ptcle_gf_backbones(topology));
-  for (long i = 0; i < f_ix_vec.size(); ++i) f_ix_vec(i) = i;
   std::vector<std::pair<std::vector<many_body_operator_complex>, std::vector<many_body_operator_complex>>> const corr_ops{
      {{triqs::operators::c("A", 0)}, {triqs::operators::c_dag("A", 0)}}, {m.dynint_ops, m.dynint_ops}};
   for (auto const &[ops_tau, ops_0] : corr_ops) {
-    auto ca = D.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology, f_ix_vec);
-    auto cb = D_fq.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology, f_ix_vec);
+    auto ca = D.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology);
+    auto cb = D_fq.compute_one_time_correlator(G, ops_tau, ops_0, m.ad, topology);
     ASSERT_EQ(cb.shape(), ca.shape());
     ASSERT_GT(nda::max_element(nda::abs(ca)), 0.01) << "vacuous test: the correlator is zero";
     EXPECT_EQ(nda::max_element(nda::abs(ca - cb)), 0.0) << "one-time correlator of " << ops_tau.size() << " operators";
@@ -203,8 +202,8 @@ TEST(BlockSparseDynintEvaluator, empty_dynint_ops_reproduce_the_plain_constructo
 
   auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
-  auto S0    = BlockDiagOpFun(D0.compute_self_energy(Gt, topology));
-  auto S1    = BlockDiagOpFun(D1.compute_self_energy(Gt, topology));
+  auto S0    = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D0, Gt, topology));
+  auto S1    = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D1, Gt, topology));
 
   double scale = 0.0;
   for (int b = 0; b < S0.get_num_block_cols(); ++b) {
@@ -233,7 +232,7 @@ TEST(BlockSparseDynintEvaluator, spgf_excludes_the_interaction_flavours) {
   ASSERT_EQ(D.n, n_hyb + n_int);
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-  auto spgf                   = D.compute_single_ptcle_gf(Gt, topology);
+  auto spgf                   = triqs_xca::test_utils::fixture_single_ptcle_gf(D, Gt, topology);
 
   EXPECT_EQ(spgf.extent(1), n_hyb) << "the spgf has " << spgf.extent(1) << " rows, i.e. the interaction flavours are being emitted as external legs";
   EXPECT_EQ(spgf.extent(2), n_hyb) << "the spgf has " << spgf.extent(2)
@@ -318,8 +317,8 @@ TEST(BlockSparseDynintEvaluator, symmetry_set_order_does_not_change_sigma) {
 
   DiagramEvaluator Da(beta, Lambda, eps, hyb_poles, hyb, Fq);
   DiagramEvaluator Db(beta, Lambda, eps, hyb_poles, hyb, Fq_perm);
-  auto Sa = BlockDiagOpFun(Da.compute_self_energy(Gt, topology));
-  auto Sb = BlockDiagOpFun(Db.compute_self_energy(Gt, topology));
+  auto Sa = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(Da, Gt, topology));
+  auto Sb = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(Db, Gt, topology));
 
   double err = 0.0, scale = 0.0;
   for (int b = 0; b < Sa.get_num_block_cols(); ++b) {
@@ -389,7 +388,7 @@ TEST(BlockSparseDynintEvaluator, matches_dense_on_the_interleaved_deep_subspace_
   // Sigma, per block, through the basis bridge.
   {
     SCOPED_TRACE("self-energy");
-    auto Sigma        = BlockDiagOpFun(D.compute_self_energy(Gt, topology));
+    auto Sigma        = BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D, Gt, topology));
     auto Sigma_dense  = D_dense.compute_self_energy(G_flat, topology);
     auto [err, scale] = test_utils::compare_sigma_with_dense(Sigma, Sigma_dense, ad);
     ASSERT_GT(scale, 0.01) << "vacuous test: the self-energy is too small for an absolute tolerance";
@@ -400,7 +399,7 @@ TEST(BlockSparseDynintEvaluator, matches_dense_on_the_interleaved_deep_subspace_
   {
     SCOPED_TRACE("single-particle Green's function");
     auto spgf_dense   = D_dense.compute_single_ptcle_gf(G_flat, topology);
-    auto [err, scale] = test_utils::compare_spgf(D.compute_single_ptcle_gf(Gt, topology), spgf_dense);
+    auto [err, scale] = test_utils::compare_spgf(triqs_xca::test_utils::fixture_single_ptcle_gf(D, Gt, topology), spgf_dense);
     ASSERT_GT(scale, 1.0e-3) << "vacuous test: the spgf is too small to compare";
     EXPECT_LE(err, sigma_tol * std::max(1.0, scale)) << "max|spgf_dense| = " << scale << ", max|bs - dense| = " << err;
   }
@@ -439,10 +438,8 @@ TEST(BlockSparseDynintEvaluator, coupled_density_operators_match_dense_on_one_st
     auto spgf = sparse.compute_single_ptcle_gf(G, topology);
     auto dense_spgf = dense.compute_single_ptcle_gf(dense_G, topology);
     EXPECT_LE(nda::max_element(nda::abs(spgf - dense_spgf)), 2e-10 * nda::max_element(nda::abs(dense_spgf)));
-    nda::vector<long> indices(sparse.get_num_single_ptcle_gf_backbones(topology));
-    for (long i = 0; i < indices.size(); ++i) indices(i) = i;
-    auto correlator = sparse.compute_one_time_correlator(G, operators, operators, partitioned, topology, indices);
-    auto dense_correlator = dense.compute_one_time_correlator(dense_G, operators, operators, flat, topology, indices);
+    auto correlator = sparse.compute_one_time_correlator(G, operators, operators, partitioned, topology);
+    auto dense_correlator = dense.compute_one_time_correlator(dense_G, operators, operators, flat, topology);
     EXPECT_LE(nda::max_element(nda::abs(correlator - dense_correlator)), 2e-10 * nda::max_element(nda::abs(dense_correlator)));
   }
 }

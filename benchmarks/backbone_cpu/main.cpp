@@ -55,7 +55,9 @@ int main(int argc, char **argv) try {
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
   std::vector<triqs_xca::diagram::Arcs> logical;
-  std::vector<triqs_xca::diagram::Backbone> backbones;
+  std::vector<triqs_xca::diagram::Backbone> backbones, correlator_backbones;
+  long correlator_count = triqs_xca::diagram::count_diagrams(order, evaluator.action.n_flavours(), model.hyb_poles.size(), triqs_xca::diagram::Kind::correlator);
+  auto [mu, kap] = tu::make_correlator_ops(evaluator.action.operators, evaluator.action.n_hyb);
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
   std::mt19937_64 random{1789};
   for (long i = 0; i < samples; ++i) {
@@ -64,6 +66,8 @@ int main(int argc, char **argv) try {
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
     logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
     backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, logical.back()));
+    correlator_backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, evaluator.action, indices(i) % correlator_count,
+                                                                     triqs_xca::diagram::Kind::correlator));
   }
   double checksum = 0;
   long paths      = 0;
@@ -105,34 +109,30 @@ int main(int argc, char **argv) try {
     auto result = evaluator.compute_self_energy(G, backbones[i]);
     checksum += nda::sum(nda::abs(result[0].data()));
   });
-  time("flat_self_energy_call", [&](long i) {
-    auto result = evaluator.compute_self_energy(G, topology, indices(i));
+  time("prepare_and_self_energy_call", [&](long i) {
+    auto backbone = triqs_xca::diagram::prepare_backbone(topology, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy);
+    auto result = evaluator.compute_self_energy(G, backbone);
     checksum += nda::sum(nda::abs(result[0].data()));
   });
-  long correlator_count = count / 2;
-  time("single_particle_range_call", [&](long i) {
-    long f      = indices(i) % correlator_count;
-    auto result = evaluator.compute_single_ptcle_gf(bgf, topology, f, f + 1);
+  time("prepared_single_particle_call", [&](long i) {
+    auto result = evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
     checksum += nda::sum(nda::abs(result));
   });
-  // Warm the public propagator conversion and range-call allocation sizes too.
+  // Warm both local prepared call paths before sampling resident memory.
   for (long i = 0; i < samples; ++i) {
-    evaluator.compute_self_energy(bgf, topology, indices(i), indices(i) + 1);
-    long f = indices(i) % correlator_count;
-    evaluator.compute_single_ptcle_gf(bgf, topology, f, f + 1);
+    evaluator.compute_self_energy(G, backbones[i]);
+    evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
   }
   long rss_before = resident_kib();
-  // Repeated public range calls reuse bounded selections and do not retain tasks.
-  // Singleton ranges cover the same sample as the component timings.
+  // The same bounded backbone sample is reused; no task history is retained.
   for (int repeat = 0; repeat < repeats * 10; ++repeat)
     for (long i = 0; i < samples; ++i) {
-      auto result = evaluator.compute_self_energy(bgf, topology, indices(i), indices(i) + 1);
+      auto result = evaluator.compute_self_energy(G, backbones[i]);
       checksum += nda::sum(nda::abs(result[0].data()));
-      long f          = indices(i) % correlator_count;
-      auto correlator = evaluator.compute_single_ptcle_gf(bgf, topology, f, f + 1);
+      auto correlator = evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
       checksum += nda::sum(nda::abs(correlator));
     }
-  std::cout << "rss_before_kib,rss_after_kib,range_calls_per_kind,checksum\n"
+  std::cout << "rss_before_kib,rss_after_kib,prepared_calls_per_kind,checksum\n"
             << rss_before << ',' << resident_kib() << ',' << repeats * 10 * samples << ',' << checksum << '\n';
   return 0;
 } catch (std::exception const &error) {

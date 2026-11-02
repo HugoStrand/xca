@@ -29,6 +29,7 @@
 
 #include "test_utils/block_sparse.hpp"
 #include "test_utils/dense.hpp"
+#include "test_utils/prepared_evaluators.hpp"
 
 /**
  * @file evaluators.hpp
@@ -39,7 +40,7 @@
  * the self-energy over the Fock states, the single-particle Green's function with shape (r, n_hyb, n_hyb) and the one-time correlator of two
  * operator lists. Results are the raw evaluator output, without topology_parity. Every evaluator is compared with make_reference(), and with
  * closed forms through matches_closed_form(). Adding an evaluator takes its include and one entry in all_evaluators(), with an adapter of its
- * own unless it has the public API of the dense or the block-sparse evaluator, compute_one_time_correlator included. Kept in a header since
+ * own unless it supports the prepared numerical API of the dense or block-sparse evaluator. Symbolic input validation uses the topology API. Kept in a header since
  * it depends on gtest, which the test_utils library does not link.
  */
 
@@ -292,7 +293,7 @@ namespace triqs_xca::test_utils {
    * @brief A diagram evaluator as the *_all_evals tests drive it: the propagator over the Fock states in, raw results out
    *
    * @details f_ix and the entries of f_ix_vec are flat indices in [0, n_*_backbones(topology)). They select the backbones in the enumeration
-   * of the reference, orbital indices fastest and line directions slowest, which the solver's by-pairs self-energy loop relies on. A flat
+   * of these historical fixtures, orbital indices fastest and line directions slowest. Production evaluators do not expose this ordering. A flat
    * index outside that range throws std::invalid_argument, an empty f_ix_vec gives zeros, and no result depends on an earlier call. The
    * one-time correlator has the backbones of the single-particle Green's function, n_spgf_backbones(topology) of them.
    */
@@ -316,6 +317,9 @@ namespace triqs_xca::test_utils {
     /// One-time correlator of the operators ops_tau at tau and ops_0 at 0, shape (r, ops_tau.size(), ops_0.size()); an operator of mixed
     /// fermion parity or identically zero, operators of different parities and two empty lists throw std::runtime_error
     virtual tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t topology, f_ix_t f_ix_vec) = 0;
+
+    /// Production symbolic-input validation; numerical fixture selections use prepared Backbones instead.
+    virtual tensor_t correlator_topology(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t topology) = 0;
   };
 
   /// An evaluator with the public API of dense::DiagramEvaluator, built on the single-subspace twin and given one block over the Fock states
@@ -333,16 +337,19 @@ namespace triqs_xca::test_utils {
     public:
     explicit DenseFamily(EvalModel const &m) : mesh(m.mesh), ad_flat(m.ad_flat), D(make(m)) {}
 
-    long n_sigma_backbones(topo_t t) override { return D.get_num_self_energy_backbones(t); }
-    long n_spgf_backbones(topo_t t) override { return D.get_num_single_ptcle_gf_backbones(t); }
-    tensor_t sigma(tensor_t const &G, topo_t t) override { return D.compute_self_energy(native(G), t)[0].data(); }
-    tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_self_energy(native(G), t, f)[0].data(); }
-    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return D.compute_self_energy(native(G), t, f)[0].data(); }
-    tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(native(G), t); }
-    tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
-    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(native(G), t, f); }
+    long n_sigma_backbones(topo_t t) override { return fixture_count(D, t, diagram::Kind::self_energy); }
+    long n_spgf_backbones(topo_t t) override { return fixture_count(D, t, diagram::Kind::correlator); }
+    tensor_t sigma(tensor_t const &G, topo_t t) override { return fixture_self_energy(D, native(G), t)[0].data(); }
+    tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return fixture_self_energy(D, native(G), t, f)[0].data(); }
+    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return fixture_self_energy(D, native(G), t, f)[0].data(); }
+    tensor_t spgf(tensor_t const &G, topo_t t) override { return fixture_single_ptcle_gf(D, native(G), t); }
+    tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return fixture_single_ptcle_gf(D, native(G), t, f); }
+    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return fixture_single_ptcle_gf(D, native(G), t, f); }
     tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t, f_ix_t f) override {
-      return D.compute_one_time_correlator(native(G), ops_tau, ops_0, ad_flat, t, f);
+      return fixture_one_time_correlator(D, native(G), ops_tau, ops_0, ad_flat, t, f);
+    }
+    tensor_t correlator_topology(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t) override {
+      return D.compute_one_time_correlator(native(G), ops_tau, ops_0, ad_flat, t);
     }
   };
 
@@ -361,16 +368,19 @@ namespace triqs_xca::test_utils {
     public:
     explicit BlockSparseFamily(EvalModel const &m) : mesh(m.mesh), ad(m.ad), D(make(m)) {}
 
-    long n_sigma_backbones(topo_t t) override { return D.get_num_self_energy_backbones(t); }
-    long n_spgf_backbones(topo_t t) override { return D.get_num_single_ptcle_gf_backbones(t); }
-    tensor_t sigma(tensor_t const &G, topo_t t) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t)); }
-    tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t, f)); }
-    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return fock(D.compute_self_energy(subspace_blocks(G, ad, mesh), t, f)); }
-    tensor_t spgf(tensor_t const &G, topo_t t) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t); }
-    tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
-    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return D.compute_single_ptcle_gf(subspace_blocks(G, ad, mesh), t, f); }
+    long n_sigma_backbones(topo_t t) override { return fixture_count(D, t, diagram::Kind::self_energy); }
+    long n_spgf_backbones(topo_t t) override { return fixture_count(D, t, diagram::Kind::correlator); }
+    tensor_t sigma(tensor_t const &G, topo_t t) override { return fock(fixture_self_energy(D, subspace_blocks(G, ad, mesh), t)); }
+    tensor_t sigma(tensor_t const &G, topo_t t, f_ix_t f) override { return fock(fixture_self_energy(D, subspace_blocks(G, ad, mesh), t, f)); }
+    tensor_t sigma(tensor_t const &G, topo_t t, long f) override { return fock(fixture_self_energy(D, subspace_blocks(G, ad, mesh), t, f)); }
+    tensor_t spgf(tensor_t const &G, topo_t t) override { return fixture_single_ptcle_gf(D, subspace_blocks(G, ad, mesh), t); }
+    tensor_t spgf(tensor_t const &G, topo_t t, f_ix_t f) override { return fixture_single_ptcle_gf(D, subspace_blocks(G, ad, mesh), t, f); }
+    tensor_t spgf(tensor_t const &G, topo_t t, long f) override { return fixture_single_ptcle_gf(D, subspace_blocks(G, ad, mesh), t, f); }
     tensor_t correlator(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t, f_ix_t f) override {
-      return D.compute_one_time_correlator(subspace_blocks(G, ad, mesh), ops_tau, ops_0, ad, t, f);
+      return fixture_one_time_correlator(D, subspace_blocks(G, ad, mesh), ops_tau, ops_0, ad, t, f);
+    }
+    tensor_t correlator_topology(tensor_t const &G, ops_t const &ops_tau, ops_t const &ops_0, topo_t t) override {
+      return D.compute_one_time_correlator(subspace_blocks(G, ad, mesh), ops_tau, ops_0, ad, t);
     }
   };
 

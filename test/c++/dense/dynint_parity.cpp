@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <stdexcept>
 
 #include <gtest/gtest.h>
@@ -121,8 +122,8 @@ TEST(DenseDynint, self_energy_by_pairs_agrees) {
   // check that some backbones carry the interaction operator on the internal line
   DiagramEvaluator D_no_dynint(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad);
 
-  long n_backbones           = D.get_num_self_energy_backbones(topology);
-  long n_backbones_fermionic = D_no_dynint.get_num_self_energy_backbones(topology);
+  long n_backbones           = triqs_xca::test_utils::fixture_count(D, topology, triqs_xca::diagram::Kind::self_energy);
+  long n_backbones_fermionic = triqs_xca::test_utils::fixture_count(D_no_dynint, topology, triqs_xca::diagram::Kind::self_energy);
   ASSERT_GT(n_backbones, n_backbones_fermionic) << "vacuous test: no backbone carries the interaction operator";
 
   auto sigma_all   = D.compute_self_energy(m.G_ppsc, topology);
@@ -139,52 +140,42 @@ TEST(DenseDynint, self_energy_by_pairs_agrees) {
 }
 
 /**
- * @brief Check that the three compute_self_energy_by_pairs() overloads agree
+ * @brief A prepared pair equals two explicit opposite endpoint directions.
  *
- * @details The flat-index overloads do not filter the flat indices, so the caller has to pass only the indices with fb(0) = 0, i.e.
- * (f_ix / n_p) % 2 == 0 with n_p = o_ix_max * p_ix_max, as Solver.eval_pseudo_particle_self_energy_order_by_pairs does.
+ * @details Internal arc choices are enumerated logically. Both orientations of
+ * the supplied special arc must give the same pair, including interaction lines.
  */
-TEST(DenseDynint, self_energy_by_pairs_flat_index_overloads_agree) {
-
-  double beta   = 2.0;
-  double Lambda = 20.0 * beta;
-  double eps    = 1.0e-8;
-
+TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
+  double beta = 2.0, Lambda = 20.0 * beta, eps = 1.0e-8;
   auto m = dynint_model(beta, Lambda, eps);
-
-  nda::array<int, 2> topology = {{0, 2}, {1, 3}};
-
-  ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";
-
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, m.G_ppsc[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
-
-  // stride n_p of fb_ix in the flat index, from f_ix_max = n_p * fb_ix_max with fb_ix_max = 2^m for self-energy assignments
-  int order    = topology.extent(0);
-  long f_ix_max = D.get_num_self_energy_backbones(topology);
-  int n_p      = f_ix_max / (1 << order);
-
-  std::vector<int> seeds;
-  for (int f_ix = 0; f_ix < f_ix_max; ++f_ix) {
-    if ((f_ix / n_p) % 2 == 0) seeds.push_back(f_ix);
-  }
-  ASSERT_EQ(static_cast<long>(seeds.size()), f_ix_max / 2);
-
-  auto sigma_all = D.compute_self_energy_by_pairs(m.G_ppsc, topology);
-  ASSERT_GT(nda::max_element(nda::abs(sigma_all[0].data())), 1.0e-8) << "vacuous test: the self-energy is zero";
-
-  nda::vector<long> f_ix_vec(seeds.size());
-  for (long i = 0; i < static_cast<long>(seeds.size()); ++i) f_ix_vec(i) = seeds[i];
-  auto sigma_vec = D.compute_self_energy_by_pairs(m.G_ppsc, topology, f_ix_vec);
-
-  int const N = D.action.block_dims(0);
-  auto sigma_single = nda::zeros<dcomplex>(D.action.tau_mesh.size(), N, N);
-  for (int f_ix : seeds) sigma_single += D.compute_self_energy_by_pairs(m.G_ppsc, topology, f_ix)[0].data();
-
-  EXPECT_LE(nda::max_element(nda::abs(sigma_all[0].data() - sigma_vec[0].data())), 1.0e-14)
-     << "compute_self_energy_by_pairs(G, topology, f_ix_vec) disagrees with compute_self_energy_by_pairs(G, topology)";
-
-  EXPECT_LE(nda::max_element(nda::abs(sigma_all[0].data() - sigma_single)), 1.0e-14)
-     << "compute_self_energy_by_pairs(G, topology, f_ix) disagrees with compute_self_energy_by_pairs(G, topology)";
+  namespace logical = triqs_xca::diagram;
+  using logical::Direction;
+  auto sum = nda::zeros<dcomplex>(D.action.tau_mesh.size(), D.action.block_dims(0), D.action.block_dims(0));
+  auto evaluate = [&](logical::Backbone const &backbone, bool pair) {
+    D.reset();
+    if (pair) D.eval_self_energy_pair(m.G_ppsc[0].data(), backbone);
+    else D.eval_self_energy(m.G_ppsc[0].data(), backbone);
+    return nda::make_regular(D.Sigma);
+  };
+  for (auto direction : {Direction::backward, Direction::forward})
+    for (int pole = 0; pole < m.hyb_poles.size(); ++pole)
+      for (int flavour = 0; flavour < D.action.n_flavours(); ++flavour) {
+        auto prepare = [&](Direction endpoint) {
+          auto arcs = logical::prepare_arcs(logical::Arcs{{endpoint, -1, -1}, {direction, flavour, pole}}, D.action, logical::Kind::self_energy);
+          return logical::prepare_backbone(topology, arcs);
+        };
+        auto backward = prepare(Direction::backward), forward = prepare(Direction::forward);
+        auto expected = nda::make_regular(evaluate(backward, false) + evaluate(forward, false));
+        auto pair = evaluate(backward, true);
+        EXPECT_LE(nda::max_element(nda::abs(pair - expected)), 1.0e-14);
+        EXPECT_LE(nda::max_element(nda::abs(evaluate(forward, true) - expected)), 1.0e-14);
+        sum += pair;
+      }
+  auto all = D.compute_self_energy_by_pairs(m.G_ppsc, topology);
+  ASSERT_GT(nda::max_element(nda::abs(all[0].data())), 1.0e-8);
+  EXPECT_LE(nda::max_element(nda::abs(all[0].data() - sum)), 1.0e-14);
 }
 
 /**
@@ -231,14 +222,12 @@ TEST(DenseDynint, one_time_correlator_rejects_multi_subspace_atom_diag) {
   nda::array<int, 2> topology              = {{0, 1}};
   std::vector<many_body_operator_complex> ops = {n<double>("0", 0)};
 
-  nda::vector<long> f_ix_vec(1);
-  f_ix_vec(0) = 0;
 
   // a propagator in the layout the dense evaluator takes, so that only the atom_diag is at fault
   auto G_flat = dynint_model(beta, Lambda, eps).G_ppsc;
 
   try {
-    D.compute_one_time_correlator(G_flat, ops, ops, m.ad, topology, f_ix_vec);
+    D.compute_one_time_correlator(G_flat, ops, ops, m.ad, topology);
     FAIL() << "expected std::invalid_argument for a multi-subspace atom_diag";
   } catch (std::invalid_argument const &e) { EXPECT_NE(std::string(e.what()).find("single subspace"), std::string::npos) << e.what(); }
 }

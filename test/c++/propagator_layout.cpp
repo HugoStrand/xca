@@ -52,7 +52,6 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   auto G_flat     = test_utils::ad_to_atom_prop(ad_flat, beta, Lambda, eps);
   auto ops        = std::vector<many_body_operator_complex>{n("A", 0)};
   auto topology   = nda::array<int, 2>{{0, 1}};
-  auto f_ix_vec   = nda::vector<long>{0};
   auto D_dense    = dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat);
   auto D_bs       = block_sparse::DiagramEvaluator(hyb_poles, hyb_coeffs, G_bs[0].mesh(), ad);
 
@@ -79,50 +78,41 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   for (auto &[what, G] : wrong_for_dense) {
     SCOPED_TRACE("dense, " + what);
     EXPECT_THROW(D_dense.compute_self_energy(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_self_energy(G, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_self_energy(G, topology, f_ix_vec), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology, f_ix_vec), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology, f_ix_vec), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_one_time_correlator(G, ops, ops, ad_flat, topology, f_ix_vec), std::invalid_argument);
+    EXPECT_THROW(D_dense.compute_one_time_correlator(G, ops, ops, ad_flat, topology), std::invalid_argument);
   }
   auto wrong_for_bs = std::vector<std::pair<std::string, bgf_t>>{
      {"dense layout", G_flat}, {"empty", G_empty}, {"wrong block dimension", G_bs_wrong_dim}, {"other rank", G_bs_rank}};
   for (auto &[what, G] : wrong_for_bs) {
     SCOPED_TRACE("block-sparse, " + what);
     EXPECT_THROW(D_bs.compute_self_energy(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_self_energy(G, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_self_energy(G, topology, f_ix_vec), std::invalid_argument);
     EXPECT_THROW(D_bs.compute_single_ptcle_gf(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_single_ptcle_gf(G, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_single_ptcle_gf(G, topology, f_ix_vec), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_one_time_correlator(G, ops, ops, ad, topology, f_ix_vec), std::invalid_argument);
+    EXPECT_THROW(D_bs.compute_one_time_correlator(G, ops, ops, ad, topology), std::invalid_argument);
   }
 
   // the one-time correlator with an atom_diag of another Hilbert space (dense) or other subspaces (block-sparse)
   auto ad_other = test_utils::sz_resolved_atom_diag_helper(1, false);
   ASSERT_NE(ad_other.get_full_hilbert_space_dim(), ad_flat.get_full_hilbert_space_dim());
-  EXPECT_THROW(D_dense.compute_one_time_correlator(G_flat, ops, ops, ad_other, topology, f_ix_vec), std::invalid_argument);
-  EXPECT_THROW(D_bs.compute_one_time_correlator(G_bs, ops, ops, ad_flat, topology, f_ix_vec), std::invalid_argument);
+  EXPECT_THROW(D_dense.compute_one_time_correlator(G_flat, ops, ops, ad_other, topology), std::invalid_argument);
+  EXPECT_THROW(D_bs.compute_one_time_correlator(G_bs, ops, ops, ad_flat, topology), std::invalid_argument);
 
-  // the BlockDiagOpFun overloads of the block-sparse evaluator, which a block-sparse layout from another model reaches unconverted
+  // Prepared numerical calls also check native propagator layout.
+  auto sigma_backbone = triqs_xca::diagram::prepare_backbone(topology, D_bs.action, 0, triqs_xca::diagram::Kind::self_energy);
+  auto corr_backbone = triqs_xca::diagram::prepare_backbone(topology, D_bs.action, 0, triqs_xca::diagram::Kind::correlator);
+  auto [mu, kap] = test_utils::make_correlator_ops(D_bs.action.operators, D_bs.action.n_hyb);
   for (auto &[what, G] : wrong_for_bs) {
     if (G.size() == 0) continue; // BlockDiagOpFun cannot hold an empty propagator
     SCOPED_TRACE("block-sparse BlockDiagOpFun, " + what);
     auto Gt = block_sparse::BlockDiagOpFun(G);
-    EXPECT_THROW(D_bs.compute_self_energy(Gt, topology), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_self_energy(Gt, topology, 0), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_single_ptcle_gf(Gt, topology), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_single_ptcle_gf(Gt, topology, 0), std::invalid_argument);
+    EXPECT_THROW(D_bs.compute_self_energy(Gt, sigma_backbone), std::invalid_argument);
+    EXPECT_THROW(D_bs.eval_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
   }
   {
     SCOPED_TRACE("block-sparse BlockDiagOpFun, zero blocks of dimension 1");
     auto Gt = block_sparse::BlockDiagOpFun(G_bs[0].mesh().size(), nda::ones<int>(G_bs.size()));
-    EXPECT_THROW(D_bs.compute_self_energy(Gt, topology), std::invalid_argument);
-    EXPECT_THROW(D_bs.compute_single_ptcle_gf(Gt, topology), std::invalid_argument);
+    EXPECT_THROW(D_bs.compute_self_energy(Gt, sigma_backbone), std::invalid_argument);
+    EXPECT_THROW(D_bs.eval_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
   }
 
   // expectation_value with the layouts of its atom_diag and of another one, and with an operator that leaves the subspaces

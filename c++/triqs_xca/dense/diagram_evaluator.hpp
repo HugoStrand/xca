@@ -9,7 +9,6 @@
 #include "triqs_xca/action.hpp"
 #include "triqs_xca/dense/fset.hpp"
 #include "triqs_xca/diagram/backbone.hpp"
-#include "triqs_xca/flat_index_selection.hpp"
 #include "triqs_xca/diagram/topology.hpp"
 #include "triqs_xca/atom_diag.hpp"
 
@@ -52,20 +51,6 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
     private:
-    // Common selection adapters; numerical entry points consume prepared backbones.
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                               FlatIndexSelection const &flat_indices);
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                                        FlatIndexSelection const &flat_indices);
-    nda::array<dcomplex, 3> compute_single_ptcle_gf_selected(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                             FlatIndexSelection const &flat_indices);
-    template <bool isComplex>
-    nda::array<dcomplex, 3> compute_one_time_correlator_selected(gf_vt G_ppsc,
-                                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                                 std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                                 triqs::atom_diag::atom_diag<isComplex> const &ad,
-                                                                 nda::array_const_view<int, 2> topology, FlatIndexSelection const &flat_indices);
-
     nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
 
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
@@ -99,7 +84,7 @@ namespace triqs_xca::dense {
     void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone, int e_ix);
 
     public:
-    void reset(); // reset all arrays to zero
+    C2PY_IGNORE void reset(); // reset all arrays to zero
 
     // Prepared numerical entry points. Self-energy calls add into Sigma; correlators return their contribution.
     C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone);
@@ -108,70 +93,18 @@ namespace triqs_xca::dense {
       nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
       nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
-    // Native topology-taking eval_* helpers require topology::validate(topology)
-    // before the indexed loop. Public compute_* adapters perform that validation.
-    // evaluate a diagram of a given order and topology in dense storage
-    // (i.e., evaluate and sum all backbones with different orbital indices, poles, and hybridization line directions)
-    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology);
-    // evaluate a diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE void eval_self_energy_fixed_indices(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology, long f_ix);
-    // evaluate a pair of diagrams differing only in the direction of the line connected to the zero vertex
-    C2PY_IGNORE void eval_self_energy_fixed_index_pair(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology, long f_ix);
-    // evaluate all pairs of diagrams for given topology
-    C2PY_IGNORE void eval_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology);
-
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
-    compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for given topology
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                      long f_ix); // compute self-energy for given topology and flat index
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                      nda::array_const_view<long, 1> f_ix_vec);
-    /// Half-open flat-index range [first, last); empty ranges return zero.
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime>
-    compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology); // compute self-energy for all pairs of diagrams
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                               long f_ix); // compute self-energy for a single pair
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology,
-                                                                               nda::array_const_view<long, 1> f_ix_vec);
-    /// Half-open flat-index range [first, last); empty ranges return zero. Only direction-zero seeds own pairs; their partners may lie outside the range.
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first,
-                                                                               long last);
-    // get number of backbones for given topology
-    long get_num_self_energy_backbones(nda::array_const_view<int, 2> topology);
-
-    // These native correlator helpers also require a validated topology.
-    // evaluate the mu, kap entries of a correlator for a diagram of a given order and topology in dense storage
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology,
-                                                        nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, bool is_fermionic = true);
-    // evaluate a correlator diagram with fixed orbital indices, poles, and line directions in dense storage, including prefactor
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(nda::array_const_view<dcomplex, 3> Gt, nda::array_const_view<int, 2> topology,
-                                                        nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, long f_ix,
-                                                        bool is_fermionic = true);
-
-    // compute single particle Green's function for given topology
+    /// Evaluate this MPI rank's share of a topology; the caller reduces the accumulated result.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
+    /// Evaluate this MPI rank's share of the unique pairs of special-arc directions.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
+    /// Evaluate this MPI rank's contribution to the single-particle Green's function.
     nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
-    // compute single particle Green's function for given topology and flat index
-    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long f_ix);
-    // compute single particle Green's function for given topology and flat index vector
-    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, nda::array_const_view<long, 1> f_ix_vec);
-    /// Half-open flat-index range [first, last); empty ranges return zero.
-    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology, long first, long last);
-    // get number of backbones for given topology
-    long get_num_single_ptcle_gf_backbones(nda::array_const_view<int, 2> topology);
 
-    // compute one time correlator for given operators
+    /// Evaluate this MPI rank's contribution for the supplied observable operators.
     template <bool isComplex>
     nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
                                                         std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                        triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
-                                                        nda::array_const_view<long, 1> f_ix_vec);
-    /// Half-open flat-index range [first, last); empty ranges return zero.
-    template <bool isComplex>
-    nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                        std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                        triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology,
-                                                        long first, long last);
+                                                        triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology);
 
     // Every constructor takes physical pole frequencies, also stored unchanged in Action.
     /**

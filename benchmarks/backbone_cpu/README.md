@@ -2,8 +2,8 @@
 
 A small diagnostic for the preparation/execution boundaries introduced by
 `plan_backbone.md`. It measures shared assignment preparation, block-sparse path
-planning, complete self-energy calls, and single-particle
-correlator range calls. It uses the C++ test models and a fixed, bounded sample
+planning, prepared self-energy calls, and prepared single-particle
+correlator calls. It uses the C++ test models and a fixed, bounded sample
 of indexed assignments. It does not compare against the pre-refactoring code or
 measure solver convergence, MPI throughput, or GPU performance.
 
@@ -53,17 +53,21 @@ and model diagonalization are outside the timed regions.
   directly equivalent to this phase.
 - `path_discovery` counts candidates without matrix arithmetic.
 - `prepared_self_energy_call` includes path planning, direct numerical work,
-  result packing, and reset, using a native block propagator. The flat call also
-  constructs the topology and prepares the assignment. Differences between these
-  two measurements can be smaller than timing noise. The phases overlap and must
+  result packing, and reset, using a native block propagator.
+  `prepare_and_self_energy_call` additionally decodes and prepares the Backbone.
+  Differences between these measurements can be smaller than timing noise.
+  The phases overlap and must
   not be added together as a profiler breakdown. Stored results that include a
   `paths_and_operand_binding` row measured the previous binding stage; that stage
   is absent from the current implementation.
-- `single_particle_range_call` also includes public propagator conversion and
-  observable setup, then fragment planning, execution, and joins.
+- `prepared_single_particle_call` includes path planning, execution, and joins;
+  the propagator, observable matrices and Backbone are prepared before timing.
+  Historical `single_particle_range_call` rows also included public propagator
+  conversion, observable setup and Backbone preparation, so they measure a
+  different boundary. Existing stored results retain their original phase names.
 
-All phases consume a checksum. After warming both public range paths, the program
-samples Linux resident memory before and after repeated singleton range calls.
+All phases consume a checksum. After warming both prepared execution paths, the
+program samples Linux resident memory before and after repeated prepared calls.
 It reports calls **per observable kind**; both self-energy and single-particle
 functions run that many times. RSS is `-1` on platforms without `/proc/self/status`.
 RSS includes input/model storage, the capped sample, allocator caches, and the
@@ -73,7 +77,7 @@ The implementation's memory bound should also be inspected: one assignment and
 one self-energy path workspace are streamed, while correlator fragments are
 retained only for the sectors of the current assignment. Neither path stores all
 assignments or all possible self-energy paths. The benchmark itself retains at
-most 64 recipes for component measurements.
+most 64 Backbones per observable kind for component measurements.
 
 Machine-specific data and interpretation belong in subdirectories. These CPU
 measurements guide later work; future GPU optimization targets high-end hardware

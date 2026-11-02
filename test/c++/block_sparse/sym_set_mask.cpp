@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
@@ -83,7 +84,7 @@ namespace {
     auto Fq    = std::get<0>(get_operators(ad, coeffs));
     DiagramEvaluator D(beta, Lambda, eps, hyb_poles, coeffs, Fq, /*n_int=*/0);
     auto Gt = test_utils::ad_to_atom_prop(ad, beta, itops);
-    return BlockDiagOpFun(D.compute_self_energy(Gt, topology));
+    return BlockDiagOpFun(triqs_xca::test_utils::fixture_self_energy(D, Gt, topology));
   }
 
   double max_block_diff(BlockDiagOpFun const &A, BlockDiagOpFun const &B) {

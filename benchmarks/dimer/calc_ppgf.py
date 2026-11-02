@@ -330,7 +330,7 @@ def eval_pseudo_particle_self_energy_order(S, G, order, connected=True):
         
         topology_int32 = np.array(topology, dtype=np.int32)
         t1 = time.time()
-        Sigma_diag = -S._Solver__eval_pseudo_particle_self_energy_topology_loop(G, topology_int32, verbose=True)
+        Sigma_diag = -S.eval_pseudo_particle_self_energy_topology(G, topology_int32)
         abs_max = np.max(np.abs(Sigma_diag['0'].data))
         print(f'SIGMA: O{order} topo {topology} sign {sign:+d} absmax {abs_max:2.2E} time {time.time() - t1} s')
 

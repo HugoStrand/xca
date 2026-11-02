@@ -30,10 +30,10 @@ using triqs_xca::diagram::topology::topology_parity;
 /**
  * @file flat_index_all_evals.cpp
  *
- * @brief The per-backbone (flat-index) API of every evaluator in test_utils::all_evaluators(), against test_utils::make_reference()
+ * @brief Prepared numerical backbones selected through the test-only fixture adapter of every evaluator in test_utils::all_evaluators(), against test_utils::make_reference()
  *
  * @details A flat index f in [0, n_backbones) selects one backbone of a topology, i.e. its line directions, pole indices and orbital
- * indices, and the solver hands each MPI rank a vector of flat indices. For every evaluator and for both the self-energy and the
+ * indices. This enumeration is private to the test fixtures; production MPI work is tested separately. For every evaluator and both the self-energy and the
  * single-particle Green's function:
  * - the backbone counts are 2^m n^(m-1) p^(m-1) and 2^(m-1) n^(m-1) p^(m-1), with n = n_hyb + n_int flavours, p poles and order m;
  * - the single-index overload gives the reference result backbone by backbone, equals the flat-index-vector overload called with {f}, and

@@ -1,3 +1,4 @@
+#include "test_utils/prepared_evaluators.hpp"
 #include <cmath>
 #include <gtest/gtest.h>
 #include <triqs_xca/dense/diagram_evaluator.hpp>
@@ -75,8 +76,8 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
           dcomplex coefficient = direction == 1 ? values(t, mu, kap) : reflected(t, kap, mu);
           expected(t, all, all) += coefficient * nda::linalg::matmul(left(mu, all, all), nda::linalg::matmul(G(t, all, all), right(kap, all, all)));
         }
-    expect_close(tensor(dense.compute_self_energy(propagator, topology, direction)[0].data()), expected);
-    expect_close(tensor(sparse.compute_self_energy(propagator, topology, direction)[0].data()), expected);
+    expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(dense, propagator, topology, direction)[0].data()), expected);
+    expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(sparse, propagator, topology, direction)[0].data()), expected);
     sum += expected;
   }
   expect_close(tensor(dense.compute_self_energy_by_pairs(propagator, topology)[0].data()), sum);
@@ -129,10 +130,10 @@ TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {
       }
       for (long f : selected) {
         SCOPED_TRACE(::testing::Message() << "order=" << topology.extent(0) << ", index=" << f);
-        tensor expected = dense_atom.compute_self_energy(propagator, topology, f)[0].data();
-        expect_close(tensor(dense_ops.compute_self_energy(propagator, topology, f)[0].data()), expected);
-        expect_close(tensor(sparse_atom.compute_self_energy(propagator, topology, f)[0].data()), expected);
-        expect_close(tensor(sparse_ops.compute_self_energy(propagator, topology, f)[0].data()), expected);
+        tensor expected = triqs_xca::test_utils::fixture_self_energy(dense_atom, propagator, topology, f)[0].data();
+        expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(dense_ops, propagator, topology, f)[0].data()), expected);
+        expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(sparse_atom, propagator, topology, f)[0].data()), expected);
+        expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(sparse_ops, propagator, topology, f)[0].data()), expected);
       }
     }
   }

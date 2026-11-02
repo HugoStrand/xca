@@ -25,13 +25,6 @@ def is_root():
     return mpi.is_master_node()
 
 
-def scatter_range_over_ranks(n):
-    """ Half-open bounds for this rank, with the same partition as np.array_split. """
-    chunk, extra = divmod(n, mpi.size)
-    start = mpi.rank * chunk + min(mpi.rank, extra)
-    return start, start + chunk + (mpi.rank < extra)
-
-
 class Solver(object):
 
     # Application-prefixed hdf5 format tag, following the convention used by the
@@ -76,6 +69,10 @@ class Solver(object):
 
     The single particle Green's function is available as the ``G_tau`` attribute after calling ``solve()``. 
     It is a block Green's function in imaginary time.
+
+    Under MPI, diagram evaluators return rank-local topology contributions. The
+    Solver accumulates the requested topologies and orders before reducing the
+    result. Public Solver evaluation methods return the complete sum on every rank.
 
     """
 
@@ -717,6 +714,9 @@ class Solver(object):
             with self.timer(f'Order {order}'):
                 self.Sigma += self.__eval_pseudo_particle_self_energy_order(G, order, connected, verbose=verbose)
 
+        # Evaluators return rank-local contributions. Reduce after all orders.
+        for _, sigma_b in self.Sigma:
+            sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
         return self.Sigma
 
 
@@ -729,7 +729,7 @@ class Solver(object):
         for sign, topology in pairings(order):
             if verbose and is_root(): print(f'SIGMA: O{order} topo {topology} sign {sign:+d}')
             topology = np.array(topology, dtype=np.int32)
-            Sigma -= self.__eval_pseudo_particle_self_energy_topology_loop(G, topology, verbose=verbose)
+            Sigma -= self.d.compute_self_energy(G, topology)
             
         return Sigma
     
@@ -741,41 +741,18 @@ class Solver(object):
         for sign, topology in all_connected_pairings(order):
             if verbose and is_root(): print(f'SIGMA: O{order} topo {topology} sign {sign:+d}')
             topology = np.array(topology, dtype=np.int32)
-            Sigma -= self.__eval_pseudo_particle_self_energy_topology_loop_by_pairs(G, topology, verbose=verbose)
+            Sigma -= self.d.compute_self_energy_by_pairs(G, topology)
 
-        return Sigma
-
-
-    def __eval_pseudo_particle_self_energy_topology_loop_by_pairs(self, G, topology, verbose=False):
-
-        order = len(topology)
-        n_max = self.d.get_num_self_energy_backbones(topology)
-        # The C++ range overload owns only direction-zero seeds within these bounds;
-        # each seed evaluates both directions, even if its partner is on another rank.
-        first, last = scatter_range_over_ranks(n_max)
-
-        Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy_by_pairs(G, topology, first, last)
-        for bidx, sigma_b in Sigma:
+        for _, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
         return Sigma
 
 
     def eval_pseudo_particle_self_energy_topology(self, G, topology):
-        order = len(topology)
-        return self.d.compute_self_energy(G, topology)
-
-
-    def __eval_pseudo_particle_self_energy_topology_loop(self, G, topology, verbose=False):
-
-        order = len(topology)
-        n_max = self.d.get_num_self_energy_backbones(topology)
-        first, last = scatter_range_over_ranks(n_max)
-
-        Sigma = self.get_zero_pseudo_particle_propagator()
-        Sigma = self.d.compute_self_energy(G, topology, first, last)
-        for bidx, sigma_b in Sigma:
+        """Return the complete topology sum on every MPI rank."""
+        Sigma = self.d.compute_self_energy(G, topology)
+        for _, sigma_b in Sigma:
             sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
 
         return Sigma
@@ -802,7 +779,8 @@ class Solver(object):
         for order in range(1, max_order+1):
             with self.timer(f'Order {order}'):
                 self.spgf += self.__eval_single_particle_greens_function_order(G, order)
-        
+
+        self.spgf.data[:] = mpi.all_reduce(self.spgf.data)
         return self.spgf
 
 
@@ -812,28 +790,15 @@ class Solver(object):
 
         for sign, topology in all_connected_pairings(order):
             topology = np.array(topology, dtype=np.int32)
-            spgf += pow(-1, order) * \
-                self.__eval_single_particle_greens_function_topology_loop(G, topology)
+            spgf.data[:] += pow(-1, order) * self.d.compute_single_ptcle_gf(G, topology)
 
         return spgf
 
 
     def eval_single_particle_greens_function_topology(self, G, topology):
-
+        """Return the complete topology sum on every MPI rank."""
         spgf = self.get_zero_single_particle_greens_function()
-
         spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology) # FIXME! return triqs::gfs::gf
-
-        return spgf
-
-
-    def __eval_single_particle_greens_function_topology_loop(self, G, topology):
-
-        n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        first, last = scatter_range_over_ranks(n_max)
-
-        spgf = self.get_zero_single_particle_greens_function()
-        spgf.data[:] = self.d.compute_single_ptcle_gf(G, topology, first, last)
         spgf.data[:] = mpi.all_reduce(spgf.data)
 
         return spgf
@@ -860,6 +825,7 @@ class Solver(object):
             with self.timer(f'Order {order}'):
                 self.__inplace_eval_one_time_correlator_order(corr, G, order, ops_tau, ops_0)
 
+        corr.data[:] = mpi.all_reduce(corr.data)
         return corr
 
 
@@ -868,18 +834,8 @@ class Solver(object):
         prefactor = pow(-1, order)
         for sign, topology in all_connected_pairings(order):
             topology = np.array(topology, dtype=np.int32)
-            self.__inplace_eval_one_time_correlator_topology_loop(
-                corr, G, topology, ops_tau, ops_0, prefactor)
-    
-
-    def __inplace_eval_one_time_correlator_topology_loop(self, corr, G, topology, ops_tau, ops_0, prefactor):
-
-        n_max = self.d.get_num_single_ptcle_gf_backbones(topology)
-        first, last = scatter_range_over_ranks(n_max)
-
-        corr_arr = prefactor * self.d.compute_one_time_correlator(
-            G, ops_tau, ops_0, self.atom_diag, topology, first, last)
-        corr.data[:] += mpi.all_reduce(corr_arr)
+            corr.data[:] += prefactor * self.d.compute_one_time_correlator(
+                G, ops_tau, ops_0, self.atom_diag, topology)
 
 
     def Z_alpha(self, alpha, eta):

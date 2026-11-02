@@ -438,7 +438,7 @@ std::pair<BlockDiagOpFun, BlockOpSymQuartet> trivial_sparsity_helper(nda::array<
   return std::make_pair(Gt_triv, Fq_triv);
 }
 
-std::pair<std::vector<BlockOp>, std::vector<BlockOp>> make_correlator_ops(BlockOpSymQuartet &Fq, int nflav) {
+std::pair<std::vector<BlockOp>, std::vector<BlockOp>> make_correlator_ops(BlockOpSymQuartet const &Fq, int nflav) {
   // Helper function for picking the per-flavor BlockOp lists that eval_correlator takes out of symmetry-set storage
 
   std::vector<BlockOp> mu_ops, kap_ops;
