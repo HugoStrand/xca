@@ -27,11 +27,18 @@ namespace triqs_xca::diagram {
   void validate_arcs(Arcs const &arcs, int order);
   long count_diagrams(int order, int flavours, long pole_count, Kind kind);
 
+  /// Count internal arc choices, with the special arc's two directions evaluated together.
+  long count_self_energy_pairs(int order, int flavours, long pole_count);
+
   /// Resolve selected statistics and three-way pole signs. Special-arc metadata
   /// is unresolved and never indexed. Existing metadata in choices is replaced.
   /// A barred contraction must couple operators of the retained flavour's parity.
   Arcs prepare_arcs(Arcs choices, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, Kind kind);
   Arcs decode_arcs(int order, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, long flat_index, Kind kind);
+
+  /// Decode a compact pair index, fixing the special arc to the backward direction.
+  /// Internal flavours, poles and directions have the same digit order as decode_arcs.
+  Arcs decode_self_energy_pair_arcs(int order, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, long pair_index);
 
   template <typename Storage> Arcs prepare_arcs(Arcs choices, Action<Storage> const &action, Kind kind) {
     return prepare_arcs(std::move(choices), action.statistics, action.poles, kind);
@@ -39,5 +46,9 @@ namespace triqs_xca::diagram {
 
   template <typename Storage> Arcs decode_arcs(int order, Action<Storage> const &action, long flat_index, Kind kind) {
     return decode_arcs(order, action.statistics, action.poles, flat_index, kind);
+  }
+
+  template <typename Storage> Arcs decode_self_energy_pair_arcs(int order, Action<Storage> const &action, long pair_index) {
+    return decode_self_energy_pair_arcs(order, action.statistics, action.poles, pair_index);
   }
 } // namespace triqs_xca::diagram

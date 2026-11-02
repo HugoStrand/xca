@@ -27,8 +27,7 @@ namespace triqs_xca::diagram {
         if (arcs[a].retained_flavour < 0 || arcs[a].pole_index < 0) throw std::invalid_argument("negative internal arc index");
     }
 
-    Arcs decode_choices(int order, int flavours, long pole_count, long flat_index, Kind kind) {
-      long count = count_diagrams(order, flavours, pole_count, kind);
+    Arcs decode_choices(int order, int flavours, long pole_count, long flat_index, long count, int first_direction) {
       if (flat_index < 0 || flat_index >= count)
         throw std::invalid_argument("flat index " + std::to_string(flat_index) + " is out of range [0, " + std::to_string(count) + ")");
       Arcs result(order);
@@ -41,8 +40,7 @@ namespace triqs_xca::diagram {
         result[a + 1].pole_index = remaining % pole_count;
         remaining /= pole_count;
       }
-      int first = kind == Kind::correlator ? 1 : 0;
-      for (int a = first; a < order; ++a) {
+      for (int a = first_direction; a < order; ++a) {
         result[a].direction = static_cast<Direction>(remaining % 2);
         remaining /= 2;
       }
@@ -71,6 +69,17 @@ namespace triqs_xca::diagram {
     return count;
   }
 
+  long count_self_energy_pairs(int order, int flavours, long pole_count) {
+    if (order < 1 || flavours < 0 || pole_count < 0) throw std::invalid_argument("invalid assignment space dimensions");
+    if (order == 1) return 1;
+    if (flavours == 0 || pole_count == 0) return 0;
+    long count = 1;
+    for (int a = 1; a < order; ++a)
+      for (long factor : {2L, static_cast<long>(flavours), pole_count})
+        if (__builtin_mul_overflow(count, factor, &count)) throw std::overflow_error("pair count does not fit in a long");
+    return count;
+  }
+
   Arcs prepare_arcs(Arcs choices, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, Kind kind) {
     if (kind != Kind::self_energy && kind != Kind::correlator) throw std::invalid_argument("invalid arc preparation kind");
     if (choices.size() > std::numeric_limits<int>::max()) throw std::invalid_argument("too many arcs");
@@ -93,7 +102,18 @@ namespace triqs_xca::diagram {
 
   Arcs decode_arcs(int order, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, long flat_index, Kind kind) {
     if (statistics.size() > std::numeric_limits<int>::max()) throw std::invalid_argument("too many operator flavours");
-    return prepare_arcs(decode_choices(order, static_cast<int>(statistics.size()), poles.size(), flat_index, kind), statistics, poles, kind);
+    int flavours = static_cast<int>(statistics.size());
+    return prepare_arcs(decode_choices(order, flavours, poles.size(), flat_index, count_diagrams(order, flavours, poles.size(), kind),
+                                      kind == Kind::correlator ? 1 : 0),
+                        statistics, poles, kind);
+  }
+
+  Arcs decode_self_energy_pair_arcs(int order, std::span<Statistics const> statistics, nda::vector_const_view<double> poles, long pair_index) {
+    if (statistics.size() > std::numeric_limits<int>::max()) throw std::invalid_argument("too many operator flavours");
+    int flavours = static_cast<int>(statistics.size());
+    auto choices = decode_choices(order, flavours, poles.size(), pair_index, count_self_energy_pairs(order, flavours, poles.size()), 1);
+    choices[0].direction = Direction::backward;
+    return prepare_arcs(std::move(choices), statistics, poles, Kind::self_energy);
   }
 
 } // namespace triqs_xca::diagram
