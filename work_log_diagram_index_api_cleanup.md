@@ -121,3 +121,25 @@ counts as its initial partition. Topology generation stays in Python. Future
 multi-topology scheduling/custom communicators can change orchestration without
 restoring public linear-index selection. Dense scratch/reset behavior remains
 unchanged at the local prepared interface. The persistent goal is complete.
+
+## Dense properties and scratch storage — 2026-11-02
+
+Source: `6eaf4d7` `[dense] hide evaluator internals`.
+
+Removed the unused dense evaluator compatibility getters for tau_mesh, itops and
+dlr_it. Numerical code already uses action.tau_mesh; the constructor consistency
+test now reads that mesh directly, and the Python compatibility assertions were
+removed. No production Solver or benchmark callers required changes.
+
+Made T, U, GKt, Tkaps and Tmu private. Sigma remains public for the C++ prepared
+self-energy interface, with C2PY_IGNORE to exclude it from Python. Regenerated
+bindings remove all dense properties. The existing invalid-operation test now
+checks that each rejected call preserves Sigma and that a subsequent valid call
+accumulates correctly, without inspecting temporary arrays. Numerical kernels,
+reset behavior and the block-sparse API are unchanged.
+
+An independent read-only usage audit and final diff review found no remaining
+consumers or blockers. Full CPU/Python build and binding regeneration passed;
+all 82 CTest entries passed in 58.23 s, including serial and three-rank MPI tests.
+Diff --check passed. Logs: /tmp/xca-dense-api-encapsulation-{build,test}.log.
+Unrelated user changes were preserved; source and this log remain separate commits.
