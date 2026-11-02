@@ -113,20 +113,6 @@ def make_solver(model, use_blocks):
 
     S.set_hybridization_poles_and_coefficients(model['poles'], model['coefficients'])
     S.init_diagram_evaluator()
-    if not use_blocks:
-        # Compatibility properties are derived from Action and cannot replace its DLR state.
-        assert S.d.tau_mesh == S.mesh_tau
-        np.testing.assert_array_equal(S.d.dlr_it, S.d.itops.get_itnodes())
-        nodes = S.d.dlr_it
-        nodes[:] = 0
-        assert np.any(S.d.dlr_it != 0)
-        for name in ('tau_mesh', 'itops', 'dlr_it'):
-            try:
-                setattr(S.d, name, getattr(S.d, name))
-            except AttributeError:
-                pass
-            else:
-                raise AssertionError(f'{name} must be read-only')
 
     return S
 

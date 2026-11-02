@@ -35,22 +35,18 @@ namespace triqs_xca::dense {
 
     C2PY_IGNORE const Action<FSet> action;
 
-    // Compatibility reads return detached values; numerical methods borrow action.tau_mesh.dlr_it().
-    C2PY_PROPERTY_GET(tau_mesh) triqs::mesh::dlr_imtime get_tau_mesh() const { return action.tau_mesh; }
-    C2PY_PROPERTY_GET(itops) imtime_ops get_itops() const { return action.tau_mesh.dlr_it(); }
-    C2PY_PROPERTY_GET(dlr_it) nda::vector<double> get_dlr_it() const { return action.tau_mesh.dlr_it().get_itnodes(); }
-
     /// Direct numerical construction with explicit statistics and a single DLR mesh.
     C2PY_IGNORE explicit DiagramEvaluator(Action<FSet> action);
 
-    nda::array<dcomplex, 3> Sigma; // array for storing self-energy contribution (final result)
+    C2PY_IGNORE nda::array<dcomplex, 3> Sigma; // result accumulator for prepared self-energy calls
+
+    private:
     nda::array<dcomplex, 3> T;     // array for storing intermediate result
     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
     nda::array<dcomplex, 3> GKt;   // array for storing result of edge computation
     nda::array<dcomplex, 4> Tkaps; // intermediate storage array
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
-    private:
     nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
 
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it

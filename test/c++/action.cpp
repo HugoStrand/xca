@@ -96,7 +96,7 @@ TEST(Action, dense_legacy_constructor_rejects_a_different_DLR_grid) {
   auto mesh = triqs::mesh::dlr_imtime(model.mesh.beta(), triqs::mesh::Fermion, 20., 1e-10, true);
   dense::DiagramEvaluator evaluator(dense::make_action(mesh, model.hyb_poles, model.hyb_coeffs, operators));
   EXPECT_EQ(evaluator.action.tau_mesh, mesh);
-  EXPECT_EQ(evaluator.get_dlr_it(), mesh.dlr_it().get_itnodes());
+  EXPECT_EQ(evaluator.action.tau_mesh.dlr_it().get_itnodes(), mesh.dlr_it().get_itnodes());
 }
 
 TEST(Action, evaluator_copies_own_operator_data_and_outlive_their_source) {

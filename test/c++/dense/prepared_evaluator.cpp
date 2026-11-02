@@ -91,7 +91,7 @@ TEST(DensePrepared, correlator_outlives_preparation_inputs) {
   EXPECT_EQ(backbone.vertices[0].flavour, -1);
 }
 
-TEST(DensePrepared, wrong_endpoint_operation_is_rejected_before_buffers_change) {
+TEST(DensePrepared, wrong_endpoint_operation_preserves_result_and_allows_reuse) {
   auto model = test_utils::build_eval_model("unequal_sets_nA0");
   dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
   nda::array<int, 2> topology{{0, 1}};
@@ -99,11 +99,14 @@ TEST(DensePrepared, wrong_endpoint_operation_is_rejected_before_buffers_change) 
     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
   auto corr = triqs_xca::diagram::prepare_backbone(
     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
-  evaluator.T = 2.; evaluator.U = 3.; evaluator.Sigma = 4.;
+  evaluator.eval_self_energy(model.G, sigma);
+  auto expected = evaluator.Sigma;
   EXPECT_THROW(evaluator.eval_self_energy(model.G, corr), std::invalid_argument);
+  expect_close(evaluator.Sigma, expected);
   EXPECT_THROW(evaluator.eval_self_energy_pair(model.G, corr), std::invalid_argument);
+  expect_close(evaluator.Sigma, expected);
   EXPECT_THROW(evaluator.eval_correlator(model.G, sigma, tensor{}, tensor{}, triqs_xca::diagram::CorrelatorStatistics{}), std::invalid_argument);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.T - 2.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.U - 3.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.Sigma - 4.)), 0.);
+  expect_close(evaluator.Sigma, expected);
+  evaluator.eval_self_energy(model.G, sigma);
+  expect_close(evaluator.Sigma, nda::make_regular(2. * expected));
 }
