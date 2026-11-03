@@ -35,6 +35,10 @@ namespace triqs_xca::dense {
 
     using dcplx = nda::dcomplex;
 
+    template <typename T> using vec_t = nda::vector<T>;
+    template <typename T> using vec_vt = nda::vector_view<T>;
+    template <typename T> using vec_cvt = nda::vector_const_view<T>;
+
     template <typename T, int Rank> using arr_t = nda::array<T, Rank>;
     template <typename T, int Rank> using arr_vt = nda::array_view<T, Rank>;
     template <typename T, int Rank> using arr_cvt = nda::array_const_view<T, Rank>;
@@ -129,7 +133,7 @@ namespace triqs_xca::dense {
        * @param[in] hyb_coeffs hybridization function coefficients at these poles
        * @param[in] Fset FSet (cre/ann operators with and without bars)
        */
-    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops const &itops, nda::vector_const_view<double> poles,
+    C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops const &itops, vec_cvt<double> poles,
                                 arr_cvt<dcplx, 3> hyb_coeffs, FSet const &Fset);
 
     /**
@@ -140,7 +144,7 @@ namespace triqs_xca::dense {
        * @param[in] ad TRIQS atom_diag object with Hamiltonian and field operators
        */
     template <bool isComplex>
-    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
+    DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
                      atom_diag<isComplex> const &ad);
 
     /**
@@ -153,7 +157,7 @@ namespace triqs_xca::dense {
        * @param[in] dynint_coeffs array of coefficients for the dynamic interactions (also using hyb_poles)
        */
     template <bool isComplex>
-    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
+    DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
                      atom_diag<isComplex> const &ad, vector<opt_t> const &dynint_ops,
                      arr_cvt<dcplx, 3> dynint_coeffs);
 

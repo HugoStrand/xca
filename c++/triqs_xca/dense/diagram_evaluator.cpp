@@ -42,34 +42,34 @@ namespace triqs_xca::dense {
     Tmu   = nda::zeros<dcplx>(r, N, N);
   }
 
-  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops const &itops, nda::vector_const_view<double> poles,
+  DiagramEvaluator::DiagramEvaluator(double beta, double eps, imtime_ops const &itops, vec_cvt<double> poles,
                                      arr_cvt<dcplx, 3> hyb_coeffs, FSet const &Fset)
      : DiagramEvaluator(make_action(compatible_mesh(beta, eps, itops), poles, hyb_coeffs, Fset)) {}
 
   template <bool isComplex>
-  DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                      dlr_imtime tau_mesh, atom_diag<isComplex> const &ad)
      : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)) {}
 
-  template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  template DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                               dlr_imtime tau_mesh, atom_diag<true> const &ad);
 
-  template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  template DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                               dlr_imtime tau_mesh, atom_diag<false> const &ad);
 
   template <bool isComplex>
-  DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                      dlr_imtime tau_mesh, atom_diag<isComplex> const &ad,
                                      vector<opt_t> const &dynint_ops,
                                      arr_cvt<dcplx, 3> dynint_coeffs)
      : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)) {}
 
-  template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  template DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                               dlr_imtime tau_mesh, atom_diag<true> const &ad,
                                               vector<opt_t> const &dynint_ops,
                                               arr_cvt<dcplx, 3> dynint_coeffs);
 
-  template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
+  template DiagramEvaluator::DiagramEvaluator(vec_cvt<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs,
                                               dlr_imtime tau_mesh, atom_diag<false> const &ad,
                                               vector<opt_t> const &dynint_ops,
                                               arr_cvt<dcplx, 3> dynint_coeffs);
