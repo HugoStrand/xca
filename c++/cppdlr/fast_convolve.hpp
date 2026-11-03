@@ -25,6 +25,27 @@ namespace cppdlr {
     }
   };
 
+  // Reusable storage for independent products f(r,b,m,n) * g(r,b,n,p).
+  // A smaller active batch uses a packed view of the existing allocation, not a slice
+  // of the capacity-shaped array, so its DLR-axis transforms remain contiguous.
+  struct fast_convolve_batched_workspace {
+    nda::array<nda::dcomplex, 4> fc, gc, hfc, hgc, product;
+
+    fast_convolve_batched_workspace(long r, long max_batch, long m, long n, long p) {
+      if (r <= 0 || max_batch <= 0 || m <= 0 || n <= 0 || p <= 0)
+        throw std::runtime_error("fast_convolve: batched workspace dimensions must be positive");
+      if (max_batch > std::numeric_limits<int>::max() / m || max_batch * m > std::numeric_limits<int>::max() / n
+          || max_batch > std::numeric_limits<int>::max() / n || max_batch * n > std::numeric_limits<int>::max() / p
+          || max_batch * m > std::numeric_limits<int>::max() / p)
+        throw std::runtime_error("fast_convolve: flattened batch dimension exceeds BLAS integer range");
+      fc.resize(r, max_batch, m, n);
+      gc.resize(r, max_batch, n, p);
+      hfc.resize(r, max_batch, m, n);
+      hgc.resize(r, max_batch, n, p);
+      product.resize(r, max_batch, m, p);
+    }
+  };
+
   /**
    * Time-ordered matrix convolution on a DLR grid, with caller-owned output and scratch.
    *
@@ -46,11 +67,27 @@ namespace cppdlr {
         throw std::runtime_error("fast_convolve: flattened matrix dimension exceeds BLAS integer range");
     }
 
+    void check_array(nda::array_const_view<nda::dcomplex, 4> a) const {
+      if (a.shape(0) != itops.rank() || a.shape(1) <= 0 || a.shape(2) <= 0 || a.shape(3) <= 0)
+        throw std::runtime_error("fast_convolve: expected shape (DLR rank, positive batch, positive rows, positive columns)");
+      if (!a.indexmap().is_contiguous() || !a.indexmap().has_positive_strides())
+        throw std::runtime_error("fast_convolve: arrays must be contiguous C-layout");
+      if (a.shape(1) > std::numeric_limits<int>::max() / a.shape(2) || a.shape(1) * a.shape(2) > std::numeric_limits<int>::max() / a.shape(3))
+        throw std::runtime_error("fast_convolve: flattened batch dimension exceeds BLAS integer range");
+    }
+
     // Apply a DLR-axis matrix to all spatial entries, using only reshaped views.
     static void transform(nda::matrix_const_view<nda::dcomplex> a, nda::array_const_view<nda::dcomplex, 3> b, nda::array_view<nda::dcomplex, 3> c,
                           nda::dcomplex accumulate = 0.) {
       auto b_flat = nda::reshape(b, b.shape(0), b.shape(1) * b.shape(2));
       auto c_flat = nda::reshape(c, c.shape(0), c.shape(1) * c.shape(2));
+      nda::blas::gemm(1., a, b_flat, accumulate, c_flat);
+    }
+
+    static void transform(nda::matrix_const_view<nda::dcomplex> a, nda::array_const_view<nda::dcomplex, 4> b, nda::array_view<nda::dcomplex, 4> c,
+                          nda::dcomplex accumulate = 0.) {
+      auto b_flat = nda::reshape(b, b.shape(0), b.shape(1) * b.shape(2) * b.shape(3));
+      auto c_flat = nda::reshape(c, c.shape(0), c.shape(1) * c.shape(2) * c.shape(3));
       nda::blas::gemm(1., a, b_flat, accumulate, c_flat);
     }
 
@@ -106,6 +143,15 @@ namespace cppdlr {
       }
     }
 
+    // Treat the batch and matrix axes as independent right-hand sides of one DLR solve.
+    void vals2coefs(nda::array_const_view<nda::dcomplex, 4> values, nda::array_view<nda::dcomplex, 4> coefficients) const {
+      check_array(values);
+      check_array(coefficients);
+      if (values.shape() != coefficients.shape()) throw std::runtime_error("fast_convolve: coefficient shape does not match values");
+      vals2coefs(nda::reshape(values, values.shape(0), values.shape(1) * values.shape(2), values.shape(3)),
+                 nda::reshape(coefficients, coefficients.shape(0), coefficients.shape(1) * coefficients.shape(2), coefficients.shape(3)));
+    }
+
     /**
      * Compute out(tau) = integral_0^tau f(tau-s) g(s) ds from nodal values.
      * out may overlap either input, since both coefficient arrays are prepared first.
@@ -139,6 +185,52 @@ namespace cppdlr {
         nda::blas::gemm(1., work.fc(l, range::all, range::all), work.hgc(l, range::all, range::all), 1., product);
       }
       transform(cf2it, work.product, out, 1.);
+      out *= beta;
+    }
+
+    /**
+     * Batch independent convolutions in packed (DLR rank, batch, rows, columns) order.
+     * DLR solves and transforms run once across all batch entries. Matrix products
+     * remain independent for each DLR node and batch member. An active batch may be
+     * smaller than the workspace capacity. As in the scalar overload, out may alias
+     * an input, while workspace storage must not overlap any inputs or output.
+     */
+    void convolve(double beta, nda::array_const_view<nda::dcomplex, 4> f, nda::array_const_view<nda::dcomplex, 4> g,
+                  nda::array_view<nda::dcomplex, 4> out, fast_convolve_batched_workspace &work) const {
+      check_array(f);
+      check_array(g);
+      check_array(out);
+      if (!std::isfinite(beta) || beta <= 0.) throw std::runtime_error("fast_convolve: beta must be finite and positive");
+      if (f.shape(1) != g.shape(1) || out.shape(1) != f.shape(1) || f.shape(3) != g.shape(2) || out.shape(2) != f.shape(2)
+          || out.shape(3) != g.shape(3))
+        throw std::runtime_error("fast_convolve: incompatible batch or matrix dimensions");
+      auto fits = [](auto const &storage, auto const &active) {
+        return storage.shape(0) == active.shape(0) && storage.shape(1) >= active.shape(1) && storage.shape(2) == active.shape(2)
+           && storage.shape(3) == active.shape(3);
+      };
+      if (!fits(work.fc, f) || !fits(work.hfc, f) || !fits(work.gc, g) || !fits(work.hgc, g) || !fits(work.product, out))
+        throw std::runtime_error("fast_convolve: incompatible batched workspace dimensions");
+
+      nda::array_view<nda::dcomplex, 4> fc{f.shape(), work.fc.data()}, gc{g.shape(), work.gc.data()};
+      nda::array_view<nda::dcomplex, 4> hfc{f.shape(), work.hfc.data()}, hgc{g.shape(), work.hgc.data()}, product{out.shape(), work.product.data()};
+      vals2coefs(f, fc);
+      vals2coefs(g, gc);
+      transform(hilb, fc, hfc);
+      transform(hilb, gc, hgc);
+
+      using nda::range;
+      for (int l = 0; l < itops.rank(); ++l)
+        for (long b = 0; b < f.shape(1); ++b)
+          nda::blas::gemm(1., fc(l, b, range::all, range::all), gc(l, b, range::all, range::all), 0., product(l, b, range::all, range::all));
+      transform(tcf2it, product, out);
+
+      for (int l = 0; l < itops.rank(); ++l)
+        for (long b = 0; b < f.shape(1); ++b) {
+          auto prod = product(l, b, range::all, range::all);
+          nda::blas::gemm(1., hfc(l, b, range::all, range::all), gc(l, b, range::all, range::all), 0., prod);
+          nda::blas::gemm(1., fc(l, b, range::all, range::all), hgc(l, b, range::all, range::all), 1., prod);
+        }
+      transform(cf2it, product, out, 1.);
       out *= beta;
     }
   };
