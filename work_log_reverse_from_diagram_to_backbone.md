@@ -409,3 +409,33 @@ binding before testing. Diff --check passed. Logs:
 The user's pre-existing constructor formatting/comments remain unstaged and were
 checked against the saved pre-edit source. Other local changes are untouched.
 This work-log entry is committed separately from source.
+
+## Follow-up — explicit dense evaluator types
+
+2026-11-03. Source: `d57ac86` `[dense] use explicit types`.
+
+Removed the evaluator's class-scoped shorthand aliases and their duplicates in
+the implementation. NDA arrays, vectors and views now use their original qualified
+names, and standard containers use std::vector. Selected namespace-level using
+declarations retain the native dcomplex, imtime_ops, dlr_imtime, block_gf,
+block_gf_view and many_body_operator_complex names. Diagram types and preparation
+functions use diagram:: qualification. Atom-diag types remain fully qualified to
+avoid the existing dense::atom_diag namespace. Removed using namespace nda from
+the evaluator header and wrapped expanded signatures for readability.
+
+The concrete types, ownership, mutability, template deduction and numerical work
+are unchanged. Repository searches found no handwritten external consumers of
+the removed class aliases. Updated ten alias references in the tracked Python
+binding. Full regeneration was compared with the preceding generated output:
+differences reduce to equivalent type spellings and whitespace. Retained the
+minimal binding update without the unrelated newer clair output-format migration,
+and rebuilt that binding before testing. Python API remains unchanged.
+
+Independent source and binding review found no issues. Full CPU/Python build
+passed; all 82 CTest entries passed in 58.79 s, including three-rank MPI tests.
+Diff --check passed. No new tests or benchmarks were added. Logs:
+/tmp/xca-dense-type-names-{build,final-build,bindings-build,test}.log.
+
+Pre-existing constructor formatting and comments remain unstaged, with the same
+type spelling substitutions applied. Other local changes are untouched. This
+work-log entry is committed separately from source.
