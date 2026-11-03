@@ -161,3 +161,26 @@ overloads. All seven focused CTest entries passed in 3.92 s: action, the three
 dense tests, Py_api, Py_one_time_correlator and Py_dense_manual_NCA_OCA. Independent
 read-only review and diff --check passed. Logs:
 /tmp/xca-dense-aliases-{build,test}.log. No tests or numerical code were changed.
+
+## Dense array, vector and complex aliases — 2026-11-03
+
+Source: `08d6cf3` `[dense] use array aliases`.
+
+Applied the user's additional arr_t, arr_vt, arr_cvt, vector and dcplx names to
+member storage, signatures, definitions and explicit instantiations. Array aliases
+take the element type and rank and retain NDA's default layouts and ownership;
+vector aliases std::vector with its default allocator. Trailing return types in
+out-of-class definitions keep the class aliases in scope. nda::vector_const_view
+remains explicit because its vector algebra differs from a rank-one array view.
+
+The previous source commit picked up four additional namespace-style using
+declarations that arrived after its build. That intermediate header was not the
+validated version. This follow-up replaces them with valid template aliases and
+validates the complete result. Source hashes were checked after the build and
+before staging to avoid repeating that mismatch.
+
+Full CPU/Python build and binding regeneration passed. The same seven focused
+tests passed in 3.97 s. Independent read-only review confirmed unchanged types,
+constness and constructor/correlator overloads. Diff --check passed. Logs:
+/tmp/xca-dense-array-aliases-{build,test}.log. Source and work log are committed
+separately; unrelated user changes remain untouched.
