@@ -48,30 +48,30 @@ namespace triqs_xca::dense {
 
   template <bool isComplex>
   DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                               triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad)
+                                     dlr_imtime tau_mesh, atom_diag<isComplex> const &ad)
      : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad)) {}
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                                        triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<true> const &ad);
+                                              dlr_imtime tau_mesh, atom_diag<true> const &ad);
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                                        triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<false> const &ad);
+                                              dlr_imtime tau_mesh, atom_diag<false> const &ad);
 
   template <bool isComplex>
   DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                     triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<isComplex> const &ad,
-                                     std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+                                     dlr_imtime tau_mesh, atom_diag<isComplex> const &ad,
+                                     std::vector<opt_t> const &dynint_ops,
                                      nda::array_const_view<dcomplex, 3> dynint_coeffs)
      : DiagramEvaluator(make_action(tau_mesh, hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs)) {}
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                              triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<true> const &ad,
-                                              std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+                                              dlr_imtime tau_mesh, atom_diag<true> const &ad,
+                                              std::vector<opt_t> const &dynint_ops,
                                               nda::array_const_view<dcomplex, 3> dynint_coeffs);
 
   template DiagramEvaluator::DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs,
-                                              triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<false> const &ad,
-                                              std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+                                              dlr_imtime tau_mesh, atom_diag<false> const &ad,
+                                              std::vector<opt_t> const &dynint_ops,
                                               nda::array_const_view<dcomplex, 3> dynint_coeffs);
 
   void DiagramEvaluator::reset() {
@@ -97,7 +97,7 @@ namespace triqs_xca::dense {
     return G;
   }
 
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology) {
+  DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
     triqs_xca::diagram::topology::validate(topology);
     auto count = triqs_xca::diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), triqs_xca::diagram::Kind::self_energy);
@@ -107,13 +107,12 @@ namespace triqs_xca::dense {
       auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, index, triqs_xca::diagram::Kind::self_energy);
       eval_self_energy(Gt, backbone);
     }
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
 
-  triqs::gfs::block_gf<triqs::mesh::dlr_imtime> DiagramEvaluator::compute_self_energy_by_pairs(gf_vt G_ppsc,
-                                                                                            nda::array_const_view<int, 2> topology) {
+  DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc);
     triqs_xca::diagram::topology::validate(topology);
     auto count = triqs_xca::diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
@@ -124,7 +123,7 @@ namespace triqs_xca::dense {
       auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
       eval_self_energy_pair(Gt, backbone);
     }
-    auto sigma_gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>(action.tau_mesh, this->Sigma);
+    auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
     return std::vector{sigma_gf};
   }
@@ -132,7 +131,7 @@ namespace triqs_xca::dense {
   // The initial segment starts at edge zero, whose kernel is identity:
   // internal arcs never touch vertex zero.
   void DiagramEvaluator::evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                                 triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
+                                                 Backbone const &backbone, BackboneRange range) {
     result = Gt;
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
       multiply_left_vertex(result, backbone, v);
@@ -142,7 +141,7 @@ namespace triqs_xca::dense {
 
   // Extend an existing endpoint result; an empty self-energy tail does no work.
   void DiagramEvaluator::extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                       triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
+                                       Backbone const &backbone, BackboneRange range) {
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
       integrate_left_edge(result, Gt, backbone, v - 1);
       multiply_left_vertex(result, backbone, v);
@@ -152,7 +151,7 @@ namespace triqs_xca::dense {
   // The correlator segment starts at the beta edge in this traversal.
   // Its kernel is identity because all internal arcs end before beta.
   void DiagramEvaluator::evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
-                                                   triqs_xca::diagram::Backbone const &backbone, triqs_xca::diagram::BackboneRange range) {
+                                                   Backbone const &backbone, BackboneRange range) {
     result = Gt;
     for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
       multiply_right_vertex(result, backbone, v);
@@ -161,7 +160,7 @@ namespace triqs_xca::dense {
     result = action.tau_mesh.dlr_it().reflect(result);
   }
 
-  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
+  void DiagramEvaluator::multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone const &backbone, int v_ix) {
     auto const r = action.tau_mesh.size();
     auto const &vertex = backbone.vertices[v_ix];
     auto F = action.operators.get_operator(vertex);
@@ -169,8 +168,8 @@ namespace triqs_xca::dense {
     apply_kernel(T_buf, vertex, action.kernel);
   }
 
-  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
-                                                  int e_ix) {
+  void DiagramEvaluator::integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt,
+                                            Backbone const &backbone, int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
@@ -209,7 +208,7 @@ namespace triqs_xca::dense {
     }
   }
 
-  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
+  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone) {
     auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -228,7 +227,7 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone) {
+  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone) {
     auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -244,7 +243,7 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, triqs_xca::diagram::Backbone const &backbone, int v_ix) {
+  void DiagramEvaluator::multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, Backbone const &backbone, int v_ix) {
     auto const r = action.tau_mesh.size();
     auto const &vertex = backbone.vertices[v_ix];
     auto F = action.operators.get_operator(vertex);
@@ -252,15 +251,15 @@ namespace triqs_xca::dense {
     apply_kernel(U_buf, vertex, action.kernel, true);
   }
 
-  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
-                                                   int e_ix) {
+  void DiagramEvaluator::integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt,
+                                             Backbone const &backbone, int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, triqs_xca::diagram::Backbone const &backbone,
+  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone,
                                                           nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     backbone.require_correlator();
     auto const r = action.tau_mesh.size();
@@ -316,9 +315,9 @@ namespace triqs_xca::dense {
 
   template <bool isComplex>
   nda::array<dcomplex, 3>
-  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                         std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                         triqs::atom_diag::atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology) {
+  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<opt_t> const &ops_tau,
+                                               std::vector<opt_t> const &ops_0,
+                                               atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology) {
     auto const r = action.tau_mesh.size();
     auto const N = action.block_dims(0);
 
@@ -369,13 +368,13 @@ namespace triqs_xca::dense {
   }
 
   template nda::array<dcomplex, 3>
-  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                triqs::atom_diag::atom_diag<false> const &ad, nda::array_const_view<int, 2> topology);
+  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<opt_t> const &ops_tau,
+                                               std::vector<opt_t> const &ops_0,
+                                               atom_diag<false> const &ad, nda::array_const_view<int, 2> topology);
 
   template nda::array<dcomplex, 3>
-  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
-                                                triqs::atom_diag::atom_diag<true> const &ad, nda::array_const_view<int, 2> topology);
+  DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, std::vector<opt_t> const &ops_tau,
+                                               std::vector<opt_t> const &ops_0,
+                                               atom_diag<true> const &ad, nda::array_const_view<int, 2> topology);
 
 } // namespace triqs_xca::dense
