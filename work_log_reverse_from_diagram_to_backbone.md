@@ -510,3 +510,80 @@ higher arithmetic intensity. Shared transforms, reused operands, reduced call
 cost and CPU vectorization are the plausible benefits to test. Include partial
 batches, changed propagators and preparation/packing costs when evaluating the
 experiment.
+
+## Follow-up — CPU baseline with optimized cppdlr convolution
+
+2026-11-03. Updated the local CPU TRIQS/XCA stack to cppdlr `b9b24ab`
+(`[imtime] reuse Hilbert transforms in convolution`), from local branch
+`prq_convolve_opt` in /home/hugstr/dev/cppdlr. This is the four-line optimization
+on top of the previously installed cppdlr `7a0f60c`: the matrix-valued convolution
+computes each full Hilbert transform once before its DLR-index loop.
+
+Changed only the cppdlr stanza in /home/hugstr/dev/triqs/deps/CMakeLists.txt to
+GIT_REPO file:///home/hugstr/dev/cppdlr and GIT_TAG prq_convolve_opt. This is an
+uncommitted machine-local configuration change. TRIQS's dependency helper clones
+only when the source cache is absent, so also fetched that branch explicitly into
+triqs/cbuild/deps/cppdlr_src and switched its clean checkout to the fixed revision.
+The dependency cache keeps its original public origin remote. Future branch
+updates likewise require an explicit fetch/checkout of the cached dependency.
+
+Reconfigured with the existing TRIQS cmake.sh, rebuilt the CPU tree, ran its
+regressions, and installed to /home/hugstr/apps/triqs. Then reconfigured XCA with
+Update_Python_Bindings=OFF and -Ucppdlr_GIT_HASH, rebuilt and tested, and installed
+to /home/hugstr/apps/xca. Clearing only this metadata key is needed because the
+installed cppdlr CMake package sets it as a non-forced cache value. Neither build
+tree needed cleaning or dependency recloning. The convolution is a header
+template, so replacing the compiled cppdlr library alone would be insufficient.
+
+TRIQS: build/install passed; 377/378 CTest entries passed in 127.17 s.
+The sole failure is mesh_dlr_stability's stored mesh reference. An isolated
+build of that original test against the still-installed unpatched 7a0f60c stack
+reproduced the failure; all 288 output datasets across 96 parameter cases match
+exactly before and after the fix. The test never calls convolution. Its reference
+was not changed. Baseline evidence is in /tmp/xca-cppdlr-baseline-mesh/.
+XCA: build/install passed; all 82 CPU/Python CTest entries passed in 34.77 s,
+including three-rank MPI tests. Installed Python import smoke checks passed.
+
+Verified that the installed CPU dlr_imtime.hpp exactly matches b9b24ab,
+XCA's cache and compiler definitions record that hash, and both dense and
+block-sparse evaluator object files were rebuilt with that installed header in
+their dependency lists. Runtime libraries and Python imports resolve to the CPU
+prefixes. XCA's pre-existing source diff and generated binding were unchanged;
+the CUDA prefix's cppdlr header hash was unchanged.
+
+Logs: /tmp/triqs-convolve-opt-{configure,build,test,install}.log and
+/tmp/xca-convolve-opt-{configure,build,test,install}.log. No batching code or
+performance experiments were introduced. Existing XCA source/binding edits and
+the CUDA installation are preserved. This work-log entry is committed separately
+from code; the cppdlr code commit remains in its own repository.
+
+### Allocation audit requested alongside the rebuild
+
+Inspected the fixed cppdlr and the NDA version used by this CPU stack. For XCA's
+C-layout complex arrays/views, vals2coefs creates an F-layout copy for the LAPACK
+solve and then a C-layout owning result. The existing LU factorization is reused;
+these are two data-buffer allocations, not a new factorization. An F-layout
+owning input has different return-conversion behavior.
+
+For warmed-up square matrix convolution (r,D,D), the fixed convolve constructs
+six full-sized complex arrays: tmp, h, hfc, hgc, the final cf2it*tmp result, and the
+returned result. Four real-by-complex arraymult calls also promote their real
+(r,r) matrices to temporary complex matrices in NDA's matmul. Pointwise products
+produce 3r temporary (D,D) results. The two real (r,r) time-ordered helper matrices
+are lazily initialized and retained; their initial allocations are separate.
+
+Including the two vals2coefs calls, one dense edge convolution therefore creates
+14+3r owning buffers and requests a cumulative 16*(13*r*D^2+4*r^2) bytes in this
+source-level model. At r=32,D=4 that is 110 buffers and 168 KiB cumulative requested
+storage, not peak memory or measured allocator traffic. Counts exclude BLAS/LAPACK
+internals and possible compiler allocation elision. Reshapes reuse storage; the
+algebraic additions/scalings are lazy. The final result is copied into the dense
+evaluator's existing output view. Rectangular block-sparse calls have the same
+allocation categories with operand/result dimensions substituted.
+
+Future local cppdlr routines can accept reusable solve/convolution workspace,
+cache complex helper matrices or handle real-by-complex transforms explicitly,
+and use GEMM into output slices instead of allocating product results. This is
+independent of choosing a batch size and requires no new Action/backbone concepts.
+No allocation instrumentation, benchmarking, or numerical changes were added as
+part of this audit.
