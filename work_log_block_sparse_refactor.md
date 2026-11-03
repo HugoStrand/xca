@@ -56,3 +56,30 @@ at 1e-13 relative tolerance; observed discrepancy is 2.3e-13 (4.8e-21 absolute).
 An isolated pre-integration dense reference comparison is investigating this
 concurrent numerical change before final acceptance. No sparse tolerance was
 changed. Logs: `/tmp/xca-sparse-api-full-{build,test}.log`.
+
+## Explicit numerical helpers — 2026-11-03
+
+Source: `[bs] extract evaluator kernels`.
+
+The class now contains owned state, private reset, constructors and public
+operations. Anonymous-namespace helpers receive explicit Action, propagator,
+BackbonePath, scratch and output dependencies. A single adjoint-selected
+single-particle operator helper replaces two copies; general observable matrix
+conversion is also file-local. Prepared self-energy accumulates directly in
+its returned native container, removing the intermediate member-result copy.
+
+Sparse-specific discovery, support tables, endpoint checks, cached segments,
+reflection and numerical grouping remain. Correlator helpers preserve each
+backbone's sum/sign before adding it to the caller's output. This introduces
+one extra output-sized local accumulator for prepared correlator calls; the
+topology allocation pattern is unchanged. It is explicitly deferred to later
+workspace optimization. No padded layout, vertex matmul or convolution was
+changed in this refactoring checkpoint.
+
+Two independent reviews checked view lifetimes, T/U separation, native-result
+ownership, exact-zero blocks and early validation; no blockers remained. The
+focused path, prepared and high-index regression entries passed (3/3, 0.19 s),
+and both existing/new benchmark targets built. Full CPU acceptance follows
+the coordinated rebuild. The high-index discrepancy was independently traced
+to dense convolution arithmetic and addressed only in the cross-engine test,
+as recorded in `work_log_dense_cpu_batched.md`.
