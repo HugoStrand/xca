@@ -70,41 +70,6 @@ namespace triqs_xca::dense {
     arr_t<dcplx, 4> Tkaps; // intermediate storage array
     arr_t<dcplx, 3> Tmu;   // intermediate storage array
 
-    arr_t<dcplx, 3> single_particle_operators(bool adjoint) const;
-
-    // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
-    arr_cvt<dcplx, 3> native_propagator(gf_vt G_ppsc) const;
-
-    // Traversals of the endpoint ranges; normalization remains caller-owned.
-    template <Kind K>
-    void evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                  Backbone<K> const &backbone, BackboneRange range);
-    void extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                        SelfEnergyBackbone const &backbone, BackboneRange range);
-    void evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                    CorrelatorBackbone const &backbone, BackboneRange range);
-
-    // routines for any diagram
-
-    // multiply by a single vertex, v_ix, in a diagram using dense storage
-    template <Kind K>
-    void multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone<K> const &backbone, int v_ix);
-    // convolve with a single edge, e_ix, in a diagram using dense storage
-    template <Kind K>
-    void integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt, Backbone<K> const &backbone, int e_ix);
-
-    // routines for self-energy diagrams
-
-    // multiply by the zero vertex and the vertex connected to zero
-    void multiply_left_vertex_and_right_zero_vertex(arr_vt<dcplx, 3> T_buf, OperatorPairOrientation orientation, triqs_xca::diagram::PermutationSigns const &signs);
-
-    // routines for correlator diagrams
-
-    // multiply by a single vertex, v_ix, on the tau-beta side of a correlator diagram using dense storage
-    void multiply_right_vertex(arr_vt<dcplx, 3> U_buf, CorrelatorBackbone const &backbone, int v_ix);
-    // convolve with a single edge, e_ix, on the tau-beta side of a correlator diagram using dense storage
-    void integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone, int e_ix);
-
     public:
     C2PY_IGNORE void reset(); // reset all arrays to zero
 

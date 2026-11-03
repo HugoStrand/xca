@@ -22,6 +22,13 @@ namespace triqs_xca::dense {
 
 
   namespace {
+    using dcplx = DiagramEvaluator::dcplx;
+    using opt_t = DiagramEvaluator::opt_t;
+    template <typename T> using vector = DiagramEvaluator::vector<T>;
+    template <typename T, int Rank> using arr_t = DiagramEvaluator::arr_t<T, Rank>;
+    template <typename T, int Rank> using arr_vt = DiagramEvaluator::arr_vt<T, Rank>;
+    template <typename T, int Rank> using arr_cvt = DiagramEvaluator::arr_cvt<T, Rank>;
+
     triqs::mesh::dlr_imtime compatible_mesh(double beta, double eps, imtime_ops const &itops) {
       auto mesh = triqs::mesh::dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false);
       auto const &ops = mesh.dlr_it();
@@ -29,7 +36,139 @@ namespace triqs_xca::dense {
         throw std::invalid_argument("DiagramEvaluator: supplied DLR grid differs from reconstructed mesh; construct from Action with the intended mesh");
       return mesh;
     }
-  }
+
+    // Check the dense propagator layout and borrow its single block.
+    arr_cvt<dcplx, 3> native_propagator(DiagramEvaluator::gf_vt G_ppsc, Action<FSet> const &action) {
+      auto const r = action.tau_mesh.size();
+      auto const N = action.block_dims(0);
+      if (G_ppsc.size() != 1)
+        throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc must be a single block over the full Hilbert space, got "
+                                    + std::to_string(G_ppsc.size()) + " blocks");
+      auto G = G_ppsc[0].data();
+      if (G.extent(0) != r || G.extent(1) != N || G.extent(2) != N)
+        throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc has shape (" + std::to_string(G.extent(0)) + ", " + std::to_string(G.extent(1))
+                                    + ", " + std::to_string(G.extent(2)) + "), expected (r, N, N) = (" + std::to_string(r) + ", " + std::to_string(N)
+                                    + ", " + std::to_string(N) + ")");
+      return G;
+    }
+
+    arr_t<dcplx, 3> single_particle_operators(bool adjoint, Action<FSet> const &action) {
+      auto const N = action.block_dims(0);
+      arr_t<dcplx, 3> result(action.n_hyb, N, N);
+      for (int i = 0; i < action.n_hyb; ++i) result(i, _, _) = action.operators.get_operator(adjoint, i);
+      return result;
+    }
+
+    // Express the operators in the occupation basis of a validated single-block atom_diag.
+    template <bool isComplex>
+    arr_t<dcplx, 3> operator_matrices(vector<opt_t> const &ops, DiagramEvaluator::atom_diag<isComplex> const &ad) {
+      auto const N = ad.get_full_hilbert_space_dim();
+      auto const &U = ad.get_unitary_matrix(0);
+      arr_t<dcplx, 3> result = nda::zeros<dcplx>(ops.size(), N, N);
+      for (auto [i, op] : itertools::enumerate(ops)) {
+        result(i, _, _) = U * triqs_xca::atom_diag::get_op_mat(ad, op).block_mat[0] * nda::conj(nda::transpose(U));
+      }
+      return result;
+    }
+
+    void multiply_left_vertex(arr_vt<dcplx, 3> T_buf, diagram::Vertex const &vertex, Action<FSet> const &action) {
+      auto const r = action.tau_mesh.size();
+      auto F = action.operators.get_operator(vertex);
+      for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
+      apply_kernel(T_buf, vertex, action.kernel);
+    }
+
+    void multiply_right_vertex(arr_vt<dcplx, 3> U_buf, diagram::Vertex const &vertex, Action<FSet> const &action) {
+      auto const r = action.tau_mesh.size();
+      auto F = action.operators.get_operator(vertex);
+      for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
+      apply_kernel(U_buf, vertex, action.kernel, true);
+    }
+
+    void integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt, diagram::Edge const &edge,
+                             Action<FSet> const &action, arr_t<dcplx, 3> &GKt) {
+      GKt = Gt;
+      apply_kernel_product(GKt, edge.kernels, action.kernel);
+      auto const &itops = action.tau_mesh.dlr_it();
+      T_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
+    }
+
+    void integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt, diagram::Edge const &edge,
+                              Action<FSet> const &action, arr_t<dcplx, 3> &GKt) {
+      GKt = Gt;
+      apply_kernel_product(GKt, edge.kernels, action.kernel);
+      auto const &itops = action.tau_mesh.dlr_it();
+      U_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
+    }
+
+    // The initial segment starts at edge zero, whose kernel is identity:
+    // internal arcs never touch vertex zero.
+    template <diagram::Kind K>
+    void evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
+                                  diagram::Backbone<K> const &backbone, diagram::BackboneRange range,
+                                  Action<FSet> const &action, arr_t<dcplx, 3> &GKt) {
+      result = Gt;
+      for (int v = range.first_vertex; v < range.vertex_end; ++v) {
+        multiply_left_vertex(result, backbone.vertices[v], action);
+        integrate_left_edge(result, Gt, backbone.edges[v], action, GKt);
+      }
+    }
+
+    // Extend an existing endpoint result; an empty self-energy tail does no work.
+    void extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
+                        diagram::SelfEnergyBackbone const &backbone, diagram::BackboneRange range,
+                        Action<FSet> const &action, arr_t<dcplx, 3> &GKt) {
+      for (int v = range.first_vertex; v < range.vertex_end; ++v) {
+        integrate_left_edge(result, Gt, backbone.edges[v - 1], action, GKt);
+        multiply_left_vertex(result, backbone.vertices[v], action);
+      }
+    }
+
+    // The correlator segment starts at the beta edge in this traversal.
+    // Its kernel is identity because all internal arcs end before beta.
+    void evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
+                                    diagram::CorrelatorBackbone const &backbone, diagram::BackboneRange range,
+                                    Action<FSet> const &action, arr_t<dcplx, 3> &GKt) {
+      result = Gt;
+      for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
+        multiply_right_vertex(result, backbone.vertices[v], action);
+        integrate_right_edge(result, Gt, backbone.edges[v - 1], action, GKt);
+      }
+      result = action.tau_mesh.dlr_it().reflect(result);
+    }
+
+    void multiply_left_vertex_and_right_zero_vertex(arr_vt<dcplx, 3> T_buf, OperatorPairOrientation orientation,
+                                                    diagram::PermutationSigns const &signs, Action<FSet> const &action,
+                                                    arr_t<dcplx, 4> &Tkaps, arr_t<dcplx, 3> &Tmu) {
+      auto const r = action.tau_mesh.size();
+      // Time reflection and the arc orientation sign are separate, as in block_sparse.
+      arr_cvt<dcplx, 3> hyb_too = orientation.reflected() ? action.tau_values_reflect : action.tau_values;
+
+      // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
+      // at the cost of storing an n_flavours x r x N x N array (Tkaps) instead of an r x N x N array
+
+      for (int kap = 0; kap < action.n_flavours(); kap++) {
+        arr_cvt<dcplx, 2> F_kap = action.operators.get_operator(orientation.early_operator(kap).adjoint, kap);
+        for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
+      }
+
+      T_buf = 0;
+
+      for (int mu = 0; mu < action.n_flavours(); mu++) {
+        Tmu = 0;
+        for (int kap = 0; kap < action.n_flavours(); kap++) {
+          auto [row, column] = orientation.coefficient_indices(mu, kap);
+          arr_cvt<dcplx, 1> hyb_t = hyb_too(_, row, column);
+
+          int sign = signs(action.statistics[kap], action.statistics[mu]) * orientation.reflection_sign();
+
+          for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
+        }
+        arr_cvt<dcplx, 2> F_mu = action.operators.get_operator(orientation.late_operator(mu).adjoint, mu);
+        for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
+      }
+    }
+  } // namespace
 
   DiagramEvaluator::DiagramEvaluator(Action<FSet> model) : action(std::move(model)) {
     auto const r = action.tau_mesh.size();
@@ -83,22 +222,8 @@ namespace triqs_xca::dense {
     Sigma = 0;
   }
 
-  auto DiagramEvaluator::native_propagator(gf_vt G_ppsc) const -> arr_cvt<dcplx, 3> {
-    auto const r = action.tau_mesh.size();
-    auto const N = action.block_dims(0);
-    if (G_ppsc.size() != 1)
-      throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc must be a single block over the full Hilbert space, got "
-                                  + std::to_string(G_ppsc.size()) + " blocks");
-    auto G = G_ppsc[0].data();
-    if (G.extent(0) != r || G.extent(1) != N || G.extent(2) != N)
-      throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc has shape (" + std::to_string(G.extent(0)) + ", " + std::to_string(G.extent(1))
-                                  + ", " + std::to_string(G.extent(2)) + "), expected (r, N, N) = (" + std::to_string(r) + ", " + std::to_string(N)
-                                  + ", " + std::to_string(N) + ")");
-    return G;
-  }
-
   DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy(gf_vt G_ppsc, arr_cvt<int, 2> topology) {
-    auto Gt = native_propagator(G_ppsc);
+    auto Gt = native_propagator(G_ppsc, action);
     triqs_xca::diagram::topology::validate(topology);
     auto count = triqs_xca::diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), triqs_xca::diagram::Kind::self_energy);
     auto [first, last] = triqs_xca::detail::local_work_range(count);
@@ -113,7 +238,7 @@ namespace triqs_xca::dense {
   }
 
   DiagramEvaluator::gf_t DiagramEvaluator::compute_self_energy_by_pairs(gf_vt G_ppsc, arr_cvt<int, 2> topology) {
-    auto Gt = native_propagator(G_ppsc);
+    auto Gt = native_propagator(G_ppsc, action);
     triqs_xca::diagram::topology::validate(topology);
     auto count = triqs_xca::diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
     auto [first, last] = triqs_xca::detail::local_work_range(count);
@@ -128,88 +253,7 @@ namespace triqs_xca::dense {
     return vector<triqs::gfs::gf<dlr_imtime>>{sigma_gf};
   }
 
-  // The initial segment starts at edge zero, whose kernel is identity:
-  // internal arcs never touch vertex zero.
-  template <triqs_xca::diagram::Kind K>
-  void DiagramEvaluator::evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                                 Backbone<K> const &backbone, BackboneRange range) {
-    result = Gt;
-    for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-      multiply_left_vertex(result, backbone, v);
-      integrate_left_edge(result, Gt, backbone, v);
-    }
-  }
 
-  // Extend an existing endpoint result; an empty self-energy tail does no work.
-  void DiagramEvaluator::extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                       SelfEnergyBackbone const &backbone, BackboneRange range) {
-    for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-      integrate_left_edge(result, Gt, backbone, v - 1);
-      multiply_left_vertex(result, backbone, v);
-    }
-  }
-
-  // The correlator segment starts at the beta edge in this traversal.
-  // Its kernel is identity because all internal arcs end before beta.
-  void DiagramEvaluator::evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                                   CorrelatorBackbone const &backbone, BackboneRange range) {
-    result = Gt;
-    for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
-      multiply_right_vertex(result, backbone, v);
-      integrate_right_edge(result, Gt, backbone, v - 1);
-    }
-    result = action.tau_mesh.dlr_it().reflect(result);
-  }
-
-  template <triqs_xca::diagram::Kind K>
-  void DiagramEvaluator::multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone<K> const &backbone, int v_ix) {
-    auto const r = action.tau_mesh.size();
-    auto const &vertex = backbone.vertices[v_ix];
-    auto F = action.operators.get_operator(vertex);
-    for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-    apply_kernel(T_buf, vertex, action.kernel);
-  }
-
-  template <triqs_xca::diagram::Kind K>
-  void DiagramEvaluator::integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt,
-                                            Backbone<K> const &backbone, int e_ix) {
-    GKt = Gt;
-    apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
-    auto const &itops = action.tau_mesh.dlr_it();
-    T_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(GKt), itops.vals2coefs(T_buf), cppdlr::TIME_ORDERED);
-  }
-
-
-
-  void DiagramEvaluator::multiply_left_vertex_and_right_zero_vertex(arr_vt<dcplx, 3> T_buf, OperatorPairOrientation orientation, triqs_xca::diagram::PermutationSigns const &signs) {
-    auto const r = action.tau_mesh.size();
-    // Time reflection and the arc orientation sign are separate, as in block_sparse.
-    arr_cvt<dcplx, 3> hyb_too = orientation.reflected() ? action.tau_values_reflect : action.tau_values;
-
-    // Save compute by precomputing Tkaps = T_buf * F_kap for all kappa, since this is needed for each mu
-    // at the cost of storing an n_flavours x r x N x N array (Tkaps) instead of an r x N x N array
-
-    for (int kap = 0; kap < action.n_flavours(); kap++) {
-      arr_cvt<dcplx, 2> F_kap = action.operators.get_operator(orientation.early_operator(kap).adjoint, kap);
-      for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
-    }
-
-    T_buf = 0;
-
-    for (int mu = 0; mu < action.n_flavours(); mu++) {
-      Tmu = 0;
-      for (int kap = 0; kap < action.n_flavours(); kap++) {
-        auto [row, column] = orientation.coefficient_indices(mu, kap);
-        arr_cvt<dcplx, 1> hyb_t = hyb_too(_, row, column);
-
-        int sign = signs(action.statistics[kap], action.statistics[mu]) * orientation.reflection_sign();
-
-        for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
-      }
-      arr_cvt<dcplx, 2> F_mu = action.operators.get_operator(orientation.late_operator(mu).adjoint, mu);
-      for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
-    }
-  }
 
   void DiagramEvaluator::eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, SelfEnergyBackbone const &backbone) {
     auto orientation = backbone.endpoint_orientation();
@@ -217,12 +261,12 @@ namespace triqs_xca::dense {
     auto const &signs = backbone.endpoints.signs;
     double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
     U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs);
-    multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs);
+    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
+    multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs, action, Tkaps, Tmu);
     T = T - U;
-    extend_segment(T, Gt, backbone, ranges.after_special);
+    extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
 
     T *= kernel_prefactor;
     T *= backbone.self_energy_sign();
@@ -236,9 +280,9 @@ namespace triqs_xca::dense {
     auto const &signs = backbone.endpoints.signs;
     double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
-    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs);
-    extend_segment(T, Gt, backbone, ranges.after_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
+    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
+    extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
 
     T *= kernel_prefactor;
     T *= backbone.self_energy_sign();
@@ -246,25 +290,9 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::multiply_right_vertex(arr_vt<dcplx, 3> U_buf, CorrelatorBackbone const &backbone, int v_ix) {
-    auto const r = action.tau_mesh.size();
-    auto const &vertex = backbone.vertices[v_ix];
-    auto F = action.operators.get_operator(vertex);
-    for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-    apply_kernel(U_buf, vertex, action.kernel, true);
-  }
-
-  void DiagramEvaluator::integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt,
-                                             CorrelatorBackbone const &backbone, int e_ix) {
-    GKt = Gt;
-    apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
-    auto const &itops = action.tau_mesh.dlr_it();
-    U_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
-  }
-
-  auto DiagramEvaluator::eval_correlator(arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone,
-                                         arr_cvt<dcplx, 3> mu_ops, arr_cvt<dcplx, 3> kap_ops,
-                                         triqs_xca::diagram::CorrelatorStatistics correlator_statistics) -> arr_t<dcplx, 3> {
+  arr_t<dcplx, 3> DiagramEvaluator::eval_correlator(arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone,
+                                                    arr_cvt<dcplx, 3> mu_ops, arr_cvt<dcplx, 3> kap_ops,
+                                                    triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     auto const r = action.tau_mesh.size();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -272,8 +300,8 @@ namespace triqs_xca::dense {
 
     arr_t<dcplx, 3> correlator = nda::zeros<dcplx>(r, mu_ops.extent(0), kap_ops.extent(0));
 
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special);
-    evaluate_reflected_segment(U, Gt, backbone, ranges.after_special);
+    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
+    evaluate_reflected_segment(U, Gt, backbone, ranges.after_special, action, GKt);
 
     T *= kernel_prefactor;
     T *= backbone.direction_sign;
@@ -293,19 +321,12 @@ namespace triqs_xca::dense {
     return correlator;
   }
 
-  auto DiagramEvaluator::single_particle_operators(bool adjoint) const -> arr_t<dcplx, 3> {
-    auto const N = action.block_dims(0);
-    arr_t<dcplx, 3> result(action.n_hyb, N, N);
-    for (int i = 0; i < action.n_hyb; ++i) result(i, _, _) = action.operators.get_operator(adjoint, i);
-    return result;
-  }
-
-  auto DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, arr_cvt<int, 2> topology) -> arr_t<dcplx, 3> {
+  arr_t<dcplx, 3> DiagramEvaluator::compute_single_ptcle_gf(gf_vt G_ppsc, arr_cvt<int, 2> topology) {
     auto const r = action.tau_mesh.size();
-    auto Gt = native_propagator(G_ppsc);
+    auto Gt = native_propagator(G_ppsc, action);
     triqs_xca::diagram::topology::validate(topology);
-    auto mu_ops  = single_particle_operators(false);
-    auto kap_ops = single_particle_operators(true);
+    auto mu_ops  = single_particle_operators(false, action);
+    auto kap_ops = single_particle_operators(true, action);
     auto count = triqs_xca::diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), triqs_xca::diagram::Kind::correlator);
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     arr_t<dcplx, 3> correlator = nda::zeros<dcplx>(r, mu_ops.extent(0), kap_ops.extent(0));
@@ -317,9 +338,9 @@ namespace triqs_xca::dense {
   }
 
   template <bool isComplex>
-  auto DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
-                                                    vector<opt_t> const &ops_0,
-                                                    atom_diag<isComplex> const &ad, arr_cvt<int, 2> topology) -> arr_t<dcplx, 3> {
+  arr_t<dcplx, 3> DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
+                                                                vector<opt_t> const &ops_0,
+                                                                atom_diag<isComplex> const &ad, arr_cvt<int, 2> topology) {
     auto const r = action.tau_mesh.size();
     auto const N = action.block_dims(0);
 
@@ -341,20 +362,10 @@ namespace triqs_xca::dense {
       throw std::invalid_argument("compute_one_time_correlator: the atom_diag has " + std::to_string(ad.get_full_hilbert_space_dim())
                                   + " states, the evaluator was built for " + std::to_string(N));
 
-    auto Gt = native_propagator(G_ppsc);
+    auto Gt = native_propagator(G_ppsc, action);
 
-    auto U = ad.get_unitary_matrix(0);
-
-    arr_t<dcplx, 3> mu_ops  = nda::zeros<dcplx>(ops_tau.size(), N, N);
-    arr_t<dcplx, 3> kap_ops = nda::zeros<dcplx>(ops_0.size(), N, N);
-
-    for (auto [i, op] : itertools::enumerate(ops_tau)) {
-      mu_ops(i, _, _) = U * triqs_xca::atom_diag::get_op_mat(ad, op).block_mat[0] * nda::conj(nda::transpose(U));
-    }
-
-    for (auto [i, op] : itertools::enumerate(ops_0)) {
-      kap_ops(i, _, _) = U * triqs_xca::atom_diag::get_op_mat(ad, op).block_mat[0] * nda::conj(nda::transpose(U));
-    }
+    auto mu_ops  = operator_matrices(ops_tau, ad);
+    auto kap_ops = operator_matrices(ops_0, ad);
 
     arr_t<dcplx, 3> correlator = nda::zeros<dcplx>(r, mu_ops.extent(0), kap_ops.extent(0));
 
@@ -369,12 +380,12 @@ namespace triqs_xca::dense {
     return correlator;
   }
 
-  template auto DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
-                                                             vector<opt_t> const &ops_0,
-                                                             atom_diag<false> const &ad, arr_cvt<int, 2> topology) -> arr_t<dcplx, 3>;
+  template arr_t<dcplx, 3> DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
+                                                                         vector<opt_t> const &ops_0,
+                                                                         atom_diag<false> const &ad, arr_cvt<int, 2> topology);
 
-  template auto DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
-                                                             vector<opt_t> const &ops_0,
-                                                             atom_diag<true> const &ad, arr_cvt<int, 2> topology) -> arr_t<dcplx, 3>;
+  template arr_t<dcplx, 3> DiagramEvaluator::compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
+                                                                         vector<opt_t> const &ops_0,
+                                                                         atom_diag<true> const &ad, arr_cvt<int, 2> topology);
 
 } // namespace triqs_xca::dense
