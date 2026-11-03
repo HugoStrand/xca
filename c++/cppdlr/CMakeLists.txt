@@ -6,7 +6,8 @@
 add_library(${PROJECT_NAME}_cppdlr INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME}_cppdlr ALIAS ${PROJECT_NAME}_cppdlr)
 
-target_link_libraries(${PROJECT_NAME}_cppdlr INTERFACE triqs)
+# fast_convolve calls TRSM directly until nda provides a high-level wrapper.
+target_link_libraries(${PROJECT_NAME}_cppdlr INTERFACE triqs nda::blas_lapack)
 target_include_directories(${PROJECT_NAME}_cppdlr INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/c++>)
 target_include_directories(${PROJECT_NAME}_cppdlr SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 target_compile_definitions(${PROJECT_NAME}_cppdlr INTERFACE
