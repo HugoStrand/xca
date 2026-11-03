@@ -184,3 +184,21 @@ tests passed in 3.97 s. Independent read-only review confirmed unchanged types,
 constness and constructor/correlator overloads. Diff --check passed. Logs:
 /tmp/xca-dense-array-aliases-{build,test}.log. Source and work log are committed
 separately; unrelated user changes remain untouched.
+
+## Dense NDA vector aliases — 2026-11-03
+
+Source: `fe0cc1e` `[dense] use vector aliases`.
+
+Adopted the user's vec_cvt alias in all dense evaluator constructor declarations,
+definitions and explicit instantiations. The vec_t and vec_vt aliases remain
+available; this class currently has no owning NDA vectors or mutable vector views.
+Rank-one array views and std::vector uses retain their existing aliases and types.
+
+Full CPU/Python build passed. The updated clair also regenerated bindings with
+unrelated generator-version changes; these were discarded after review confirmed
+identical constructor types and Python API. Recompiled the existing tracked
+wrapper directly using the _triqs_xca/fast target, then passed all seven focused
+CTest entries in 3.92 s (action, three dense tests, Py_api,
+Py_one_time_correlator and Py_dense_manual_NCA_OCA). Independent review and
+diff --check passed. Logs: /tmp/xca-dense-vector-aliases-{build,bindings-build,test}.log.
+Source and work log are committed separately; unrelated user work is preserved.
