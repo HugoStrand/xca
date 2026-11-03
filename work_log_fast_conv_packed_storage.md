@@ -47,3 +47,23 @@ regression testing follows the concurrent sparse API/batching stages.
 The user's constructor-formatting patch was explicitly reversed in the index
 before committing this source change; the worktree preserves it. Benchmark
 code and existing measurements are separately committed as `c5a596b`.
+
+## Follow-up goal started — 2026-11-03
+
+The prerequisite sparse structural refactoring passed all 85 CPU CTest entries
+in 33.46 s at `db2e2fc`. Its persistent goal is complete; the separate goal to
+implement this plan is active. The scalar and batched dense evaluators are
+already validated with evaluator-owned convolution helpers/workspaces.
+
+Before changing sparse numerical storage, capture matched prepared-call
+baselines including path discovery, endpoint sums, correlator completion,
+result ownership and reset. Use bounded samples from physical partitions
+with maximum dimensions one, two and six, at DLR ranks 13 and 103. Save the
+selected ordinals and elementwise reference outputs locally for the after-run;
+record reproducible source, timing scope and timing/error CSVs in the repo.
+Separate productive contributions from pruning-only calls. This complements
+the earlier numerical-segment microbenchmarks and remains CPU-only.
+
+Implementation remains staged: output GEMM on padded storage, then packed
+active views, then capacity-aware convolution scratch and Action integration.
+No layout and convolution changes will be hidden in the structural commits.
