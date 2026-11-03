@@ -27,3 +27,23 @@ unrelated .gitignore changes. They are preserved and excluded from source
 commits. A snapshot of the dense formatting patch is at
 `/tmp/xca-dense-user-formatting-20261103.patch`; temporary files are not the
 durable work record. No GPU allocation or network push is needed.
+
+## Scalar dense integration — 2026-11-03
+
+Source: `[dense] use fast convolution` (preceding source checkpoint).
+
+Both dense edge convolution directions now use the output-parameter helper
+and one reusable exact-shape workspace. The evaluator owns both for this
+intermediate stage; Action remains unchanged. Existing free numerical helpers
+receive these dependencies explicitly. Output aliases the running input after
+coefficient conversion, eliminating temporary convolution result assignment.
+
+`dense/prepared_evaluator` passed after rebuilding. Its new lifetime case
+copies the evaluator, destroys the original and its model, and then evaluates
+again. The mesh shares the heap-owned interpolation object, so the helper's
+borrow remains valid. No reference numerical tolerances changed. Broader
+regression testing follows the concurrent sparse API/batching stages.
+
+The user's constructor-formatting patch was explicitly reversed in the index
+before committing this source change; the worktree preserves it. Benchmark
+code and existing measurements are separately committed as `c5a596b`.
