@@ -37,13 +37,15 @@ namespace triqs_xca::block_sparse {
     OperatorSupportTable support_ = OperatorSupportTable(action.operators); // immutable model support; no propagator data
     BlockDiagOpFun Sigma;                                                   // accumulator for topology self-energy calls
 
-    // Reusable scratch; active blocks currently remain padded to the maximum sector size.
+    // Maximum-capacity owners; each active tensor is packed at the buffer start.
+    // Tkaps keeps one such capacity slot per endpoint operator.
     nda::array<dcomplex, 3> T;
     nda::array<dcomplex, 3> U;
     nda::array<dcomplex, 3> GKt;
     nda::array<dcomplex, 4> Tkaps;
     nda::array<dcomplex, 3> Tmu;
 
+    void prepare_workspace(long dimension);
     void reset();
 
     public:

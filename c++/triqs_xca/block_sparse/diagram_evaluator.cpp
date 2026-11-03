@@ -5,6 +5,7 @@
 #include "triqs_xca/work_partition.hpp"
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -22,7 +23,6 @@ namespace triqs_xca::block_sparse {
 
   using cppdlr::_;
 
-  using nda::range;
   using nda::trace;
   using nda::linalg::matmul;
 
@@ -55,14 +55,15 @@ namespace triqs_xca::block_sparse {
                                     + std::to_string(n_sub) + " blocks, got " + std::to_string(n_blocks));
     }
 
-    // a propagator block has shape (r, d, d); only its rank r is checked where the subspace dimension d is unknown (d < 0)
+    // Legacy direct operator input can leave a sector dimension unknown. Its
+    // propagator still needs a positive square block, which also bounds scratch.
     void check_block_shape(long b, std::array<long, 3> const &shape, long r, long dim) {
-      if (shape[0] != r || (dim >= 0 && (shape[1] != dim || shape[2] != dim)))
+      if (shape[0] != r || shape[1] <= 0 || shape[1] != shape[2] || (dim >= 0 && shape[1] != dim))
         throw std::invalid_argument("block_sparse::DiagramEvaluator: block " + std::to_string(b) + " of the propagator has shape ("
                                     + std::to_string(shape[0]) + ", " + std::to_string(shape[1]) + ", " + std::to_string(shape[2]) + "), expected "
                                     + (dim >= 0 ?
                                           "(r, d, d) = (" + std::to_string(r) + ", " + std::to_string(dim) + ", " + std::to_string(dim) + ")" :
-                                          "rank r = " + std::to_string(r)));
+                                          "(r, d, d) with r = " + std::to_string(r) + " and positive d"));
     }
 
     BlockDiagOpFun native_propagator(block_gf_view<dlr_imtime> G_ppsc, Action<BlockOpSymQuartet> const &action) {
@@ -75,6 +76,31 @@ namespace triqs_xca::block_sparse {
     void check_propagator(BlockDiagOpFun const &Gt, Action<BlockOpSymQuartet> const &action) {
       check_block_count(Gt.get_num_block_cols(), action.block_dims.size());
       for (long b = 0; b < action.block_dims.size(); ++b) check_block_shape(b, Gt.get_block(b).shape(), action.tau_mesh.size(), action.block_dims(b));
+    }
+
+    long max_block_dimension(BlockDiagOpFun const &Gt) {
+      long dimension = 0;
+      for (auto const &block : Gt.get_blocks()) dimension = std::max(dimension, block.extent(1));
+      return dimension;
+    }
+
+    void check_workspace_size(long rank, long dimension, long slots) {
+      auto const blas_limit = std::numeric_limits<int>::max();
+      // vals2coefs treats the two matrix axes as one BLAS right-hand-side axis.
+      if (rank <= 0 || rank > blas_limit || dimension <= 0 || dimension > blas_limit / dimension || slots < 0 || slots > blas_limit)
+        throw std::length_error("block_sparse::DiagramEvaluator: workspace dimensions exceed BLAS limits");
+      auto const max_elements = std::min<std::size_t>(std::numeric_limits<long>::max(), std::numeric_limits<std::size_t>::max() / sizeof(dcomplex));
+      auto const matrix_size  = static_cast<std::size_t>(dimension) * dimension;
+      if (static_cast<std::size_t>(rank) > max_elements / matrix_size || static_cast<std::size_t>(slots) > max_elements / (rank * matrix_size))
+        throw std::length_error("block_sparse::DiagramEvaluator: workspace capacity overflows");
+    }
+
+    // Each owner reserves (r, max_dim, max_dim), but its live tensor occupies a
+    // contiguous prefix. A Tkaps slot is a separate full-capacity owner view.
+    nda::array_view<dcomplex, 3> active_view(nda::array_view<dcomplex, 3> capacity, long rows, long columns) {
+      if (rows <= 0 || columns <= 0 || rows > capacity.extent(1) || columns > capacity.extent(2))
+        throw std::invalid_argument("block_sparse::DiagramEvaluator: active shape exceeds workspace capacity");
+      return {{capacity.extent(0), rows, columns}, capacity.data()};
     }
 
     block_gf<dlr_imtime> self_energy_result(BlockDiagOpFun const &Sigma, triqs::mesh::dlr_imtime const &mesh) {
@@ -163,8 +189,8 @@ namespace triqs_xca::block_sparse {
     void multiply_left_vertex(nda::array<dcomplex, 3> &T_buf, diagram::BackbonePath<K> const &path, int vertex, int columns,
                               Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
       auto const r = action.tau_mesh.size();
-      auto before  = T_buf(_, range(0, path.dimension(vertex)), range(0, columns));
-      auto after   = GKt(_, range(0, path.dimension(vertex + 1)), range(0, columns));
+      auto before  = active_view(T_buf, path.dimension(vertex), columns);
+      auto after   = active_view(GKt, path.dimension(vertex + 1), columns);
       auto F       = vertex_matrix(path, vertex, action);
       for (int t = 0; t < r; ++t) nda::blas::gemm(1., F, before(t, _, _), 0., after(t, _, _));
       apply_kernel(after, path.backbone.vertices[vertex], action.kernel);
@@ -175,10 +201,10 @@ namespace triqs_xca::block_sparse {
     template <triqs_xca::diagram::Kind K>
     void integrate_left_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath<K> const &path, int edge,
                              int columns, Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
-      auto GKt_ep = GKt(_, range(0, path.dimension(edge + 1)), range(0, path.dimension(edge + 1)));
+      auto GKt_ep = active_view(GKt, path.dimension(edge + 1), path.dimension(edge + 1));
       GKt_ep      = Gt.get_block(path.edge_sector(edge));
       apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
-      auto T_ep         = T_buf(_, range(0, path.dimension(edge + 1)), range(0, columns));
+      auto T_ep         = active_view(T_buf, path.dimension(edge + 1), columns);
       auto const &itops = action.tau_mesh.dlr_it();
       T_ep              = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(GKt_ep), itops.vals2coefs(T_ep), cppdlr::TIME_ORDERED);
     }
@@ -190,15 +216,15 @@ namespace triqs_xca::block_sparse {
       int special      = path.backbone.endpoints.special_vertex;
       auto orientation = path.backbone.endpoint_orientation();
       auto signs       = path.backbone.endpoints.signs;
-      auto T_v         = T_buf(_, range(0, path.dimension(special)), range(0, path.dimension(1)));
-      auto T_vp        = T_buf(_, range(0, path.dimension(special + 1)), range(0, path.dimension(0)));
-      auto Tkaps_v     = Tkaps(_, _, range(0, path.dimension(special)), range(0, path.dimension(0)));
-      auto Tmu_v       = Tmu(_, range(0, path.dimension(special)), range(0, path.dimension(0)));
+      auto T_v         = active_view(T_buf, path.dimension(special), path.dimension(1));
+      auto T_vp        = active_view(T_buf, path.dimension(special + 1), path.dimension(0));
+      auto Tmu_v       = active_view(Tmu, path.dimension(special), path.dimension(0));
 
       for (int kap = 0; kap < path.zero_operators.size(); ++kap) {
         int flavour = path.zero_operators[kap];
         auto F_kap  = endpoint_matrix(flavour, orientation.early_operator(flavour).adjoint, path.sector(0), action);
-        for (int t = 0; t < r; ++t) nda::blas::gemm(1., T_v(t, _, _), F_kap, 0., Tkaps_v(kap, t, _, _));
+        auto saved  = active_view(Tkaps(kap, _, _, _), path.dimension(special), path.dimension(0));
+        for (int t = 0; t < r; ++t) nda::blas::gemm(1., T_v(t, _, _), F_kap, 0., saved(t, _, _));
       }
       T_vp = 0;
       for (int mu : path.special_operators) {
@@ -207,9 +233,10 @@ namespace triqs_xca::block_sparse {
         Tmu_v             = 0;
         for (int kap = 0; kap < path.zero_operators.size(); ++kap) {
           int early        = path.zero_operators[kap];
+          auto saved       = active_view(Tkaps(kap, _, _, _), path.dimension(special), path.dimension(0));
           auto coefficient = coefficients(_, early);
           int sign         = signs(action.statistics[early], action.statistics[mu]) * orientation.reflection_sign();
-          for (int t = 0; t < r; ++t) Tmu_v(t, _, _) += sign * coefficient(t) * Tkaps_v(kap, t, _, _);
+          for (int t = 0; t < r; ++t) Tmu_v(t, _, _) += sign * coefficient(t) * saved(t, _, _);
         }
         for (int t = 0; t < r; ++t) nda::blas::gemm(1., F_mu, Tmu_v(t, _, _), 1., T_vp(t, _, _));
       }
@@ -243,7 +270,7 @@ namespace triqs_xca::block_sparse {
       auto const &backbone = path.backbone;
       int m = backbone.order(), special = backbone.endpoints.special_vertex;
 
-      T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = Gt.get_block(path.edge_sector(0));
+      active_view(T, path.dimension(1), path.dimension(1)) = Gt.get_block(path.edge_sector(0));
       for (int v = 1; v < special; ++v) {
         multiply_left_vertex(T, path, v, path.dimension(1), action, GKt);
         integrate_left_edge(Gt, T, path, v, path.dimension(1), action, GKt);
@@ -256,7 +283,7 @@ namespace triqs_xca::block_sparse {
         multiply_left_vertex(T, path, v, path.dimension(0), action, GKt);
       }
 
-      auto result = T(_, range(0, path.dimension(2 * m)), range(0, path.dimension(0)));
+      auto result = active_view(T, path.dimension(2 * m), path.dimension(0));
       result *= kernel_prefactor;
       result *= backbone.self_energy_sign();
       return result;
@@ -285,8 +312,8 @@ namespace triqs_xca::block_sparse {
                                Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
       auto const r = action.tau_mesh.size();
       int rows     = path.dimension(path.range.vertex_end);
-      auto before  = GKt(_, range(0, rows), range(0, path.dimension(vertex)));
-      auto after   = U_buf(_, range(0, rows), range(0, path.dimension(vertex + 1)));
+      auto before  = active_view(GKt, rows, path.dimension(vertex));
+      auto after   = active_view(U_buf, rows, path.dimension(vertex + 1));
       auto F       = vertex_matrix(path, vertex, action);
       for (int t = 0; t < r; ++t) nda::blas::gemm(1., after(t, _, _), F, 0., before(t, _, _));
       apply_kernel(before, path.backbone.vertices[vertex], action.kernel, true);
@@ -297,10 +324,10 @@ namespace triqs_xca::block_sparse {
     void integrate_right_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> U_buf, diagram::CorrelatorBackbonePath const &path, int edge,
                               Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
       int rows    = path.dimension(path.range.vertex_end);
-      auto GKt_ep = GKt(_, range(0, path.dimension(edge + 1)), range(0, path.dimension(edge + 1)));
+      auto GKt_ep = active_view(GKt, path.dimension(edge + 1), path.dimension(edge + 1));
       GKt_ep      = Gt.get_block(path.edge_sector(edge));
       apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
-      auto U_e          = U_buf(_, range(0, rows), range(0, path.dimension(edge + 1)));
+      auto U_e          = active_view(U_buf, rows, path.dimension(edge + 1));
       auto const &itops = action.tau_mesh.dlr_it();
       U_e               = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_e), itops.vals2coefs(GKt_ep), cppdlr::TIME_ORDERED);
     }
@@ -312,14 +339,14 @@ namespace triqs_xca::block_sparse {
       auto const &interval = path.range;
       if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
       int columns  = path.dimension(interval.first_vertex);
-      auto initial = T(_, range(0, columns), range(0, columns));
+      auto initial = active_view(T, columns, columns);
       initial      = Gt.get_block(path.edge_sector(interval.first_edge));
       apply_kernel_product(initial, backbone.edges[interval.first_edge].kernels, action.kernel);
       for (int v = interval.first_vertex; v < interval.vertex_end; ++v) {
         multiply_left_vertex(T, path, v, columns, action, GKt);
         integrate_left_edge(Gt, T, path, v, columns, action, GKt);
       }
-      return T(_, range(0, path.dimension(interval.vertex_end)), range(0, columns));
+      return active_view(T, path.dimension(interval.vertex_end), columns);
     }
 
     nda::array_view<dcomplex, 3> eval_backbone_backward(BlockDiagOpFun const &Gt, diagram::CorrelatorBackbonePath const &path,
@@ -329,14 +356,14 @@ namespace triqs_xca::block_sparse {
       auto const &interval = path.range;
       if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
       int rows     = path.dimension(interval.vertex_end);
-      auto initial = U(_, range(0, rows), range(0, rows));
+      auto initial = active_view(U, rows, rows);
       initial      = Gt.get_block(path.edge_sector(interval.edge_end - 1));
       apply_kernel_product(initial, backbone.edges[interval.edge_end - 1].kernels, action.kernel);
       for (int v = interval.vertex_end - 1; v >= interval.first_vertex; --v) {
         multiply_right_vertex(U, path, v, action, GKt);
         integrate_right_edge(Gt, U, path, v - 1, action, GKt);
       }
-      return U(_, range(0, rows), range(0, path.dimension(interval.first_vertex)));
+      return active_view(U, rows, path.dimension(interval.first_vertex));
     }
 
     void eval_correlator_completion(diagram::CorrelatorBackbonePath const &path, std::vector<BlockOp> const &mu_ops,
@@ -347,7 +374,7 @@ namespace triqs_xca::block_sparse {
       if (path.zero_operators.empty() || path.special_operators.empty()) return;
       int mu       = path.special_operators.front();
       auto F_mu    = mu_ops[mu].get_block(path.sector(path.backbone.endpoints.special_vertex));
-      auto product = scratch(_, range(0, left.extent(1)), range(0, right.extent(2)));
+      auto product = active_view(scratch, left.extent(1), right.extent(2));
       for (int t = 0; t < r; ++t) product(t, _, _) = matmul(left(t, _, _), matmul(F_mu, right(t, _, _)));
       for (int kap : path.zero_operators) {
         auto F_kap = kap_ops[kap].get_block(path.sector(0));
@@ -378,8 +405,8 @@ namespace triqs_xca::block_sparse {
       visit_backbone_paths(Gt, backbone, action.operators, support, tau_to_beta, [&](diagram::CorrelatorBackbonePath const &path) {
         auto result = eval_backbone_backward(Gt, path, action, U, GKt);
         tau_to_beta_paths.push_back(path);
-        // cppdlr::reflect reshapes its input; an active block in U can be strided.
-        tau_to_beta_results.emplace_back(action.tau_mesh.dlr_it().reflect(nda::make_regular(result)));
+        // Retain an owning reflected segment while the scratch is reused.
+        tau_to_beta_results.emplace_back(action.tau_mesh.dlr_it().reflect(result));
       });
       triqs_xca::block_sparse::visit_correlator_paths(Gt, zero_to_tau_paths, tau_to_beta_paths, mu_ops, kap_ops,
                                                       [&](diagram::CorrelatorBackbonePath const &path, int before_result, int after_result) {
@@ -406,9 +433,8 @@ namespace triqs_xca::block_sparse {
       auto right                      = eval_backbone_forward(Gt, before, action, T, GKt);
       right *= tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel);
       right *= path.backbone.direction_sign;
-      // Forward and backward traversals use separate T/U storage. Reflecting U needs
-      // a regular copy, just as in the cached execution route above.
-      auto left    = action.tau_mesh.dlr_it().reflect(nda::make_regular(eval_backbone_backward(Gt, after, action, U, GKt)));
+      // Backward traversal only swaps U/GKt, preserving the live forward T view.
+      auto left    = action.tau_mesh.dlr_it().reflect(eval_backbone_backward(Gt, after, action, U, GKt));
       auto scratch = nda::zeros<dcomplex>(T.shape());
       eval_correlator_completion(path, mu_ops, kap_ops, left, right, scratch, correlator);
       auto signs = path.backbone.endpoints.signs;
@@ -419,13 +445,7 @@ namespace triqs_xca::block_sparse {
   } // namespace
 
   DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model) : action(std::move(model)), Sigma({}, {}) {
-    auto const r             = action.tau_mesh.size();
-    auto const max_dimension = std::max(0L, nda::max_element(action.block_dims));
-    T                        = nda::zeros<dcomplex>(r, max_dimension, max_dimension);
-    U                        = nda::zeros<dcomplex>(r, max_dimension, max_dimension);
-    GKt                      = nda::zeros<dcomplex>(r, max_dimension, max_dimension);
-    Tkaps                    = nda::zeros<dcomplex>(max_sym_set_size(action.operators), r, max_dimension, max_dimension);
-    Tmu                      = nda::zeros<dcomplex>(r, max_dimension, max_dimension);
+    prepare_workspace(std::max(0L, nda::max_element(action.block_dims)));
   }
 
   DiagramEvaluator::DiagramEvaluator(double beta, double Lambda, double eps, nda::vector_const_view<double> hyb_poles,
@@ -460,6 +480,26 @@ namespace triqs_xca::block_sparse {
                                               std::vector<many_body_operator_complex> const &dynint_ops,
                                               nda::array_const_view<dcomplex, 3> dynint_coeffs);
 
+  void DiagramEvaluator::prepare_workspace(long dimension) {
+    // Grow before any active view exists. Only legacy operator-only Actions can
+    // reveal a larger sector in validated G; smaller later calls retain capacity.
+    if (dimension <= T.extent(1)) return;
+    auto const r     = action.tau_mesh.size();
+    auto const slots = max_sym_set_size(action.operators);
+    check_workspace_size(r, dimension, slots);
+    auto next_T     = nda::zeros<dcomplex>(r, dimension, dimension);
+    auto next_U     = nda::zeros<dcomplex>(r, dimension, dimension);
+    auto next_GKt   = nda::zeros<dcomplex>(r, dimension, dimension);
+    auto next_Tkaps = nda::zeros<dcomplex>(slots, r, dimension, dimension);
+    auto next_Tmu   = nda::zeros<dcomplex>(r, dimension, dimension);
+    // Publish together: failed allocation must leave the previous capacity valid.
+    std::swap(T, next_T);
+    std::swap(U, next_U);
+    std::swap(GKt, next_GKt);
+    std::swap(Tkaps, next_Tkaps);
+    std::swap(Tmu, next_Tmu);
+  }
+
   void DiagramEvaluator::reset() {
     auto const r = action.tau_mesh.size();
     T            = 0;
@@ -474,6 +514,7 @@ namespace triqs_xca::block_sparse {
 
   block_gf<dlr_imtime> DiagramEvaluator::compute_self_energy(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc, action);
+    prepare_workspace(max_block_dimension(Gt));
     triqs_xca::diagram::topology::validate(topology);
     long count =
        triqs_xca::diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), triqs_xca::diagram::Kind::self_energy);
@@ -496,6 +537,7 @@ namespace triqs_xca::block_sparse {
 
   BlockDiagOpFun DiagramEvaluator::compute_self_energy(BlockDiagOpFun const &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone) {
     check_propagator(Gt, action);
+    prepare_workspace(max_block_dimension(Gt));
     auto result = Gt;
     result *= 0;
 
@@ -509,6 +551,7 @@ namespace triqs_xca::block_sparse {
   BlockDiagOpFun DiagramEvaluator::compute_self_energy(BlockDiagOpFun const &Gt, diagram::SelfEnergyBackbonePath const &path) {
     require_complete_path(path);
     check_propagator(Gt, action);
+    prepare_workspace(max_block_dimension(Gt));
     if (!path.special_operators.empty() && path.zero_operators.size() > Tkaps.extent(0))
       throw std::invalid_argument("self-energy endpoint selection exceeds this CPU evaluator's symmetry-group capacity");
     auto result = Gt;
@@ -525,6 +568,7 @@ namespace triqs_xca::block_sparse {
                                                                         std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
                                                                         triqs_xca::diagram::CorrelatorStatistics correlator_statistics) {
     check_propagator(Gt, action);
+    prepare_workspace(max_block_dimension(Gt));
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.size(), kap_ops.size());
     eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, support_, T, U, GKt);
     return result;
@@ -536,6 +580,7 @@ namespace triqs_xca::block_sparse {
     require_complete_path(path);
     if (path.special_operators.size() > 1) throw std::invalid_argument("correlator path supports one tau observable");
     check_propagator(Gt, action);
+    prepare_workspace(max_block_dimension(Gt));
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.size(), kap_ops.size());
     eval_correlator(result, Gt, path, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt);
     return result;
@@ -544,6 +589,7 @@ namespace triqs_xca::block_sparse {
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
     auto const r = action.tau_mesh.size();
     auto Gt      = native_propagator(G_ppsc, action);
+    prepare_workspace(max_block_dimension(Gt));
     triqs_xca::diagram::topology::validate(topology);
     auto mu_ops                        = single_particle_operators(false, action);
     auto kap_ops                       = single_particle_operators(true, action);
@@ -569,6 +615,7 @@ namespace triqs_xca::block_sparse {
     bool is_fermionic = correlator_statistics(ops_tau, ops_0, "compute_one_time_correlator");
 
     auto Gt = native_propagator(G_ppsc, action);
+    prepare_workspace(max_block_dimension(Gt));
     triqs_xca::diagram::topology::validate(topology);
 
     // the operator blocks are placed by the subspaces of ad, which have to be those of the evaluator
