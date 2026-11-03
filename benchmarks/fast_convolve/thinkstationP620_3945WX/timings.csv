@@ -1,0 +1,9 @@
+# lambda=100000, eps=1e-12, beta=7, rank=103
+# basis_setup_ms=162.999179, fast_kernel_setup_ms=0.264846
+# cppdlr_git_hash=b9b24ab0398f01269282d81ce7a2bfa1929e18cc
+status,rank,dimension,reference_ms,fast_ms,speedup,relative_max_error,reference_repeats,reference_trials,fast_repeats,fast_trials,estimated_peak_mib,reason
+ok,103,4,0.31810785,0.2381361852,1.335823238,1.262727204e-15,60,5,81,5,0.603515625,
+ok,103,16,3.5091964,3.086593,1.136915816,1.012299402e-15,5,5,6,5,9.65625,
+ok,103,64,69.12804,61.025266,1.132777365,8.687008823e-16,1,5,1,5,154.5,
+ok,103,256,2183.77026,1480.636773,1.474885873,1.210795418e-15,1,1,1,1,2472,
+# checksum=-637.473402

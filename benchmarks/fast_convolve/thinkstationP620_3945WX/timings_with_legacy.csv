@@ -1,0 +1,10 @@
+# lambda=100000, eps=1e-12, beta=7, rank=103
+# basis_setup_ms=163.406001, fast_kernel_setup_ms=0.26082
+# cppdlr_git_hash=b9b24ab0398f01269282d81ce7a2bfa1929e18cc
+# legacy_algorithm=cppdlr before b9b24ab; full Hilbert transforms inside the node loop
+status,rank,dimension,reference_ms,fast_ms,speedup,relative_max_error,reference_repeats,reference_trials,fast_repeats,fast_trials,estimated_peak_mib,reason,legacy_status,legacy_ms,legacy_relative_max_error,legacy_repeats,legacy_trials,legacy_reason
+ok,103,4,0.3198214,0.2377043333,1.345458854,1.262727204e-15,60,5,78,5,0.603515625,,ok,7.836445,0,2,5,
+ok,103,16,3.5113126,3.0918645,1.135661864,1.012299402e-15,5,5,6,5,9.65625,,ok,81.094229,0,1,5,
+ok,103,64,68.996444,61.294009,1.12566375,8.687008823e-16,1,5,1,5,154.5,,ok,1361.863297,0,1,1,
+ok,103,256,2201.594875,1475.559362,1.492040871,1.210795418e-15,1,1,1,1,2472,,skipped,,,,,quadratic projection 21.7898 s per call; cap 3 s
+# checksum=-637.8188312

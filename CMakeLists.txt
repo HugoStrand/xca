@@ -144,6 +144,7 @@ add_subdirectory(c++)
 if(Build_Tests)
   add_subdirectory(test)
   add_subdirectory(benchmarks/backbone_cpu)
+  add_subdirectory(benchmarks/block_sparse_layout)
 endif()
 
 # Python
