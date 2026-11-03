@@ -339,3 +339,41 @@ all 78 CPU/Python CTest entries passed in 56.91 s. Diff --check passed. No bench
 timings were run. Logs: /tmp/xca-dense-action-scalars-build.log,
 /tmp/xca-dense-action-scalars-test.log and
 /tmp/xca-dense-action-scalars-benchmark-build.log. Unrelated worktree changes were preserved.
+
+## Follow-up — typed backbone kinds
+
+2026-11-03. Source: `9d01dc1` `[diagram] type backbone kinds`.
+
+Backbone<Kind> now distinguishes self-energy and correlator instructions, with
+SelfEnergyBackbone and CorrelatorBackbone aliases. The self-energy orientation
+and sign methods have requires clauses; evaluator and discovery entry points
+accept the corresponding kind. BackbonePath carries the same parameter while
+retaining one shared representation and traversal implementation. Action, arcs,
+vertices, edges and ranges remain untemplated. Shared helper definitions and
+explicit instantiations stay in the implementation files.
+
+Preparation is now prepare_backbone<Kind::...>(topology, action, index), or the
+corresponding overload accepting raw arcs. Raw arc contents are still validated
+at runtime and must agree with the requested kind. Endpoint direction is private
+and initialized only by preparation, preventing independent mutation or unchecked
+retagging. Removed require_self_energy/require_correlator checks from consumers.
+Range, completeness, shape, support and endpoint-selection checks remain.
+
+Updated the C++ fixtures and benchmark caller. Wrong-kind exception tests became
+compile-time acceptance/rejection assertions, including the sparse path overloads.
+Numerical references, tolerances, ownership checks, large-index coverage and MPI
+checks are retained. Two independent reviews found no blocking design, numerical
+or coverage issues. No numerical kernels, signs or accumulation order changed.
+
+Full CPU/Python build and the backbone_cpu target passed; all 82 CTest entries
+passed in 58.45 s, including serial and three-rank MPI tests. Binding regeneration
+produced exactly the same output as the preceding vector-alias cleanup: the Python
+API is unchanged. Discarded unrelated clair-version regeneration differences and
+recompiled the existing tracked binding through its direct target before testing.
+No benchmark timings or GPU runs were performed. Diff --check passed. Logs:
+/tmp/xca-typed-backbone-{library-build,build,final-build,test}.log.
+
+The user's pre-existing dense constructor formatting/comments are preserved and
+left unstaged. Their remaining diff was checked against the pre-edit snapshot;
+only this refactor is in the source commit. Other local changes are untouched.
+This work-log entry is committed separately from source.
