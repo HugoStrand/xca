@@ -1,6 +1,8 @@
 #include "test_utils/evaluators.hpp"
 #include <gtest/gtest.h>
 #include <limits>
+#include <memory>
+#include <tuple>
 #include <triqs_xca/block_sparse/backbone_paths.hpp>
 #include <triqs_xca/block_sparse/correlator_paths.hpp>
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
@@ -121,6 +123,11 @@ TEST(BlockSparseWorkspace, legacy_unknown_sector_capacity_grows_and_retains_resu
   sparse::DiagramEvaluator evaluator(sparse::make_action(mesh, poles, coefficients, operators, 1));
   ASSERT_EQ(evaluator.action.block_dims(0), 1);
   ASSERT_EQ(evaluator.action.block_dims(1), -1);
+  // Explicit numerical construction may leave every dimension unspecified.
+  // A valid nonempty operator quartet still supplies the operator count.
+  sparse::DiagramEvaluator all_unknown(
+     sparse::make_action(mesh, poles, coefficients, operators, {triqs_xca::Statistics::bosonic}, 0, nda::vector<long>{-1, -1}));
+  EXPECT_EQ(nda::max_element(all_unknown.action.block_dims), -1);
   auto backbone   = logical::prepare_backbone<logical::Kind::correlator>(nda::array<int, 2>{{0, 1}}, evaluator.action, 0);
   auto statistics = logical::uniform_correlator_statistics(false);
   Tensor retained, original;
@@ -132,6 +139,7 @@ TEST(BlockSparseWorkspace, legacy_unknown_sector_capacity_grows_and_retains_resu
     sparse::BlockDiagOpFun G(values, nda::vector<int>{0, 0});
     auto id     = identity(G);
     auto result = evaluator.compute_one_time_correlator(G, backbone, {id}, {id}, statistics);
+    expect_close(all_unknown.compute_one_time_correlator(G, backbone, {id}, {id}, statistics), result);
     EXPECT_LE(nda::max_element(nda::abs(result - (1. + 4. * dimension))), 2e-10 * (1. + 4. * dimension));
     sparse::diagram::CorrelatorBackbonePath path(backbone);
     for (int v = path.range.first_vertex; v <= path.range.vertex_end; ++v) {
@@ -154,5 +162,33 @@ TEST(BlockSparseWorkspace, legacy_unknown_sector_capacity_grows_and_retains_resu
     sparse::BlockDiagOpFun wrong(values, nda::vector<int>{0, 0});
     EXPECT_THROW(evaluator.compute_self_energy(wrong, sigma_backbone), std::invalid_argument);
     EXPECT_THROW(evaluator.compute_one_time_correlator(wrong, backbone, {}, {}, statistics), std::invalid_argument);
+  }
+}
+
+TEST(BlockSparseWorkspace, copied_evaluator_outlives_source_action_and_mesh) {
+  auto [evaluator, G, backbone, expected] = [] {
+    auto model = fixtures::build_eval_model("unequal_sets_nA0");
+    sparse::DiagramEvaluator original(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
+    sparse::BlockDiagOpFun G(fixtures::subspace_blocks(model.G, model.ad, model.mesh));
+    auto backbone = logical::prepare_backbone<logical::Kind::self_energy>(
+       nda::array<int, 2>{{0, 2}, {1, 3}},
+       logical::prepare_arcs(logical::Arcs{{logical::Direction::forward, -1, -1}, {logical::Direction::forward, original.action.n_flavours() - 1, 1}},
+                             original.action, logical::Kind::self_energy));
+    auto expected = original.compute_self_energy(G, backbone);
+    auto copy     = std::make_unique<sparse::DiagramEvaluator>(original);
+    return std::tuple{std::move(copy), std::move(G), std::move(backbone), std::move(expected)};
+  }();
+  // The original evaluator, atom_diag and source mesh are all gone. Its copy
+  // keeps the Action's shared interpolation object and independent scratch alive.
+  double scale = 0.;
+  for (int b = 0; b < G.get_num_block_cols(); ++b) scale = std::max(scale, nda::max_element(nda::abs(expected.get_block(b))));
+  ASSERT_GT(scale, 1e-12);
+  auto result  = evaluator->compute_self_energy(G, backbone);
+  auto changed = G;
+  changed *= 1.05;
+  auto changed_result = evaluator->compute_self_energy(changed, backbone);
+  for (int b = 0; b < G.get_num_block_cols(); ++b) {
+    expect_close(nda::make_regular(result.get_block(b)), nda::make_regular(expected.get_block(b)));
+    expect_close(nda::make_regular(changed_result.get_block(b)), nda::make_regular((1.05 * 1.05 * 1.05) * expected.get_block(b)));
   }
 }

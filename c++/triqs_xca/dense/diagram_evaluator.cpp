@@ -81,18 +81,18 @@ namespace triqs_xca::dense {
 
     void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, diagram::Edge const &edge,
                              Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
-                             cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+                             cppdlr::fast_convolve_workspace &convolution_work) {
       GKt = Gt;
       apply_kernel_product(GKt, edge.kernels, action.kernel);
-      convolution.convolve(action.tau_mesh.beta(), GKt, T_buf, T_buf, convolution_work);
+      action.convolution.convolve(action.tau_mesh.beta(), GKt, T_buf, T_buf, convolution_work);
     }
 
     void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, diagram::Edge const &edge,
                               Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
-                              cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+                              cppdlr::fast_convolve_workspace &convolution_work) {
       GKt = Gt;
       apply_kernel_product(GKt, edge.kernels, action.kernel);
-      convolution.convolve(action.tau_mesh.beta(), U_buf, GKt, U_buf, convolution_work);
+      action.convolution.convolve(action.tau_mesh.beta(), U_buf, GKt, U_buf, convolution_work);
     }
 
     // The initial segment starts at edge zero, whose kernel is identity:
@@ -101,11 +101,11 @@ namespace triqs_xca::dense {
     void evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
                                   diagram::Backbone<K> const &backbone, diagram::BackboneRange range,
                                   Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
-                                  cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+                                  cppdlr::fast_convolve_workspace &convolution_work) {
       result = Gt;
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
         multiply_left_vertex(result, backbone.vertices[v], action);
-        integrate_left_edge(result, Gt, backbone.edges[v], action, GKt, convolution, convolution_work);
+        integrate_left_edge(result, Gt, backbone.edges[v], action, GKt, convolution_work);
       }
     }
 
@@ -113,9 +113,9 @@ namespace triqs_xca::dense {
     void extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
                         diagram::SelfEnergyBackbone const &backbone, diagram::BackboneRange range,
                         Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
-                        cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+                        cppdlr::fast_convolve_workspace &convolution_work) {
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-        integrate_left_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution, convolution_work);
+        integrate_left_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution_work);
         multiply_left_vertex(result, backbone.vertices[v], action);
       }
     }
@@ -125,11 +125,11 @@ namespace triqs_xca::dense {
     void evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
                                     diagram::CorrelatorBackbone const &backbone, diagram::BackboneRange range,
                                     Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
-                                    cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+                                    cppdlr::fast_convolve_workspace &convolution_work) {
       result = Gt;
       for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
         multiply_right_vertex(result, backbone.vertices[v], action);
-        integrate_right_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution, convolution_work);
+        integrate_right_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution_work);
       }
       result = action.tau_mesh.dlr_it().reflect(result);
     }
@@ -173,18 +173,18 @@ namespace triqs_xca::dense {
       diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
       nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
       nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
-      cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+      cppdlr::fast_convolve_workspace &convolution_work) {
       auto orientation = backbone.endpoint_orientation();
       auto ranges = backbone.endpoint_ranges();
       auto const &signs = backbone.endpoints.signs;
       double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution, convolution_work);
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution_work);
       U(_, _, _) = T(_, _, _);
       multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
       multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs, action, Tkaps, Tmu);
       T = T - U;
-      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt, convolution, convolution_work);
+      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt, convolution_work);
 
       T *= kernel_prefactor;
       T *= backbone.self_energy_sign();
@@ -196,15 +196,15 @@ namespace triqs_xca::dense {
       diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
       nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &GKt,
       nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
-      cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+      cppdlr::fast_convolve_workspace &convolution_work) {
       auto orientation = backbone.endpoint_orientation();
       auto ranges = backbone.endpoint_ranges();
       auto const &signs = backbone.endpoints.signs;
       double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution, convolution_work);
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution_work);
       multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
-      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt, convolution, convolution_work);
+      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt, convolution_work);
 
       T *= kernel_prefactor;
       T *= backbone.self_energy_sign();
@@ -216,14 +216,14 @@ namespace triqs_xca::dense {
       diagram::CorrelatorBackbone const &backbone, nda::array_const_view<dcomplex, 3> mu_ops,
       nda::array_const_view<dcomplex, 3> kap_ops, diagram::CorrelatorStatistics correlator_statistics,
       Action<FSet> const &action, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
-      cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_workspace &convolution_work) {
+      cppdlr::fast_convolve_workspace &convolution_work) {
       auto const r = action.tau_mesh.size();
       auto ranges = backbone.endpoint_ranges();
       auto const &signs = backbone.endpoints.signs;
       double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
 
-      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution, convolution_work);
-      evaluate_reflected_segment(U, Gt, backbone, ranges.after_special, action, GKt, convolution, convolution_work);
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt, convolution_work);
+      evaluate_reflected_segment(U, Gt, backbone, ranges.after_special, action, GKt, convolution_work);
 
       T *= kernel_prefactor;
       T *= backbone.direction_sign;
@@ -241,7 +241,7 @@ namespace triqs_xca::dense {
   } // namespace
 
   DiagramEvaluator::DiagramEvaluator(Action<FSet> model)
-     : action(std::move(model)), convolution(action.tau_mesh.dlr_it()),
+     : action(std::move(model)),
        convolution_work(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0), action.block_dims(0)) {
     auto const r = action.tau_mesh.size();
     auto const N = action.block_dims(0);
@@ -303,7 +303,7 @@ namespace triqs_xca::dense {
     reset();
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index);
-      eval_self_energy(Sigma, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution, convolution_work);
+      eval_self_energy(Sigma, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
@@ -320,7 +320,7 @@ namespace triqs_xca::dense {
     for (long pair = first; pair < last; ++pair) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), action, pair);
       auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs);
-      eval_self_energy_pair(Sigma, Gt, backbone, action, T, U, GKt, Tkaps, Tmu, convolution, convolution_work);
+      eval_self_energy_pair(Sigma, Gt, backbone, action, T, U, GKt, Tkaps, Tmu, convolution_work);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
@@ -332,14 +332,14 @@ namespace triqs_xca::dense {
   nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_by_pairs(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
-    eval_self_energy_pair(result, Gt, backbone, action, T, U, GKt, Tkaps, Tmu, convolution, convolution_work);
+    eval_self_energy_pair(result, Gt, backbone, action, T, U, GKt, Tkaps, Tmu, convolution_work);
     return result;
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
-    eval_self_energy(result, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution, convolution_work);
+    eval_self_energy(result, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
     return result;
   }
 
@@ -348,7 +348,7 @@ namespace triqs_xca::dense {
     nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
     diagram::CorrelatorStatistics correlator_statistics) {
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.extent(0), kap_ops.extent(0));
-    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt, convolution, convolution_work);
+    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt, convolution_work);
     return result;
   }
 
@@ -364,7 +364,7 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, T, U, GKt, convolution, convolution_work);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, T, U, GKt, convolution_work);
     }
     return correlator;
   }
@@ -407,7 +407,7 @@ namespace triqs_xca::dense {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, T, U, GKt, convolution, convolution_work);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, T, U, GKt, convolution_work);
     }
 
     return correlator;

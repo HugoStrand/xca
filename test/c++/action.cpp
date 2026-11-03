@@ -1,5 +1,8 @@
 #include "test_utils/prepared_evaluators.hpp"
 #include <gtest/gtest.h>
+#include <cmath>
+#include <tuple>
+#include <type_traits>
 #include <triqs_xca/dense/action.hpp>
 #include <triqs_xca/block_sparse/action.hpp>
 #include "test_utils/evaluators.hpp"
@@ -43,6 +46,8 @@ TEST(Action, validates_metadata_before_scalar_evaluation) {
   EXPECT_THROW(dense::make_action(model.mesh, wrong_poles, model.hyb_coeffs, operators), std::invalid_argument);
   EXPECT_THROW(dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, operators,
                                  std::vector<Statistics>{}, 0), std::invalid_argument);
+  // Validate the mesh before constructing a helper that borrows its interpolation object.
+  EXPECT_THROW(dense::make_action(triqs::mesh::dlr_imtime{}, model.hyb_poles, model.hyb_coeffs, operators), std::invalid_argument);
 }
 
 TEST(Action, mixed_and_empty_dynamical_inputs_keep_flavour_order) {
@@ -121,4 +126,49 @@ TEST(Action, evaluator_copies_own_operator_data_and_outlive_their_source) {
   auto sigma_sparse = triqs_xca::test_utils::fixture_self_energy(sparse, G_sparse, topology, itertools::range(0L, 8L));
   auto expected = test_utils::get_tensor_in_full_hilbert_space(sigma_sparse, model.ad);
   EXPECT_LT(nda::max_element(nda::abs(sigma_dense[0].data() - expected)), 1e-12);
+}
+
+namespace {
+  template <typename MakeAction> void check_convolution_lifetime(MakeAction make_action) {
+    using nda::dcomplex;
+    auto [retained, f, g, expected] = [&] {
+      auto model = test_utils::build_eval_model("unequal_sets_nA0");
+      auto source = make_action(model);
+      using ActionType = decltype(source);
+      static_assert(std::is_copy_constructible_v<ActionType> && std::is_move_constructible_v<ActionType>);
+      // Assignment cannot rebind the helper's immutable interpolation reference.
+      static_assert(!std::is_copy_assignable_v<ActionType> && !std::is_move_assignable_v<ActionType>);
+      auto copied = source;
+      auto moved = std::move(copied);
+      EXPECT_EQ(&moved.tau_mesh.dlr_it(), &source.tau_mesh.dlr_it());
+      auto const &ops = source.tau_mesh.dlr_it();
+      nda::array<dcomplex, 3> left(ops.rank(), 2, 3), right(ops.rank(), 3, 2);
+      for (long t = 0; t < ops.rank(); ++t) {
+        double tau = ops.get_itnodes(t);
+        if (tau < 0.) tau += 1.;
+        for (long i = 0; i < 2; ++i)
+          for (long j = 0; j < 3; ++j) {
+            left(t, i, j) = dcomplex(0.4 + 0.2 * i - 0.1 * j, 0.3 * i + 0.07 * j) * std::exp(-0.3 * tau);
+            right(t, j, i) = dcomplex(-0.1 + 0.13 * i + 0.2 * j, 0.05 * i - 0.11 * j) * std::exp(-0.7 * tau);
+          }
+      }
+      auto reference = ops.convolve(source.tau_mesh.beta(), ops.vals2coefs(left), ops.vals2coefs(right), cppdlr::TIME_ORDERED);
+      return std::tuple{std::move(moved), std::move(left), std::move(right), std::move(reference)};
+    }(); // Original Action, model, and every original mesh handle are destroyed.
+    cppdlr::fast_convolve_workspace workspace(retained.tau_mesh.size(), 2, 3, 2);
+    nda::array<dcomplex, 3> actual(retained.tau_mesh.size(), 2, 2);
+    retained.convolution.convolve(retained.tau_mesh.beta(), f, g, actual, workspace);
+    double scale = nda::max_element(nda::abs(expected));
+    ASSERT_GT(scale, 1e-3);
+    EXPECT_LE(nda::max_element(nda::abs(actual - expected)), 2e-12 * scale);
+  }
+}
+
+TEST(Action, copied_and_moved_convolution_outlives_source_and_model) {
+  check_convolution_lifetime([](auto const &model) {
+    return dense::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+  });
+  check_convolution_lifetime([](auto const &model) {
+    return block_sparse::make_action(model.mesh, model.hyb_poles, model.hyb_coeffs, model.ad, model.dynint_ops, model.dynint_coeffs);
+  });
 }

@@ -2,6 +2,7 @@
 
 #include <nda/nda.hpp>
 #include <triqs/gfs.hpp>
+#include <cppdlr/fast_convolve.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -107,6 +108,9 @@ namespace triqs_xca {
     int n_hyb;
     nda::vector<long> block_dims; // -1 only for legacy numerical inputs with an unobserved sector
     OperatorStorage operators;
+    // Immutable tables borrow tau_mesh's shared interpolation object. Copies and
+    // moves retain that owner; mutable convolution workspace belongs to evaluators.
+    cppdlr::fast_convolve convolution;
 
     /// All operator flavours, including hybridization and dynamical interactions.
     int n_flavours() const { return static_cast<int>(statistics.size()); }
@@ -125,7 +129,8 @@ namespace triqs_xca {
          statistics(std::move(statistics)),
          n_hyb(n_hyb),
          block_dims(std::move(block_dims)),
-         operators(build_operators(pole_coeffs)) {}
+         operators(build_operators(pole_coeffs)),
+         convolution(tau_mesh.dlr_it()) {}
 
     private:
     static nda::array_const_view<nda::dcomplex, 3> checked_coefficients(nda::array_const_view<nda::dcomplex, 3> coefficients, long poles,

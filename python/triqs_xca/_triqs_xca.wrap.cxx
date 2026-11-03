@@ -208,37 +208,25 @@ symmetry sets, and the coefficients are extended block-diagonally. hyb_coeffs mu
 
 Parameters
 ----------
-beta : {par_0}
-   inverse temperature
-Lambda : {par_1}
-   DLR imaginary time cutoff
-eps : {par_2}
-   DLR imaginary time accuracy
-hyb_poles : {par_3}
-   hybridization poles
-hyb_coeffs : {par_4}
-   hybridization function coefficients at imaginary time nodes
-G_ppsc : {par_5}
-   pseudo-particle Green's function at imaginary time nodes
-ad : {par_6}
-   atom_diag object with Hamiltonian and field operators
-tau_mesh : {par_7}
+hyb_poles : {par_0}
+   physical hybridization pole frequencies
+hyb_coeffs : {par_1}
+   hybridization coefficients at the supplied poles
+tau_mesh : {par_2}
    TRIQS imaginary time DLR mesh
-dynint_ops : {par_8}
+ad : {par_3}
+   atom_diag object with field operators and invariant subspaces
+dynint_ops : {par_4}
    the n_int dynamical-interaction operators
-dynint_coeffs : {par_9}
+dynint_coeffs : {par_5}
    dynamical-interaction coefficients, shape (p, n_int, n_int)
 )DOC",
-   {{},
-    {},
-    {},
-    {c2py::python_typename<
+   {{c2py::python_typename<
        nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>>()},
     {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                  nda::borrowed<nda::mem::AddressSpace::Host>>>()},
-    {},
-    {c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>()},
     {c2py::python_typename<triqs::mesh::dlr_imtime>()},
+    {c2py::python_typename<const triqs::atom_diag::atom_diag<1> &>(), c2py::python_typename<const triqs::atom_diag::atom_diag<0> &>()},
     {c2py::python_typename<const std::vector<triqs::operators::many_body_operator_complex> &>()},
     {c2py::python_typename<nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
                                                  nda::borrowed<nda::mem::AddressSpace::Host>>>()}});

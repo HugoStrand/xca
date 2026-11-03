@@ -1,6 +1,7 @@
 #pragma once
 #include "action.hpp"
 #include <nda/nda.hpp>
+#include <cppdlr/fast_convolve.hpp>
 
 #include <triqs/atom_diag/atom_diag.hpp>
 
@@ -44,6 +45,9 @@ namespace triqs_xca::block_sparse {
     nda::array<dcomplex, 3> GKt;
     nda::array<dcomplex, 4> Tkaps;
     nda::array<dcomplex, 3> Tmu;
+    // Mutable DLR scratch is separate from Action's immutable convolution tables.
+    // Its active entries are overwritten by each call; reset need not clear it.
+    cppdlr::fast_convolve_workspace convolution_work;
 
     void prepare_workspace(long dimension);
     void reset();

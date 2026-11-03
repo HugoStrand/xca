@@ -79,27 +79,26 @@ namespace triqs_xca::dense {
     template <diagram::Kind K>
     void integrate_edge(nda::array<dcomplex, 4> &T, nda::array<dcomplex, 4> &GKt, nda::array_const_view<dcomplex, 3> G,
                         std::span<diagram::Backbone<K> const> batch, int edge_index, Action<FSet> const &action,
-                        cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_batched_workspace &work, bool right = false) {
+                        cppdlr::fast_convolve_batched_workspace &work, bool right = false) {
       auto result = active(T, batch.size()), edge = active(GKt, batch.size());
       for (long b = 0; b < batch.size(); ++b) {
         edge(all, b, all, all) = G;
         apply_kernel_product(edge(all, b, all, all), batch[b].edges[edge_index].kernels, action.kernel);
       }
       if (right)
-        convolution.convolve(action.tau_mesh.beta(), result, edge, result, work);
+        action.convolution.convolve(action.tau_mesh.beta(), result, edge, result, work);
       else
-        convolution.convolve(action.tau_mesh.beta(), edge, result, result, work);
+        action.convolution.convolve(action.tau_mesh.beta(), edge, result, result, work);
     }
 
     template <diagram::Kind K>
     void initial_segment(nda::array<dcomplex, 4> &T, nda::array<dcomplex, 4> &GKt, nda::array_const_view<dcomplex, 3> G,
-                         std::span<diagram::Backbone<K> const> batch, Action<FSet> const &action, cppdlr::fast_convolve const &convolution,
-                         cppdlr::fast_convolve_batched_workspace &work) {
+                         std::span<diagram::Backbone<K> const> batch, Action<FSet> const &action, cppdlr::fast_convolve_batched_workspace &work) {
       initialize(T, G, batch);
       auto range = batch.front().endpoint_ranges().before_special;
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
         multiply_vertex(T, GKt, batch, v, action);
-        integrate_edge(T, GKt, G, batch, v, action, convolution, work);
+        integrate_edge(T, GKt, G, batch, v, action, work);
       }
     }
 
@@ -126,8 +125,8 @@ namespace triqs_xca::dense {
     void eval_self_energy(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> G,
                           std::span<diagram::SelfEnergyBackbone const> batch, bool paired, Action<FSet> const &action, nda::array<dcomplex, 4> &T,
                           nda::array<dcomplex, 4> &U, nda::array<dcomplex, 4> &GKt, nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
-                          cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_batched_workspace &work) {
-      initial_segment(T, GKt, G, batch, action, convolution, work);
+                          cppdlr::fast_convolve_batched_workspace &work) {
+      initial_segment(T, GKt, G, batch, action, work);
       if (paired) active(U, batch.size()) = active(T, batch.size());
       for (long b = 0; b < batch.size(); ++b) {
         auto const &backbone = batch[b];
@@ -141,7 +140,7 @@ namespace triqs_xca::dense {
       }
       auto range = batch.front().endpoint_ranges().after_special;
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-        integrate_edge(T, GKt, G, batch, v - 1, action, convolution, work);
+        integrate_edge(T, GKt, G, batch, v - 1, action, work);
         multiply_vertex(T, GKt, batch, v, action);
       }
       auto values = active(T, batch.size());
@@ -155,13 +154,13 @@ namespace triqs_xca::dense {
                          std::span<diagram::CorrelatorBackbone const> batch, nda::array_const_view<dcomplex, 3> mu_ops,
                          nda::array_const_view<dcomplex, 3> kap_ops, diagram::CorrelatorStatistics statistics, Action<FSet> const &action,
                          nda::array<dcomplex, 4> &T, nda::array<dcomplex, 4> &U, nda::array<dcomplex, 4> &GKt, nda::array<dcomplex, 3> &Tmu,
-                         cppdlr::fast_convolve const &convolution, cppdlr::fast_convolve_batched_workspace &work) {
-      initial_segment(T, GKt, G, batch, action, convolution, work);
+                         cppdlr::fast_convolve_batched_workspace &work) {
+      initial_segment(T, GKt, G, batch, action, work);
       initialize(U, G, batch);
       auto range = batch.front().endpoint_ranges().after_special;
       for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
         multiply_vertex(U, GKt, batch, v, action, true);
-        integrate_edge(U, GKt, G, batch, v - 1, action, convolution, work, true);
+        integrate_edge(U, GKt, G, batch, v - 1, action, work, true);
       }
       auto left = active(T, batch.size()), right = active(U, batch.size());
       // Reflection already accepts arbitrary trailing axes, sharing this transform too.
@@ -203,7 +202,6 @@ namespace triqs_xca::dense {
   BatchedDiagramEvaluator::BatchedDiagramEvaluator(Action<FSet> model, long batch_size)
      : action(std::move(model)),
        capacity(checked_capacity(batch_size)),
-       convolution(action.tau_mesh.dlr_it()),
        convolution_work(action.tau_mesh.size(), capacity, action.block_dims(0), action.block_dims(0), action.block_dims(0)),
        T(action.tau_mesh.size(), capacity, action.block_dims(0), action.block_dims(0)),
        U(T.shape()),
@@ -217,7 +215,7 @@ namespace triqs_xca::dense {
     auto result = nda::zeros<dcomplex>(G.shape());
     while (!pending.empty()) {
       auto batch = next_batch(pending, capacity);
-      eval_self_energy(result, G, batch, false, action, T, U, GKt, Tkaps, Tmu, convolution, convolution_work);
+      eval_self_energy(result, G, batch, false, action, T, U, GKt, Tkaps, Tmu, convolution_work);
       pending = pending.subspan(batch.size());
     }
     return result;
@@ -229,7 +227,7 @@ namespace triqs_xca::dense {
     auto result = nda::zeros<dcomplex>(G.shape());
     while (!pending.empty()) {
       auto batch = next_batch(pending, capacity);
-      eval_self_energy(result, G, batch, true, action, T, U, GKt, Tkaps, Tmu, convolution, convolution_work);
+      eval_self_energy(result, G, batch, true, action, T, U, GKt, Tkaps, Tmu, convolution_work);
       pending = pending.subspan(batch.size());
     }
     return result;
@@ -245,7 +243,7 @@ namespace triqs_xca::dense {
     auto result = nda::zeros<dcomplex>(G.extent(0), mu_ops.extent(0), kap_ops.extent(0));
     while (!pending.empty()) {
       auto batch = next_batch(pending, capacity);
-      eval_correlator(result, G, batch, mu_ops, kap_ops, statistics, action, T, U, GKt, Tmu, convolution, convolution_work);
+      eval_correlator(result, G, batch, mu_ops, kap_ops, statistics, action, T, U, GKt, Tmu, convolution_work);
       pending = pending.subspan(batch.size());
     }
     return result;

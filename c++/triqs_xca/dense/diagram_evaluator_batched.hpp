@@ -16,7 +16,6 @@ namespace triqs_xca::dense {
 
     private:
     long capacity;
-    cppdlr::fast_convolve convolution;
     cppdlr::fast_convolve_batched_workspace convolution_work;
     nda::array<nda::dcomplex, 4> T, U, GKt;
     nda::array<nda::dcomplex, 4> Tkaps;

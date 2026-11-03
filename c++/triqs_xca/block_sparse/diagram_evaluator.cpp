@@ -200,13 +200,13 @@ namespace triqs_xca::block_sparse {
 
     template <triqs_xca::diagram::Kind K>
     void integrate_left_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath<K> const &path, int edge,
-                             int columns, Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
+                             int columns, Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt,
+                             cppdlr::fast_convolve_workspace &convolution_work) {
       auto GKt_ep = active_view(GKt, path.dimension(edge + 1), path.dimension(edge + 1));
       GKt_ep      = Gt.get_block(path.edge_sector(edge));
       apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
-      auto T_ep         = active_view(T_buf, path.dimension(edge + 1), columns);
-      auto const &itops = action.tau_mesh.dlr_it();
-      T_ep              = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(GKt_ep), itops.vals2coefs(T_ep), cppdlr::TIME_ORDERED);
+      auto T_ep = active_view(T_buf, path.dimension(edge + 1), columns);
+      action.convolution.convolve(action.tau_mesh.beta(), GKt_ep, T_ep, T_ep, convolution_work);
     }
 
     void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::SelfEnergyBackbonePath const &path,
@@ -266,20 +266,21 @@ namespace triqs_xca::block_sparse {
     nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(BlockDiagOpFun const &Gt, diagram::SelfEnergyBackbonePath const &path,
                                                                      double kernel_prefactor, Action<BlockOpSymQuartet> const &action,
                                                                      nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &GKt,
-                                                                     nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu) {
+                                                                     nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
+                                                                     cppdlr::fast_convolve_workspace &convolution_work) {
       auto const &backbone = path.backbone;
       int m = backbone.order(), special = backbone.endpoints.special_vertex;
 
       active_view(T, path.dimension(1), path.dimension(1)) = Gt.get_block(path.edge_sector(0));
       for (int v = 1; v < special; ++v) {
         multiply_left_vertex(T, path, v, path.dimension(1), action, GKt);
-        integrate_left_edge(Gt, T, path, v, path.dimension(1), action, GKt);
+        integrate_left_edge(Gt, T, path, v, path.dimension(1), action, GKt, convolution_work);
       }
 
       multiply_left_vertex_and_right_zero_vertex(T, path, action, Tkaps, Tmu);
 
       for (int v = special + 1; v < 2 * m; ++v) {
-        integrate_left_edge(Gt, T, path, v - 1, path.dimension(0), action, GKt);
+        integrate_left_edge(Gt, T, path, v - 1, path.dimension(0), action, GKt, convolution_work);
         multiply_left_vertex(T, path, v, path.dimension(0), action, GKt);
       }
 
@@ -292,19 +293,20 @@ namespace triqs_xca::block_sparse {
     // Accumulate into a separately owned output; propagator and scratch must not overlap it.
     void eval_self_energy(BlockDiagOpFun &Sigma, BlockDiagOpFun const &Gt, diagram::SelfEnergyBackbonePath const &path, double kernel_prefactor,
                           Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &GKt,
-                          nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu) {
+                          nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu, cppdlr::fast_convolve_workspace &convolution_work) {
       if (path.zero_operators.empty() || path.special_operators.empty()) return;
       if (!select_diagonal_self_energy(path, action)) return;
-      auto result = eval_self_energy_contribution(Gt, path, kernel_prefactor, action, T, GKt, Tkaps, Tmu);
+      auto result = eval_self_energy_contribution(Gt, path, kernel_prefactor, action, T, GKt, Tkaps, Tmu, convolution_work);
       Sigma.add_block(path.sector(0), result);
     }
 
     void eval_self_energy(BlockDiagOpFun &Sigma, BlockDiagOpFun const &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone,
                           Action<BlockOpSymQuartet> const &action, OperatorSupportTable const &support, nda::array<dcomplex, 3> &T,
-                          nda::array<dcomplex, 3> &GKt, nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu) {
+                          nda::array<dcomplex, 3> &GKt, nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
+                          cppdlr::fast_convolve_workspace &convolution_work) {
       double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
       triqs_xca::block_sparse::visit_self_energy_paths(Gt, backbone, action.operators, support, [&](diagram::SelfEnergyBackbonePath const &path) {
-        eval_self_energy(Sigma, Gt, path, kernel_prefactor, action, T, GKt, Tkaps, Tmu);
+        eval_self_energy(Sigma, Gt, path, kernel_prefactor, action, T, GKt, Tkaps, Tmu, convolution_work);
       });
     }
 
@@ -322,19 +324,19 @@ namespace triqs_xca::block_sparse {
     }
 
     void integrate_right_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> U_buf, diagram::CorrelatorBackbonePath const &path, int edge,
-                              Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
+                              Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt,
+                              cppdlr::fast_convolve_workspace &convolution_work) {
       int rows    = path.dimension(path.range.vertex_end);
       auto GKt_ep = active_view(GKt, path.dimension(edge + 1), path.dimension(edge + 1));
       GKt_ep      = Gt.get_block(path.edge_sector(edge));
       apply_kernel_product(GKt_ep, path.backbone.edges[edge].kernels, action.kernel);
-      auto U_e          = active_view(U_buf, rows, path.dimension(edge + 1));
-      auto const &itops = action.tau_mesh.dlr_it();
-      U_e               = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_e), itops.vals2coefs(GKt_ep), cppdlr::TIME_ORDERED);
+      auto U_e = active_view(U_buf, rows, path.dimension(edge + 1));
+      action.convolution.convolve(action.tau_mesh.beta(), U_e, GKt_ep, U_e, convolution_work);
     }
 
     nda::array_view<dcomplex, 3> eval_backbone_forward(BlockDiagOpFun const &Gt, diagram::CorrelatorBackbonePath const &path,
                                                        Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &T,
-                                                       nda::array<dcomplex, 3> &GKt) {
+                                                       nda::array<dcomplex, 3> &GKt, cppdlr::fast_convolve_workspace &convolution_work) {
       auto const &backbone = path.backbone;
       auto const &interval = path.range;
       if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
@@ -344,14 +346,14 @@ namespace triqs_xca::block_sparse {
       apply_kernel_product(initial, backbone.edges[interval.first_edge].kernels, action.kernel);
       for (int v = interval.first_vertex; v < interval.vertex_end; ++v) {
         multiply_left_vertex(T, path, v, columns, action, GKt);
-        integrate_left_edge(Gt, T, path, v, columns, action, GKt);
+        integrate_left_edge(Gt, T, path, v, columns, action, GKt, convolution_work);
       }
       return active_view(T, path.dimension(interval.vertex_end), columns);
     }
 
     nda::array_view<dcomplex, 3> eval_backbone_backward(BlockDiagOpFun const &Gt, diagram::CorrelatorBackbonePath const &path,
                                                         Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &U,
-                                                        nda::array<dcomplex, 3> &GKt) {
+                                                        nda::array<dcomplex, 3> &GKt, cppdlr::fast_convolve_workspace &convolution_work) {
       auto const &backbone = path.backbone;
       auto const &interval = path.range;
       if (interval.empty()) throw std::invalid_argument("cannot evaluate an empty backbone segment");
@@ -361,7 +363,7 @@ namespace triqs_xca::block_sparse {
       apply_kernel_product(initial, backbone.edges[interval.edge_end - 1].kernels, action.kernel);
       for (int v = interval.vertex_end - 1; v >= interval.first_vertex; --v) {
         multiply_right_vertex(U, path, v, action, GKt);
-        integrate_right_edge(Gt, U, path, v - 1, action, GKt);
+        integrate_right_edge(Gt, U, path, v - 1, action, GKt, convolution_work);
       }
       return active_view(U, rows, path.dimension(interval.first_vertex));
     }
@@ -385,7 +387,8 @@ namespace triqs_xca::block_sparse {
     void eval_correlator(nda::array_view<dcomplex, 3> output, BlockDiagOpFun const &Gt, triqs_xca::diagram::CorrelatorBackbone const &backbone,
                          std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
                          triqs_xca::diagram::CorrelatorStatistics correlator_statistics, Action<BlockOpSymQuartet> const &action,
-                         OperatorSupportTable const &support, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt) {
+                         OperatorSupportTable const &support, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
+                         cppdlr::fast_convolve_workspace &convolution_work) {
       auto const r            = action.tau_mesh.size();
       double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
       // Preserve the per-backbone sum and sign before accumulating into the caller's result.
@@ -395,7 +398,7 @@ namespace triqs_xca::block_sparse {
       std::vector<nda::array<dcomplex, 3>> zero_to_tau_results, tau_to_beta_results;
       auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
       visit_backbone_paths(Gt, backbone, action.operators, support, zero_to_tau, [&](diagram::CorrelatorBackbonePath const &path) {
-        auto result = eval_backbone_forward(Gt, path, action, T, GKt);
+        auto result = eval_backbone_forward(Gt, path, action, T, GKt, convolution_work);
         // Global factors belong to the completion, applied once to each cached right result.
         result *= kernel_prefactor;
         result *= backbone.direction_sign;
@@ -403,7 +406,7 @@ namespace triqs_xca::block_sparse {
         zero_to_tau_results.emplace_back(result);
       });
       visit_backbone_paths(Gt, backbone, action.operators, support, tau_to_beta, [&](diagram::CorrelatorBackbonePath const &path) {
-        auto result = eval_backbone_backward(Gt, path, action, U, GKt);
+        auto result = eval_backbone_backward(Gt, path, action, U, GKt, convolution_work);
         tau_to_beta_paths.push_back(path);
         // Retain an owning reflected segment while the scratch is reused.
         tau_to_beta_results.emplace_back(action.tau_mesh.dlr_it().reflect(result));
@@ -421,7 +424,8 @@ namespace triqs_xca::block_sparse {
     void eval_correlator(nda::array_view<dcomplex, 3> output, BlockDiagOpFun const &Gt, diagram::CorrelatorBackbonePath const &path,
                          std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
                          triqs_xca::diagram::CorrelatorStatistics correlator_statistics, Action<BlockOpSymQuartet> const &action,
-                         nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt) {
+                         nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
+                         cppdlr::fast_convolve_workspace &convolution_work) {
       auto const r = action.tau_mesh.size();
       // Apply the endpoint sign to this contribution before adding it to the caller's result.
       auto correlator = nda::zeros<dcomplex>(r, mu_ops.size(), kap_ops.size());
@@ -430,11 +434,11 @@ namespace triqs_xca::block_sparse {
       auto [zero_to_tau, tau_to_beta] = path.backbone.endpoint_ranges();
       auto before                     = segment_path(path, zero_to_tau);
       auto after                      = segment_path(path, tau_to_beta);
-      auto right                      = eval_backbone_forward(Gt, before, action, T, GKt);
+      auto right                      = eval_backbone_forward(Gt, before, action, T, GKt, convolution_work);
       right *= tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel);
       right *= path.backbone.direction_sign;
       // Backward traversal only swaps U/GKt, preserving the live forward T view.
-      auto left    = action.tau_mesh.dlr_it().reflect(eval_backbone_backward(Gt, after, action, U, GKt));
+      auto left    = action.tau_mesh.dlr_it().reflect(eval_backbone_backward(Gt, after, action, U, GKt, convolution_work));
       auto scratch = nda::zeros<dcomplex>(T.shape());
       eval_correlator_completion(path, mu_ops, kap_ops, left, right, scratch, correlator);
       auto signs = path.backbone.endpoints.signs;
@@ -444,7 +448,8 @@ namespace triqs_xca::block_sparse {
 
   } // namespace
 
-  DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model) : action(std::move(model)), Sigma({}, {}) {
+  DiagramEvaluator::DiagramEvaluator(Action<BlockOpSymQuartet> model)
+     : action(std::move(model)), Sigma({}, {}), convolution_work(action.tau_mesh.size(), 1, 1, 1) {
     prepare_workspace(std::max(0L, nda::max_element(action.block_dims)));
   }
 
@@ -492,12 +497,14 @@ namespace triqs_xca::block_sparse {
     auto next_GKt   = nda::zeros<dcomplex>(r, dimension, dimension);
     auto next_Tkaps = nda::zeros<dcomplex>(slots, r, dimension, dimension);
     auto next_Tmu   = nda::zeros<dcomplex>(r, dimension, dimension);
+    cppdlr::fast_convolve_workspace next_convolution_work(r, dimension, dimension, dimension);
     // Publish together: failed allocation must leave the previous capacity valid.
     std::swap(T, next_T);
     std::swap(U, next_U);
     std::swap(GKt, next_GKt);
     std::swap(Tkaps, next_Tkaps);
     std::swap(Tmu, next_Tmu);
+    std::swap(convolution_work, next_convolution_work);
   }
 
   void DiagramEvaluator::reset() {
@@ -526,7 +533,7 @@ namespace triqs_xca::block_sparse {
 
     for (long f_ix = first; f_ix < last; ++f_ix) {
       auto const backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, action, f_ix);
-      eval_self_energy(Sigma, Gt, backbone, action, support_, T, GKt, Tkaps, Tmu);
+      eval_self_energy(Sigma, Gt, backbone, action, support_, T, GKt, Tkaps, Tmu, convolution_work);
       Sigma.set_zero_block_indices();
     }
 
@@ -541,7 +548,7 @@ namespace triqs_xca::block_sparse {
     auto result = Gt;
     result *= 0;
 
-    eval_self_energy(result, Gt, backbone, action, support_, T, GKt, Tkaps, Tmu);
+    eval_self_energy(result, Gt, backbone, action, support_, T, GKt, Tkaps, Tmu, convolution_work);
     result.set_zero_block_indices();
 
     reset();
@@ -557,7 +564,8 @@ namespace triqs_xca::block_sparse {
     auto result = Gt;
     result *= 0;
     if (!path.zero_operators.empty() && !path.special_operators.empty())
-      eval_self_energy(result, Gt, path, tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel), action, T, GKt, Tkaps, Tmu);
+      eval_self_energy(result, Gt, path, tau_kernel_prefactor(path.backbone.kernel_prefactor, action.kernel), action, T, GKt, Tkaps, Tmu,
+                       convolution_work);
     result.set_zero_block_indices();
     reset();
     return result;
@@ -570,7 +578,7 @@ namespace triqs_xca::block_sparse {
     check_propagator(Gt, action);
     prepare_workspace(max_block_dimension(Gt));
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.size(), kap_ops.size());
-    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, support_, T, U, GKt);
+    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, support_, T, U, GKt, convolution_work);
     return result;
   }
 
@@ -582,7 +590,7 @@ namespace triqs_xca::block_sparse {
     check_propagator(Gt, action);
     prepare_workspace(max_block_dimension(Gt));
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.size(), kap_ops.size());
-    eval_correlator(result, Gt, path, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt);
+    eval_correlator(result, Gt, path, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt, convolution_work);
     return result;
   }
 
@@ -599,7 +607,7 @@ namespace triqs_xca::block_sparse {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     for (long f_ix = first; f_ix < last; ++f_ix) {
       auto const backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(topology, action, f_ix);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, support_, T, U, GKt);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, support_, T, U, GKt, convolution_work);
     }
     return correlator;
   }
@@ -636,7 +644,7 @@ namespace triqs_xca::block_sparse {
     auto statistics    = triqs_xca::diagram::uniform_correlator_statistics(is_fermionic);
     for (long f_ix = first; f_ix < last; ++f_ix) {
       auto const backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(topology, action, f_ix);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, support_, T, U, GKt);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, support_, T, U, GKt, convolution_work);
     }
 
     return correlator;
