@@ -143,3 +143,21 @@ consumers or blockers. Full CPU/Python build and binding regeneration passed;
 all 82 CTest entries passed in 58.23 s, including serial and three-rank MPI tests.
 Diff --check passed. Logs: /tmp/xca-dense-api-encapsulation-{build,test}.log.
 Unrelated user changes were preserved; source and this log remain separate commits.
+
+## Dense type aliases — 2026-11-03
+
+Source: `5f1ac9b` `[dense] use evaluator type aliases`.
+
+Adopted the user's added dlr_imtime, atom_diag, opt_t, Backbone and BackboneRange
+names throughout DiagramEvaluator declarations, definitions and explicit
+instantiations. Changed namespace using-declarations to valid class type aliases,
+with a bool alias template for atom_diag. The existing gf_t/gf_vt aliases now use
+dlr_imtime, and self-energy return types use gf_t. The free compatible_mesh helper
+keeps namespace-qualified types. Evaluation and storage are unchanged.
+
+Full CPU/Python build and binding regeneration passed. The generated wrappers
+retain all four real/complex atom_diag constructor variants and both correlator
+overloads. All seven focused CTest entries passed in 3.92 s: action, the three
+dense tests, Py_api, Py_one_time_correlator and Py_dense_manual_NCA_OCA. Independent
+read-only review and diff --check passed. Logs:
+/tmp/xca-dense-aliases-{build,test}.log. No tests or numerical code were changed.
