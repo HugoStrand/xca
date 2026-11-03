@@ -11,6 +11,7 @@
 
 #include "test_utils/evaluators.hpp"
 #include "test_utils/prepared_evaluators.hpp"
+#include "triqs_xca/dense/diagram_evaluator_batched.hpp"
 
 namespace {
   namespace diagram = triqs_xca::diagram;
@@ -242,6 +243,98 @@ TEST(MpiEvaluator, topology_calls_have_no_collectives) {
   }
   // Any evaluator collective would hang against the other ranks' barrier and
   // fail the CTest timeout instead of silently passing a replicated calculation.
+  comm.barrier();
+}
+
+TEST(MpiEvaluator, batched_dense_topology_sums_and_idle_ranks) {
+  Harness h;
+  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+  auto local_sigma = nda::zeros<nda::dcomplex>(h.model.G.shape());
+  tensor_t local_pairs = local_sigma, reference_sigma = local_sigma;
+  auto local_spgf = nda::zeros<nda::dcomplex>(h.model.mesh.size(), h.dense.action.n_hyb, h.dense.action.n_hyb);
+  tensor_t reference_spgf = local_spgf;
+  ops_t ops_tau{n("A", 0), n("B", 0)}, ops_0{n("A", 1), n("B", 0)};
+  auto mu_ops = test_utils::fixture_dense_operators(ops_tau, h.model.ad_flat);
+  auto kap_ops = test_utils::fixture_dense_operators(ops_0, h.model.ad_flat);
+  auto statistics = diagram::uniform_correlator_statistics(false);
+  auto local_correlator = nda::zeros<nda::dcomplex>(h.model.mesh.size(), ops_tau.size(), ops_0.size());
+  tensor_t reference_correlator = local_correlator;
+
+  for (auto const &topology : topologies()) {
+    auto [sf, sl] = fixture_range(test_utils::fixture_count(h.dense, topology, diagram::Kind::self_energy));
+    auto [cf, cl] = fixture_range(test_utils::fixture_count(h.dense, topology, diagram::Kind::correlator));
+    auto choices = pair_choices(topology.extent(0), h.dense);
+    auto [pf, pl] = fixture_range(choices.size());
+    auto sigma = batched.compute_self_energy(h.dense_G, topology);
+    auto pairs = batched.compute_self_energy_by_pairs(h.dense_G, topology);
+    auto spgf = batched.compute_single_ptcle_gf(h.dense_G, topology);
+    auto correlator = batched.compute_one_time_correlator(h.dense_G, topology, mu_ops, kap_ops, statistics);
+    expect_close(sigma, test_utils::fixture_self_energy(h.dense, h.dense_G, topology, itertools::range(sf, sl)));
+    expect_close(pairs, explicit_pairs(h.dense, h.dense_G, topology, choices, pf, pl));
+    expect_close(spgf, test_utils::fixture_single_ptcle_gf(h.dense, h.dense_G, topology, itertools::range(cf, cl)));
+    expect_close(correlator, test_utils::fixture_one_time_correlator(h.dense, h.dense_G, ops_tau, ops_0, h.model.ad_flat,
+                                                                  topology, itertools::range(cf, cl)));
+    local_sigma += sigma[0].data();
+    local_pairs += pairs[0].data();
+    local_spgf += spgf;
+    local_correlator += correlator;
+    reference_sigma += test_utils::fixture_self_energy(h.dense, h.dense_G, topology)[0].data();
+    reference_spgf += test_utils::fixture_single_ptcle_gf(h.dense, h.dense_G, topology);
+    reference_correlator += test_utils::fixture_one_time_correlator(h.dense, h.dense_G, ops_tau, ops_0, h.model.ad_flat,
+      topology, itertools::range(test_utils::fixture_count(h.dense, topology, diagram::Kind::correlator)));
+    if (sf == sl) EXPECT_EQ(nda::max_element(nda::abs(sigma[0].data())), 0.);
+    if (pf == pl) EXPECT_EQ(nda::max_element(nda::abs(pairs[0].data())), 0.);
+    if (cf == cl) {
+      EXPECT_EQ(nda::max_element(nda::abs(spgf)), 0.);
+      EXPECT_EQ(nda::max_element(nda::abs(correlator)), 0.);
+    }
+  }
+  tensor_t total_sigma = mpi::all_reduce(local_sigma), total_pairs = mpi::all_reduce(local_pairs);
+  tensor_t total_spgf = mpi::all_reduce(local_spgf), total_correlator = mpi::all_reduce(local_correlator);
+  expect_close(total_sigma, reference_sigma);
+  expect_close(total_pairs, reference_sigma);
+  expect_close(total_spgf, reference_spgf);
+  expect_close(total_correlator, reference_correlator);
+}
+
+TEST(MpiEvaluator, batched_idle_ranks_validate_and_recover) {
+  Harness h;
+  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+  nda::array<int, 2> topology{{0, 1}}, malformed{{0, 0}};
+  bgf_t missing_blocks{std::vector<gf_t>{}};
+  ops_t ops{n("A", 0)};
+  auto matrices = test_utils::fixture_dense_operators(ops, h.model.ad_flat);
+  auto bad_matrices = nda::zeros<nda::dcomplex>(1, h.model.G.extent(1) - 1, h.model.G.extent(2));
+  auto statistics = diagram::uniform_correlator_statistics(false);
+  EXPECT_THROW(batched.compute_self_energy(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(batched.compute_self_energy_by_pairs(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(batched.compute_single_ptcle_gf(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, malformed, matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(batched.compute_self_energy(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(batched.compute_self_energy_by_pairs(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(batched.compute_single_ptcle_gf(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(batched.compute_one_time_correlator(missing_blocks, topology, matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, topology, bad_matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, topology, matrices, bad_matrices, statistics), std::invalid_argument);
+  expect_close(batched.compute_self_energy(h.dense_G, topology), h.dense.compute_self_energy(h.dense_G, topology));
+  expect_close(batched.compute_self_energy_by_pairs(h.dense_G, topology), h.dense.compute_self_energy_by_pairs(h.dense_G, topology));
+  expect_close(batched.compute_single_ptcle_gf(h.dense_G, topology), h.dense.compute_single_ptcle_gf(h.dense_G, topology));
+  expect_close(batched.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, statistics),
+               h.dense.compute_one_time_correlator(h.dense_G, ops, ops, h.model.ad_flat, topology));
+}
+
+TEST(MpiEvaluator, batched_topology_calls_have_no_collectives) {
+  Harness h;
+  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+  mpi::communicator comm;
+  if (comm.rank() == 0) {
+    nda::array<int, 2> topology{{0, 1}};
+    auto matrices = test_utils::fixture_dense_operators(ops_t{n("A", 0)}, h.model.ad_flat);
+    batched.compute_self_energy(h.dense_G, topology);
+    batched.compute_self_energy_by_pairs(h.dense_G, topology);
+    batched.compute_single_ptcle_gf(h.dense_G, topology);
+    batched.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, diagram::uniform_correlator_statistics(false));
+  }
   comm.barrier();
 }
 
