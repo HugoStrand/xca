@@ -6,17 +6,27 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <stdexcept>
 
 namespace cppdlr {
 
-  // Reusable storage for f(r,m,n) * g(r,n,p). Keep one workspace per concurrent call.
+  // Reusable storage for f(r,m,n) * g(r,n,p). The constructor reserves capacity;
+  // later rectangular shapes may differ when their packed entries fit each owner.
+  // Keep one workspace per concurrent call.
   struct fast_convolve_workspace {
     nda::array<nda::dcomplex, 3> fc, gc, hfc, hgc, product;
 
     fast_convolve_workspace(long r, long m, long n, long p) {
       if (r <= 0 || m <= 0 || n <= 0 || p <= 0) throw std::runtime_error("fast_convolve: workspace dimensions must be positive");
+      if (r > std::numeric_limits<int>::max() || m > std::numeric_limits<int>::max() / n || n > std::numeric_limits<int>::max() / p
+          || m > std::numeric_limits<int>::max() / p)
+        throw std::runtime_error("fast_convolve: workspace dimensions exceed BLAS integer range");
+      long const entries = std::max({m * n, n * p, m * p});
+      if (entries > std::numeric_limits<long>::max() / r
+          || static_cast<std::size_t>(r) > std::numeric_limits<std::size_t>::max() / sizeof(nda::dcomplex) / static_cast<std::size_t>(entries))
+        throw std::runtime_error("fast_convolve: workspace allocation size overflows");
       fc.resize(r, m, n);
       gc.resize(r, n, p);
       hfc.resize(r, m, n);
@@ -155,7 +165,8 @@ namespace cppdlr {
     /**
      * Compute out(tau) = integral_0^tau f(tau-s) g(s) ds from nodal values.
      * out may overlap either input, since both coefficient arrays are prepared first.
-     * The workspace must be separate from all inputs and output, and correctly sized.
+     * The workspace must be separate from all inputs and output. Its owners must
+     * have the same DLR rank and enough capacity for the active packed shapes.
      */
     void convolve(double beta, nda::array_const_view<nda::dcomplex, 3> f, nda::array_const_view<nda::dcomplex, 3> g,
                   nda::array_view<nda::dcomplex, 3> out, fast_convolve_workspace &work) const {
@@ -165,26 +176,30 @@ namespace cppdlr {
       if (!std::isfinite(beta) || beta <= 0.) throw std::runtime_error("fast_convolve: beta must be finite and positive");
       if (f.shape(2) != g.shape(1) || out.shape(1) != f.shape(1) || out.shape(2) != g.shape(2))
         throw std::runtime_error("fast_convolve: incompatible matrix dimensions");
-      if (work.fc.shape() != f.shape() || work.hfc.shape() != f.shape() || work.gc.shape() != g.shape() || work.hgc.shape() != g.shape()
-          || work.product.shape() != out.shape())
+      auto fits = [](auto const &storage, auto const &active) {
+        return storage.shape(0) == active.shape(0) && storage.size() >= active.size();
+      };
+      if (!fits(work.fc, f) || !fits(work.hfc, f) || !fits(work.gc, g) || !fits(work.hgc, g) || !fits(work.product, out))
         throw std::runtime_error("fast_convolve: incompatible workspace dimensions");
 
-      vals2coefs(f, work.fc);
-      vals2coefs(g, work.gc);
-      transform(hilb, work.fc, work.hfc);
-      transform(hilb, work.gc, work.hgc);
+      nda::array_view<nda::dcomplex, 3> fc{f.shape(), work.fc.data()}, gc{g.shape(), work.gc.data()};
+      nda::array_view<nda::dcomplex, 3> hfc{f.shape(), work.hfc.data()}, hgc{g.shape(), work.hgc.data()}, product{out.shape(), work.product.data()};
+      vals2coefs(f, fc);
+      vals2coefs(g, gc);
+      transform(hilb, fc, hfc);
+      transform(hilb, gc, hgc);
 
       using nda::range;
       for (int l = 0; l < itops.rank(); ++l)
-        nda::blas::gemm(1., work.fc(l, range::all, range::all), work.gc(l, range::all, range::all), 0., work.product(l, range::all, range::all));
-      transform(tcf2it, work.product, out);
+        nda::blas::gemm(1., fc(l, range::all, range::all), gc(l, range::all, range::all), 0., product(l, range::all, range::all));
+      transform(tcf2it, product, out);
 
       for (int l = 0; l < itops.rank(); ++l) {
-        auto product = work.product(l, range::all, range::all);
-        nda::blas::gemm(1., work.hfc(l, range::all, range::all), work.gc(l, range::all, range::all), 0., product);
-        nda::blas::gemm(1., work.fc(l, range::all, range::all), work.hgc(l, range::all, range::all), 1., product);
+        auto prod = product(l, range::all, range::all);
+        nda::blas::gemm(1., hfc(l, range::all, range::all), gc(l, range::all, range::all), 0., prod);
+        nda::blas::gemm(1., fc(l, range::all, range::all), hgc(l, range::all, range::all), 1., prod);
       }
-      transform(cf2it, work.product, out, 1.);
+      transform(cf2it, product, out, 1.);
       out *= beta;
     }
 

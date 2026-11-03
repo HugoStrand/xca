@@ -133,10 +133,80 @@ TEST(FastConvolve, output_can_replace_either_input) {
   expect_close(overwritten_g, reference);
 }
 
+TEST(FastConvolve, changing_rectangular_shapes_reuse_capacity_and_preserve_tails) {
+  auto const &ops = itops();
+  cppdlr::fast_convolve convolution(ops);
+  cppdlr::fast_convolve_workspace workspace(ops.rank(), 4, 4, 4);
+  std::array owners{&workspace.fc, &workspace.gc, &workspace.hfc, &workspace.hgc, &workspace.product};
+  std::array<dcomplex const *, 5> addresses;
+  for (std::size_t i = 0; i < owners.size(); ++i) addresses[i] = owners[i]->data();
+  tensor output_storage(ops.rank(), 4, 4);
+  dcomplex const sentinel(29., -17.);
+  std::array shapes{std::array{4L, 4L, 4L}, std::array{1L, 1L, 1L}, std::array{2L, 3L, 4L},
+                    std::array{3L, 4L, 2L}, std::array{4L, 2L, 3L}, std::array{4L, 4L, 4L}};
+
+  for (auto [m, n, p] : shapes) {
+    SCOPED_TRACE(::testing::Message() << m << "x" << n << "x" << p);
+    auto f = values(m, n, 0, true);
+    auto g = values(n, p, 1, true);
+    auto reference = ops.convolve(2.3, ops.vals2coefs(f), ops.vals2coefs(g), cppdlr::TIME_ORDERED);
+    nda::array_view<dcomplex, 3> result{{ops.rank(), m, p}, output_storage.data()};
+    for (auto *owner : owners) (*owner)() = sentinel;
+    output_storage() = sentinel;
+
+    convolution.convolve(2.3, f, g, result, workspace);
+    expect_close(nda::make_regular(result), reference);
+    expect_close(nda::make_regular(result), analytic_convolution(2.3, m, n, p, true));
+    std::array active_sizes{f.size(), g.size(), f.size(), g.size(), result.size()};
+    for (std::size_t i = 0; i < owners.size(); ++i) {
+      EXPECT_EQ(owners[i]->data(), addresses[i]);
+      EXPECT_EQ(owners[i]->shape(), (std::array<long, 3>{ops.rank(), 4, 4}));
+      for (long j = active_sizes[i]; j < owners[i]->size(); ++j) EXPECT_EQ(owners[i]->data()[j], sentinel);
+    }
+    for (long j = result.size(); j < output_storage.size(); ++j) EXPECT_EQ(output_storage.data()[j], sentinel);
+  }
+}
+
+TEST(FastConvolve, changing_output_shape_can_overwrite_either_packed_input) {
+  auto const &ops = itops();
+  cppdlr::fast_convolve convolution(ops);
+  cppdlr::fast_convolve_workspace workspace(ops.rank(), 4, 4, 4);
+  tensor f_storage(ops.rank(), 4, 4), g_storage(ops.rank(), 4, 4);
+  dcomplex const sentinel(31., -11.);
+  std::array shapes{std::array{2L, 1L, 4L}, std::array{2L, 4L, 1L}, std::array{4L, 1L, 2L}, std::array{1L, 4L, 2L}};
+
+  for (auto [m, n, p] : shapes) {
+    auto f_values = values(m, n, 0, true);
+    auto g_values = values(n, p, 1, true);
+    auto reference = ops.convolve(1.7, ops.vals2coefs(f_values), ops.vals2coefs(g_values), cppdlr::TIME_ORDERED);
+    for (bool replace_f : {true, false}) {
+      SCOPED_TRACE(::testing::Message() << m << "x" << n << "x" << p << ", replace " << (replace_f ? "f" : "g"));
+      f_storage() = sentinel;
+      g_storage() = sentinel;
+      nda::array_view<dcomplex, 3> f{{ops.rank(), m, n}, f_storage.data()};
+      nda::array_view<dcomplex, 3> g{{ops.rank(), n, p}, g_storage.data()};
+      f = f_values;
+      g = g_values;
+      auto &aliased_storage = replace_f ? f_storage : g_storage;
+      nda::array_view<dcomplex, 3> result{{ops.rank(), m, p}, aliased_storage.data()};
+      convolution.convolve(1.7, f, g, result, workspace);
+      expect_close(nda::make_regular(result), reference);
+      expect_close(nda::make_regular(result), analytic_convolution(1.7, m, n, p, true));
+      if (replace_f) EXPECT_EQ(nda::max_element(nda::abs(g - g_values)), 0.);
+      else EXPECT_EQ(nda::max_element(nda::abs(f - f_values)), 0.);
+      long const used = std::max(result.size(), replace_f ? f.size() : g.size());
+      for (long j = used; j < aliased_storage.size(); ++j) EXPECT_EQ(aliased_storage.data()[j], sentinel);
+    }
+  }
+}
+
 TEST(FastConvolve, signed_kernel_mixture_resolves_boundary_layers) {
   auto const &ops = itops();
   cppdlr::fast_convolve convolution(ops);
-  cppdlr::fast_convolve_workspace workspace(ops.rank(), 1, 1, 1);
+  cppdlr::fast_convolve_workspace workspace(ops.rank(), 4, 4, 4);
+  // Shrink to a scalar after a larger rectangular call has populated scratch.
+  tensor warmup(ops.rank(), 4, 2);
+  convolution.convolve(1., values(4, 3, 0, true), values(3, 2, 1, true), warmup, workspace);
   std::array frequencies{-0.8 * ops.lambda(), -3.7, 0., 1.4, 0.8 * ops.lambda()};
   double const beta = 3.7;
   auto f            = tensor::zeros(ops.rank(), 1, 1);
@@ -187,6 +257,30 @@ TEST(FastConvolve, incompatible_shapes_are_rejected) {
   EXPECT_ANY_THROW(convolution.convolve(1., f, wrong_inner, result, workspace));
   EXPECT_ANY_THROW(convolution.convolve(1., f, g, wrong_output, workspace));
   EXPECT_ANY_THROW(convolution.convolve(1., f, g, result, wrong_workspace));
+}
+
+TEST(FastConvolve, workspace_capacity_and_allocation_limits_are_checked) {
+  auto const &ops = itops();
+  cppdlr::fast_convolve convolution(ops);
+  auto f = values(2, 3, 0, true);
+  auto g = values(3, 4, 1, true);
+  tensor result(ops.rank(), 2, 4);
+  std::array entries{6L, 12L, 6L, 12L, 8L};
+  for (std::size_t i = 0; i < entries.size(); ++i) {
+    SCOPED_TRACE(i);
+    cppdlr::fast_convolve_workspace workspace(ops.rank(), 4, 4, 4);
+    std::array owners{&workspace.fc, &workspace.gc, &workspace.hfc, &workspace.hgc, &workspace.product};
+    owners[i]->resize(ops.rank(), 1, entries[i] - 1);
+    EXPECT_THROW(convolution.convolve(1., f, g, result, workspace), std::runtime_error);
+  }
+  cppdlr::fast_convolve_workspace wrong_rank(ops.rank() + 1, 4, 4, 4);
+  EXPECT_THROW(convolution.convolve(1., f, g, result, wrong_rank), std::runtime_error);
+  EXPECT_THROW(cppdlr::fast_convolve_workspace(0, 1, 1, 1), std::runtime_error);
+  EXPECT_THROW(cppdlr::fast_convolve_workspace(ops.rank(), 1, -1, 1), std::runtime_error);
+  EXPECT_THROW(cppdlr::fast_convolve_workspace(std::numeric_limits<long>::max(), 1, 1, 1), std::runtime_error);
+  EXPECT_THROW(cppdlr::fast_convolve_workspace(ops.rank(), std::numeric_limits<int>::max(), 2, 1), std::runtime_error);
+  // Every BLAS dimension fits, but the complete allocation cannot fit in bytes.
+  EXPECT_THROW(cppdlr::fast_convolve_workspace(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), 1, 1), std::runtime_error);
 }
 
 TEST(FastConvolve, noncontiguous_views_and_invalid_beta_are_rejected) {
