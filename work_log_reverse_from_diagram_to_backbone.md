@@ -439,3 +439,74 @@ Diff --check passed. No new tests or benchmarks were added. Logs:
 Pre-existing constructor formatting and comments remain unstaged, with the same
 type spelling substitutions applied. Other local changes are untouched. This
 work-log entry is committed separately from source.
+
+## Follow-up — explicit dense outputs and local accumulation
+
+2026-11-03. Source: `b6e79c2` `[dense] return prepared contributions`.
+
+Moved eval_self_energy, eval_self_energy_pair and eval_correlator into the
+implementation file's anonymous namespace. Their output, Action, propagator,
+backbone and required scratch arrays are explicit arguments. They accumulate into
+the supplied output. Correlator statistics multiply only the new contribution,
+so accumulating another backbone cannot change the sign of previous results.
+The numerical loops, endpoint handling and reflection remain unchanged.
+
+The public C++ prepared-backbone overloads now share the compute_self_energy,
+compute_self_energy_by_pairs and compute_one_time_correlator names with the
+topology methods and return independent owning NDA arrays. They do no MPI
+partitioning. Sigma and reset are private; topology calls retain the existing MPI
+partition and use the local accumulation functions directly, without allocating
+one result per backbone. Python signatures are unchanged.
+
+Migrated the C++ fixtures and direct consumers to sum returned contributions or
+copy data from returned block GFs. Added compile-time checks for the owning result
+types and private Sigma/reset, and updated the repeated-call test to interleave
+ordinary, paired and correlator evaluations with changed propagators and retained
+results. Existing topology-versus-prepared MPI checks exercise shared accumulation;
+existing higher-order and statistics tests retain their numerical references.
+
+Independent source and test review found no correctness blockers. Full CPU build
+passed. All 82 CPU/Python CTest entries passed in 58.27 s, including the
+three-rank MPI tests. Binding regeneration was byte-identical to the preceding
+refactor's generated output; restored and rebuilt the tracked binding to exclude
+unrelated newer-clair output changes before testing. Diff --check passed. Logs:
+/tmp/xca-dense-output-{build,final-build,test}.log.
+
+Pre-existing constructor formatting/comments remain unstaged. Other local work
+is untouched. This work-log entry is committed separately from source.
+
+### CPU batching investigation
+
+The user's clarified scope is CPU batching as an exercise in rescheduling the
+numerical evaluation. No batching implementation or performance run was added.
+Reviewed the retained index_batch/dlr_ops and CPU hoisted-convolution code on
+`dev_cuda` at `6d21a22afea76bb2397dc174117f0df7dbd2ec53` read-only for reusable
+numerical ideas. Those historical results do not establish a CPU batching speedup;
+no comparable complete CPU backbone batching experiment was found.
+
+A minimal next experiment is a separate numerical function taking const Action,
+Gt, a bounded group of prepared SelfEnergyBackbones and output/scratch buffers.
+Initially group matching order, endpoint position and orientation, then advance
+each vertex/edge stage across the group. The current scalar prepared methods
+provide independent reference results. Architectural success means that Action,
+diagram types, topology decoding and MPI need no changes and storage scales with
+the bounded batch rather than the total diagram count.
+
+Start with logical storage (r, B, D, D): tiny matrices remain contiguous and the
+DLR transforms can act on r by (B D^2) right-hand sides. The installed cppdlr
+vals2coefs, coefs2vals and reflect support arbitrary trailing dimensions, whereas
+convolve accepts only scalar/rank-three inputs. An initial scheduling experiment
+can batch transforms while retaining per-backbone convolutions; a subsequent
+local batched convolution would address this numerical interface limitation.
+Trying (r, D, D, B) for contiguous CPU SIMD lanes is a separate layout experiment,
+with strided per-backbone matrices and packing costs to measure.
+
+Measure the current scalar path, a scalar path hoisting the repeated full Hilbert
+transforms out of cppdlr's rank loop, and a batched path using that same hoisted
+algorithm separately. The transform redundancy is visible in the installed
+cppdlr/dlr_imtime.hpp around line 347; removing it is an independent scalar
+optimization. Combining independent tiny products alone does not guarantee
+higher arithmetic intensity. Shared transforms, reused operands, reduced call
+cost and CPU vectorization are the plausible benefits to test. Include partial
+batches, changed propagators and preparation/packing costs when evaluating the
+experiment.
