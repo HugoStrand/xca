@@ -67,3 +67,29 @@ the earlier numerical-segment microbenchmarks and remains CPU-only.
 Implementation remains staged: output GEMM on padded storage, then packed
 active views, then capacity-aware convolution scratch and Action integration.
 No layout and convolution changes will be hidden in the structural commits.
+
+## Reusable capacity and padded GEMM outputs — 2026-11-03
+
+Source checkpoints: `df95898` `[cppdlr] reuse convolution capacity` and
+`6565624` `[bs] reuse vertex outputs`.
+
+The scalar workspace retains its existing four-dimension constructor. Each of
+its five arrays now reserves capacity; calls construct packed active views
+whose rank and required element count fit that owner. The numerical formula
+and batched overload are unchanged. Allocation guards reject integer/byte
+overflow before resizing. Tests cover consecutive rectangular growth/shrink,
+stable pointers, untouched tails, shape-changing output aliases, insufficient
+individual buffers, and boundary-layer kernels after a larger call.
+
+Sparse vertex GEMMs now write into the spare edge buffer, apply the vertex
+kernel, then swap ownership with T or U. Later views are recreated, and a live
+forward T is never swapped during backward traversal. Endpoint products are
+all saved in Tkaps before T is cleared; endpoint accumulation uses GEMM with
+beta one. Self-energy scaling touches only its active result. Padded views
+and fixed cppdlr convolution are deliberately retained at this checkpoint.
+
+The focused scalar/batched convolution and sparse prepared/path tests all
+passed (4/4 CTest entries, 0.46 s). Independent review found no capacity,
+aliasing or lifetime blocker. The matched pre-change benchmark captured 56
+productive/zero-completion cases and a 4 MiB local elementwise reference;
+its source and compact results will be committed separately.
