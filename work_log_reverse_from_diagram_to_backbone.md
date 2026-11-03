@@ -377,3 +377,35 @@ The user's pre-existing dense constructor formatting/comments are preserved and
 left unstaged. Their remaining diff was checked against the pre-edit snapshot;
 only this refactor is in the source commit. Other local changes are untouched.
 This work-log entry is committed separately from source.
+
+## Follow-up — dense evaluator helpers
+
+2026-11-03. Source: `5f92887` `[dense] localize evaluator helpers`.
+
+Moved all ten private evaluator methods into the implementation file's anonymous
+namespace. The header now keeps only the owning scratch arrays private. Helpers
+borrow Action explicitly; scratch arrays are passed by owning reference where
+assignment must retain its previous semantics. Vertex and edge operations accept
+the individual Vertex or Edge they use, while segment traversals retain their
+typed backbone arguments. Public entry points, loop order, signs and reflection
+are unchanged. No new workspace or context type was introduced.
+
+Added operator_matrices for a vector of general operators, used for both mu_ops
+and kap_ops in compute_one_time_correlator. It preserves the existing occupation
+basis transformation for real and complex atom_diag instances and borrows the
+unitary matrix instead of copying it. Statistics, single-block and dimension
+checks remain in the caller. Adopted conventional leading return types throughout
+the dense evaluator implementation, including explicit template instantiations.
+
+Independent review found no correctness, ownership or API issues. Full CPU build
+passed; all 82 CPU/Python CTest entries passed in 58.60 s, including serial and
+three-rank MPI tests. Existing correlator tests cover real/complex operators,
+statistics, rejection cases and state reuse. No new tests or benchmarks were
+needed. Binding generation produced exactly the same output as the preceding
+refactor; discarded unrelated clair-version differences and rebuilt the tracked
+binding before testing. Diff --check passed. Logs:
+/tmp/xca-dense-helpers-{build,final-build,bindings-build,test}.log.
+
+The user's pre-existing constructor formatting/comments remain unstaged and were
+checked against the saved pre-edit source. Other local changes are untouched.
+This work-log entry is committed separately from source.
