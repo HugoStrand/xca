@@ -93,3 +93,28 @@ passed (4/4 CTest entries, 0.46 s). Independent review found no capacity,
 aliasing or lifetime blocker. The matched pre-change benchmark captured 56
 productive/zero-completion cases and a 4 MiB local elementwise reference;
 its source and compact results will be committed separately.
+
+## Packed active tensors — 2026-11-03
+
+Source: `1564a0e` `[bs] pack active workspace`. Fixed cppdlr convolution remains
+in use, isolating the layout change from convolution arithmetic.
+
+T/U/GKt/Tmu now expose contiguous active prefixes. Each Tkaps endpoint retains
+its own capacity-strided base with a packed tensor inside that slot. The
+previous output-buffer swaps preserve live inputs when dimensions change;
+backward traversal cannot overwrite the forward result. Reflection consumes
+the packed views directly, removing two input copies while still returning
+owning reflected results.
+
+Legacy unknown sectors use validated positive square propagator blocks to
+determine capacity. Growth checks BLAS and allocation-size limits, creates all
+replacement owners before publishing any of them, and retains capacity when
+later calls shrink. Known model dimensions remain fixed by validation.
+
+The new workspace test covers physical 1/4/6-dimensional sectors, changed
+anchors, multiple saved endpoint products, complete-path correlators against
+dense results, and legacy growth/shrinkage 3→7→2→9→1 with retained outputs.
+Prepared/path/layout/workspace tests all passed (4/4, 0.10 s). Independent
+review found and resolved partial-allocation publication and size-overflow
+issues before this commit. The complete-call benchmark also rebuilt; matched
+packed/fixed measurements precede the final Action/fast-convolution integration.
