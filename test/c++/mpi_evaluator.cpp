@@ -137,16 +137,16 @@ namespace {
 
   bgf_t explicit_pairs(triqs_xca::dense::DiagramEvaluator &evaluator, bgf_t &G, nda::array_const_view<int, 2> topology,
                        std::vector<diagram::Arcs> const &choices, long first, long last) {
-    evaluator.reset();
+    auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), evaluator.action.block_dims(0), evaluator.action.block_dims(0));
     for (long pair = first; pair < last; ++pair) {
       for (auto direction : {diagram::Direction::backward, diagram::Direction::forward}) {
         auto arcs = choices[pair];
         arcs[0].direction = direction;
         arcs = diagram::prepare_arcs(std::move(arcs), evaluator.action, diagram::Kind::self_energy);
-        evaluator.eval_self_energy(G[0].data(), diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
+        result += evaluator.compute_self_energy(G[0].data(), diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
       }
     }
-    return bgf_t{std::vector{gf_t(evaluator.action.tau_mesh, evaluator.Sigma)}};
+    return bgf_t{std::vector{gf_t(evaluator.action.tau_mesh, result)}};
   }
 
   template <typename E> void check_validation(E &evaluator, bgf_t &G, ad_t const &ad) {

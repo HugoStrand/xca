@@ -36,12 +36,12 @@ namespace triqs_xca::test_utils {
     using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
     using bgf = triqs::gfs::block_gf<triqs::mesh::dlr_imtime>;
     if constexpr (std::is_same_v<E, dense::DiagramEvaluator>) {
-      evaluator.reset();
+      auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), evaluator.action.block_dims(0), evaluator.action.block_dims(0));
       visit_fixture_indices(selection, [&](long f) {
         auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, f);
-        evaluator.eval_self_energy(Gt, backbone);
+        result += evaluator.compute_self_energy(Gt, backbone);
       });
-      return bgf{std::vector{gf(evaluator.action.tau_mesh, evaluator.Sigma)}};
+      return bgf{std::vector{gf(evaluator.action.tau_mesh, result)}};
     } else {
       std::vector<gf> blocks;
       for (int b = 0; b < Gt.get_num_block_cols(); ++b)
@@ -63,14 +63,14 @@ namespace triqs_xca::test_utils {
   auto fixture_self_energy_pair(dense::DiagramEvaluator &evaluator, G &&G_input, nda::array_const_view<int, 2> topology) {
     diagram::topology::validate(topology);
     auto &&Gt = fixture_propagator(evaluator, G_input);
-    evaluator.reset();
+    auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), evaluator.action.block_dims(0), evaluator.action.block_dims(0));
     long count = diagram::count_self_energy_pairs(topology.extent(0), evaluator.action.n_flavours(), evaluator.action.poles.size());
     for (long pair = 0; pair < count; ++pair) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), evaluator.action, pair);
-      evaluator.eval_self_energy_pair(Gt, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
+      result += evaluator.compute_self_energy_by_pairs(Gt, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
     }
     using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
-    return triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{gf(evaluator.action.tau_mesh, evaluator.Sigma)}};
+    return triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{gf(evaluator.action.tau_mesh, result)}};
   }
 
   template <typename E, typename G, typename Ops, typename Selection>
@@ -84,7 +84,10 @@ namespace triqs_xca::test_utils {
     auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), n_mu, n_kap);
     visit_fixture_indices(selection, [&](long f) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, evaluator.action, f);
-      result += evaluator.eval_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
+      if constexpr (std::is_same_v<E, dense::DiagramEvaluator>)
+        result += evaluator.compute_one_time_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
+      else
+        result += evaluator.eval_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
     });
     return result;
   }

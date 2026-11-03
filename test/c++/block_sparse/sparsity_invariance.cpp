@@ -78,8 +78,7 @@ TEST(SparsityInvariance, OCA_trivial_sparsity) {
   auto [Gt_dense, Fs_dense, F_dags_dense] = test_utils::two_band_dense_helper(beta, Lambda, eps);
   auto Fset                               = FSet(Fs_dense, F_dags_dense, hyb_coeffs);
   dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  triqs_xca::test_utils::fixture_self_energy(DDE, Gt_dense, topology);
-  auto OCA_dense_result = DDE.Sigma;
+  auto OCA_dense_result = nda::make_regular(triqs_xca::test_utils::fixture_self_energy(DDE, Gt_dense, topology)[0].data());
 
   // --- block-sparse evaluation with trivial sparsity: one block, one symmetry set ---
   auto [Gt_triv, Fq_triv] = test_utils::trivial_sparsity_helper(Gt_dense, Fs_dense, F_dags_dense, hyb_coeffs, n);
@@ -188,8 +187,7 @@ static void check_spin_flip_fermion(bool use_particle_number_sym) {
   auto Fset     = dense::atom_diag::get_operators(ad, hyb_coeffs);
 
   dense::DiagramEvaluator DDE(beta, eps, itops, nda::make_regular(dlr_rf / beta), hyb_coeffs, Fset);
-  triqs_xca::test_utils::fixture_self_energy_pair(DDE, Gt_dense, topology);
-  auto result_dense = DDE.Sigma;
+  auto result_dense = nda::make_regular(triqs_xca::test_utils::fixture_self_energy_pair(DDE, Gt_dense, topology)[0].data());
 
   for (int i = 0; i < Gt_block_sizes.size(); i++) {
     SCOPED_TRACE("block " + std::to_string(i));

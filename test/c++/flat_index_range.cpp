@@ -87,7 +87,7 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
     expect_flat_index_rejected([&] { test_utils::fixture_one_time_correlator(D_bs, G_bs, ops, ops, ad, topology, valid_then(n_correlator, bad)); });
   }
 
-  // A topology call or a new fixture evaluation resets a previous partial sum.
+  // A failed fixture selection cannot contaminate a subsequent topology result.
   auto fresh = [&] { return dense::DiagramEvaluator(hyb_poles, hyb_coeffs, G_flat[0].mesh(), ad_flat); };
   auto fail  = [&] { EXPECT_THROW(test_utils::fixture_self_energy(D_dense, G_flat, topology, valid_then(n_sigma, n_sigma)), std::invalid_argument); };
   auto check = [&](std::string const &what, auto const &Sigma, auto const &Sigma_fresh) {
@@ -151,10 +151,9 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
             1.0e-13 * nda::max_element(nda::abs(S)));
   long partner = (f_sigma / n_op) % 2 == 0 ? f_sigma + n_op : f_sigma - n_op;
   auto pair    = nda::make_regular(S + sigma_dense(partner));
-  D_dense.reset();
   auto pair_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, D_dense.action, f_sigma);
-  D_dense.eval_self_energy_pair(G_flat[0].data(), pair_backbone);
-  EXPECT_LE(nda::max_element(nda::abs(D_dense.Sigma - pair)), 1.0e-13 * nda::max_element(nda::abs(pair)));
+  auto actual_pair = D_dense.compute_self_energy_by_pairs(G_flat[0].data(), pair_backbone);
+  EXPECT_LE(nda::max_element(nda::abs(actual_pair - pair)), 1.0e-13 * nda::max_element(nda::abs(pair)));
 
   long f_spgf = 0;
   for (long fb = (1L << (m - 1)) - 1; fb >= 0 && f_spgf == 0; --fb)

@@ -33,7 +33,7 @@ namespace test_utils = triqs_xca::test_utils;
  * @details The classification enters the diagram in one place: is_fermionic picks the explicit observable statistics, which
  * shared endpoint-sign preparation uses to decide whether the external pair is dropped before the permutation parity is taken, a sign on a crossing
  * topology. The rule is the fermion parity of the operators, i.e. whether their monomials have odd or even length, which differs from a
- * commutator test whenever an even-parity operator fails to commute, as for [S+, S-] = 2 Sz != 0. Since eval_correlator() takes observable statistics
+ * commutator test whenever an even-parity operator fails to commute, as for [S+, S-] = 2 Sz != 0. Since prepared correlator evaluation takes observable statistics
  * explicitly, both classifications can be evaluated and compared to what compute_one_time_correlator() chose, which pins the
  * decision itself without an ED reference, and the two flag values giving different answers is the non-vacuity guard of each test. The
  * fermionic classification of c and c^dag, against the single-particle Green's function, and the rejection of operators without one fermion

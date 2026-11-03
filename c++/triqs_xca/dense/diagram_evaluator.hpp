@@ -41,22 +41,24 @@ namespace triqs_xca::dense {
     /// Direct numerical construction with explicit statistics and a single DLR mesh.
     C2PY_IGNORE explicit DiagramEvaluator(Action<FSet> action);
 
-    C2PY_IGNORE nda::array<dcomplex, 3> Sigma; // result accumulator for prepared self-energy calls
-
     private:
+    nda::array<dcomplex, 3> Sigma; // result accumulator for topology self-energy calls
     nda::array<dcomplex, 3> T;     // array for storing intermediate result
     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
     nda::array<dcomplex, 3> GKt;   // array for storing result of edge computation
     nda::array<dcomplex, 4> Tkaps; // intermediate storage array
     nda::array<dcomplex, 3> Tmu;   // intermediate storage array
 
-    public:
-    C2PY_IGNORE void reset(); // reset all arrays to zero
+    void reset(); // reset all arrays to zero
 
-    // Prepared numerical entry points. Self-energy calls add into Sigma; correlators return their contribution.
-    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
-    C2PY_IGNORE void eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
+    public:
+    // Evaluate one prepared backbone locally, without MPI partitioning.
+    // Each call returns an independent owning array.
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy(
+      nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy_by_pairs(
+      nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(
       nda::array_const_view<dcomplex, 3> Gt, diagram::CorrelatorBackbone const &backbone,
       nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
       diagram::CorrelatorStatistics correlator_statistics = {});

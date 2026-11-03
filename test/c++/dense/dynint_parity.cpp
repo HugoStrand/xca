@@ -154,10 +154,8 @@ TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
   using logical::Direction;
   auto sum = nda::zeros<dcomplex>(D.action.tau_mesh.size(), D.action.block_dims(0), D.action.block_dims(0));
   auto evaluate = [&](logical::SelfEnergyBackbone const &backbone, bool pair) {
-    D.reset();
-    if (pair) D.eval_self_energy_pair(m.G_ppsc[0].data(), backbone);
-    else D.eval_self_energy(m.G_ppsc[0].data(), backbone);
-    return nda::make_regular(D.Sigma);
+    if (pair) return D.compute_self_energy_by_pairs(m.G_ppsc[0].data(), backbone);
+    return D.compute_self_energy(m.G_ppsc[0].data(), backbone);
   };
   for (auto direction : {Direction::backward, Direction::forward})
     for (int pole = 0; pole < m.hyb_poles.size(); ++pole)

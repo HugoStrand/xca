@@ -162,6 +162,76 @@ namespace triqs_xca::dense {
         for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
       }
     }
+
+    // Add one prepared contribution to the supplied output. Output must not
+    // overlap the propagator or scratch arrays; callers initialize it before summing.
+    void eval_self_energy_pair(
+      nda::array_view<dcomplex, 3> Sigma, nda::array_const_view<dcomplex, 3> Gt,
+      diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
+      nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
+      nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu) {
+      auto orientation = backbone.endpoint_orientation();
+      auto ranges = backbone.endpoint_ranges();
+      auto const &signs = backbone.endpoints.signs;
+      double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
+
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
+      U(_, _, _) = T(_, _, _);
+      multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
+      multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs, action, Tkaps, Tmu);
+      T = T - U;
+      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
+
+      T *= kernel_prefactor;
+      T *= backbone.self_energy_sign();
+      Sigma += T;
+    }
+
+    void eval_self_energy(
+      nda::array_view<dcomplex, 3> Sigma, nda::array_const_view<dcomplex, 3> Gt,
+      diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
+      nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &GKt,
+      nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu) {
+      auto orientation = backbone.endpoint_orientation();
+      auto ranges = backbone.endpoint_ranges();
+      auto const &signs = backbone.endpoints.signs;
+      double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
+
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
+      multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
+      extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
+
+      T *= kernel_prefactor;
+      T *= backbone.self_energy_sign();
+      Sigma += T;
+    }
+
+    void eval_correlator(
+      nda::array_view<dcomplex, 3> correlator, nda::array_const_view<dcomplex, 3> Gt,
+      diagram::CorrelatorBackbone const &backbone, nda::array_const_view<dcomplex, 3> mu_ops,
+      nda::array_const_view<dcomplex, 3> kap_ops, diagram::CorrelatorStatistics correlator_statistics,
+      Action<FSet> const &action, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt) {
+      auto const r = action.tau_mesh.size();
+      auto ranges = backbone.endpoint_ranges();
+      auto const &signs = backbone.endpoints.signs;
+      double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
+
+      evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
+      evaluate_reflected_segment(U, Gt, backbone, ranges.after_special, action, GKt);
+
+      T *= kernel_prefactor;
+      T *= backbone.direction_sign;
+
+      nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
+
+      int sign = signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
+      for (int mu = 0; mu < mu_ops.extent(0); ++mu) {
+        for (int t = 0; t < r; ++t) Tmuop(t, _, _) = matmul(U(t, _, _), matmul(mu_ops(mu, _, _), T(t, _, _)));
+        for (int kap = 0; kap < kap_ops.extent(0); ++kap) {
+          for (int t = 0; t < r; ++t) correlator(t, mu, kap) += sign * trace(matmul(Tmuop(t, _, _), kap_ops(kap, _, _)));
+        }
+      }
+    }
   } // namespace
 
   DiagramEvaluator::DiagramEvaluator(Action<FSet> model) : action(std::move(model)) {
@@ -225,7 +295,7 @@ namespace triqs_xca::dense {
     reset();
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index);
-      eval_self_energy(Gt, backbone);
+      eval_self_energy(Sigma, Gt, backbone, action, T, GKt, Tkaps, Tmu);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
@@ -242,7 +312,7 @@ namespace triqs_xca::dense {
     for (long pair = first; pair < last; ++pair) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), action, pair);
       auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs);
-      eval_self_energy_pair(Gt, backbone);
+      eval_self_energy_pair(Sigma, Gt, backbone, action, T, U, GKt, Tkaps, Tmu);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
     reset();
@@ -251,70 +321,27 @@ namespace triqs_xca::dense {
 
 
 
-  void DiagramEvaluator::eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
-    auto orientation = backbone.endpoint_orientation();
-    auto ranges = backbone.endpoint_ranges();
-    auto const &signs = backbone.endpoints.signs;
-    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
-
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
-    U(_, _, _) = T(_, _, _);
-    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
-    multiply_left_vertex_and_right_zero_vertex(U, orientation.opposite(), signs, action, Tkaps, Tmu);
-    T = T - U;
-    extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
-
-    T *= kernel_prefactor;
-    T *= backbone.self_energy_sign();
-    Sigma += T;
-
+  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_by_pairs(
+    nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
+    auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
+    eval_self_energy_pair(result, Gt, backbone, action, T, U, GKt, Tkaps, Tmu);
+    return result;
   }
 
-  void DiagramEvaluator::eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
-    auto orientation = backbone.endpoint_orientation();
-    auto ranges = backbone.endpoint_ranges();
-    auto const &signs = backbone.endpoints.signs;
-    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
-
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
-    multiply_left_vertex_and_right_zero_vertex(T, orientation, signs, action, Tkaps, Tmu);
-    extend_segment(T, Gt, backbone, ranges.after_special, action, GKt);
-
-    T *= kernel_prefactor;
-    T *= backbone.self_energy_sign();
-    Sigma += T;
-
+  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy(
+    nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
+    auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
+    eval_self_energy(result, Gt, backbone, action, T, GKt, Tkaps, Tmu);
+    return result;
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::eval_correlator(
-    nda::array_const_view<dcomplex, 3> Gt, diagram::CorrelatorBackbone const &backbone, nda::array_const_view<dcomplex, 3> mu_ops,
-    nda::array_const_view<dcomplex, 3> kap_ops, diagram::CorrelatorStatistics correlator_statistics) {
-    auto const r = action.tau_mesh.size();
-    auto ranges = backbone.endpoint_ranges();
-    auto const &signs = backbone.endpoints.signs;
-    double kernel_prefactor = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel);
-
-    nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
-
-    evaluate_initial_segment(T, Gt, backbone, ranges.before_special, action, GKt);
-    evaluate_reflected_segment(U, Gt, backbone, ranges.after_special, action, GKt);
-
-    T *= kernel_prefactor;
-    T *= backbone.direction_sign;
-
-    nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
-
-    for (int mu = 0; mu < mu_ops.extent(0); ++mu) {
-      for (int t = 0; t < r; ++t) Tmuop(t, _, _) = matmul(U(t, _, _), matmul(mu_ops(mu, _, _), T(t, _, _)));
-      for (int kap = 0; kap < kap_ops.extent(0); ++kap) {
-        for (int t = 0; t < r; ++t) correlator(t, mu, kap) += trace(matmul(Tmuop(t, _, _), kap_ops(kap, _, _)));
-      }
-    }
-
-    correlator *= signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
-
-
-    return correlator;
+  nda::array<dcomplex, 3> DiagramEvaluator::compute_one_time_correlator(
+    nda::array_const_view<dcomplex, 3> Gt, diagram::CorrelatorBackbone const &backbone,
+    nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
+    diagram::CorrelatorStatistics correlator_statistics) {
+    auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.extent(0), kap_ops.extent(0));
+    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt);
+    return result;
   }
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_single_ptcle_gf(
@@ -329,7 +356,7 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, T, U, GKt);
     }
     return correlator;
   }
@@ -372,7 +399,7 @@ namespace triqs_xca::dense {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, statistics);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, T, U, GKt);
     }
 
     return correlator;
