@@ -64,3 +64,48 @@ See [timings_with_legacy.csv](timings_with_legacy.csv) for this three-way run.
 The earlier fixed-versus-fast run remains in [timings.csv](timings.csv).
 The [benchmark README](../README.md) describes input construction, build
 instructions, measurement boundaries and guards.
+
+## Dense evaluator integration: numerical roundoff
+
+A separate diagnostic compared the fixed cppdlr convolution with fast convolution
+inside the complete dense evaluator. The dense evaluator sources from XCA commit
+`59c7bbd` were compiled in `/tmp` under the class name `FixedDiagramEvaluator`,
+alongside the current fast dense evaluator and the unchanged block-sparse
+convolution. The installed cppdlr remained `b9b24ab`; no production source was
+changed for this comparison. The model, maximally crossing topologies, and
+large fixture ordinals come from `test/c++/flat_index_range.cpp`.
+
+The diagnostic used beta two, cutoff 40, 20 fitted poles, and the same single-thread
+CPU environment as above. At tolerance `1e-10`, the DLR rank is 23. The two order-six
+contributions have maximum magnitudes `2.06349e-8` (self-energy) and `1.75431e-7`
+(correlator).
+
+| Comparison at order six | Self-energy relative maximum error | Correlator relative maximum error |
+| --- | ---: | ---: |
+| Fixed dense vs block sparse | 0 | 1.34e-31 |
+| Fast dense vs fixed dense | 2.32e-13 | 1.61e-13 |
+
+Across orders two through six at the same mesh tolerance, the largest fast/fixed
+discrepancy was `7.47e-13`. At order six with mesh tolerance `1e-12` (rank 26),
+the discrepancies were `5.61e-13` and `3.49e-13`. These differences arise after
+changing the LU solve and transform arithmetic; the former fixed dense/sparse
+agreement benefited from sharing that arithmetic.
+
+As an additional check, each result was interpolated to nine common relative
+times `0.1, 0.2, ..., 0.9` and compared with the fixed result using mesh tolerance
+`1e-14`. The original `1e-10` mesh differed by `1.24e-8` for self-energy and
+`3.51e-7` for the correlator, relatively. Switching to fast convolution changed
+these comparisons by roughly `1e-13`, well below the mesh-refinement differences.
+The finer-mesh result is a convergence reference, not an exact analytic answer.
+At tighter mesh tolerances `1e-13` and `1e-14`, fast/fixed differences reached
+`4.78e-12`, so no universal relative-error bound is inferred from this fixture.
+
+The large-index test therefore uses **`2e-12` relative tolerance only for
+cross-evaluator comparisons on its fixed rank-23 mesh**. Its integer counts,
+index-bound checks, and same-evaluator vector/pair/correlator comparisons retain
+their previous requirements, including `1e-13` for numerical API identities.
+Analytic correctness tests were not relaxed.
+
+[dense_integration_roundoff.csv](dense_integration_roundoff.csv) records the
+complete diagnostic. Its first table contains per-mesh algorithm comparisons;
+its second table contains the common-time-grid refinement comparisons.
