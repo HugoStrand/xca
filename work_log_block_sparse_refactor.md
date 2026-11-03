@@ -83,3 +83,12 @@ and both existing/new benchmark targets built. Full CPU acceptance follows
 the coordinated rebuild. The high-index discrepancy was independently traced
 to dense convolution arithmetic and addressed only in the cross-engine test,
 as recorded in `work_log_dense_cpu_batched.md`.
+
+## Accepted structural checkpoint — 2026-11-03
+
+The final full CPU build passed and all **85/85 CTest entries passed** in
+33.46 s, including Python wrappers and actual three-rank C++/Python MPI
+evaluation. Logs: `/tmp/xca-sparse-refactor-final-{build,test}.log`.
+The two source checkpoints are `1ddbb7b` and `78576a6`; no packing or sparse
+convolution change is included. This completes the structural refactoring
+goal and permits the separate packed-storage/fast-convolution goal to start.

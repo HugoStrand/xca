@@ -60,3 +60,24 @@ The N=4 timing driver measures both scalar-fast and batch-one controls, orders
 2/3/5, DLR ranks near 13/103, capacities 1--64 and two complete order-two topology
 calls. Measurements run without concurrent compilation. Results follow in the
 next checkpoint; no speedup is assumed from the implementation alone.
+
+## Measurement and final acceptance — 2026-11-03
+
+Results and benchmark source: `13647b9` `[bench] measure dense cpu batching`,
+under `benchmarks/dense_cpu_batched/thinkstationP620_3945WX/`. All 160 measured
+rows passed validation, with maximum relative discrepancy 4.18e-16. The
+batched implementation is 1.14--1.45x as fast as scalar-fast across the 20
+cases; grouping beyond capacity one provides 1.04--1.10x. These comparisons
+separate batching from the other workspace/output changes in the new evaluator.
+
+Capacity eight was within 0.6% of every best measured median. It is the
+recommended starting setting for this N=4 CPU workload, retaining scalar as
+the baseline. At rank 103, complete order-two self-energy improved 1.19x;
+higher-order timings use bounded samples and do not establish full-solver
+speedups. Trial spread and all timing boundaries are documented with results.
+
+Full CPU acceptance after coordinated sparse/dense integration: **85/85 CTest
+entries passed** in 33.46 s, including serial and three-rank batching checks.
+The build passed; no GPU resources were used. The independent roundoff
+diagnostic and narrowly scoped cross-engine tolerance adjustment are saved
+with the scalar convolution benchmark. User formatting remains uncommitted.
