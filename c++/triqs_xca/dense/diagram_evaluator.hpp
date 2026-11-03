@@ -31,10 +31,13 @@ namespace triqs_xca::dense {
 
     public:
 
-    using std::vector;
-    using nda::array;
-    using nda::array_view;
-    using nda::array_const_view;
+    template <typename T> using vector = std::vector<T>;
+
+    using dcplx = nda::dcomplex;
+
+    template <typename T, int Rank> using arr_t = nda::array<T, Rank>;
+    template <typename T, int Rank> using arr_vt = nda::array_view<T, Rank>;
+    template <typename T, int Rank> using arr_cvt = nda::array_const_view<T, Rank>;
 
     using dlr_imtime = triqs::mesh::dlr_imtime;
     template <bool isComplex> using atom_diag = triqs::atom_diag::atom_diag<isComplex>;
@@ -51,69 +54,69 @@ namespace triqs_xca::dense {
     /// Direct numerical construction with explicit statistics and a single DLR mesh.
     C2PY_IGNORE explicit DiagramEvaluator(Action<FSet> action);
 
-    C2PY_IGNORE nda::array<dcomplex, 3> Sigma; // result accumulator for prepared self-energy calls
+    C2PY_IGNORE arr_t<dcplx, 3> Sigma; // result accumulator for prepared self-energy calls
 
     private:
-    nda::array<dcomplex, 3> T;     // array for storing intermediate result
-    nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
-    nda::array<dcomplex, 3> GKt;   // array for storing result of edge computation
-    nda::array<dcomplex, 4> Tkaps; // intermediate storage array
-    nda::array<dcomplex, 3> Tmu;   // intermediate storage array
+    arr_t<dcplx, 3> T;     // array for storing intermediate result
+    arr_t<dcplx, 3> U;     // array for storing intermediate result (left side of correlator diagram)
+    arr_t<dcplx, 3> GKt;   // array for storing result of edge computation
+    arr_t<dcplx, 4> Tkaps; // intermediate storage array
+    arr_t<dcplx, 3> Tmu;   // intermediate storage array
 
-    nda::array<dcomplex, 3> single_particle_operators(bool adjoint) const;
+    arr_t<dcplx, 3> single_particle_operators(bool adjoint) const;
 
     // check that G_ppsc is a single (r, N, N) block over the full Hilbert space, the only layout this evaluator takes, and return it
-    nda::array_const_view<dcomplex, 3> native_propagator(gf_vt G_ppsc) const;
+    arr_cvt<dcplx, 3> native_propagator(gf_vt G_ppsc) const;
 
     // Traversals of the endpoint ranges; normalization remains caller-owned.
-    void evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
                                   Backbone const &backbone, BackboneRange range);
-    void extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
                         Backbone const &backbone, BackboneRange range);
-    void evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
                                     Backbone const &backbone, BackboneRange range);
 
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a diagram using dense storage
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, Backbone const &backbone, int v_ix);
+    void multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone const &backbone, int v_ix);
     // convolve with a single edge, e_ix, in a diagram using dense storage
-    void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone, int e_ix);
+    void integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt, Backbone const &backbone, int e_ix);
 
     // routines for self-energy diagrams
 
     // multiply by the zero vertex and the vertex connected to zero
-    void multiply_left_vertex_and_right_zero_vertex(nda::array_view<dcomplex, 3> T_buf, OperatorPairOrientation orientation, triqs_xca::diagram::PermutationSigns const &signs);
+    void multiply_left_vertex_and_right_zero_vertex(arr_vt<dcplx, 3> T_buf, OperatorPairOrientation orientation, triqs_xca::diagram::PermutationSigns const &signs);
 
     // routines for correlator diagrams
 
     // multiply by a single vertex, v_ix, on the tau-beta side of a correlator diagram using dense storage
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, Backbone const &backbone, int v_ix);
+    void multiply_right_vertex(arr_vt<dcplx, 3> U_buf, Backbone const &backbone, int v_ix);
     // convolve with a single edge, e_ix, on the tau-beta side of a correlator diagram using dense storage
-    void integrate_right_edge(nda::array_view<dcomplex, 3> U_buf, nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone, int e_ix);
+    void integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt, Backbone const &backbone, int e_ix);
 
     public:
     C2PY_IGNORE void reset(); // reset all arrays to zero
 
     // Prepared numerical entry points. Self-energy calls add into Sigma; correlators return their contribution.
-    C2PY_IGNORE void eval_self_energy(nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone);
-    C2PY_IGNORE void eval_self_energy_pair(nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone);
-    C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-      nda::array_const_view<dcomplex, 3> Gt, Backbone const &backbone,
-      nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
+    C2PY_IGNORE void eval_self_energy(arr_cvt<dcplx, 3> Gt, Backbone const &backbone);
+    C2PY_IGNORE void eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, Backbone const &backbone);
+    C2PY_IGNORE arr_t<dcplx, 3> eval_correlator(
+      arr_cvt<dcplx, 3> Gt, Backbone const &backbone,
+      arr_cvt<dcplx, 3> mu_ops, arr_cvt<dcplx, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
     /// Evaluate this MPI rank's share of a topology; the caller reduces the accumulated result.
-    gf_t compute_self_energy(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
+    gf_t compute_self_energy(gf_vt G_ppsc, arr_cvt<int, 2> topology);
     /// Evaluate this MPI rank's share of the unique pairs of special-arc directions.
-    gf_t compute_self_energy_by_pairs(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
+    gf_t compute_self_energy_by_pairs(gf_vt G_ppsc, arr_cvt<int, 2> topology);
     /// Evaluate this MPI rank's contribution to the single-particle Green's function.
-    nda::array<dcomplex, 3> compute_single_ptcle_gf(gf_vt G_ppsc, nda::array_const_view<int, 2> topology);
+    arr_t<dcplx, 3> compute_single_ptcle_gf(gf_vt G_ppsc, arr_cvt<int, 2> topology);
 
     /// Evaluate this MPI rank's contribution for the supplied observable operators.
     template <bool isComplex>
-    nda::array<dcomplex, 3> compute_one_time_correlator(gf_vt G_ppsc, std::vector<opt_t> const &ops_tau,
-                                                    std::vector<opt_t> const &ops_0,
-                                                    atom_diag<isComplex> const &ad, nda::array_const_view<int, 2> topology);
+    arr_t<dcplx, 3> compute_one_time_correlator(gf_vt G_ppsc, vector<opt_t> const &ops_tau,
+                                             vector<opt_t> const &ops_0,
+                                             atom_diag<isComplex> const &ad, arr_cvt<int, 2> topology);
 
     // Every constructor takes physical pole frequencies, also stored unchanged in Action.
     /**
@@ -127,7 +130,7 @@ namespace triqs_xca::dense {
        * @param[in] Fset FSet (cre/ann operators with and without bars)
        */
     C2PY_IGNORE DiagramEvaluator(double beta, double eps, imtime_ops const &itops, nda::vector_const_view<double> poles,
-                                      nda::array_const_view<dcomplex, 3> hyb_coeffs, FSet const &Fset);
+                                arr_cvt<dcplx, 3> hyb_coeffs, FSet const &Fset);
 
     /**
        * @brief Constructor for DiagramEvaluator
@@ -137,7 +140,7 @@ namespace triqs_xca::dense {
        * @param[in] ad TRIQS atom_diag object with Hamiltonian and field operators
        */
     template <bool isComplex>
-    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs, dlr_imtime tau_mesh,
+    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
                      atom_diag<isComplex> const &ad);
 
     /**
@@ -150,9 +153,9 @@ namespace triqs_xca::dense {
        * @param[in] dynint_coeffs array of coefficients for the dynamic interactions (also using hyb_poles)
        */
     template <bool isComplex>
-    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, nda::array_const_view<dcomplex, 3> hyb_coeffs, dlr_imtime tau_mesh,
-                     atom_diag<isComplex> const &ad, std::vector<opt_t> const &dynint_ops,
-                     nda::array_const_view<dcomplex, 3> dynint_coeffs);
+    DiagramEvaluator(nda::vector_const_view<double> hyb_poles, arr_cvt<dcplx, 3> hyb_coeffs, dlr_imtime tau_mesh,
+                     atom_diag<isComplex> const &ad, vector<opt_t> const &dynint_ops,
+                     arr_cvt<dcplx, 3> dynint_coeffs);
 
     virtual ~DiagramEvaluator() = default;
   };
