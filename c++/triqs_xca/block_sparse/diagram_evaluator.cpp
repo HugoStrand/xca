@@ -9,6 +9,7 @@
 #include <string>
 
 #include <itertools/itertools.hpp>
+#include <nda/blas/gemm.hpp>
 
 #include "triqs_xca/block_sparse/atom_diag.hpp"
 
@@ -159,14 +160,16 @@ namespace triqs_xca::block_sparse {
     }
 
     template <triqs_xca::diagram::Kind K>
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::BackbonePath<K> const &path, int vertex, int columns,
-                              Action<BlockOpSymQuartet> const &action) {
+    void multiply_left_vertex(nda::array<dcomplex, 3> &T_buf, diagram::BackbonePath<K> const &path, int vertex, int columns,
+                              Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
       auto const r = action.tau_mesh.size();
       auto before  = T_buf(_, range(0, path.dimension(vertex)), range(0, columns));
-      auto after   = T_buf(_, range(0, path.dimension(vertex + 1)), range(0, columns));
+      auto after   = GKt(_, range(0, path.dimension(vertex + 1)), range(0, columns));
       auto F       = vertex_matrix(path, vertex, action);
-      for (int t = 0; t < r; ++t) after(t, _, _) = matmul(F, before(t, _, _));
+      for (int t = 0; t < r; ++t) nda::blas::gemm(1., F, before(t, _, _), 0., after(t, _, _));
       apply_kernel(after, path.backbone.vertices[vertex], action.kernel);
+      // The previous edge has been consumed; its storage becomes the new result.
+      std::swap(T_buf, GKt);
     }
 
     template <triqs_xca::diagram::Kind K>
@@ -195,7 +198,7 @@ namespace triqs_xca::block_sparse {
       for (int kap = 0; kap < path.zero_operators.size(); ++kap) {
         int flavour = path.zero_operators[kap];
         auto F_kap  = endpoint_matrix(flavour, orientation.early_operator(flavour).adjoint, path.sector(0), action);
-        for (int t = 0; t < r; ++t) Tkaps_v(kap, t, _, _) = matmul(T_v(t, _, _), F_kap);
+        for (int t = 0; t < r; ++t) nda::blas::gemm(1., T_v(t, _, _), F_kap, 0., Tkaps_v(kap, t, _, _));
       }
       T_vp = 0;
       for (int mu : path.special_operators) {
@@ -208,7 +211,7 @@ namespace triqs_xca::block_sparse {
           int sign         = signs(action.statistics[early], action.statistics[mu]) * orientation.reflection_sign();
           for (int t = 0; t < r; ++t) Tmu_v(t, _, _) += sign * coefficient(t) * Tkaps_v(kap, t, _, _);
         }
-        for (int t = 0; t < r; ++t) T_vp(t, _, _) += matmul(F_mu, Tmu_v(t, _, _));
+        for (int t = 0; t < r; ++t) nda::blas::gemm(1., F_mu, Tmu_v(t, _, _), 1., T_vp(t, _, _));
       }
     }
 
@@ -242,7 +245,7 @@ namespace triqs_xca::block_sparse {
 
       T(_, range(0, path.dimension(1)), range(0, path.dimension(1))) = Gt.get_block(path.edge_sector(0));
       for (int v = 1; v < special; ++v) {
-        multiply_left_vertex(T, path, v, path.dimension(1), action);
+        multiply_left_vertex(T, path, v, path.dimension(1), action, GKt);
         integrate_left_edge(Gt, T, path, v, path.dimension(1), action, GKt);
       }
 
@@ -250,11 +253,11 @@ namespace triqs_xca::block_sparse {
 
       for (int v = special + 1; v < 2 * m; ++v) {
         integrate_left_edge(Gt, T, path, v - 1, path.dimension(0), action, GKt);
-        multiply_left_vertex(T, path, v, path.dimension(0), action);
+        multiply_left_vertex(T, path, v, path.dimension(0), action, GKt);
       }
 
-      T *= kernel_prefactor;
       auto result = T(_, range(0, path.dimension(2 * m)), range(0, path.dimension(0)));
+      result *= kernel_prefactor;
       result *= backbone.self_energy_sign();
       return result;
     }
@@ -278,15 +281,17 @@ namespace triqs_xca::block_sparse {
       });
     }
 
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, diagram::CorrelatorBackbonePath const &path, int vertex,
-                               Action<BlockOpSymQuartet> const &action) {
+    void multiply_right_vertex(nda::array<dcomplex, 3> &U_buf, diagram::CorrelatorBackbonePath const &path, int vertex,
+                               Action<BlockOpSymQuartet> const &action, nda::array<dcomplex, 3> &GKt) {
       auto const r = action.tau_mesh.size();
       int rows     = path.dimension(path.range.vertex_end);
-      auto before  = U_buf(_, range(0, rows), range(0, path.dimension(vertex)));
+      auto before  = GKt(_, range(0, rows), range(0, path.dimension(vertex)));
       auto after   = U_buf(_, range(0, rows), range(0, path.dimension(vertex + 1)));
       auto F       = vertex_matrix(path, vertex, action);
-      for (int t = 0; t < r; ++t) before(t, _, _) = matmul(after(t, _, _), F);
+      for (int t = 0; t < r; ++t) nda::blas::gemm(1., after(t, _, _), F, 0., before(t, _, _));
       apply_kernel(before, path.backbone.vertices[vertex], action.kernel, true);
+      // Only U and the spare edge buffer swap; a completed forward T stays live.
+      std::swap(U_buf, GKt);
     }
 
     void integrate_right_edge(BlockDiagOpFun const &Gt, nda::array_view<dcomplex, 3> U_buf, diagram::CorrelatorBackbonePath const &path, int edge,
@@ -311,7 +316,7 @@ namespace triqs_xca::block_sparse {
       initial      = Gt.get_block(path.edge_sector(interval.first_edge));
       apply_kernel_product(initial, backbone.edges[interval.first_edge].kernels, action.kernel);
       for (int v = interval.first_vertex; v < interval.vertex_end; ++v) {
-        multiply_left_vertex(T, path, v, columns, action);
+        multiply_left_vertex(T, path, v, columns, action, GKt);
         integrate_left_edge(Gt, T, path, v, columns, action, GKt);
       }
       return T(_, range(0, path.dimension(interval.vertex_end)), range(0, columns));
@@ -328,7 +333,7 @@ namespace triqs_xca::block_sparse {
       initial      = Gt.get_block(path.edge_sector(interval.edge_end - 1));
       apply_kernel_product(initial, backbone.edges[interval.edge_end - 1].kernels, action.kernel);
       for (int v = interval.vertex_end - 1; v >= interval.first_vertex; --v) {
-        multiply_right_vertex(U, path, v, action);
+        multiply_right_vertex(U, path, v, action, GKt);
         integrate_right_edge(Gt, U, path, v - 1, action, GKt);
       }
       return U(_, range(0, rows), range(0, path.dimension(interval.first_vertex)));
