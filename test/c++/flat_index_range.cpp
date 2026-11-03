@@ -140,7 +140,11 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
     if (nda::max_element(nda::abs(sigma_dense(n_op * (fb + 1) - n_o))) > 0.0) f_sigma = n_op * (fb + 1) - n_o;
   ASSERT_GT(f_sigma, long{std::numeric_limits<int>::max()});
   auto S = sigma_dense(f_sigma);
-  EXPECT_LE(nda::max_element(nda::abs(sigma_bs(f_sigma) - S)), 1.0e-13 * nda::max_element(nda::abs(S)));
+  // Dense and sparse convolutions use different LU solves and transform arithmetic.
+  // Allow their accumulated roundoff at order six; decoding and same-evaluator
+  // API identities retain the stricter checks below.
+  constexpr double evaluator_rtol = 2.0e-12;
+  EXPECT_LE(nda::max_element(nda::abs(sigma_bs(f_sigma) - S)), evaluator_rtol * nda::max_element(nda::abs(S)));
 
   // Fixture selections and prepared pair execution include the backbone whose line at vertex 0 has the other
   // direction, i.e. the other lowest bit of fb
@@ -148,7 +152,7 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   EXPECT_LE(nda::max_element(nda::abs(test_utils::fixture_self_energy(D_dense, G_flat, topology, f_sigma_vec)[0].data() - S)),
             1.0e-13 * nda::max_element(nda::abs(S)));
   EXPECT_LE(nda::max_element(nda::abs(test_utils::get_tensor_in_full_hilbert_space(test_utils::fixture_self_energy(D_bs, G_bs, topology, f_sigma_vec), ad) - S)),
-            1.0e-13 * nda::max_element(nda::abs(S)));
+            evaluator_rtol * nda::max_element(nda::abs(S)));
   long partner = (f_sigma / n_op) % 2 == 0 ? f_sigma + n_op : f_sigma - n_op;
   auto pair    = nda::make_regular(S + sigma_dense(partner));
   auto pair_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, D_dense.action, f_sigma);
@@ -160,7 +164,7 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
     if (nda::max_element(nda::abs(test_utils::fixture_single_ptcle_gf(D_dense, G_flat, topology, n_op * (fb + 1) - n_o))) > 0.0) f_spgf = n_op * (fb + 1) - n_o;
   ASSERT_GT(f_spgf, long{std::numeric_limits<int>::max()});
   auto g = test_utils::fixture_single_ptcle_gf(D_dense, G_flat, topology, f_spgf);
-  EXPECT_LE(nda::max_element(nda::abs(test_utils::fixture_single_ptcle_gf(D_bs, G_bs, topology, f_spgf) - g)), 1.0e-13 * nda::max_element(nda::abs(g)));
+  EXPECT_LE(nda::max_element(nda::abs(test_utils::fixture_single_ptcle_gf(D_bs, G_bs, topology, f_spgf) - g)), evaluator_rtol * nda::max_element(nda::abs(g)));
 
   // Fixture selections and the correlator of annihilators and creators agree with the single-particle Green's function.
   auto f_spgf_vec = nda::vector<long>{f_spgf};
@@ -169,14 +173,14 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
     c_ops.push_back(many_body_operator_complex::make_canonical(false, fop.index));
     c_dag_ops.push_back(many_body_operator_complex::make_canonical(true, fop.index));
   }
-  auto check_g = [&](std::string const &what, nda::array_const_view<dcomplex, 3> x) {
+  auto check_g = [&](std::string const &what, nda::array_const_view<dcomplex, 3> x, double rtol = 1.0e-13) {
     SCOPED_TRACE(what);
-    EXPECT_LE(nda::max_element(nda::abs(x - g)), 1.0e-13 * nda::max_element(nda::abs(g)));
+    EXPECT_LE(nda::max_element(nda::abs(x - g)), rtol * nda::max_element(nda::abs(g)));
   };
   check_g("dense spgf", test_utils::fixture_single_ptcle_gf(D_dense, G_flat, topology, f_spgf_vec));
-  check_g("block-sparse spgf", test_utils::fixture_single_ptcle_gf(D_bs, G_bs, topology, f_spgf_vec));
+  check_g("block-sparse spgf", test_utils::fixture_single_ptcle_gf(D_bs, G_bs, topology, f_spgf_vec), evaluator_rtol);
   check_g("dense correlator", test_utils::fixture_one_time_correlator(D_dense, G_flat, c_ops, c_dag_ops, ad_flat, topology, f_spgf_vec));
-  check_g("block-sparse correlator", test_utils::fixture_one_time_correlator(D_bs, G_bs, c_ops, c_dag_ops, ad, topology, f_spgf_vec));
+  check_g("block-sparse correlator", test_utils::fixture_one_time_correlator(D_bs, G_bs, c_ops, c_dag_ops, ad, topology, f_spgf_vec), evaluator_rtol);
 
 
   EXPECT_THROW(test_utils::fixture_self_energy(D_dense, G_flat, topology, n_sigma), std::invalid_argument);
