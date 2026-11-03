@@ -118,9 +118,9 @@ TEST(BlockSparseDynintSpinFlip, spin_flip_ops_construct_a_valid_evaluator) {
     }
 
     DiagramEvaluator D(beta, Lambda, eps, m.hyb_poles, ext, Fq, /*n_int=*/2);
-    EXPECT_EQ(D.n_hyb, n_hyb);
-    EXPECT_EQ(D.n_int, 2);
-    EXPECT_EQ(D.n, n_hyb + 2);
+    EXPECT_EQ(D.action.n_hyb, n_hyb);
+    EXPECT_EQ((D.action.n_flavours() - D.action.n_hyb), 2);
+    EXPECT_EQ(D.action.n_flavours(), n_hyb + 2);
   }
 }
 

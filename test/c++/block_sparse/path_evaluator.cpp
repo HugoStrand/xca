@@ -16,14 +16,14 @@ namespace {
   using nda::dcomplex;
 
   template <typename Path>
-  concept SelfEnergyInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun &G, Path const &path) {
+  concept SelfEnergyInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun const &G, Path const &path) {
     evaluator.compute_self_energy(G, path);
   };
 
   template <typename Path>
-  concept CorrelatorInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun &G, Path const &path,
+  concept CorrelatorInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun const &G, Path const &path,
                                      std::vector<sparse::BlockOp> const &operators) {
-    evaluator.eval_correlator(G, path, operators, operators, logical::CorrelatorStatistics{});
+    evaluator.compute_one_time_correlator(G, path, operators, operators, logical::CorrelatorStatistics{});
   };
 
   static_assert(SelfEnergyInput<SelfEnergyPath>);
@@ -78,8 +78,8 @@ namespace {
     std::vector<sparse::BlockOp> mu{id, dcomplex{0.7, 0.2} * id}, kap{id, dcomplex{-0.3, 0.4} * id};
     logical::CorrelatorStatistics statistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic};
 
-    tensor self_energy(sparse::BlockDiagOpFun &propagator, SelfEnergyPath const &path) {
-      return triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(propagator, path), model.ad);
+    tensor self_energy(sparse::BlockDiagOpFun const &propagator, SelfEnergyPath const &path) {
+      return triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(propagator, path), model.ad, model.mesh.size());
     }
 
     std::vector<CorrelatorPath> correlator_paths(logical::CorrelatorBackbone const &backbone, bool &reused_segments) {
@@ -112,7 +112,7 @@ TEST_F(BlockSparsePathEvaluator, retained_self_energy_paths_match_prepared_backb
         auto topology = topology_for_order(order);
         // The internal arc is forward, with the density flavour and negative pole.
         long f = order == 1 ? static_cast<int>(direction)
-                            : (evaluator.n - 1) + evaluator.n * (1 + model.hyb_poles.size() * (2 + static_cast<int>(direction)));
+                            : (evaluator.action.n_flavours() - 1) + evaluator.action.n_flavours() * (1 + model.hyb_poles.size() * (2 + static_cast<int>(direction)));
         logical::Arcs choices{{direction, -1, -1}};
         if (order == 2) choices.push_back({logical::Direction::forward, evaluator.action.n_flavours() - 1, 1});
         auto arcs = logical::prepare_arcs(std::move(choices), evaluator.action, logical::Kind::self_energy);
@@ -149,14 +149,14 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_do_not_depend_on_segm
     bool reused_segments = false;
     auto paths = [&] {
       auto topology = topology_for_order(order);
-      long f = order == 1 ? 0 : (evaluator.n - 1) + evaluator.n * (1 + model.hyb_poles.size());
+      long f = order == 1 ? 0 : (evaluator.action.n_flavours() - 1) + evaluator.action.n_flavours() * (1 + model.hyb_poles.size());
       logical::Arcs choices{{logical::Direction::external, -1, -1}};
       if (order == 2) choices.push_back({logical::Direction::forward, evaluator.action.n_flavours() - 1, 1});
       auto arcs = logical::prepare_arcs(std::move(choices), evaluator.action, logical::Kind::correlator);
       auto backbone = logical::prepare_backbone<logical::Kind::correlator>(topology, arcs);
       expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, mu, kap, f, false);
       // This call evaluates and then releases its numerical segment-result caches.
-      expect_close(evaluator.eval_correlator(G, backbone, mu, kap, statistics), expected);
+      expect_close(evaluator.compute_one_time_correlator(G, backbone, mu, kap, statistics), expected);
       if (order == 1) {
         auto ranges = backbone.endpoint_ranges();
         EXPECT_EQ(ranges.before_special.first_vertex, ranges.before_special.vertex_end);
@@ -173,7 +173,7 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_do_not_depend_on_segm
     for (auto const &path : paths) {
       ASSERT_EQ(path.special_operators.size(), 1);
       EXPECT_EQ(path.zero_operators, (std::vector<int>{0, 1}));
-      actual += evaluator.eval_correlator(G, path, mu, kap, statistics);
+      actual += evaluator.compute_one_time_correlator(G, path, mu, kap, statistics);
     }
     expect_close(actual, expected);
     for (int mu_index = 0; mu_index < 2; ++mu_index)
@@ -183,7 +183,7 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_do_not_depend_on_segm
     auto changed_G = G;
     changed_G *= 1.1;
     actual = 0.;
-    for (auto const &path : paths) actual += evaluator.eval_correlator(changed_G, path, mu, kap, statistics);
+    for (auto const &path : paths) actual += evaluator.compute_one_time_correlator(changed_G, path, mu, kap, statistics);
     expect_close(actual, nda::make_regular(std::pow(1.1, 2 * order) * expected));
   }
 }
@@ -201,26 +201,26 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_preserve_fermionic_cr
   auto paths = [&] {
     auto topology = topology_for_order(2);
     // Crossing a fermionic internal arc with the external fermionic pair has odd parity.
-    long f = evaluator.n * (1 + model.hyb_poles.size());
+    long f = evaluator.action.n_flavours() * (1 + model.hyb_poles.size());
     auto arcs = logical::prepare_arcs(logical::Arcs{{logical::Direction::external, -1, -1}, {logical::Direction::forward, 0, 1}},
                                        evaluator.action, logical::Kind::correlator);
     auto backbone = logical::prepare_backbone<logical::Kind::correlator>(topology, arcs);
     EXPECT_EQ(backbone.endpoints.signs.with_fermionic_arc, -1);
     EXPECT_EQ(backbone.endpoints.signs.without_fermionic_arc, 1);
     expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, mu, kap, f, true);
-    expect_close(evaluator.eval_correlator(G, backbone, mu, kap, statistics), expected);
+    expect_close(evaluator.compute_one_time_correlator(G, backbone, mu, kap, statistics), expected);
     return correlator_paths(backbone, reused_segments);
   }();
   ASSERT_FALSE(paths.empty());
   tensor actual(expected.shape());
   actual = 0.;
-  for (auto const &path : paths) actual += evaluator.eval_correlator(G, path, mu, kap, statistics);
+  for (auto const &path : paths) actual += evaluator.compute_one_time_correlator(G, path, mu, kap, statistics);
   expect_close(actual, expected);
 
   auto changed_G = G;
   changed_G *= 1.1;
   actual = 0.;
-  for (auto const &path : paths) actual += evaluator.eval_correlator(changed_G, path, mu, kap, statistics);
+  for (auto const &path : paths) actual += evaluator.compute_one_time_correlator(changed_G, path, mu, kap, statistics);
   expect_close(actual, nda::make_regular(std::pow(1.1, 4) * expected));
 }
 
@@ -238,26 +238,25 @@ TEST_F(BlockSparsePathEvaluator, path_entry_points_reject_incomplete_operations_
   auto const &sigma_path = sigma_paths.front();
   auto const &corr_path = corr_paths.front();
   auto expected_sigma = self_energy(G, sigma_path);
-  auto expected_corr = evaluator.eval_correlator(G, corr_path, mu, kap, statistics);
+  auto expected_corr = evaluator.compute_one_time_correlator(G, corr_path, mu, kap, statistics);
 
-  evaluator.T = 2.;
-  evaluator.U = 3.;
-  evaluator.GKt = 4.;
-  evaluator.Tkaps = 5.;
-  evaluator.Tmu = 6.;
+  // Retained outputs must survive mixed later operations and rejected paths.
+  auto retained_sigma = evaluator.compute_self_energy(G, sigma_path);
+  auto retained_corr = evaluator.compute_one_time_correlator(G, corr_path, mu, kap, statistics);
+  auto changed_G = G;
+  changed_G *= 1.2;
+  evaluator.compute_one_time_correlator(changed_G, corr_path, mu, kap, statistics);
+  evaluator.compute_self_energy(changed_G, sigma_path);
   SelfEnergyPath sigma_segment(sigma, sigma.endpoint_ranges().before_special);
   CorrelatorPath corr_segment(corr, corr.endpoint_ranges().before_special);
   EXPECT_THROW(evaluator.compute_self_energy(G, sigma_segment), std::invalid_argument);
-  EXPECT_THROW(evaluator.eval_correlator(G, corr_segment, mu, kap, statistics), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(G, corr_segment, mu, kap, statistics), std::invalid_argument);
   auto two_tau_operators = corr_path;
   two_tau_operators.special_operators = {0, 1};
   two_tau_operators.zero_operators.clear();
-  EXPECT_THROW(evaluator.eval_correlator(G, two_tau_operators, mu, kap, statistics), std::invalid_argument);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.T - 2.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.U - 3.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.GKt - 4.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.Tkaps - 5.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.Tmu - 6.)), 0.);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(G, two_tau_operators, mu, kap, statistics), std::invalid_argument);
+  expect_close(triqs_xca::test_utils::get_tensor_in_full_hilbert_space(retained_sigma, model.ad, model.mesh.size()), expected_sigma);
+  expect_close(retained_corr, expected_corr);
 
   for (bool clear_zero : {false, true}) {
     auto empty_sigma = sigma_path;
@@ -265,8 +264,8 @@ TEST_F(BlockSparsePathEvaluator, path_entry_points_reject_incomplete_operations_
     (clear_zero ? empty_sigma.zero_operators : empty_sigma.special_operators).clear();
     (clear_zero ? empty_corr.zero_operators : empty_corr.special_operators).clear();
     EXPECT_EQ(nda::max_element(nda::abs(self_energy(G, empty_sigma))), 0.);
-    EXPECT_EQ(nda::max_element(nda::abs(evaluator.eval_correlator(G, empty_corr, mu, kap, statistics))), 0.);
+    EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_one_time_correlator(G, empty_corr, mu, kap, statistics))), 0.);
   }
   expect_close(self_energy(G, sigma_path), expected_sigma);
-  expect_close(evaluator.eval_correlator(G, corr_path, mu, kap, statistics), expected_corr);
+  expect_close(evaluator.compute_one_time_correlator(G, corr_path, mu, kap, statistics), expected_corr);
 }

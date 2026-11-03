@@ -49,7 +49,8 @@ namespace triqs_xca::test_utils {
       bgf result{blocks};
       visit_fixture_indices(selection, [&](long f) {
         auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, f);
-        result += evaluator.compute_self_energy(Gt, backbone);
+        auto contribution = evaluator.compute_self_energy(Gt, backbone);
+        for (int b = 0; b < contribution.get_num_block_cols(); ++b) result[b].data() += contribution.get_block(b);
       });
       return result;
     }
@@ -84,10 +85,7 @@ namespace triqs_xca::test_utils {
     auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), n_mu, n_kap);
     visit_fixture_indices(selection, [&](long f) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, evaluator.action, f);
-      if constexpr (std::is_same_v<E, dense::DiagramEvaluator>)
-        result += evaluator.compute_one_time_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
-      else
-        result += evaluator.eval_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
+      result += evaluator.compute_one_time_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
     });
     return result;
   }

@@ -51,7 +51,7 @@ int main(int argc, char **argv) try {
   nda::array<int, 2> topology(order, 2);
   for (int a = 0; a < order; ++a) topology(a, nda::range::all) = nda::vector<int>{a, a + order};
   triqs_xca::diagram::topology::validate(topology);
-  long count   = triqs_xca::diagram::count_diagrams(order, evaluator.n, model.hyb_poles.size(), triqs_xca::diagram::Kind::self_energy);
+  long count   = triqs_xca::diagram::count_diagrams(order, evaluator.action.n_flavours(), model.hyb_poles.size(), triqs_xca::diagram::Kind::self_energy);
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
   std::vector<triqs_xca::diagram::Arcs> logical;
@@ -75,7 +75,7 @@ int main(int argc, char **argv) try {
   for (auto const &backbone : backbones)
     triqs_xca::block_sparse::visit_self_energy_paths(G, backbone, operators, support, [&](auto const &) { ++paths; });
   std::cout << "model,order,rank,sectors,max_dimension,assignment_count,samples,paths\n"
-            << name << ',' << order << ',' << evaluator.r << ',' << model.ad.n_subspaces() << ',' << evaluator.Nmax << ',' << count << ',' << samples
+            << name << ',' << order << ',' << evaluator.action.tau_mesh.size() << ',' << model.ad.n_subspaces() << ',' << nda::max_element(evaluator.action.block_dims) << ',' << count << ',' << samples
             << ',' << paths << '\n';
   std::cout << "phase,median_us_per_assignment,min_us_per_assignment,max_us_per_assignment\n";
   auto time = [&](std::string const &phase, auto &&operation) {
@@ -109,29 +109,29 @@ int main(int argc, char **argv) try {
   });
   time("prepared_self_energy_call", [&](long i) {
     auto result = evaluator.compute_self_energy(G, backbones[i]);
-    checksum += nda::sum(nda::abs(result[0].data()));
+    checksum += nda::sum(nda::abs(result.get_block(0)));
   });
   time("prepare_and_self_energy_call", [&](long i) {
     auto backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, evaluator.action, indices(i));
     auto result = evaluator.compute_self_energy(G, backbone);
-    checksum += nda::sum(nda::abs(result[0].data()));
+    checksum += nda::sum(nda::abs(result.get_block(0)));
   });
   time("prepared_single_particle_call", [&](long i) {
-    auto result = evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
+    auto result = evaluator.compute_one_time_correlator(G, correlator_backbones[i], mu, kap);
     checksum += nda::sum(nda::abs(result));
   });
   // Warm both local prepared call paths before sampling resident memory.
   for (long i = 0; i < samples; ++i) {
     evaluator.compute_self_energy(G, backbones[i]);
-    evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
+    evaluator.compute_one_time_correlator(G, correlator_backbones[i], mu, kap);
   }
   long rss_before = resident_kib();
   // The same bounded backbone sample is reused; no task history is retained.
   for (int repeat = 0; repeat < repeats * 10; ++repeat)
     for (long i = 0; i < samples; ++i) {
       auto result = evaluator.compute_self_energy(G, backbones[i]);
-      checksum += nda::sum(nda::abs(result[0].data()));
-      auto correlator = evaluator.eval_correlator(G, correlator_backbones[i], mu, kap);
+      checksum += nda::sum(nda::abs(result.get_block(0)));
+      auto correlator = evaluator.compute_one_time_correlator(G, correlator_backbones[i], mu, kap);
       checksum += nda::sum(nda::abs(correlator));
     }
   std::cout << "rss_before_kib,rss_after_kib,prepared_calls_per_kind,checksum\n"

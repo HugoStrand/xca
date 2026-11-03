@@ -59,7 +59,7 @@ class DiagramEvaluator {
   // Nonclosing nonzero endpoint couplings cannot contribute to block-diagonal output.
   bool select_diagonal_self_energy(diagram::SelfEnergyBackbonePath const &path) const;
   void add_self_energy_path(BlockDiagOpFun const &Gt, diagram::SelfEnergyBackbonePath const &path, double kernel_prefactor);
-  void eval_self_energy_paths(BlockDiagOpFun &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone);
+  void eval_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone);
 
   // Returns a view into T, valid until the next execution/reset. No output policy is applied.
   nda::array_const_view<dcomplex, 3> eval_self_energy_contribution(
@@ -76,49 +76,42 @@ class DiagramEvaluator {
   std::vector<BlockOp> setup_mu_ops_for_single_ptcle_gf();
   std::vector<BlockOp> setup_kap_ops_for_single_ptcle_gf();
   
+  // Reusable scratch; active blocks currently remain padded to the maximum sector size.
+  nda::array<dcomplex, 3> T;
+  nda::array<dcomplex, 3> U;
+  nda::array<dcomplex, 3> GKt;
+  nda::array<dcomplex, 4> Tkaps;
+  nda::array<dcomplex, 3> Tmu;
+
+  void reset();
+
   public:
-  double beta;                         // inverse temperature
-  int r;                               // rank of the DLR imaginary time object
-  int n;                               // number of orbitals, n_hyb + n_int
-  int n_hyb;                           // number of hybridization (fermionic) flavours
-  int n_int;                           // number of dynamical-interaction flavours
-  int q;                               // number of symmetry sets
-  int Nmax;                            // maximum block size in the Green's function
-  nda::array<dcomplex, 3> T;           // array for storing intermediate result
-  nda::array<dcomplex, 3> U;           // array for storing intermediate result (tau-beta side of correlator backbone)
-  nda::array<dcomplex, 3> GKt;         // array for storing result of edge computation
-  nda::array<dcomplex, 4> Tkaps;       // intermediate storage array
-  nda::array<dcomplex, 3> Tmu;         // intermediate storage array
-
-  // routines for any backbone
-  C2PY_IGNORE void reset(); // reset all arrays to zero
-
-  // Return one prepared backbone's contribution, resetting the accumulator each call.
+  // Return one prepared backbone's independent owning numerical contribution.
   // Assignment indices refer to this evaluator's model and pole tables.
-  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone);
+  C2PY_IGNORE BlockDiagOpFun compute_self_energy(BlockDiagOpFun const &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone);
 
-  // Execute one complete path without discovery; reset the accumulator each call.
+  // Execute one complete path without discovery; return an independent owning result.
   // Paths must use this Action's indices/support and sector basis. This CPU routine
   // accepts endpoint lists from one discovered symmetry group, or subsets thereof.
   // Either empty endpoint list gives zero. G values may change with the same layout;
   // a complete saved path set needs rediscovery when G's activity mask changes.
-  C2PY_IGNORE triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(BlockDiagOpFun &Gt, diagram::SelfEnergyBackbonePath const &path);
+  C2PY_IGNORE BlockDiagOpFun compute_self_energy(BlockDiagOpFun const &Gt, diagram::SelfEnergyBackbonePath const &path);
 
   /// Return this MPI rank's self-energy sum for one topology, without reduction.
   triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                                nda::array_const_view<int, 2> topology);
 
   // Evaluate a prepared backbone; indices refer to this evaluator's model and pole tables.
-  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, triqs_xca::diagram::CorrelatorBackbone const &backbone, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
+  C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(
+    BlockDiagOpFun const &Gt, triqs_xca::diagram::CorrelatorBackbone const &backbone, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
   // Execute one complete path without discovery or external segment caches.
   // Path indices/support and sector basis must match Action and G.
   // Observable indices/bases must match the supplied lists; values are borrowed
   // only during this call. One tau selection is supported, with any closing subset.
   // Either empty selection gives zero; more than one tau selection is rejected.
-  C2PY_IGNORE nda::array<dcomplex, 3> eval_correlator(
-    BlockDiagOpFun &Gt, diagram::CorrelatorBackbonePath const &path, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
+  C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(
+    BlockDiagOpFun const &Gt, diagram::CorrelatorBackbonePath const &path, std::vector<BlockOp> const &mu_ops, std::vector<BlockOp> const &kap_ops,
     triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
   /// Return this MPI rank's single-particle GF sum for one topology, without reduction.

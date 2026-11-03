@@ -76,8 +76,8 @@ TEST(Action, explicit_dimensions_keep_sectors_where_all_operators_vanish) {
   auto model = block_sparse::make_action(mesh, nda::vector<double>{0.}, coefficients, quartet,
                                         {Statistics::bosonic}, 0, nda::vector<long>{1, 3});
   block_sparse::DiagramEvaluator evaluator(std::move(model));
-  EXPECT_EQ(evaluator.Nmax, 3);
-  EXPECT_EQ(evaluator.n_hyb, 0);
+  EXPECT_EQ(nda::max_element(evaluator.action.block_dims), 3);
+  EXPECT_EQ(evaluator.action.n_hyb, 0);
   bgf G{std::vector{gf(mesh, nda::ones<dcomplex>(mesh.size(), 1, 1)), gf(mesh, nda::ones<dcomplex>(mesh.size(), 3, 3))}};
   auto result = evaluator.compute_self_energy(G, nda::array<int, 2>{{0, 1}});
   EXPECT_EQ(nda::max_element(nda::abs(result[1].data())), 0.);

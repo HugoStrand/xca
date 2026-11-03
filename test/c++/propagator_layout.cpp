@@ -106,13 +106,13 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
     SCOPED_TRACE("block-sparse BlockDiagOpFun, " + what);
     auto Gt = block_sparse::BlockDiagOpFun(G);
     EXPECT_THROW(D_bs.compute_self_energy(Gt, sigma_backbone), std::invalid_argument);
-    EXPECT_THROW(D_bs.eval_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
+    EXPECT_THROW(D_bs.compute_one_time_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
   }
   {
     SCOPED_TRACE("block-sparse BlockDiagOpFun, zero blocks of dimension 1");
     auto Gt = block_sparse::BlockDiagOpFun(G_bs[0].mesh().size(), nda::ones<int>(G_bs.size()));
     EXPECT_THROW(D_bs.compute_self_energy(Gt, sigma_backbone), std::invalid_argument);
-    EXPECT_THROW(D_bs.eval_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
+    EXPECT_THROW(D_bs.compute_one_time_correlator(Gt, corr_backbone, mu, kap), std::invalid_argument);
   }
 
   // expectation_value with the layouts of its atom_diag and of another one, and with an operator that leaves the subspaces

@@ -130,21 +130,21 @@ TEST(BlockSparseDynintEvaluator, dynint_constructor_contract) {
   auto G = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, G[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
 
-  EXPECT_EQ(D.n_hyb, n_hyb);
-  EXPECT_EQ(D.n_int, n_int);
-  EXPECT_EQ(D.n, n_hyb + n_int);
+  EXPECT_EQ(D.action.n_hyb, n_hyb);
+  EXPECT_EQ((D.action.n_flavours() - D.action.n_hyb), n_int);
+  EXPECT_EQ(D.action.n_flavours(), n_hyb + n_int);
   ASSERT_GT(n_int, 0) << "vacuous test: no interaction operator";
 
   // the evaluator built from the quartet must have the same flavours and give the same Sigma and spgf exactly
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
   auto Fq                     = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
   auto ext                    = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
-  EXPECT_EQ(D.q, static_cast<int>(nda::max_element(Fq.sym_set_labels) + 1));
+  EXPECT_EQ(D.action.operators.sym_set_sizes.size(), static_cast<int>(nda::max_element(Fq.sym_set_labels) + 1));
 
   DiagramEvaluator D_fq(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  EXPECT_EQ(D_fq.n_hyb, n_hyb);
-  EXPECT_EQ(D_fq.n_int, n_int);
-  EXPECT_EQ(D_fq.n, n_hyb + n_int);
+  EXPECT_EQ(D_fq.action.n_hyb, n_hyb);
+  EXPECT_EQ((D_fq.action.n_flavours() - D_fq.action.n_hyb), n_int);
+  EXPECT_EQ(D_fq.action.n_flavours(), n_hyb + n_int);
   auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
 
@@ -194,11 +194,11 @@ TEST(BlockSparseDynintEvaluator, empty_dynint_ops_reproduce_the_plain_constructo
   DiagramEvaluator D0(m.hyb_poles, m.hyb_coeffs, G[0].mesh(), m.ad);
   DiagramEvaluator D1(m.hyb_poles, m.hyb_coeffs, G[0].mesh(), m.ad, {}, nda::zeros<dcomplex>(p_poles, 0, 0));
 
-  EXPECT_EQ(D1.n, D0.n);
-  EXPECT_EQ(D1.n_hyb, D0.n_hyb);
-  EXPECT_EQ(D1.n_int, 0);
-  EXPECT_EQ(D1.q, D0.q);
-  EXPECT_EQ(D1.Nmax, D0.Nmax);
+  EXPECT_EQ(D1.action.n_flavours(), D0.action.n_flavours());
+  EXPECT_EQ(D1.action.n_hyb, D0.action.n_hyb);
+  EXPECT_EQ((D1.action.n_flavours() - D1.action.n_hyb), 0);
+  EXPECT_EQ(D1.action.operators.sym_set_sizes.size(), D0.action.operators.sym_set_sizes.size());
+  EXPECT_EQ(nda::max_element(D1.action.block_dims), nda::max_element(D0.action.block_dims));
 
   auto itops = imtime_ops(Lambda, build_dlr_rf(Lambda, eps));
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
@@ -229,7 +229,7 @@ TEST(BlockSparseDynintEvaluator, spgf_excludes_the_interaction_flavours) {
   auto Gt    = test_utils::ad_to_atom_prop(m.ad, beta, itops);
 
   DiagramEvaluator D(m.hyb_poles, m.hyb_coeffs, G[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
-  ASSERT_EQ(D.n, n_hyb + n_int);
+  ASSERT_EQ(D.action.n_flavours(), n_hyb + n_int);
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
   auto spgf                   = triqs_xca::test_utils::fixture_single_ptcle_gf(D, Gt, topology);
@@ -237,7 +237,7 @@ TEST(BlockSparseDynintEvaluator, spgf_excludes_the_interaction_flavours) {
   EXPECT_EQ(spgf.extent(1), n_hyb) << "the spgf has " << spgf.extent(1) << " rows, i.e. the interaction flavours are being emitted as external legs";
   EXPECT_EQ(spgf.extent(2), n_hyb) << "the spgf has " << spgf.extent(2)
                                    << " columns, i.e. the interaction flavours are being emitted as external legs";
-  EXPECT_EQ(spgf.extent(0), D.r);
+  EXPECT_EQ(spgf.extent(0), D.action.tau_mesh.size());
 }
 
 /**
@@ -252,12 +252,12 @@ TEST(BlockSparseDynintEvaluator, Nmax_covers_the_largest_subspace) {
 
   auto G = test_utils::ad_to_atom_prop(m.ad, beta, Lambda, eps);
   DiagramEvaluator D_ad(m.hyb_poles, m.hyb_coeffs, G[0].mesh(), m.ad, m.dynint_ops, m.dynint_coeffs);
-  EXPECT_GE(D_ad.Nmax, msd);
+  EXPECT_GE(nda::max_element(D_ad.action.block_dims), msd);
 
   auto Fq  = std::get<0>(get_operators_and_interactions(m.ad, m.hyb_coeffs, m.dynint_coeffs, m.dynint_ops));
   auto ext = get_extended_coefficients(m.hyb_coeffs, m.dynint_coeffs);
   DiagramEvaluator D_fq(beta, Lambda, eps, m.hyb_poles, ext, Fq, n_int);
-  EXPECT_GE(D_fq.Nmax, msd);
+  EXPECT_GE(nda::max_element(D_fq.action.block_dims), msd);
 }
 
 /**
@@ -293,7 +293,7 @@ TEST(BlockSparseDynintEvaluator, Nmax_does_not_assume_symmetry_set_zero_covers_t
 
   nda::vector<double> hyb_poles = {1.3, -0.8};
   DiagramEvaluator D(beta, Lambda, eps, hyb_poles, ext, Fq_perm, /*n_int=*/1);
-  EXPECT_GE(D.Nmax, msd) << "Nmax must be the max block dimension over the WHOLE quartet, not over Fs[0]";
+  EXPECT_GE(nda::max_element(D.action.block_dims), msd) << "Nmax must be the max block dimension over the WHOLE quartet, not over Fs[0]";
 }
 
 /**
@@ -380,7 +380,7 @@ TEST(BlockSparseDynintEvaluator, matches_dense_on_the_interleaved_deep_subspace_
   int max_dim = 0;
   for (auto dim : ad.get_subspace_dims()) max_dim = std::max(max_dim, static_cast<int>(dim));
   ASSERT_GE(max_dim, 4) << "vacuous test: this fixture is supposed to be the deep-subspace one, got max dim " << max_dim;
-  ASSERT_EQ(D.Nmax, max_dim);
+  ASSERT_EQ(nda::max_element(D.action.block_dims), max_dim);
 
   nda::array<int, 2> topology = {{0, 2}, {1, 3}};
   ASSERT_EQ(triqs_xca::diagram::topology::topology_parity(topology), -1) << "vacuous test: topology is not crossing";

@@ -2,6 +2,7 @@
 #include <triqs_xca/block_sparse/self_energy_paths.hpp>
 #include "triqs_xca/diagram/backbone.hpp"
 #include <gtest/gtest.h>
+#include <concepts>
 #include <triqs_xca/block_sparse/dynint.hpp>
 
 #include <triqs_xca/block_sparse/diagram_evaluator.hpp>
@@ -40,7 +41,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  int n = evaluator.n;
+  int n = evaluator.action.n_flavours();
   auto const assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(
      topology,
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
@@ -63,7 +64,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  int n = evaluator.n;
+  int n = evaluator.action.n_flavours();
   auto const assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      topology,
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
@@ -71,12 +72,12 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   long f = (n - 1) + n * (1 + model.hyb_poles.size());
   auto op = identity(G);
   auto expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, std::vector<BlockOp>{op}, std::vector<BlockOp>{op}, f, false);
-  auto actual = evaluator.eval_correlator(G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
+  auto actual = evaluator.compute_one_time_correlator(G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(actual, expected);
 
   auto changed_G = G;
   changed_G *= 1.1;
-  auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
+  auto changed = evaluator.compute_one_time_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
   EXPECT_EQ(assignment.vertices[0].flavour, -1);
 }
@@ -126,8 +127,8 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
     for (int source = 0; source < 3; ++source)
       for (int target = 0; target < 3; ++target) {
         double expected = factor * ((target == source) + (target == (source + 1) % 3));
-        EXPECT_LE(std::abs(sigma[0].data()(t, target, source) - expected), 5e-11);
-        if (target != source) largest_off_diagonal = std::max(largest_off_diagonal, std::abs(sigma[0].data()(t, target, source)));
+        EXPECT_LE(std::abs(sigma.get_block(0)(t, target, source) - expected), 5e-11);
+        if (target != source) largest_off_diagonal = std::max(largest_off_diagonal, std::abs(sigma.get_block(0)(t, target, source)));
       }
     ++t;
   }
@@ -148,7 +149,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
                                                                            fine.action.statistics, poles, triqs_xca::diagram::Kind::self_energy));
   auto recovered = fine.compute_self_energy(fine_G, first_order);
   for (int sector = 0; sector < 3; ++sector)
-    EXPECT_LE(nda::max_element(nda::abs(recovered[sector].data() + 1.)), 1e-12);
+    EXPECT_LE(nda::max_element(nda::abs(recovered.get_block(sector) + 1.)), 1e-12);
 
   // An unused A interaction leaves candidate nonclosing paths but contributes
   // exactly zero there. It must not cause rejection or pollute the B-only result.
@@ -159,22 +160,34 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
   t = 0;
   for (auto tau : mesh) {
     for (int sector = 0; sector < 3; ++sector)
-      EXPECT_LE(std::abs(closed[sector].data()(t, 0, 0) + double(tau) * double(tau) / 8.), 5e-11);
+      EXPECT_LE(std::abs(closed.get_block(sector)(t, 0, 0) + double(tau) * double(tau) / 8.), 5e-11);
     ++t;
   }
 }
 
 namespace {
   template <typename Backbone>
-  concept SelfEnergyInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun &G, Backbone const &backbone) {
-    evaluator.compute_self_energy(G, backbone);
+  concept SelfEnergyInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun const &G, Backbone const &backbone) {
+    { evaluator.compute_self_energy(G, backbone) } -> std::same_as<BlockDiagOpFun>;
   };
 
   template <typename Backbone>
-  concept CorrelatorInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun &G, Backbone const &backbone,
+  concept CorrelatorInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun const &G, Backbone const &backbone,
                                      std::vector<BlockOp> const &operators) {
-    evaluator.eval_correlator(G, backbone, operators, operators, triqs_xca::diagram::CorrelatorStatistics{});
+    { evaluator.compute_one_time_correlator(G, backbone, operators, operators, triqs_xca::diagram::CorrelatorStatistics{}) } -> std::same_as<tensor>;
   };
+
+  template <typename E> concept PublicAccumulator = requires(E &e) { e.Sigma; };
+  template <typename E> concept PublicReset = requires(E &e) { e.reset(); };
+  template <typename E> concept PublicT = requires(E &e) { e.T; };
+  template <typename E> concept PublicU = requires(E &e) { e.U; };
+  template <typename E> concept PublicGKt = requires(E &e) { e.GKt; };
+  template <typename E> concept PublicTkaps = requires(E &e) { e.Tkaps; };
+  template <typename E> concept PublicTmu = requires(E &e) { e.Tmu; };
+  template <typename E> concept PublicRank = requires(E &e) { e.r; };
+  static_assert(!PublicAccumulator<DiagramEvaluator> && !PublicReset<DiagramEvaluator>);
+  static_assert(!PublicT<DiagramEvaluator> && !PublicU<DiagramEvaluator> && !PublicGKt<DiagramEvaluator>);
+  static_assert(!PublicTkaps<DiagramEvaluator> && !PublicTmu<DiagramEvaluator> && !PublicRank<DiagramEvaluator>);
 }
 
 TEST(BlockSparsePrepared, evaluator_entry_points_require_the_correct_backbone_kind) {
