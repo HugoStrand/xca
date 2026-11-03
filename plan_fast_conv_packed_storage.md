@@ -2,19 +2,26 @@
 
 ## Status and sequencing
 
-Recorded 2026-11-03 on `dev_backbone`. First complete the structural cleanup in
-`plan_block_sparse_refactor.md`. This document preserves the measurements and
-implementation steps for the subsequent explicitly requested persistent goal.
+Implemented and validated on 2026-11-03. Source checkpoints: `6565624` (output
+reuse), `1564a0e` (packed active storage), `df95898` (convolution capacity), and
+`fb4b4aa` (Action ownership and integration). All 86 CPU CTest entries passed.
+The implementation record is in `work_log_fast_conv_packed_storage.md`; matched
+whole prepared-call results are in `benchmarks/block_sparse_convolution/`.
+The stages below remain the review/restart map. Further performance work should
+start from the recorded remaining costs, rather than repeat these changes.
+
+Recorded 2026-11-03 on `dev_backbone`. The structural cleanup in
+`plan_block_sparse_refactor.md` precedes these numerical changes. This document
+preserves the measurements and implementation steps for the requested goal.
 Do not mix sparse API/helper extraction and packed-storage arithmetic changes
 in the same code commit. Keep code, benchmarks, and work-log/plan commits separate.
 
 The standalone complex, time-ordered `cppdlr::fast_convolve` and its six focused
 tests are committed as `59c7bbd` (`[cppdlr] reuse convolution storage`). Dense
-integration proceeds independently now, with helper and workspace owned by the
-dense evaluator. CPU batched convolution and `dense::BatchedDiagramEvaluator`
-are a parallel experiment, preserving the scalar evaluator for comparison.
-Move immutable convolution tables to Action when sparse integration is ready;
-mutable scratch remains evaluator-owned.
+integration first used evaluator-owned helper and workspace. CPU batched
+convolution and `dense::BatchedDiagramEvaluator` remain a separate experiment,
+preserving the scalar evaluator for comparison. The final stage moves immutable
+convolution tables to Action; mutable scratch remains evaluator-owned.
 
 ## Evidence and its limits
 

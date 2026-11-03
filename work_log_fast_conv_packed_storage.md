@@ -118,3 +118,72 @@ Prepared/path/layout/workspace tests all passed (4/4, 0.10 s). Independent
 review found and resolved partial-allocation publication and size-overflow
 issues before this commit. The complete-call benchmark also rebuilt; matched
 packed/fixed measurements precede the final Action/fast-convolution integration.
+
+## Shared Action tables and fast sparse convolution — 2026-11-03
+
+Source: `fb4b4aa` `[eval] share fast convolution tables`.
+
+Action now constructs its immutable convolution helper after existing input
+validation and operator setup. Dense, batched-dense and sparse numerical
+helpers obtain it through their existing Action argument. Mutable workspaces
+remain evaluator-owned; copying an evaluator copies its scratch. Action
+copy/move construction retains the mesh's shared interpolation owner, so the
+helper's reference stays valid. Assignment is unavailable because it cannot
+rebind that reference; repository callers use construction and const Actions.
+
+Sparse left/right edge convolutions transform packed active views directly
+and overwrite their running T/U input after both coefficient conversions.
+No additional convolution output owner is needed. Five mutable capacity
+buffers grow atomically with the other sparse scratch, starting with a small
+(r,1,1,1) reservation; reset leaves these fully overwritten buffers alone.
+
+Added Action copy/move lifetime checks for both representations and a copied
+sparse evaluator check after the original model/Action/mesh are destroyed.
+Explicit unknown-dimension metadata also exercises initially empty numerical
+scratch. The first version of that fixture used an invalid all-empty operator
+set and was corrected to use a valid quartet with unknown dimension metadata;
+production validation and numerical tolerances were unchanged.
+
+Full CPU build passed. Binding regeneration changed sparse constructor
+documentation only; Python signatures are unchanged. Final **86/86 CTest
+entries passed in 32.04 s**, including Python, analytic comparisons, changing
+workspace dimensions, Action lifetime, and actual three-rank MPI evaluation.
+Logs: `/tmp/xca-packed-fast-full-build.log` and
+`/tmp/xca-packed-fast-final-test.log`. Independent reviews found no remaining
+ownership, aliasing or capacity blocker. User formatting was again excluded
+from the index explicitly and remains unchanged in the worktree.
+
+## Matched integration measurements — 2026-11-03
+
+The benchmark driver and baseline/output-GEMM controls are committed as
+`2a3bd21`. All 56 packed/fixed cases matched the frozen baseline exactly.
+Packed/fast maximum relative discrepancy was **2.62e-13**, with exact zeros
+preserved. Numerical references are retained locally under
+`cbuild/benchmarks/block_sparse_convolution/reference/`; compact CSVs and
+selected ordinals are stored with hardware-specific benchmark documentation.
+
+For the 18 productive rank-103 cases, the final evaluator is **1.23--1.56x**
+as fast as the fixed-cppdlr baseline (median **1.48x**). At rank 13 the range is
+1.28--1.58x, median 1.46x. Beyond output reuse, packing alone has median gains
+of about 0.3% at rank 103 and 1.8% at rank 13. Fast convolution contributes
+most of the improvement. These medians are over selected cases, not weighted
+by an impurity solver's contribution distribution.
+
+Short zero-path self-energy calls can be slightly slower after the added
+capacity/layout handling; zero-completion correlators may still benefit because
+they evaluate segments before finding no valid join. Report these separately.
+Remaining allocations include owning results, correlator caches/reflection/join,
+and reset's existing accumulator handling. Full-solver performance, larger
+physical blocks and the weighting of productive versus pruned calls remain
+future measurements, not conclusions of this bounded CPU sweep.
+
+Convolution scratch retains `5*r*Nmax*Nmax*sizeof(complex<double>)` bytes;
+Action's three additional transform tables retain `3*r*r*sizeof(complex<double>)`
+bytes. At rank 103, Nmax=1/2/6 needs 8,240/32,960/296,640 scratch bytes, plus
+509,232 table bytes per Action. Nmax=64 needs 32.2 MiB scratch. These are
+calculated retained sizes, not peak RSS comparisons with cppdlr allocations.
+
+Final benchmark tables and CSVs: `d6302f1` `[bench] record sparse convolution
+gains`. The sparse structural cleanup, dense batching experiment and follow-on
+packed-storage plan are complete. Further optimization can start from these
+source and measurement checkpoints; no GPU resources were used.

@@ -1,5 +1,9 @@
 # Mirror the dense evaluator cleanup in block-sparse evaluation
 
+Completed on 2026-11-03 in source commits `1ddbb7b` and `78576a6`, with 85/85
+CPU CTest entries passing before the separate numerical/storage work began.
+See `work_log_block_sparse_refactor.md` for the step-by-step validation record.
+
 ## Purpose and boundaries
 
 Make `block_sparse::DiagramEvaluator` as readable as the dense evaluator: its public methods describe requested results, its private members own reusable numerical storage, and file-local functions implement the arithmetic with explicit inputs and outputs. Retain the sparse-specific path discovery, support tables, endpoint sums and correlator segment reuse. This is a structural pass before implementing `plan_fast_conv_packed_storage.md`.
