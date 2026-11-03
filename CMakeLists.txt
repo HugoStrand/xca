@@ -145,6 +145,7 @@ if(Build_Tests)
   add_subdirectory(test)
   add_subdirectory(benchmarks/backbone_cpu)
   add_subdirectory(benchmarks/block_sparse_layout)
+  add_subdirectory(benchmarks/block_sparse_convolution)
   add_subdirectory(benchmarks/dense_cpu_batched)
 endif()
 
