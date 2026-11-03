@@ -5,6 +5,7 @@
 #include <nda/nda.hpp>
 
 #include <cppdlr/dlr_imtime.hpp>
+#include <cppdlr/fast_convolve.hpp>
 
 #include <triqs/gfs.hpp>
 
@@ -42,6 +43,8 @@ namespace triqs_xca::dense {
     C2PY_IGNORE explicit DiagramEvaluator(Action<FSet> action);
 
     private:
+    cppdlr::fast_convolve convolution;
+    cppdlr::fast_convolve_workspace convolution_work;
     nda::array<dcomplex, 3> Sigma; // result accumulator for topology self-energy calls
     nda::array<dcomplex, 3> T;     // array for storing intermediate result
     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)

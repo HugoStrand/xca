@@ -1,6 +1,8 @@
 #include "test_utils/prepared_evaluators.hpp"
 #include "triqs_xca/diagram/backbone.hpp"
 #include <concepts>
+#include <memory>
+#include <tuple>
 #include <gtest/gtest.h>
 
 #include <triqs_xca/dense/diagram_evaluator.hpp>
@@ -142,4 +144,20 @@ TEST(DensePrepared, repeated_calls_return_independent_contributions) {
   expect_close(actual_sigma, expected_sigma);
   expect_close(actual_pair, expected_pair);
   expect_close(actual_correlator, expected_correlator);
+}
+
+TEST(DensePrepared, copied_evaluator_retains_convolution_grid) {
+  // Destroy both the original evaluator and model before using the copy. The
+  // Action mesh shares its interpolation object, which fast_convolve borrows.
+  auto [retained, G, prepared, reference] = [] {
+    auto model = test_utils::build_eval_model("unequal_sets_nA0");
+    dense::DiagramEvaluator original(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+    nda::array<int, 2> topology{{0, 2}, {1, 3}};
+    auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, original.action, 0);
+    auto expected = original.compute_self_energy_by_pairs(model.G, backbone);
+    auto copy = std::make_unique<dense::DiagramEvaluator>(original);
+    EXPECT_EQ(&copy->action.tau_mesh.dlr_it(), &original.action.tau_mesh.dlr_it());
+    return std::tuple{std::move(copy), model.G, std::move(backbone), std::move(expected)};
+  }();
+  expect_close(retained->compute_self_energy_by_pairs(G, prepared), reference);
 }
