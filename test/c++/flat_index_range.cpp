@@ -152,7 +152,7 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   long partner = (f_sigma / n_op) % 2 == 0 ? f_sigma + n_op : f_sigma - n_op;
   auto pair    = nda::make_regular(S + sigma_dense(partner));
   D_dense.reset();
-  auto pair_backbone = triqs_xca::diagram::prepare_backbone(topology, D_dense.action, f_sigma, triqs_xca::diagram::Kind::self_energy);
+  auto pair_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, D_dense.action, f_sigma);
   D_dense.eval_self_energy_pair(G_flat[0].data(), pair_backbone);
   EXPECT_LE(nda::max_element(nda::abs(D_dense.Sigma - pair)), 1.0e-13 * nda::max_element(nda::abs(pair)));
 

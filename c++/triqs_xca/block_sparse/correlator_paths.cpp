@@ -1,12 +1,11 @@
 #include "correlator_paths.hpp"
 
 namespace triqs_xca::block_sparse {
-  void visit_correlator_paths(BlockDiagOpFun const &propagator, std::span<diagram::BackbonePath const> zero_to_tau,
-                              std::span<diagram::BackbonePath const> tau_to_beta, std::span<BlockOp const> at_tau, std::span<BlockOp const> at_zero,
-                              std::function<void(diagram::BackbonePath const &, int, int)> const &visit) {
+  void visit_correlator_paths(BlockDiagOpFun const &propagator, std::span<diagram::CorrelatorBackbonePath const> zero_to_tau,
+                              std::span<diagram::CorrelatorBackbonePath const> tau_to_beta, std::span<BlockOp const> at_tau, std::span<BlockOp const> at_zero,
+                              std::function<void(diagram::CorrelatorBackbonePath const &, int, int)> const &visit) {
     if (zero_to_tau.empty() || tau_to_beta.empty()) return;
     auto const &backbone = zero_to_tau.front().backbone;
-    backbone.require_correlator();
     auto ranges = backbone.endpoint_ranges();
     for (auto const &path : zero_to_tau)
       if (path.range != ranges.before_special) throw std::invalid_argument("wrong before-special correlator range");

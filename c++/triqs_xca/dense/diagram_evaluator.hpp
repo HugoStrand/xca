@@ -50,7 +50,10 @@ namespace triqs_xca::dense {
     using gf_t  = triqs::gfs::block_gf<dlr_imtime>;
     using gf_vt = triqs::gfs::block_gf_view<dlr_imtime>;
 
-    using Backbone = triqs_xca::diagram::Backbone;
+    using Kind = triqs_xca::diagram::Kind;
+    template <Kind K> using Backbone = triqs_xca::diagram::Backbone<K>;
+    using SelfEnergyBackbone = triqs_xca::diagram::SelfEnergyBackbone;
+    using CorrelatorBackbone = triqs_xca::diagram::CorrelatorBackbone;
     using BackboneRange = triqs_xca::diagram::BackboneRange;
 
     C2PY_IGNORE const Action<FSet> action;
@@ -73,19 +76,22 @@ namespace triqs_xca::dense {
     arr_cvt<dcplx, 3> native_propagator(gf_vt G_ppsc) const;
 
     // Traversals of the endpoint ranges; normalization remains caller-owned.
+    template <Kind K>
     void evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                  Backbone const &backbone, BackboneRange range);
+                                  Backbone<K> const &backbone, BackboneRange range);
     void extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                        Backbone const &backbone, BackboneRange range);
+                        SelfEnergyBackbone const &backbone, BackboneRange range);
     void evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                    Backbone const &backbone, BackboneRange range);
+                                    CorrelatorBackbone const &backbone, BackboneRange range);
 
     // routines for any diagram
 
     // multiply by a single vertex, v_ix, in a diagram using dense storage
-    void multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone const &backbone, int v_ix);
+    template <Kind K>
+    void multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone<K> const &backbone, int v_ix);
     // convolve with a single edge, e_ix, in a diagram using dense storage
-    void integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt, Backbone const &backbone, int e_ix);
+    template <Kind K>
+    void integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt, Backbone<K> const &backbone, int e_ix);
 
     // routines for self-energy diagrams
 
@@ -95,18 +101,18 @@ namespace triqs_xca::dense {
     // routines for correlator diagrams
 
     // multiply by a single vertex, v_ix, on the tau-beta side of a correlator diagram using dense storage
-    void multiply_right_vertex(arr_vt<dcplx, 3> U_buf, Backbone const &backbone, int v_ix);
+    void multiply_right_vertex(arr_vt<dcplx, 3> U_buf, CorrelatorBackbone const &backbone, int v_ix);
     // convolve with a single edge, e_ix, on the tau-beta side of a correlator diagram using dense storage
-    void integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt, Backbone const &backbone, int e_ix);
+    void integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone, int e_ix);
 
     public:
     C2PY_IGNORE void reset(); // reset all arrays to zero
 
     // Prepared numerical entry points. Self-energy calls add into Sigma; correlators return their contribution.
-    C2PY_IGNORE void eval_self_energy(arr_cvt<dcplx, 3> Gt, Backbone const &backbone);
-    C2PY_IGNORE void eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, Backbone const &backbone);
+    C2PY_IGNORE void eval_self_energy(arr_cvt<dcplx, 3> Gt, SelfEnergyBackbone const &backbone);
+    C2PY_IGNORE void eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, SelfEnergyBackbone const &backbone);
     C2PY_IGNORE arr_t<dcplx, 3> eval_correlator(
-      arr_cvt<dcplx, 3> Gt, Backbone const &backbone,
+      arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone,
       arr_cvt<dcplx, 3> mu_ops, arr_cvt<dcplx, 3> kap_ops, triqs_xca::diagram::CorrelatorStatistics correlator_statistics = {});
 
     /// Evaluate this MPI rank's share of a topology; the caller reduces the accumulated result.

@@ -38,7 +38,7 @@ namespace triqs_xca::test_utils {
     if constexpr (std::is_same_v<E, dense::DiagramEvaluator>) {
       evaluator.reset();
       visit_fixture_indices(selection, [&](long f) {
-        auto backbone = diagram::prepare_backbone(topology, evaluator.action, f, diagram::Kind::self_energy);
+        auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, f);
         evaluator.eval_self_energy(Gt, backbone);
       });
       return bgf{std::vector{gf(evaluator.action.tau_mesh, evaluator.Sigma)}};
@@ -48,7 +48,7 @@ namespace triqs_xca::test_utils {
         blocks.emplace_back(evaluator.action.tau_mesh, nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), Gt.get_block_size(b), Gt.get_block_size(b)));
       bgf result{blocks};
       visit_fixture_indices(selection, [&](long f) {
-        auto backbone = diagram::prepare_backbone(topology, evaluator.action, f, diagram::Kind::self_energy);
+        auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, f);
         result += evaluator.compute_self_energy(Gt, backbone);
       });
       return result;
@@ -67,7 +67,7 @@ namespace triqs_xca::test_utils {
     long count = diagram::count_self_energy_pairs(topology.extent(0), evaluator.action.n_flavours(), evaluator.action.poles.size());
     for (long pair = 0; pair < count; ++pair) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), evaluator.action, pair);
-      evaluator.eval_self_energy_pair(Gt, diagram::prepare_backbone(topology, arcs));
+      evaluator.eval_self_energy_pair(Gt, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
     }
     using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
     return triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{gf(evaluator.action.tau_mesh, evaluator.Sigma)}};
@@ -83,7 +83,7 @@ namespace triqs_xca::test_utils {
     else { n_mu = mu.size(); n_kap = kap.size(); }
     auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), n_mu, n_kap);
     visit_fixture_indices(selection, [&](long f) {
-      auto backbone = diagram::prepare_backbone(topology, evaluator.action, f, diagram::Kind::correlator);
+      auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, evaluator.action, f);
       result += evaluator.eval_correlator(Gt, backbone, mu, kap, diagram::uniform_correlator_statistics(fermionic));
     });
     return result;

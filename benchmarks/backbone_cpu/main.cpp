@@ -55,7 +55,8 @@ int main(int argc, char **argv) try {
   long samples = std::min(count, 64L);
   nda::vector<long> indices(samples);
   std::vector<triqs_xca::diagram::Arcs> logical;
-  std::vector<triqs_xca::diagram::Backbone> backbones, correlator_backbones;
+  std::vector<triqs_xca::diagram::SelfEnergyBackbone> backbones;
+  std::vector<triqs_xca::diagram::CorrelatorBackbone> correlator_backbones;
   long correlator_count = triqs_xca::diagram::count_diagrams(order, evaluator.action.n_flavours(), model.hyb_poles.size(), triqs_xca::diagram::Kind::correlator);
   auto [mu, kap] = tu::make_correlator_ops(evaluator.action.operators, evaluator.action.n_hyb);
   // Stratified samples with a fixed seed avoid aliasing repeated low-order digits.
@@ -65,9 +66,9 @@ int main(int argc, char **argv) try {
     long last  = (count / samples) * (i + 1) + (count % samples) * (i + 1) / samples;
     indices(i) = std::uniform_int_distribution<long>{first, last - 1}(random);
     logical.push_back(triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
-    backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, logical.back()));
-    correlator_backbones.push_back(triqs_xca::diagram::prepare_backbone(topology, evaluator.action, indices(i) % correlator_count,
-                                                                     triqs_xca::diagram::Kind::correlator));
+    backbones.push_back(triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, logical.back()));
+    correlator_backbones.push_back(triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
+      topology, evaluator.action, indices(i) % correlator_count));
   }
   double checksum = 0;
   long paths      = 0;
@@ -90,11 +91,12 @@ int main(int argc, char **argv) try {
     std::cout << phase << ',' << timings[2] << ',' << timings.front() << ',' << timings.back() << '\n';
   };
   time("flat_preparation", [&](long i) {
-    auto a = triqs_xca::diagram::prepare_backbone(topology, triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
+    auto a = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(
+      topology, triqs_xca::diagram::decode_arcs(order, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy));
     checksum += a.direction_sign;
   });
   time("logical_preparation", [&](long i) {
-    auto a = triqs_xca::diagram::prepare_backbone(topology, logical[i]);
+    auto a = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, logical[i]);
     checksum += a.direction_sign;
   });
   time("kernel_prefactor", [&](long i) {
@@ -110,7 +112,7 @@ int main(int argc, char **argv) try {
     checksum += nda::sum(nda::abs(result[0].data()));
   });
   time("prepare_and_self_energy_call", [&](long i) {
-    auto backbone = triqs_xca::diagram::prepare_backbone(topology, evaluator.action, indices(i), triqs_xca::diagram::Kind::self_energy);
+    auto backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, evaluator.action, indices(i));
     auto result = evaluator.compute_self_energy(G, backbone);
     checksum += nda::sum(nda::abs(result[0].data()));
   });

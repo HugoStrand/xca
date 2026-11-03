@@ -24,14 +24,16 @@ namespace triqs_xca::diagram {
     return result;
   }
 
-  Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs) {
+  template <Kind K> Backbone<K> prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs) {
     int m          = topology.extent(0);
     auto vertices  = prepare_vertices(topology, arcs);
-    int edge_count = 2 * m - (arcs[0].direction != Direction::external);
-    Backbone result{std::move(vertices),
-                    std::vector<Edge>(edge_count),
-                    {},
-                    {topology(0, 1), arcs[0].direction, prepare_permutation_signs(topology, arcs)}};
+    if ((arcs[0].direction == Direction::external) != (K == Kind::correlator))
+      throw std::invalid_argument("special arc does not match backbone kind");
+    int edge_count = 2 * m - (K == Kind::self_energy);
+    Backbone<K> result(arcs[0].direction);
+    result.vertices  = std::move(vertices);
+    result.edges     = std::vector<Edge>(edge_count);
+    result.endpoints = {topology(0, 1), prepare_permutation_signs(topology, arcs)};
     result.kernel_prefactor.factors.reserve(m - 1);
     for (int a = 1; a < m; ++a) {
       auto const &arc = arcs[a];
@@ -54,14 +56,13 @@ namespace triqs_xca::diagram {
     return result;
   }
 
-  EndpointRanges Backbone::endpoint_ranges() const {
+  template <Kind K> EndpointRanges Backbone<K>::endpoint_ranges() const {
     int special = endpoints.special_vertex;
     return {{1, special, 0, special}, {special + 1, static_cast<int>(vertices.size()), special, static_cast<int>(edges.size())}};
   }
 
-  OperatorPairOrientation Backbone::endpoint_orientation() const {
-    require_self_energy();
-    return {endpoints.direction == Direction::forward};
+  template <Kind K> OperatorPairOrientation Backbone<K>::endpoint_orientation() const requires(K == Kind::self_energy) {
+    return {endpoint_direction_ == Direction::forward};
   }
 
   CorrelatorStatistics uniform_correlator_statistics(bool fermionic) {
@@ -69,21 +70,11 @@ namespace triqs_xca::diagram {
     return {statistics, statistics};
   }
 
-  void Backbone::require_self_energy() const {
-    if (endpoints.direction != Direction::forward && endpoints.direction != Direction::backward)
-      throw std::invalid_argument("backbone has no self-energy endpoint sum");
+  template <Kind K> int Backbone<K>::self_energy_sign() const requires(K == Kind::self_energy) {
+    return (order() % 2 == 0 ? -1 : 1) * (endpoint_direction_ == Direction::forward ? 1 : -1) * direction_sign;
   }
 
-  void Backbone::require_correlator() const {
-    if (endpoints.direction != Direction::external) throw std::invalid_argument("backbone has no external observable endpoints");
-  }
-
-  int Backbone::self_energy_sign() const {
-    require_self_energy();
-    return (order() % 2 == 0 ? -1 : 1) * (endpoints.direction == Direction::forward ? 1 : -1) * direction_sign;
-  }
-
-  std::ostream &operator<<(std::ostream &out, Backbone const &backbone) {
+  template <Kind K> std::ostream &operator<<(std::ostream &out, Backbone<K> const &backbone) {
     out << "Vertices (flavour, pole, adjoint, bar, kernel sign):\n";
     for (auto const &vertex : backbone.vertices)
       out << vertex.flavour << ' ' << vertex.pole_index << ' ' << vertex.adjoint << ' ' << vertex.barred << ' ' << vertex.kernel_sign << '\n';
@@ -93,11 +84,18 @@ namespace triqs_xca::diagram {
       for (auto const &factor : backbone.edges[e].kernels) out << " (" << factor.pole_index << ", " << factor.argument_sign << ")";
       out << '\n';
     }
-    out << "Endpoint: " << backbone.endpoints.special_vertex << ", direction " << static_cast<int>(backbone.endpoints.direction) << ", parity "
+    out << "Endpoint: " << backbone.endpoints.special_vertex << ", direction " << static_cast<int>(backbone.endpoint_direction_) << ", parity "
         << backbone.endpoints.signs.with_fermionic_arc << ", " << backbone.endpoints.signs.without_fermionic_arc
         << "\nDirection sign: " << backbone.direction_sign << "\nKernel normalization (pole, sign, exponent):";
     for (auto const &factor : backbone.kernel_prefactor.factors)
       out << " (" << factor.pole_index << ", " << factor.argument_sign << ", " << factor.exponent << ")";
     return out << '\n';
   }
+
+  template struct Backbone<Kind::self_energy>;
+  template struct Backbone<Kind::correlator>;
+  template SelfEnergyBackbone prepare_backbone<Kind::self_energy>(nda::array_const_view<int, 2>, Arcs const &);
+  template CorrelatorBackbone prepare_backbone<Kind::correlator>(nda::array_const_view<int, 2>, Arcs const &);
+  template std::ostream &operator<<(std::ostream &, SelfEnergyBackbone const &);
+  template std::ostream &operator<<(std::ostream &, CorrelatorBackbone const &);
 } // namespace triqs_xca::diagram

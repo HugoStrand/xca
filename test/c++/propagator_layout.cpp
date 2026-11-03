@@ -98,8 +98,8 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   EXPECT_THROW(D_bs.compute_one_time_correlator(G_bs, ops, ops, ad_flat, topology), std::invalid_argument);
 
   // Prepared numerical calls also check native propagator layout.
-  auto sigma_backbone = triqs_xca::diagram::prepare_backbone(topology, D_bs.action, 0, triqs_xca::diagram::Kind::self_energy);
-  auto corr_backbone = triqs_xca::diagram::prepare_backbone(topology, D_bs.action, 0, triqs_xca::diagram::Kind::correlator);
+  auto sigma_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, D_bs.action, 0);
+  auto corr_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(topology, D_bs.action, 0);
   auto [mu, kap] = test_utils::make_correlator_ops(D_bs.action.operators, D_bs.action.n_hyb);
   for (auto &[what, G] : wrong_for_bs) {
     if (G.size() == 0) continue; // BlockDiagOpFun cannot hold an empty propagator

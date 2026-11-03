@@ -143,7 +143,7 @@ namespace {
         auto arcs = choices[pair];
         arcs[0].direction = direction;
         arcs = diagram::prepare_arcs(std::move(arcs), evaluator.action, diagram::Kind::self_energy);
-        evaluator.eval_self_energy(G[0].data(), diagram::prepare_backbone(topology, arcs));
+        evaluator.eval_self_energy(G[0].data(), diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
       }
     }
     return bgf_t{std::vector{gf_t(evaluator.action.tau_mesh, evaluator.Sigma)}};

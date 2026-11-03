@@ -1,16 +1,35 @@
 #include <gtest/gtest.h>
 #include <triqs_xca/diagram/backbone.hpp>
+#include <concepts>
 
 using triqs_xca::diagram::Direction;
 
 namespace diagram = triqs_xca::diagram;
+
+namespace {
+  template <typename T> concept HasEndpointOrientation = requires(T const &backbone) { backbone.endpoint_orientation(); };
+  template <typename T> concept HasSelfEnergySign = requires(T const &backbone) { backbone.self_energy_sign(); };
+
+  static_assert(HasEndpointOrientation<diagram::SelfEnergyBackbone>);
+  static_assert(HasSelfEnergySign<diagram::SelfEnergyBackbone>);
+  static_assert(!HasEndpointOrientation<diagram::CorrelatorBackbone>);
+  static_assert(!HasSelfEnergySign<diagram::CorrelatorBackbone>);
+  static_assert(!std::constructible_from<diagram::SelfEnergyBackbone, diagram::CorrelatorBackbone>);
+  static_assert(!std::constructible_from<diagram::CorrelatorBackbone, diagram::SelfEnergyBackbone>);
+  static_assert(!std::constructible_from<diagram::SelfEnergyBackbone, Direction>);
+  static_assert(!std::constructible_from<diagram::CorrelatorBackbone, Direction>);
+  static_assert(!std::default_initializable<diagram::SelfEnergyBackbone>);
+  static_assert(!std::default_initializable<diagram::CorrelatorBackbone>);
+  static_assert(std::copyable<diagram::SelfEnergyBackbone>);
+  static_assert(std::copyable<diagram::CorrelatorBackbone>);
+} // namespace
 
 TEST(BackboneRange, correlator_geometry_is_shared) {
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
   auto arcs = diagram::prepare_arcs(diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, statistics,
                                    nda::vector<double>{1.}, diagram::Kind::correlator);
-  auto backbone = diagram::prepare_backbone(topology, arcs);
+  auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, arcs);
   auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   EXPECT_EQ(zero_to_tau, (diagram::BackboneRange{1, 2, 0, 2}));
   EXPECT_EQ(tau_to_beta, (diagram::BackboneRange{3, 4, 2, 4}));
@@ -22,7 +41,7 @@ TEST(BackboneRange, correlator_geometry_is_shared) {
 
 TEST(BackboneRange, first_order_has_two_single_edge_segments) {
   nda::array<int, 2> topology{{0, 1}};
-  auto backbone = diagram::prepare_backbone(topology, diagram::Arcs{{Direction::external, -1, -1}});
+  auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, diagram::Arcs{{Direction::external, -1, -1}});
   auto [zero_to_tau, tau_to_beta] = backbone.endpoint_ranges();
   EXPECT_EQ(zero_to_tau, (diagram::BackboneRange{1, 1, 0, 1}));
   EXPECT_EQ(tau_to_beta, (diagram::BackboneRange{2, 2, 1, 2}));
@@ -40,10 +59,10 @@ TEST(BackboneRange, rejects_disconnected_or_reversed_intervals) {
 TEST(Backbone, full_extent_distinguishes_self_energy_and_correlator) {
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   std::vector<triqs_xca::Statistics> statistics{triqs_xca::Statistics::fermionic};
-  auto sigma = diagram::prepare_backbone(topology,
+  auto sigma = diagram::prepare_backbone<diagram::Kind::self_energy>(topology,
                                          diagram::prepare_arcs(diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}}, statistics,
                                                                nda::vector<double>{1.}, diagram::Kind::self_energy));
-  auto corr  = diagram::prepare_backbone(topology,
+  auto corr  = diagram::prepare_backbone<diagram::Kind::correlator>(topology,
                                          diagram::prepare_arcs(diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}}, statistics,
                                                                nda::vector<double>{1.}, diagram::Kind::correlator));
   EXPECT_EQ(sigma.range(), (diagram::BackboneRange{0, 4, 0, 3}));
@@ -68,12 +87,10 @@ TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
     int end = 2 * topology.extent(0), special = end - 1;
     for (long direction : {0, 1}) {
       // One flavour and pole makes the least significant digit the special direction.
-      auto sigma = diagram::prepare_backbone(
+      auto sigma = diagram::prepare_backbone<diagram::Kind::self_energy>(
          topology, diagram::decode_arcs(topology.extent(0), statistics, nda::vector<double>{1.}, direction, diagram::Kind::self_energy));
-      EXPECT_EQ(static_cast<int>(sigma.endpoints.direction), direction);
+      EXPECT_EQ(sigma.endpoint_orientation().forward, direction == 1);
       EXPECT_EQ(sigma.endpoints.special_vertex, special);
-      EXPECT_NO_THROW(sigma.require_self_energy());
-      EXPECT_THROW(sigma.require_correlator(), std::invalid_argument);
       auto ranges = sigma.endpoint_ranges();
       EXPECT_EQ(ranges.before_special, (diagram::BackboneRange{1, special, 0, special}));
       EXPECT_EQ(ranges.after_special, (diagram::BackboneRange{end, end, special, special}));
@@ -84,18 +101,26 @@ TEST(BackboneEndpoints, ranges_and_operations_distinguish_the_two_kinds) {
       EXPECT_EQ(sigma.self_energy_sign(), direction == 0 ? -1 : 1);
     }
     auto corr =
-       diagram::prepare_backbone(topology, diagram::decode_arcs(topology.extent(0), statistics, nda::vector<double>{1.}, 0, diagram::Kind::correlator));
-    EXPECT_EQ(corr.endpoints.direction, Direction::external);
-    EXPECT_NO_THROW(corr.require_correlator());
-    EXPECT_THROW(corr.require_self_energy(), std::invalid_argument);
-    EXPECT_THROW(corr.self_energy_sign(), std::invalid_argument);
+       diagram::prepare_backbone<diagram::Kind::correlator>(topology, diagram::decode_arcs(topology.extent(0), statistics, nda::vector<double>{1.}, 0, diagram::Kind::correlator));
     auto ranges = corr.endpoint_ranges();
     EXPECT_EQ(ranges.before_special, (diagram::BackboneRange{1, special, 0, special}));
     EXPECT_EQ(ranges.after_special, (diagram::BackboneRange{end, end, special, end}));
     EXPECT_FALSE(ranges.after_special.empty()); // the final propagator remains
   }
-  auto sigma = diagram::prepare_backbone(nda::array<int, 2>{{0, 2}, {1, 3}},
+  auto sigma = diagram::prepare_backbone<diagram::Kind::self_energy>(nda::array<int, 2>{{0, 2}, {1, 3}},
                                          diagram::decode_arcs(2, statistics, nda::vector<double>{1.}, 0, diagram::Kind::self_energy));
   EXPECT_EQ(sigma.endpoint_ranges().after_special, (diagram::BackboneRange{3, 4, 2, 3}));
   EXPECT_FALSE(sigma.endpoint_ranges().after_special.empty());
+}
+
+TEST(BackboneEndpoints, preparation_rejects_arcs_of_the_wrong_kind) {
+  nda::array<int, 2> topology{{0, 1}};
+  diagram::Arcs external{{Direction::external, -1, -1}};
+  EXPECT_THROW(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, external), std::invalid_argument);
+  for (Direction direction : {Direction::forward, Direction::backward}) {
+    diagram::Arcs interaction{{direction, -1, -1}};
+    EXPECT_THROW(diagram::prepare_backbone<diagram::Kind::correlator>(topology, interaction), std::invalid_argument);
+  }
+  EXPECT_THROW(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, diagram::Arcs{}), std::invalid_argument);
+  EXPECT_THROW(diagram::prepare_backbone<diagram::Kind::correlator>(topology, diagram::Arcs{}), std::invalid_argument);
 }

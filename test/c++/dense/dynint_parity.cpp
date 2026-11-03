@@ -153,7 +153,7 @@ TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
   namespace logical = triqs_xca::diagram;
   using logical::Direction;
   auto sum = nda::zeros<dcomplex>(D.action.tau_mesh.size(), D.action.block_dims(0), D.action.block_dims(0));
-  auto evaluate = [&](logical::Backbone const &backbone, bool pair) {
+  auto evaluate = [&](logical::SelfEnergyBackbone const &backbone, bool pair) {
     D.reset();
     if (pair) D.eval_self_energy_pair(m.G_ppsc[0].data(), backbone);
     else D.eval_self_energy(m.G_ppsc[0].data(), backbone);
@@ -164,7 +164,7 @@ TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
       for (int flavour = 0; flavour < D.action.n_flavours(); ++flavour) {
         auto prepare = [&](Direction endpoint) {
           auto arcs = logical::prepare_arcs(logical::Arcs{{endpoint, -1, -1}, {direction, flavour, pole}}, D.action, logical::Kind::self_energy);
-          return logical::prepare_backbone(topology, arcs);
+          return logical::prepare_backbone<logical::Kind::self_energy>(topology, arcs);
         };
         auto backward = prepare(Direction::backward), forward = prepare(Direction::forward);
         auto expected = nda::make_regular(evaluate(backward, false) + evaluate(forward, false));

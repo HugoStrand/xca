@@ -10,9 +10,26 @@
 namespace {
   namespace logical = triqs_xca::diagram;
   namespace sparse  = triqs_xca::block_sparse;
-  using Path        = sparse::diagram::BackbonePath;
+  using SelfEnergyPath = sparse::diagram::SelfEnergyBackbonePath;
+  using CorrelatorPath = sparse::diagram::CorrelatorBackbonePath;
   using tensor      = nda::array<nda::dcomplex, 3>;
   using nda::dcomplex;
+
+  template <typename Path>
+  concept SelfEnergyInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun &G, Path const &path) {
+    evaluator.compute_self_energy(G, path);
+  };
+
+  template <typename Path>
+  concept CorrelatorInput = requires(sparse::DiagramEvaluator &evaluator, sparse::BlockDiagOpFun &G, Path const &path,
+                                     std::vector<sparse::BlockOp> const &operators) {
+    evaluator.eval_correlator(G, path, operators, operators, logical::CorrelatorStatistics{});
+  };
+
+  static_assert(SelfEnergyInput<SelfEnergyPath>);
+  static_assert(!SelfEnergyInput<CorrelatorPath>);
+  static_assert(CorrelatorInput<CorrelatorPath>);
+  static_assert(!CorrelatorInput<SelfEnergyPath>);
 
   void expect_close(tensor const &actual, tensor const &expected) {
     double scale = nda::max_element(nda::abs(expected));
@@ -61,13 +78,13 @@ namespace {
     std::vector<sparse::BlockOp> mu{id, dcomplex{0.7, 0.2} * id}, kap{id, dcomplex{-0.3, 0.4} * id};
     logical::CorrelatorStatistics statistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic};
 
-    tensor self_energy(sparse::BlockDiagOpFun &propagator, Path const &path) {
+    tensor self_energy(sparse::BlockDiagOpFun &propagator, SelfEnergyPath const &path) {
       return triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(propagator, path), model.ad);
     }
 
-    std::vector<Path> correlator_paths(logical::Backbone const &backbone, bool &reused_segments) {
+    std::vector<CorrelatorPath> correlator_paths(logical::CorrelatorBackbone const &backbone, bool &reused_segments) {
       sparse::OperatorSupportTable support(evaluator.action.operators);
-      std::vector<Path> before, after, completed;
+      std::vector<CorrelatorPath> before, after, completed;
       auto ranges = backbone.endpoint_ranges();
       sparse::visit_backbone_paths(G, backbone, evaluator.action.operators, support, ranges.before_special,
                                    [&](auto const &path) { before.push_back(path); });
@@ -99,12 +116,12 @@ TEST_F(BlockSparsePathEvaluator, retained_self_energy_paths_match_prepared_backb
         logical::Arcs choices{{direction, -1, -1}};
         if (order == 2) choices.push_back({logical::Direction::forward, evaluator.action.n_flavours() - 1, 1});
         auto arcs = logical::prepare_arcs(std::move(choices), evaluator.action, logical::Kind::self_energy);
-        auto backbone = logical::prepare_backbone(topology, arcs);
+        auto backbone = logical::prepare_backbone<logical::Kind::self_energy>(topology, arcs);
         expected = triqs_xca::test_utils::get_tensor_in_full_hilbert_space(triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, f), model.ad);
         expect_close(triqs_xca::test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, backbone), model.ad), expected);
         if (order == 2) EXPECT_GT(std::abs(triqs_xca::tau_kernel_prefactor(backbone.kernel_prefactor, evaluator.action.kernel) - 1.), 0.1);
         sparse::OperatorSupportTable support(evaluator.action.operators);
-        std::vector<Path> retained;
+        std::vector<SelfEnergyPath> retained;
         sparse::visit_self_energy_paths(G, backbone, evaluator.action.operators, support,
                                         [&](auto const &path) { retained.push_back(path); });
         return retained;
@@ -136,7 +153,7 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_do_not_depend_on_segm
       logical::Arcs choices{{logical::Direction::external, -1, -1}};
       if (order == 2) choices.push_back({logical::Direction::forward, evaluator.action.n_flavours() - 1, 1});
       auto arcs = logical::prepare_arcs(std::move(choices), evaluator.action, logical::Kind::correlator);
-      auto backbone = logical::prepare_backbone(topology, arcs);
+      auto backbone = logical::prepare_backbone<logical::Kind::correlator>(topology, arcs);
       expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, mu, kap, f, false);
       // This call evaluates and then releases its numerical segment-result caches.
       expect_close(evaluator.eval_correlator(G, backbone, mu, kap, statistics), expected);
@@ -187,7 +204,7 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_preserve_fermionic_cr
     long f = evaluator.n * (1 + model.hyb_poles.size());
     auto arcs = logical::prepare_arcs(logical::Arcs{{logical::Direction::external, -1, -1}, {logical::Direction::forward, 0, 1}},
                                        evaluator.action, logical::Kind::correlator);
-    auto backbone = logical::prepare_backbone(topology, arcs);
+    auto backbone = logical::prepare_backbone<logical::Kind::correlator>(topology, arcs);
     EXPECT_EQ(backbone.endpoints.signs.with_fermionic_arc, -1);
     EXPECT_EQ(backbone.endpoints.signs.without_fermionic_arc, 1);
     expected = triqs_xca::test_utils::fixture_correlator(evaluator, G, topology, mu, kap, f, true);
@@ -209,9 +226,9 @@ TEST_F(BlockSparsePathEvaluator, retained_correlator_paths_preserve_fermionic_cr
 
 TEST_F(BlockSparsePathEvaluator, path_entry_points_reject_incomplete_operations_and_honor_empty_selections) {
   auto topology = topology_for_order(1);
-  auto sigma = logical::prepare_backbone(topology, logical::decode_arcs(1, evaluator.action, 0, logical::Kind::self_energy));
-  auto corr = logical::prepare_backbone(topology, logical::decode_arcs(1, evaluator.action, 0, logical::Kind::correlator));
-  std::vector<Path> sigma_paths;
+  auto sigma = logical::prepare_backbone<logical::Kind::self_energy>(topology, logical::decode_arcs(1, evaluator.action, 0, logical::Kind::self_energy));
+  auto corr = logical::prepare_backbone<logical::Kind::correlator>(topology, logical::decode_arcs(1, evaluator.action, 0, logical::Kind::correlator));
+  std::vector<SelfEnergyPath> sigma_paths;
   sparse::visit_self_energy_paths(G, sigma, evaluator.action.operators, sparse::OperatorSupportTable(evaluator.action.operators),
                                   [&](auto const &path) { sigma_paths.push_back(path); });
   bool reused_segments = false;
@@ -228,10 +245,8 @@ TEST_F(BlockSparsePathEvaluator, path_entry_points_reject_incomplete_operations_
   evaluator.GKt = 4.;
   evaluator.Tkaps = 5.;
   evaluator.Tmu = 6.;
-  EXPECT_THROW(evaluator.compute_self_energy(G, corr_path), std::invalid_argument);
-  EXPECT_THROW(evaluator.eval_correlator(G, sigma_path, mu, kap, statistics), std::invalid_argument);
-  Path sigma_segment(sigma, sigma.endpoint_ranges().before_special);
-  Path corr_segment(corr, corr.endpoint_ranges().before_special);
+  SelfEnergyPath sigma_segment(sigma, sigma.endpoint_ranges().before_special);
+  CorrelatorPath corr_segment(corr, corr.endpoint_ranges().before_special);
   EXPECT_THROW(evaluator.compute_self_energy(G, sigma_segment), std::invalid_argument);
   EXPECT_THROW(evaluator.eval_correlator(G, corr_segment, mu, kap, statistics), std::invalid_argument);
   auto two_tau_operators = corr_path;

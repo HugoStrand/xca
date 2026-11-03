@@ -104,7 +104,7 @@ namespace triqs_xca::dense {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     reset();
     for (long index = first; index < last; ++index) {
-      auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, index, triqs_xca::diagram::Kind::self_energy);
+      auto backbone = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(topology, action, index);
       eval_self_energy(Gt, backbone);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
@@ -120,7 +120,7 @@ namespace triqs_xca::dense {
     reset();
     for (long pair = first; pair < last; ++pair) {
       auto arcs = triqs_xca::diagram::decode_self_energy_pair_arcs(topology.extent(0), action, pair);
-      auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+      auto backbone = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(topology, arcs);
       eval_self_energy_pair(Gt, backbone);
     }
     auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
@@ -130,8 +130,9 @@ namespace triqs_xca::dense {
 
   // The initial segment starts at edge zero, whose kernel is identity:
   // internal arcs never touch vertex zero.
+  template <triqs_xca::diagram::Kind K>
   void DiagramEvaluator::evaluate_initial_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                                 Backbone const &backbone, BackboneRange range) {
+                                                 Backbone<K> const &backbone, BackboneRange range) {
     result = Gt;
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
       multiply_left_vertex(result, backbone, v);
@@ -141,7 +142,7 @@ namespace triqs_xca::dense {
 
   // Extend an existing endpoint result; an empty self-energy tail does no work.
   void DiagramEvaluator::extend_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                       Backbone const &backbone, BackboneRange range) {
+                                       SelfEnergyBackbone const &backbone, BackboneRange range) {
     for (int v = range.first_vertex; v < range.vertex_end; ++v) {
       integrate_left_edge(result, Gt, backbone, v - 1);
       multiply_left_vertex(result, backbone, v);
@@ -151,7 +152,7 @@ namespace triqs_xca::dense {
   // The correlator segment starts at the beta edge in this traversal.
   // Its kernel is identity because all internal arcs end before beta.
   void DiagramEvaluator::evaluate_reflected_segment(arr_vt<dcplx, 3> result, arr_cvt<dcplx, 3> Gt,
-                                                   Backbone const &backbone, BackboneRange range) {
+                                                   CorrelatorBackbone const &backbone, BackboneRange range) {
     result = Gt;
     for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
       multiply_right_vertex(result, backbone, v);
@@ -160,7 +161,8 @@ namespace triqs_xca::dense {
     result = action.tau_mesh.dlr_it().reflect(result);
   }
 
-  void DiagramEvaluator::multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone const &backbone, int v_ix) {
+  template <triqs_xca::diagram::Kind K>
+  void DiagramEvaluator::multiply_left_vertex(arr_vt<dcplx, 3> T_buf, Backbone<K> const &backbone, int v_ix) {
     auto const r = action.tau_mesh.size();
     auto const &vertex = backbone.vertices[v_ix];
     auto F = action.operators.get_operator(vertex);
@@ -168,8 +170,9 @@ namespace triqs_xca::dense {
     apply_kernel(T_buf, vertex, action.kernel);
   }
 
+  template <triqs_xca::diagram::Kind K>
   void DiagramEvaluator::integrate_left_edge(arr_vt<dcplx, 3> T_buf, arr_cvt<dcplx, 3> Gt,
-                                            Backbone const &backbone, int e_ix) {
+                                            Backbone<K> const &backbone, int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
@@ -208,7 +211,7 @@ namespace triqs_xca::dense {
     }
   }
 
-  void DiagramEvaluator::eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, Backbone const &backbone) {
+  void DiagramEvaluator::eval_self_energy_pair(arr_cvt<dcplx, 3> Gt, SelfEnergyBackbone const &backbone) {
     auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -227,7 +230,7 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::eval_self_energy(arr_cvt<dcplx, 3> Gt, Backbone const &backbone) {
+  void DiagramEvaluator::eval_self_energy(arr_cvt<dcplx, 3> Gt, SelfEnergyBackbone const &backbone) {
     auto orientation = backbone.endpoint_orientation();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -243,7 +246,7 @@ namespace triqs_xca::dense {
 
   }
 
-  void DiagramEvaluator::multiply_right_vertex(arr_vt<dcplx, 3> U_buf, Backbone const &backbone, int v_ix) {
+  void DiagramEvaluator::multiply_right_vertex(arr_vt<dcplx, 3> U_buf, CorrelatorBackbone const &backbone, int v_ix) {
     auto const r = action.tau_mesh.size();
     auto const &vertex = backbone.vertices[v_ix];
     auto F = action.operators.get_operator(vertex);
@@ -252,17 +255,16 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluator::integrate_right_edge(arr_vt<dcplx, 3> U_buf, arr_cvt<dcplx, 3> Gt,
-                                             Backbone const &backbone, int e_ix) {
+                                             CorrelatorBackbone const &backbone, int e_ix) {
     GKt = Gt;
     apply_kernel_product(GKt, backbone.edges[e_ix].kernels, action.kernel);
     auto const &itops = action.tau_mesh.dlr_it();
     U_buf = itops.convolve(action.tau_mesh.beta(), itops.vals2coefs(U_buf), itops.vals2coefs(GKt), cppdlr::TIME_ORDERED);
   }
 
-  auto DiagramEvaluator::eval_correlator(arr_cvt<dcplx, 3> Gt, Backbone const &backbone,
+  auto DiagramEvaluator::eval_correlator(arr_cvt<dcplx, 3> Gt, CorrelatorBackbone const &backbone,
                                          arr_cvt<dcplx, 3> mu_ops, arr_cvt<dcplx, 3> kap_ops,
                                          triqs_xca::diagram::CorrelatorStatistics correlator_statistics) -> arr_t<dcplx, 3> {
-    backbone.require_correlator();
     auto const r = action.tau_mesh.size();
     auto ranges = backbone.endpoint_ranges();
     auto const &signs = backbone.endpoints.signs;
@@ -308,7 +310,7 @@ namespace triqs_xca::dense {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     arr_t<dcplx, 3> correlator = nda::zeros<dcplx>(r, mu_ops.extent(0), kap_ops.extent(0));
     for (long index = first; index < last; ++index) {
-      auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, index, triqs_xca::diagram::Kind::correlator);
+      auto backbone = triqs_xca::diagram::prepare_backbone<Kind::correlator>(topology, action, index);
       correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops);
     }
     return correlator;
@@ -360,7 +362,7 @@ namespace triqs_xca::dense {
     auto count = triqs_xca::diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), triqs_xca::diagram::Kind::correlator);
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     for (long index = first; index < last; ++index) {
-      auto backbone = triqs_xca::diagram::prepare_backbone(topology, action, index, triqs_xca::diagram::Kind::correlator);
+      auto backbone = triqs_xca::diagram::prepare_backbone<Kind::correlator>(topology, action, index);
       correlator += eval_correlator(Gt, backbone, mu_ops, kap_ops, statistics);
     }
 

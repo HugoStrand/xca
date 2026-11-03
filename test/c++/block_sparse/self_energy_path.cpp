@@ -40,7 +40,7 @@ namespace {
   }
 
   std::vector<int> values(nda::vector<int> const &v) { return {v.begin(), v.end()}; }
-  std::vector<int> edge_sectors(triqs_xca::block_sparse::diagram::BackbonePath const &path) {
+  std::vector<int> edge_sectors(triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath const &path) {
     std::vector<int> result;
     for (int e = path.range.first_edge; e < path.range.edge_end; ++e) result.push_back(path.edge_sector(e));
     return result;
@@ -53,11 +53,11 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
   auto G = propagator();
   nda::array<int, 2> topology{{0, 1}};
   nda::vector<double> poles{1.0};
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 0,
                                      triqs_xca::diagram::Kind::self_energy)); // creation at vertex 0, annihilation at vertex 1
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
 
   ASSERT_EQ(paths.size(), 4);
@@ -68,7 +68,7 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(path.range.first_edge, 0);
     EXPECT_EQ(path.range.edge_end, 1);
     EXPECT_EQ(path.sectors.size(), 3);
-    EXPECT_EQ(path.backbone.endpoints.direction, Direction::backward);
+    EXPECT_FALSE(path.backbone.endpoint_orientation().forward);
     EXPECT_EQ(path.sector(0), i / 2);
     EXPECT_EQ(path.sector(path.range.vertex_end), i / 2);
     EXPECT_EQ(path.zero_operators, (std::vector<int>{i % 2}));
@@ -77,11 +77,11 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
     EXPECT_EQ(values(path.sector_dimensions), (i / 2 == 0 ? std::vector<int>{1, 2, 1} : std::vector<int>{2, 1, 2}));
   }
 
-  assignment = triqs_xca::diagram::prepare_backbone(
+  assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), poles, 1,
                                      triqs_xca::diagram::Kind::self_energy)); // annihilation first
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> reversed;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> reversed;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { reversed.push_back(path); });
   ASSERT_EQ(reversed.size(), 4);
   for (int i = 0; i < 4; ++i) {
@@ -91,23 +91,23 @@ TEST(BackbonePath, first_order_paths_are_owned_and_ordered) {
   }
   EXPECT_EQ(edge_sectors(paths[0]), (std::vector<int>{1}));
   EXPECT_EQ(values(paths[0].sector_dimensions), (std::vector<int>{1, 2, 1}));
-  EXPECT_EQ(paths[0].backbone.endpoints.direction, Direction::backward);
+  EXPECT_FALSE(paths[0].backbone.endpoint_orientation().forward);
   auto copied                         = paths[0];
-  copied.backbone.endpoints.direction = Direction::forward;
+  copied.backbone = assignment;
   copied.zero_operators.clear();
-  EXPECT_EQ(paths[0].backbone.endpoints.direction, Direction::backward);
+  EXPECT_FALSE(paths[0].backbone.endpoint_orientation().forward);
   EXPECT_EQ(paths[0].zero_operators, (std::vector<int>{0}));
 }
 
 TEST(BackbonePath, nested_paths_use_every_propagator_mask_but_not_the_output_mask) {
   auto F = ladder();
   nda::array<int, 2> topology{{0, 3}, {1, 2}};
-  auto const assignment = triqs_xca::diagram::prepare_backbone(
+  auto const assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   auto G = propagator();
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   auto collect = [&](auto const &path) { paths.push_back(path); };
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), collect);
   ASSERT_EQ(paths.size(), 1);
@@ -139,11 +139,11 @@ TEST(BackbonePath, terminal_sector_is_recorded_without_a_new_closure_filter) {
   F.Fs   = F.F_dags;
   auto G = propagator();
   nda::array<int, 2> topology{{0, 1}};
-  auto const assignment = triqs_xca::diagram::prepare_backbone(
+  auto const assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].sector(0), 0);
@@ -155,11 +155,11 @@ TEST(BackbonePath, crossing_path_continues_after_the_special_vertex) {
   auto F = ladder();
   auto G = propagator();
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  auto const assignment = triqs_xca::diagram::prepare_backbone(
+  auto const assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 1);
   EXPECT_EQ(paths[0].sector(0), 0);
@@ -172,15 +172,15 @@ TEST(BackbonePath, discovery_is_independent_of_source_assignment_mutation) {
   auto F = ladder(2);
   auto G = propagator();
   nda::array<int, 2> topology{{0, 1}};
-  auto source = triqs_xca::diagram::prepare_backbone(
+  auto source = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      topology,
      triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
                                      nda::vector<double>{1.0}, 0, triqs_xca::diagram::Kind::self_energy));
   auto const assignment = source;
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   triqs_xca::block_sparse::visit_self_energy_paths(G, assignment, F, OperatorSupportTable(F), [&](auto const &path) {
     paths.push_back(path);
-    source = triqs_xca::diagram::prepare_backbone(
+    source = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
        topology,
        triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic),
                                        nda::vector<double>{1.0}, 1, triqs_xca::diagram::Kind::self_energy));
@@ -203,7 +203,7 @@ TEST(BackbonePath, internal_member_support_and_barred_support_filter_candidate_p
   BlockOpSymQuartet operators({group}, {group}, coefficients, nda::vector<long>{0, 0});
   std::vector<nda::array<nda::dcomplex, 3>> gs(2, nda::ones<nda::dcomplex>(1, 1, 1));
   BlockDiagOpFun G(gs, nda::vector<int>{0, 0});
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<Kind::self_energy>(
      nda::array<int, 2>{{0, 3}, {1, 2}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::backward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(2, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
@@ -250,10 +250,10 @@ TEST(BackbonePath, endpoint_lists_resolve_interleaved_groups_and_exact_member_su
       if (labels(a) == labels(b)) coefficients(0, a, b) = 1.;
   BlockOpSymQuartet operators(plain, adjoint, coefficients, labels);
   auto backbone =
-     triqs_xca::diagram::prepare_backbone(nda::array<int, 2>{{0, 1}},
+     triqs_xca::diagram::prepare_backbone<Kind::self_energy>(nda::array<int, 2>{{0, 1}},
                                           triqs_xca::diagram::decode_arcs(1, std::vector<triqs_xca::Statistics>(4, triqs_xca::Statistics::bosonic),
                                                                           nda::vector<double>{1.}, 0, Kind::self_energy));
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> paths;
+  std::vector<triqs_xca::block_sparse::diagram::SelfEnergyBackbonePath> paths;
   visit_self_energy_paths(propagator(), backbone, operators, OperatorSupportTable(operators), [&](auto const &path) { paths.push_back(path); });
   ASSERT_EQ(paths.size(), 4);
   for (int i = 0; i < 4; ++i) {

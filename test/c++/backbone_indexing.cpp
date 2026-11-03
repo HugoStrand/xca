@@ -75,10 +75,10 @@ TEST(Backbone, indexing) {
     nda::vector<int> exp_pKexp{line1_on_vertices ? 1 : 2, 1};
     int exp_psign = (fb(1) == 0 ? -1 : 1) * (fb(2) == 0 ? -1 : 1);
 
-    auto expect_generated = [&](Backbone const &backbone) {
+    auto expect_generated = [&](SelfEnergyBackbone const &backbone) {
       EXPECT_EQ(backbone.order(), m);
       EXPECT_EQ(backbone.endpoints.special_vertex, 2);
-      EXPECT_EQ(static_cast<int>(backbone.endpoints.direction), fb(0));
+      EXPECT_EQ(static_cast<int>(backbone.endpoint_orientation().forward), fb(0));
       for (int v = 0; v < 2 * m; ++v) {
         auto const &vertex = backbone.vertices[v];
         EXPECT_EQ(vertex.barred, exp_bar[v]);
@@ -101,11 +101,11 @@ TEST(Backbone, indexing) {
                                      {static_cast<Direction>(fb(1)), orb_inds(1), pole_inds(0)},
                                      {static_cast<Direction>(fb(2)), orb_inds(3), pole_inds(1)}},
                                 fermions(n), poles, Kind::self_energy);
-    expect_generated(prepare_backbone(topology, choices));
+    expect_generated(prepare_backbone<Kind::self_energy>(topology, choices));
     int f_ix     = o_ix + p_ix * n * n + fb_ix * n * n * r * r;
     auto decoded = decode_arcs(m, fermions(n), poles, f_ix, Kind::self_energy);
     for (int a = 0; a < m; ++a) EXPECT_EQ(static_cast<int>(decoded[a].direction), fb(a));
-    expect_generated(prepare_backbone(topology, decoded));
+    expect_generated(prepare_backbone<Kind::self_energy>(topology, decoded));
   }
 }
 
@@ -114,7 +114,7 @@ TEST(Backbone, correlator_data_survives_its_source_and_copies_are_independent) {
     nda::array<int, 2> topology{{0, 2}, {1, 3}};
     nda::vector<double> poles{-1.0, 2.0};
     auto arcs                = decode_arcs(2, fermions(2), poles, 7, Kind::correlator);
-    auto result              = prepare_backbone(topology, arcs);
+    auto result              = prepare_backbone<Kind::correlator>(topology, arcs);
     topology(0, 1)          = 3;
     poles(1)                 = -2.0;
     arcs[1].retained_flavour = 0;
@@ -122,7 +122,6 @@ TEST(Backbone, correlator_data_survives_its_source_and_copies_are_independent) {
     arcs[1].direction        = Direction::backward;
     return result;
   }();
-  EXPECT_EQ(backbone.endpoints.direction, Direction::external);
   EXPECT_EQ(backbone.vertices[0].flavour, -1);
   EXPECT_EQ(backbone.vertices[2].flavour, -1);
   EXPECT_EQ(backbone.vertices[1].flavour, 1);
@@ -148,18 +147,19 @@ TEST(Backbone, flat_index_out_of_range) {
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = 3;
   nda::vector<double> poles{1.3, -0.8};
-  auto check = [&](Kind kind, long expected_count) {
+  auto check = [&]<Kind K>(long expected_count) {
+    constexpr auto kind = K;
     EXPECT_EQ(count_diagrams(2, n, poles.size(), kind), expected_count);
     auto arcs = decode_arcs(2, fermions(n), poles, expected_count - 1, kind);
-    auto last = prepare_backbone(topology, arcs);
+    auto last = prepare_backbone<K>(topology, arcs);
     EXPECT_THROW(decode_arcs(2, fermions(n), poles, expected_count, kind), std::invalid_argument);
     EXPECT_THROW(decode_arcs(2, fermions(n), poles, -1, kind), std::invalid_argument);
     EXPECT_EQ(last.vertices[1].pole_index, 1);
     EXPECT_EQ(last.vertices[1].flavour, n - 1);
     EXPECT_EQ(arcs[1].direction, Direction::forward);
   };
-  check(Kind::self_energy, 24);
-  check(Kind::correlator, 12);
+  check.template operator()<Kind::self_energy>(24);
+  check.template operator()<Kind::correlator>(12);
 }
 
 TEST(Backbone, flat_indices_beyond_int) {
@@ -176,15 +176,18 @@ TEST(Backbone, flat_indices_beyond_int) {
   int m = 5, n = 14, p = 20;
   ASSERT_EQ(count_diagrams(m, n, p, Kind::self_energy), 196689920000L);
   ASSERT_EQ(count_diagrams(m, n, p, Kind::correlator), 98344960000L);
-  for (auto kind : {Kind::self_energy, Kind::correlator}) {
+  auto check = [&]<Kind K> {
+    constexpr auto kind = K;
     long last     = count_diagrams(m, n, p, kind) - 1;
     auto arcs     = decode_arcs(m, fermions(n), poles(p), last, kind);
-    auto backbone = prepare_backbone(crossing(m), arcs);
+    auto backbone = prepare_backbone<K>(crossing(m), arcs);
     for (int i = (kind == Kind::self_energy ? 0 : 1); i < m; ++i) EXPECT_EQ(arcs[i].direction, Direction::forward);
     for (int i = 1; i < m; ++i) EXPECT_EQ(arcs[i].pole_index, p - 1);
     for (int v = 1; v < 2 * m; ++v)
       if (v != m) EXPECT_EQ(backbone.vertices[v].flavour, n - 1);
-  }
+  };
+  check.template operator()<Kind::self_energy>();
+  check.template operator()<Kind::correlator>();
   // Mixed digits; the pole index alone exceeds int range.
   int m9 = 9, n9 = 2, p9 = 20;
   std::vector<int> fb = {1, 0, 0, 1, 1, 0, 1, 0, 1}, pole = {19, 0, 7, 13, 1, 18, 5, 11}, orb = {1, 0, 1, 1, 0, 0, 1, 0};
@@ -195,7 +198,7 @@ TEST(Backbone, flat_indices_beyond_int) {
   for (int i = 0; i < m9 - 1; ++i) n_o *= n9, n_p *= p9;
   ASSERT_GT(p_ix, long{std::numeric_limits<int>::max()});
   auto arcs     = decode_arcs(m9, fermions(n9), poles(p9), o_ix + n_o * (p_ix + n_p * fb_ix), Kind::self_energy);
-  auto backbone = prepare_backbone(crossing(m9), arcs);
+  auto backbone = prepare_backbone<Kind::self_energy>(crossing(m9), arcs);
   for (int i = 0; i < m9; ++i) EXPECT_EQ(static_cast<int>(arcs[i].direction), fb[i]);
   for (int i = 0; i < m9 - 1; ++i) EXPECT_EQ(arcs[i + 1].pole_index, pole[i]);
   for (int i = 1; i < m9; ++i) EXPECT_EQ(backbone.vertices[i].flavour, orb[i - 1]);
@@ -215,10 +218,10 @@ TEST(Backbone, logical_and_flat_selections_have_explicit_semantics) {
                   {Direction::forward, 1, 0, Statistics::fermionic, -1}}));
   EXPECT_EQ(count_diagrams(3, 3, 2, Kind::self_energy), 288);
   EXPECT_EQ(count_diagrams(3, 3, 2, Kind::correlator), 144);
-  auto logical = prepare_backbone(topology,
+  auto logical = prepare_backbone<Kind::self_energy>(topology,
                                   prepare_arcs(Arcs{{Direction::forward, -1, -1}, {Direction::backward, 2, 1}, {Direction::forward, 1, 0}},
                                                fermions(3), poles, Kind::self_energy));
-  auto flat    = prepare_backbone(topology, decoded);
+  auto flat    = prepare_backbone<Kind::self_energy>(topology, decoded);
   for (auto const *b : {&logical, &flat}) {
     EXPECT_EQ(b->vertices[1].flavour, 2);
     EXPECT_EQ(b->vertices[3].flavour, 1);
@@ -233,7 +236,7 @@ TEST(Backbone, logical_and_flat_selections_have_explicit_semantics) {
   EXPECT_EQ(correlator_arcs[0].direction, Direction::external);
   EXPECT_EQ(correlator_arcs[1].direction, Direction::backward);
   EXPECT_EQ(correlator_arcs[2].direction, Direction::forward);
-  EXPECT_EQ(prepare_backbone(topology, correlator_arcs).vertices[1].flavour, 2);
+  EXPECT_EQ(prepare_backbone<Kind::correlator>(topology, correlator_arcs).vertices[1].flavour, 2);
   EXPECT_THROW(decode_arcs(3, fermions(3), poles, 288, Kind::self_energy), std::invalid_argument);
   EXPECT_THROW(decode_arcs(3, fermions(3), poles, -1, Kind::self_energy), std::invalid_argument);
   EXPECT_THROW(
@@ -247,7 +250,7 @@ TEST(Backbone, logical_and_flat_selections_have_explicit_semantics) {
 TEST(Backbone, zero_poles_use_vertex_kernels_in_both_directions) {
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   for (int direction : {0, 1}) {
-    auto backbone = prepare_backbone(topology,
+    auto backbone = prepare_backbone<Kind::self_energy>(topology,
                                      prepare_arcs(Arcs{{Direction::backward, -1, -1}, {static_cast<Direction>(direction), 0, 0}}, fermions(1),
                                                   nda::vector<double>{0.0}, Kind::self_energy));
     EXPECT_EQ(backbone.vertices[1].kernel_sign, direction == 0 ? 1 : -1);
@@ -260,8 +263,8 @@ TEST(Backbone, zero_poles_use_vertex_kernels_in_both_directions) {
 TEST(Backbone, independent_preparation_has_no_reset_state) {
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   nda::vector<double> poles{-1.0, 2.0};
-  auto vertex = prepare_backbone(topology, decode_arcs(2, fermions(1), poles, 1, Kind::self_energy));
-  auto edge   = prepare_backbone(topology, decode_arcs(2, fermions(1), poles, 5, Kind::self_energy));
+  auto vertex = prepare_backbone<Kind::self_energy>(topology, decode_arcs(2, fermions(1), poles, 1, Kind::self_energy));
+  auto edge   = prepare_backbone<Kind::self_energy>(topology, decode_arcs(2, fermions(1), poles, 5, Kind::self_energy));
   EXPECT_EQ(edge.direction_sign, 1);
   EXPECT_EQ(edge.vertices[1].kernel_sign, 0);
   EXPECT_EQ(edge.vertices[3].kernel_sign, 0);
@@ -283,7 +286,7 @@ TEST(Backbone, logical_preparation_does_not_require_a_representable_flat_count) 
   Arcs choices(order, {Direction::forward, 13, 0});
   choices[0] = {Direction::forward, -1, -1};
   EXPECT_THROW(count_diagrams(order, flavours, 1, Kind::self_energy), std::overflow_error);
-  auto backbone = prepare_backbone(topology, prepare_arcs(choices, fermions(flavours), nda::vector<double>{-1.0}, Kind::self_energy));
+  auto backbone = prepare_backbone<Kind::self_energy>(topology, prepare_arcs(choices, fermions(flavours), nda::vector<double>{-1.0}, Kind::self_energy));
   ASSERT_EQ(backbone.vertices.size(), 2 * order);
   EXPECT_EQ(backbone.vertices[1].flavour, 13);
   EXPECT_EQ(backbone.vertices[order + 1].flavour, 13);
@@ -297,7 +300,7 @@ TEST(Backbone, first_order_correlator_has_no_internal_choices) {
   EXPECT_EQ(arcs[0].direction, Direction::external);
   EXPECT_EQ(arcs[0].pole_index, -1);
   EXPECT_EQ(arcs[0].retained_flavour, -1);
-  auto backbone = prepare_backbone(nda::array<int, 2>{{0, 1}}, arcs);
+  auto backbone = prepare_backbone<Kind::correlator>(nda::array<int, 2>{{0, 1}}, arcs);
   EXPECT_EQ(backbone.edges.size(), 2);
 }
 
@@ -306,7 +309,7 @@ TEST(Backbone, rejects_incomplete_or_malformed_enriched_arcs) {
   auto valid = prepare_arcs(Arcs{{Direction::backward, -1, -1}, {Direction::forward, 0, 0}}, fermions(1), nda::vector<double>{1.}, Kind::self_energy);
   auto reject = [&](Arcs const &arcs) {
     EXPECT_THROW(prepare_vertices(topology, arcs), std::invalid_argument);
-    EXPECT_THROW(prepare_backbone(topology, arcs), std::invalid_argument);
+    EXPECT_THROW(prepare_backbone<Kind::self_energy>(topology, arcs), std::invalid_argument);
   };
   auto changed = valid;
   changed.resize(1);
@@ -347,7 +350,7 @@ TEST(Backbone, rejects_incomplete_or_malformed_enriched_arcs) {
 
 TEST(Backbone, repeated_poles_keep_factor_order_and_multiplicity) {
   nda::array<int, 2> topology{{0, 5}, {1, 4}, {2, 3}};
-  auto backbone = prepare_backbone(topology,
+  auto backbone = prepare_backbone<Kind::self_energy>(topology,
                                    prepare_arcs(Arcs{{Direction::forward, -1, -1}, {Direction::forward, 0, 0}, {Direction::forward, 0, 0}},
                                                 fermions(1), nda::vector<double>{1.}, Kind::self_energy));
   EXPECT_EQ(backbone.edges[2].kernels, (std::vector<KernelFactor>{{0, 1}, {0, 1}}));

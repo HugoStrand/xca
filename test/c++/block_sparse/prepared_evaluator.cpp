@@ -41,7 +41,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_backbone(
+  auto const assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(
      topology,
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::backward, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
                                       triqs_xca::diagram::Kind::self_energy));
@@ -54,7 +54,7 @@ TEST(BlockSparsePrepared, logical_self_energy_reuses_preparation_with_changed_pr
   changed_G *= 1.1;
   auto changed = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(changed_G, assignment), model.ad);
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(static_cast<int>(assignment.endpoints.direction), 0);
+  EXPECT_FALSE(assignment.endpoint_orientation().forward);
   EXPECT_TRUE(assignment.vertices[0].adjoint);
 }
 
@@ -64,7 +64,7 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   int n = evaluator.n;
-  auto const assignment = triqs_xca::diagram::prepare_backbone(
+  auto const assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      topology,
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, n - 1, 1}}, evaluator.action,
                                       triqs_xca::diagram::Kind::correlator));
@@ -78,7 +78,6 @@ TEST(BlockSparsePrepared, logical_correlator_reuses_preparation_with_changed_pro
   changed_G *= 1.1;
   auto changed = evaluator.eval_correlator(changed_G, assignment, {op}, {op}, triqs_xca::diagram::CorrelatorStatistics{triqs_xca::Statistics::bosonic, triqs_xca::Statistics::bosonic});
   expect_close(changed, nda::make_regular((1.1 * 1.1 * 1.1 * 1.1) * expected));
-  EXPECT_EQ(static_cast<int>(assignment.endpoints.direction), -1);
   EXPECT_EQ(assignment.vertices[0].flavour, -1);
 }
 
@@ -113,7 +112,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
     for (int i = 0; i < 3; ++i) full_G(t, i, i) = 1.;
   std::vector<tensor> coarse_blocks{full_G};
   BlockDiagOpFun coarse_G(coarse_blocks, nda::vector<int>{0});
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(
      nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}, {Direction::forward, 1, 0}}, fine.action.statistics,
                                       poles, triqs_xca::diagram::Kind::self_energy));
@@ -144,7 +143,7 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
 
   // Recovery after rejection: first-order paths do close for this model.
   auto first_order =
-     triqs_xca::diagram::prepare_backbone(nda::array<int, 2>{{0, 1}},
+     triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(nda::array<int, 2>{{0, 1}},
                                           triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::forward, -1, -1}},
                                                                            fine.action.statistics, poles, triqs_xca::diagram::Kind::self_energy));
   auto recovered = fine.compute_self_energy(fine_G, first_order);
@@ -165,21 +164,24 @@ TEST(BlockSparsePrepared, nonclosing_paths_require_a_coarser_output_partition) {
   }
 }
 
-TEST(BlockSparsePrepared, wrong_kind_is_rejected_before_buffers_change) {
-  auto model = test_utils::build_eval_model("unequal_sets_nA0");
-  DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad, model.dynint_ops, model.dynint_coeffs);
-  BlockDiagOpFun G(test_utils::subspace_blocks(model.G, model.ad, model.mesh));
-  nda::array<int, 2> topology{{0, 1}};
-  auto sigma = triqs_xca::diagram::prepare_backbone(
-     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::self_energy));
-  auto corr = triqs_xca::diagram::prepare_backbone(
-     topology, triqs_xca::diagram::decode_arcs(topology.extent(0), evaluator.action, 0, triqs_xca::diagram::Kind::correlator));
-  auto expected = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, sigma), model.ad);
-  evaluator.T = 2.; evaluator.U = 3.;
-  EXPECT_THROW(evaluator.compute_self_energy(G, corr), std::invalid_argument);
-  EXPECT_THROW(evaluator.eval_correlator(G, sigma, {}, {}, triqs_xca::diagram::CorrelatorStatistics{}), std::invalid_argument);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.T - 2.)), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.U - 3.)), 0.);
-  auto recovered = test_utils::get_tensor_in_full_hilbert_space(evaluator.compute_self_energy(G, sigma), model.ad);
-  expect_close(recovered, expected);
+namespace {
+  template <typename Backbone>
+  concept SelfEnergyInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun &G, Backbone const &backbone) {
+    evaluator.compute_self_energy(G, backbone);
+  };
+
+  template <typename Backbone>
+  concept CorrelatorInput = requires(DiagramEvaluator &evaluator, BlockDiagOpFun &G, Backbone const &backbone,
+                                     std::vector<BlockOp> const &operators) {
+    evaluator.eval_correlator(G, backbone, operators, operators, triqs_xca::diagram::CorrelatorStatistics{});
+  };
+}
+
+TEST(BlockSparsePrepared, evaluator_entry_points_require_the_correct_backbone_kind) {
+  using triqs_xca::diagram::SelfEnergyBackbone;
+  using triqs_xca::diagram::CorrelatorBackbone;
+  static_assert(SelfEnergyInput<SelfEnergyBackbone>);
+  static_assert(!SelfEnergyInput<CorrelatorBackbone>);
+  static_assert(CorrelatorInput<CorrelatorBackbone>);
+  static_assert(!CorrelatorInput<SelfEnergyBackbone>);
 }

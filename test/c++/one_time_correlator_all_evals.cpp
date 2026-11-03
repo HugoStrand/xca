@@ -218,7 +218,7 @@ namespace {
   nda::vector<long> sign_changing_backbones(test_utils::EvalModel const &m, topo_t topology, bool fermionic_legs, Flip flip) {
     long n_hyb = m.n_hyb();
     int flavours = n_hyb + m.n_int();
-    auto sign = [&](triqs_xca::diagram::Backbone const &backbone, bool legs, bool interaction_lines_bosonic) {
+    auto sign = [&](triqs_xca::diagram::CorrelatorBackbone const &backbone, bool legs, bool interaction_lines_bosonic) {
       nda::array<bool, 1> fermionic(topology.size());
       for (long v = 0; v < fermionic.size(); ++v) fermionic(v) = !interaction_lines_bosonic || backbone.vertices[v].flavour < n_hyb;
       fermionic(0)       = legs;
@@ -229,7 +229,7 @@ namespace {
     for (long f = 0; f < triqs_xca::diagram::count_diagrams(topology.extent(0), flavours, m.hyb_poles.size(), triqs_xca::diagram::Kind::correlator); ++f) {
       auto arcs = triqs_xca::diagram::decode_arcs(topology.extent(0), triqs_xca::action_statistics(flavours, n_hyb),
                                                  m.hyb_poles, f, triqs_xca::diagram::Kind::correlator);
-      auto backbone = triqs_xca::diagram::prepare_backbone(topology, arcs);
+      auto backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(topology, arcs);
       int alt = flip == Flip::legs ? sign(backbone, !fermionic_legs, true) : sign(backbone, fermionic_legs, false);
       if (sign(backbone, fermionic_legs, true) != alt) fs.push_back(f);
     }

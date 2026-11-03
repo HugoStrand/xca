@@ -2,9 +2,10 @@
 #include <stdexcept>
 
 namespace triqs_xca::block_sparse {
-  void visit_backbone_paths(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone const &backbone, BlockOpSymQuartet const &operators,
+  template <triqs_xca::diagram::Kind K>
+  void visit_backbone_paths(BlockDiagOpFun const &propagator, triqs_xca::diagram::Backbone<K> const &backbone, BlockOpSymQuartet const &operators,
                             OperatorSupportTable const &support, triqs_xca::diagram::BackboneRange range,
-                            std::function<void(block_sparse::diagram::BackbonePath const &)> const &visit) {
+                            std::type_identity_t<std::function<void(diagram::BackbonePath<K> const &)>> const &visit) {
     range.validate();
     if (!backbone.range().contains(range)) throw std::invalid_argument("backbone range is outside backbone");
     if (range.empty()) return; // no propagator or operator contribution to visit
@@ -35,4 +36,11 @@ namespace triqs_xca::block_sparse {
       if (!incomplete) visit(path);
     }
   }
+
+  template void visit_backbone_paths(BlockDiagOpFun const &, triqs_xca::diagram::SelfEnergyBackbone const &, BlockOpSymQuartet const &,
+                                     OperatorSupportTable const &, triqs_xca::diagram::BackboneRange,
+                                     std::function<void(diagram::SelfEnergyBackbonePath const &)> const &);
+  template void visit_backbone_paths(BlockDiagOpFun const &, triqs_xca::diagram::CorrelatorBackbone const &, BlockOpSymQuartet const &,
+                                     OperatorSupportTable const &, triqs_xca::diagram::BackboneRange,
+                                     std::function<void(diagram::CorrelatorBackbonePath const &)> const &);
 } // namespace triqs_xca::block_sparse

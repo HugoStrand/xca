@@ -4,10 +4,9 @@
 
 namespace triqs_xca::block_sparse {
 
-  void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::Backbone const &backbone, BlockOpSymQuartet const &Fq,
-                               OperatorSupportTable const &support, std::function<void(diagram::BackbonePath const &)> const &visit) {
+  void visit_self_energy_paths(BlockDiagOpFun const &Gt, triqs_xca::diagram::SelfEnergyBackbone const &backbone, BlockOpSymQuartet const &Fq,
+                               OperatorSupportTable const &support, std::function<void(diagram::SelfEnergyBackbonePath const &)> const &visit) {
 
-    backbone.require_self_energy();
     int m    = backbone.order();
     int vct0 = backbone.endpoints.special_vertex;
 

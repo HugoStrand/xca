@@ -30,9 +30,10 @@ namespace {
     }
   };
 
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Backbone const &assignment,
+  template <triqs_xca::diagram::Kind K>
+  std::vector<triqs_xca::block_sparse::diagram::BackbonePath<K>> fragments(BlockDiagOpFun const &G, triqs_xca::diagram::Backbone<K> const &assignment,
                                                                         BlockOpSymQuartet const &operators, triqs_xca::diagram::BackboneRange range) {
-    std::vector<triqs_xca::block_sparse::diagram::BackbonePath> result;
+    std::vector<triqs_xca::block_sparse::diagram::BackbonePath<K>> result;
     triqs_xca::block_sparse::visit_backbone_paths(G, assignment, operators, OperatorSupportTable(operators), range,
                                                   [&](auto const &p) { result.push_back(p); });
     return result;
@@ -42,7 +43,7 @@ namespace {
 TEST(CorrelatorPlan, crossing_fragments_have_independent_owned_paths) {
   Ladder model;
   auto G          = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
@@ -86,7 +87,7 @@ TEST(CorrelatorPlan, single_edge_fragments_survive_a_failed_walk_on_the_other_si
   auto G = model.propagator();
   // The [tau,beta] side has no internal vertices. The preceding right walk
   // fails at its last starting sector; that must not poison the single-edge side.
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      nda::array<int, 2>{{0, 3}, {1, 2}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::backward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
@@ -112,13 +113,13 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
   auto arcs       = triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}},
                                                      std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic}, nda::vector<double>{1.},
                                                      triqs_xca::diagram::Kind::correlator);
-  auto assignment = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(topology, arcs);
   auto right      = fragments(G, assignment, model.operators, assignment.endpoint_ranges().before_special);
   auto left       = fragments(G, assignment, model.operators, assignment.endpoint_ranges().after_special);
   ASSERT_EQ(right.size(), 3);
   ASSERT_EQ(left.size(), 3);
   std::vector<BlockOp> mu{model.raising}, kap{model.raising, model.lowering};
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> joins;
+  std::vector<triqs_xca::block_sparse::diagram::CorrelatorBackbonePath> joins;
   std::vector<std::pair<int, int>> result_indices;
   triqs_xca::block_sparse::visit_correlator_paths(G, right, left, mu, kap, [&](auto const &path, int before, int after) {
     joins.push_back(path);
@@ -156,7 +157,7 @@ TEST(CorrelatorPlan, external_joins_prescribe_closure_and_observable_destination
 TEST(CorrelatorPlan, discovery_accepts_backbone_ranges_without_correlator_side_labels) {
   Ladder model;
   auto G          = model.propagator();
-  auto assignment = triqs_xca::diagram::prepare_backbone(
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>(1, triqs_xca::Statistics::bosonic), nda::vector<double>{1.},
@@ -185,7 +186,7 @@ TEST(CorrelatorPlan, empty_range_has_no_independent_path_contribution) {
   nda::array<int, 2> topology{{0, 1}};
   auto arcs       = triqs_xca::diagram::decode_arcs(topology.extent(0), std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic},
                                                     nda::vector<double>{1.}, 0, triqs_xca::diagram::Kind::self_energy);
-  auto assignment = triqs_xca::diagram::prepare_backbone(topology, arcs);
+  auto assignment = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, arcs);
   auto tail       = assignment.endpoint_ranges().after_special;
   ASSERT_TRUE(tail.empty());
   EXPECT_TRUE(fragments(G, assignment, model.operators, tail).empty());
@@ -194,7 +195,7 @@ TEST(CorrelatorPlan, empty_range_has_no_independent_path_contribution) {
 TEST(CorrelatorPlan, complete_paths_own_all_slots_and_endpoint_choices_after_tables_disappear) {
   Ladder model;
   auto G        = model.propagator();
-  auto backbone = triqs_xca::diagram::prepare_backbone(
+  auto backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::correlator>(
      nda::array<int, 2>{{0, 2}, {1, 3}},
      triqs_xca::diagram::prepare_arcs(triqs_xca::diagram::Arcs{{Direction::external, -1, -1}, {Direction::forward, 0, 0}},
                                       std::vector<triqs_xca::Statistics>{triqs_xca::Statistics::bosonic}, nda::vector<double>{1.},
@@ -202,7 +203,7 @@ TEST(CorrelatorPlan, complete_paths_own_all_slots_and_endpoint_choices_after_tab
   auto right = fragments(G, backbone, model.operators, backbone.endpoint_ranges().before_special);
   auto left  = fragments(G, backbone, model.operators, backbone.endpoint_ranges().after_special);
   std::vector<BlockOp> mu{model.raising, model.lowering}, kap{model.lowering, model.raising};
-  std::vector<triqs_xca::block_sparse::diagram::BackbonePath> retained;
+  std::vector<triqs_xca::block_sparse::diagram::CorrelatorBackbonePath> retained;
   std::vector<std::pair<int, int>> result_indices;
   triqs_xca::block_sparse::visit_correlator_paths(G, right, left, mu, kap, [&](auto const &path, int before, int after) {
     retained.push_back(path);

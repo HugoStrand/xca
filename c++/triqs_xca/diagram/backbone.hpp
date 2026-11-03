@@ -69,11 +69,10 @@ namespace triqs_xca::diagram {
     BackboneRange before_special, after_special;
   };
 
-  /// Forward/backward denotes an interaction endpoint sum. External denotes
-  /// supplied observables. The two parity cases leave endpoint flavours unresolved.
+  /// Distinguished vertex and endpoint parity choices. The two parity cases
+  /// leave endpoint flavours unresolved.
   struct Endpoints {
-    int special_vertex  = -1;
-    Direction direction = Direction::external;
+    int special_vertex = -1;
     PermutationSigns signs{1, 1};
   };
 
@@ -90,7 +89,9 @@ namespace triqs_xca::diagram {
   /// Complete diagram-specific instructions, independent of construction inputs.
   /// No topology, arc catalogue, numerical arrays or sector layout are borrowed.
   /// Reprepare after changing source choices, statistics or pole signs.
-  struct Backbone {
+  template <Kind K> struct Backbone {
+    static_assert(K == Kind::self_energy || K == Kind::correlator);
+
     std::vector<Vertex> vertices;
     std::vector<Edge> edges;
     TauKernelPrefactor kernel_prefactor;
@@ -100,27 +101,36 @@ namespace triqs_xca::diagram {
     int order() const { return static_cast<int>(vertices.size()) / 2; }
     BackboneRange range() const { return {0, static_cast<int>(vertices.size()), 0, static_cast<int>(edges.size())}; }
     EndpointRanges endpoint_ranges() const;
-    /// Derive the interaction endpoint orientation; rejects external correlator endpoints.
-    OperatorPairOrientation endpoint_orientation() const;
-    void require_self_energy() const;
-    void require_correlator() const;
+    /// Interaction endpoint orientation, available only for self-energy backbones.
+    OperatorPairOrientation endpoint_orientation() const requires(K == Kind::self_energy);
     /// Global order/orientation sign, excluding endpoint coefficient reflection,
     /// permutation parity and numerical kernel normalization.
-    int self_energy_sign() const;
+    int self_energy_sign() const requires(K == Kind::self_energy);
+
+    private:
+    Direction endpoint_direction_;
+    explicit Backbone(Direction direction) : endpoint_direction_(direction) {}
+
+    template <Kind Other> friend Backbone<Other> prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs);
+    template <Kind Other> friend std::ostream &operator<<(std::ostream &out, Backbone<Other> const &backbone);
   };
+
+  using SelfEnergyBackbone = Backbone<Kind::self_energy>;
+  using CorrelatorBackbone = Backbone<Kind::correlator>;
 
   /// Preparation functions borrow connectivity only for the duration of the call.
   /// Validate it once with topology::validate() before preparing any backbones.
-  Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs);
+  /// The special arc must match the requested backbone kind.
+  template <Kind K> Backbone<K> prepare_backbone(nda::array_const_view<int, 2> topology, Arcs const &arcs);
 
   /// Evaluator entry point: decode the selected arc choices and prepare their backbone.
   /// Requires connectivity validated by topology::validate().
-  template <typename Storage> Backbone prepare_backbone(nda::array_const_view<int, 2> topology, Action<Storage> const &action, long flat_index, Kind kind) {
-    return prepare_backbone(topology, decode_arcs(topology.extent(0), action, flat_index, kind));
+  template <Kind K, typename Storage> Backbone<K> prepare_backbone(nda::array_const_view<int, 2> topology, Action<Storage> const &action, long flat_index) {
+    return prepare_backbone<K>(topology, decode_arcs(topology.extent(0), action, flat_index, K));
   }
 
   /// Construction helper; returned vertices do not yet have kernel placement.
   /// Requires connectivity validated by topology::validate().
   std::vector<Vertex> prepare_vertices(nda::array_const_view<int, 2> topology, Arcs const &arcs);
-  std::ostream &operator<<(std::ostream &out, Backbone const &backbone);
+  template <Kind K> std::ostream &operator<<(std::ostream &out, Backbone<K> const &backbone);
 } // namespace triqs_xca::diagram
