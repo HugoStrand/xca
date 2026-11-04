@@ -16,7 +16,7 @@ namespace triqs_xca::dense {
   /// Prepared calls sum locally; topology calls sum this MPI rank's contribution.
   class DiagramEvaluatorFewOrb {
     public:
-    const Action<FSet> action;
+    C2PY_IGNORE const Action<FSet> action;
 
     struct CacheStatistics {
       std::size_t hits = 0, misses = 0, entries = 0, bytes = 0;
@@ -24,17 +24,31 @@ namespace triqs_xca::dense {
 
     /// cache_bytes bounds retained numerical payload, excluding recipe/container
     /// metadata and the evaluator's fixed scratch arrays. Zero disables retention.
-    explicit DiagramEvaluatorFewOrb(Action<FSet> action, std::size_t cache_bytes = 8 * 1024 * 1024);
+    C2PY_IGNORE explicit DiagramEvaluatorFewOrb(Action<FSet> action, std::size_t cache_bytes = 8 * 1024 * 1024);
+
+    /// Construct from physical poles, hybridization coefficients and atomic operators.
+    /// cache_bytes bounds retained edge operands; zero disables retention.
+    template <bool IsComplex>
+    DiagramEvaluatorFewOrb(nda::vector_const_view<double> hyb_poles, nda::array_const_view<nda::dcomplex, 3> hyb_coeffs,
+                          triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<IsComplex> const &ad,
+                          std::size_t cache_bytes = 8 * 1024 * 1024);
+
+    /// Include retarded interactions using the same physical poles as the hybridization.
+    template <bool IsComplex>
+    DiagramEvaluatorFewOrb(nda::vector_const_view<double> hyb_poles, nda::array_const_view<nda::dcomplex, 3> hyb_coeffs,
+                          triqs::mesh::dlr_imtime tau_mesh, triqs::atom_diag::atom_diag<IsComplex> const &ad,
+                          std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+                          nda::array_const_view<nda::dcomplex, 3> dynint_coeffs, std::size_t cache_bytes = 8 * 1024 * 1024);
 
     /// Statistics for the last public call. A miss includes full/disabled-cache
     /// fallback; bytes counts the entries prepared during that call.
-    CacheStatistics const &edge_cache_statistics() const { return cache_statistics; }
+    C2PY_IGNORE CacheStatistics const &edge_cache_statistics() const { return cache_statistics; }
 
     /// Sum both directions of the special arc, sharing the remaining backbone work.
     /// Either special-arc orientation in the supplied backbone gives the same pair.
-    nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
+    C2PY_IGNORE nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
                                                                 diagram::SelfEnergyBackbone const &backbone);
-    nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G, diagram::CorrelatorBackbone const &backbone,
+    C2PY_IGNORE nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G, diagram::CorrelatorBackbone const &backbone,
                                                              nda::array_const_view<nda::dcomplex, 3> mu_ops,
                                                              nda::array_const_view<nda::dcomplex, 3> kap_ops,
                                                              diagram::CorrelatorStatistics statistics = {});
@@ -42,27 +56,31 @@ namespace triqs_xca::dense {
     /// Sum both directions for each input backbone, in input order.
     /// Mixed orders and distinguished-vertex positions are allowed. For a full
     /// diagram sum, supply one representative per pair, not both orientations.
-    nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
+    C2PY_IGNORE nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
                                                                 std::span<diagram::SelfEnergyBackbone const> backbones);
-    nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G,
+    C2PY_IGNORE nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G,
                                                              std::span<diagram::CorrelatorBackbone const> backbones,
                                                              nda::array_const_view<nda::dcomplex, 3> mu_ops,
                                                              nda::array_const_view<nda::dcomplex, 3> kap_ops,
                                                              diagram::CorrelatorStatistics statistics = {});
 
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+    /// Evaluate this MPI rank's share of a topology, pairing the special arc's two directions.
+    /// Both directions share the dense backbone convolutions. The caller reduces the accumulated result.
+    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                                                nda::array_const_view<int, 2> topology);
-    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+    /// Evaluate this MPI rank's single-particle Green's function contribution; the caller reduces the result.
+    nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                          nda::array_const_view<int, 2> topology);
-    nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+    C2PY_IGNORE nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                              nda::array_const_view<int, 2> topology, nda::array_const_view<nda::dcomplex, 3> mu_ops,
                                                              nda::array_const_view<nda::dcomplex, 3> kap_ops,
                                                              diagram::CorrelatorStatistics statistics = {});
 
+    /// Evaluate this MPI rank's contribution for the supplied observable operators; the caller reduces the result.
     template <bool IsComplex>
-    nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
+    nda::array<nda::dcomplex, 3> compute_one_time_correlator(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
                                                              std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                             std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+                                                             std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                              triqs::atom_diag::atom_diag<IsComplex> const &ad,
                                                              nda::array_const_view<int, 2> topology);
 

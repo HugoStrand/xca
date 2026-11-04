@@ -84,6 +84,32 @@ namespace triqs_xca::dense {
        Tmu(coefficients.shape()),
        Tkaps(action.n_flavours(), action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)) {}
 
+  template <bool IsComplex>
+  DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(nda::vector_const_view<double> hyb_poles,
+                                                nda::array_const_view<dcomplex, 3> hyb_coeffs, dlr_imtime tau_mesh,
+                                                triqs::atom_diag::atom_diag<IsComplex> const &ad, std::size_t cache_bytes)
+     : DiagramEvaluatorFewOrb(make_action(std::move(tau_mesh), hyb_poles, hyb_coeffs, ad), cache_bytes) {}
+
+  template DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>, dlr_imtime,
+                                                        triqs::atom_diag::atom_diag<true> const &, std::size_t);
+  template DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>, dlr_imtime,
+                                                        triqs::atom_diag::atom_diag<false> const &, std::size_t);
+
+  template <bool IsComplex>
+  DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(nda::vector_const_view<double> hyb_poles,
+                                                nda::array_const_view<dcomplex, 3> hyb_coeffs, dlr_imtime tau_mesh,
+                                                triqs::atom_diag::atom_diag<IsComplex> const &ad,
+                                                std::vector<triqs::operators::many_body_operator_complex> const &dynint_ops,
+                                                nda::array_const_view<dcomplex, 3> dynint_coeffs, std::size_t cache_bytes)
+     : DiagramEvaluatorFewOrb(make_action(std::move(tau_mesh), hyb_poles, hyb_coeffs, ad, dynint_ops, dynint_coeffs), cache_bytes) {}
+
+  template DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+    nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>, dlr_imtime, triqs::atom_diag::atom_diag<true> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<dcomplex, 3>, std::size_t);
+  template DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+    nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>, dlr_imtime, triqs::atom_diag::atom_diag<false> const &,
+    std::vector<triqs::operators::many_body_operator_complex> const &, nda::array_const_view<dcomplex, 3>, std::size_t);
+
   void DiagramEvaluatorFewOrb::begin_call(nda::array_const_view<dcomplex, 3> G) {
     cache_statistics = {};
     edge_lookup.clear();
@@ -258,8 +284,8 @@ namespace triqs_xca::dense {
     return result;
   }
 
-  block_gf<dlr_imtime> DiagramEvaluatorFewOrb::compute_self_energy(block_gf_view<dlr_imtime> G, nda::array_const_view<int, 2> topology) {
-    auto values = native_propagator(G);
+  block_gf<dlr_imtime> DiagramEvaluatorFewOrb::compute_self_energy(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
+    auto values = native_propagator(G_ppsc);
     begin_call(values);
     diagram::topology::validate(topology);
     auto count         = diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
@@ -272,9 +298,9 @@ namespace triqs_xca::dense {
     return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_single_ptcle_gf(block_gf_view<dlr_imtime> G, nda::array_const_view<int, 2> topology) {
+  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_single_ptcle_gf(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
     auto mu = single_particle_operators(action, false), kap = single_particle_operators(action, true);
-    return compute_one_time_correlator(G, topology, mu, kap);
+    return compute_one_time_correlator(G_ppsc, topology, mu, kap);
   }
 
   nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_one_time_correlator(block_gf_view<dlr_imtime> G, nda::array_const_view<int, 2> topology,
@@ -295,15 +321,15 @@ namespace triqs_xca::dense {
 
   template <bool IsComplex>
   nda::array<dcomplex, 3>
-  DiagramEvaluatorFewOrb::compute_one_time_correlator(block_gf_view<dlr_imtime> G,
+  DiagramEvaluatorFewOrb::compute_one_time_correlator(block_gf_view<dlr_imtime> G_ppsc,
                                                       std::vector<triqs::operators::many_body_operator_complex> const &ops_tau,
-                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_zero,
+                                                      std::vector<triqs::operators::many_body_operator_complex> const &ops_0,
                                                       triqs::atom_diag::atom_diag<IsComplex> const &ad, nda::array_const_view<int, 2> topology) {
-    bool fermionic = triqs_xca::correlator_statistics(ops_tau, ops_zero, "DiagramEvaluatorFewOrb::compute_one_time_correlator");
+    bool fermionic = triqs_xca::correlator_statistics(ops_tau, ops_0, "DiagramEvaluatorFewOrb::compute_one_time_correlator");
     if (ad.n_subspaces() != 1 || ad.get_full_hilbert_space_dim() != action.block_dims(0))
       throw std::invalid_argument("DiagramEvaluatorFewOrb: observable atom_diag must describe one matching dense block");
-    auto mu = operator_matrices(ops_tau, ad), kap = operator_matrices(ops_zero, ad);
-    return compute_one_time_correlator(G, topology, mu, kap, diagram::uniform_correlator_statistics(fermionic));
+    auto mu = operator_matrices(ops_tau, ad), kap = operator_matrices(ops_0, ad);
+    return compute_one_time_correlator(G_ppsc, topology, mu, kap, diagram::uniform_correlator_statistics(fermionic));
   }
 
   template nda::array<dcomplex, 3>

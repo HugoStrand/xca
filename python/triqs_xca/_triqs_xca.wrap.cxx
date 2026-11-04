@@ -147,6 +147,114 @@ contains the Green's functions and creation/annihilation operators needed to
 actually compute the backbone. It also contains temporary arrays required for
 computation.)DOC"
    + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_698c8c52>;
+// --------- class _c2py_cls_f8dfe6a1 -----------
+using _c2py_cls_f8dfe6a1                                            = triqs_xca::dense::DiagramEvaluatorFewOrb;
+template <> constexpr bool c2py::is_wrapped<_c2py_cls_f8dfe6a1>     = true;
+template <> inline constexpr auto c2py::tp_name<_c2py_cls_f8dfe6a1> = "triqs_xca._triqs_xca.DenseDiagramEvaluatorFewOrb";
+static const auto _c2py_init_9cc046f5                               = c2py::dispatcher_c_kw_t{
+   c2py::c_constructor<
+                                    _c2py_cls_f8dfe6a1,
+                                    nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, std::size_t>("hyb_poles", "hyb_coeffs", "tau_mesh", "ad",
+                                                                                                                  "cache_bytes"_a = 8 * 1024 * 1024),
+   c2py::c_constructor<
+                                    _c2py_cls_f8dfe6a1,
+                                    nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, std::size_t>("hyb_poles", "hyb_coeffs", "tau_mesh", "ad",
+                                                                                                                  "cache_bytes"_a = 8 * 1024 * 1024),
+   c2py::c_constructor<
+                                    _c2py_cls_f8dfe6a1,
+                                    nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<1> &, const std::vector<triqs::operators::many_body_operator_complex> &,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    std::size_t>("hyb_poles", "hyb_coeffs", "tau_mesh", "ad", "dynint_ops", "dynint_coeffs", "cache_bytes"_a = 8 * 1024 * 1024),
+   c2py::c_constructor<
+                                    _c2py_cls_f8dfe6a1,
+                                    nda::basic_array_view<const double, 1, nda::C_stride_layout, 'V', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    triqs::mesh::dlr_imtime, const triqs::atom_diag::atom_diag<0> &, const std::vector<triqs::operators::many_body_operator_complex> &,
+                                    nda::basic_array_view<const std::complex<double>, 3, nda::C_stride_layout, 'A', nda::default_accessor,
+                                                          nda::borrowed<nda::mem::AddressSpace::Host>>,
+                                    std::size_t>("hyb_poles", "hyb_coeffs", "tau_mesh", "ad", "dynint_ops", "dynint_coeffs", "cache_bytes"_a = 8 * 1024 * 1024)};
+template <> constexpr initproc c2py::tp_init<_c2py_cls_f8dfe6a1> = c2py::pyfkw_constructor<_c2py_init_9cc046f5>;
+template <>
+const std::string c2py::tp_ctor_doc<_c2py_cls_f8dfe6a1> = _c2py_init_9cc046f5.doc(R"DOC(
+[1, 2] Construct from physical poles, hybridization coefficients and atomic operators.
+cache_bytes bounds retained edge operands; zero disables retention.
+
+------
+
+[3, 4] Include retarded interactions using the same physical poles as the hybridization.
+
+------
+)DOC");
+// compute_one_time_correlator
+static auto const _c2py_fun_8430ea53 = c2py::dispatcher_f_kw_t{
+   c2py::cmethod(
+      [](_c2py_cls_f8dfe6a1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+         const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
+         const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<1> &ad,
+         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+         -> decltype(auto) { return self.template compute_one_time_correlator<true>(G_ppsc, ops_tau, ops_0, ad, topology); },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology"),
+   c2py::cmethod(
+      [](_c2py_cls_f8dfe6a1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+         const std::vector<triqs::operators::many_body_operator_complex> &ops_tau,
+         const std::vector<triqs::operators::many_body_operator_complex> &ops_0, const triqs::atom_diag::atom_diag<0> &ad,
+         nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+         -> decltype(auto) { return self.template compute_one_time_correlator<false>(G_ppsc, ops_tau, ops_0, ad, topology); },
+      "self", "G_ppsc", "ops_tau", "ops_0", "ad", "topology")};
+
+// compute_self_energy
+static auto const _c2py_fun_a1754456 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_f8dfe6a1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+      -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology); },
+   "self", "G_ppsc", "topology")};
+
+// compute_single_ptcle_gf
+static auto const _c2py_fun_06b7b7d6 = c2py::dispatcher_f_kw_t{c2py::cmethod(
+   [](_c2py_cls_f8dfe6a1 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
+      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
+      -> decltype(auto) { return self.compute_single_ptcle_gf(G_ppsc, topology); },
+   "self", "G_ppsc", "topology")};
+
+static const auto _c2py_doc_8430ea53 = _c2py_fun_8430ea53.doc(R"DOC(
+Evaluate this MPI rank's contribution for the supplied observable operators; the caller reduces the result.
+)DOC");
+static const auto _c2py_doc_a1754456 = _c2py_fun_a1754456.doc(R"DOC(
+Evaluate this MPI rank's share of a topology, pairing the special arc's two directions.
+Both directions share the dense backbone convolutions. The caller reduces the accumulated result.
+)DOC");
+static const auto _c2py_doc_06b7b7d6 = _c2py_fun_06b7b7d6.doc(R"DOC(
+Evaluate this MPI rank's single-particle Green's function contribution; the caller reduces the result.
+)DOC");
+
+// ----- Method table ----
+// clang-format off
+template <> PyMethodDef c2py::tp_methods<_c2py_cls_f8dfe6a1>[] = {
+   PMDF("compute_one_time_correlator", 8430ea53),
+   PMDF("compute_self_energy", a1754456),
+   PMDF("compute_single_ptcle_gf", 06b7b7d6),
+   {nullptr, nullptr, 0, nullptr} // Sentinel
+};
+// clang-format on
+
+template <>
+const std::string c2py::tp_doc<_c2py_cls_f8dfe6a1> = R"DOC(Dense CPU evaluation with small matrix products and reusable edge operands.
+A cache entry contains coefficients of G times an edge kernel product and
+their Hilbert transform. Entries are shared within one public call only:
+modifying G between calls, including in place, never requires invalidation.
+Prepared calls sum locally; topology calls sum this MPI rank's contribution.)DOC"
+   + std::string{"\n\n----------\n\n"} + c2py::tp_ctor_doc<_c2py_cls_f8dfe6a1>;
 // --------- class _c2py_cls_efedd95d -----------
 using _c2py_cls_efedd95d                                            = triqs_xca::block_sparse::DiagramEvaluator;
 template <> constexpr bool c2py::is_wrapped<_c2py_cls_efedd95d>     = true;
@@ -540,6 +648,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit__triqs_xca() 
   PyObject *m;
 
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_698c8c52>) < 0) return NULL;
+  if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_f8dfe6a1>) < 0) return NULL;
   if (PyType_Ready(&c2py::wrap_pytype<_c2py_cls_efedd95d>) < 0) return NULL;
 
   m = PyModule_Create(&module_def);
@@ -549,6 +658,7 @@ extern "C" __attribute__((visibility("default"))) PyObject *PyInit__triqs_xca() 
 #define _add_type(T, N)                                                                                                                              \
   if (not c2py::add_type_object_to_main<T>(N, m)) return NULL
   _add_type(_c2py_cls_698c8c52, "DenseDiagramEvaluator");
+  _add_type(_c2py_cls_f8dfe6a1, "DenseDiagramEvaluatorFewOrb");
   _add_type(_c2py_cls_efedd95d, "BlockSparseDiagramEvaluator");
 #undef _add_type
 

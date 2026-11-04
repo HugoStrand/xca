@@ -17,8 +17,8 @@ namespaces = ""
 #    if reject_names and reject_names matches Qname : skip X
 #    else keep X.
 #
-# The two DiagramEvaluator classes are registered through the c2py_module aliases in _triqs_xca.cpp
-# and must not be matched here, or they would both be wrapped under the plain name DiagramEvaluator.
+# Evaluator classes are registered through the c2py_module aliases in _triqs_xca.cpp
+# and must not also be matched here, which would override their distinct Python names.
 match_names = "(triqs_xca::dense::manual::sigma_(nca|oca)$|triqs_xca::block_sparse::(expectation_value|convolve_ppsc|trace)$)"
 reject_names = ""
 

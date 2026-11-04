@@ -13,7 +13,7 @@ from .diag import all_pairings, all_connected_pairings
 
 from cppdlr import DysonItPPSC
 
-from ._triqs_xca import DenseDiagramEvaluator, BlockSparseDiagramEvaluator
+from ._triqs_xca import DenseDiagramEvaluatorFewOrb, BlockSparseDiagramEvaluator
 from ._triqs_xca import trace
 from ._triqs_xca import convolve_ppsc as conv
 from ._triqs_xca import expectation_value
@@ -33,7 +33,7 @@ class Solver(object):
     # across the TRIQS ecosystem.
     _hdf5_format_ = "XCA_Solver"
 
-    """ Solver class for triqs_xca using the block sparse algorithm. 
+    """ Solver class for triqs_xca using block sparse or dense diagram evaluation.
     
     Parameters
     ----------
@@ -50,7 +50,7 @@ class Solver(object):
     conserved_operators : list, optional
         List of conserved operators (``triqs.operators.Operator`` instances). 
         Default is ``'automatic'`` using the autopartition algorithm of ``triqs.atom_diag``.
-        To disable symmetries and use the dense diagram evaluator (``DenseDiagramEvaluator``), pass an empty list ``[]``.
+        To disable symmetries and use the dense diagram evaluator (``DenseDiagramEvaluatorFewOrb``), pass an empty list ``[]``.
     timer : Timer, optional
         Timer for performance measurements. Default: ``None`` (will be setup automatically).
     atom_diag : AtomDiag, optional
@@ -327,9 +327,9 @@ class Solver(object):
         #if is_root(): print(f'Initializing diagram evaluator with use_dense_solver = {self.use_dense_solver}')
         if self.use_dense_solver:
             if self.has_dynamic_interactions:
-                self.d = DenseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
+                self.d = DenseDiagramEvaluatorFewOrb(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)
             else:
-                self.d = DenseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
+                self.d = DenseDiagramEvaluatorFewOrb(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag)
         else:
             if self.has_dynamic_interactions:
                 self.d = BlockSparseDiagramEvaluator(self.hyb.poles, self.hyb.coefficients, self.mesh_tau, self.atom_diag, self.dynint_ops, self.dynint_coeffs)

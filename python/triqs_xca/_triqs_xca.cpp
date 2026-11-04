@@ -6,16 +6,18 @@
 #include <triqs/operators.hpp>
 
 #include "triqs_xca/dense/diagram_evaluator.hpp"
+#include "triqs_xca/dense/diagram_evaluator_few_orb.hpp"
 #include "triqs_xca/dense/manual/sigma.hpp"
 #include "triqs_xca/block_sparse/diagram_evaluator.hpp"
 
 #include <cppdlr/dyson_it_ppsc.hpp>
 #include "cppdlr/_cppdlr.wrap.hxx"
 
-// Both evaluators are named DiagramEvaluator in C++; these aliases give them distinct Python names.
+// Give the evaluators distinct Python names, retaining the baseline for comparisons.
 // A class aliased here must not also be matched by match_names in _triqs_xca.toml, or the plain name wins.
 namespace c2py_module {
   using DenseDiagramEvaluator       = triqs_xca::dense::DiagramEvaluator;
+  using DenseDiagramEvaluatorFewOrb = triqs_xca::dense::DiagramEvaluatorFewOrb;
   using BlockSparseDiagramEvaluator = triqs_xca::block_sparse::DiagramEvaluator;
 } // namespace c2py_module
 
@@ -64,6 +66,42 @@ nda::array<dcomplex, 3> triqs_xca::dense::DiagramEvaluator::compute_one_time_cor
     std::vector<triqs::operators::many_body_operator_complex> const &,
     std::vector<triqs::operators::many_body_operator_complex> const &,
     triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>);
+
+// ==================== dense::DiagramEvaluatorFewOrb ====================
+
+extern template triqs_xca::dense::DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+  nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>,
+  triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<true> const &, std::size_t);
+
+extern template triqs_xca::dense::DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+  nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>,
+  triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<false> const &, std::size_t);
+
+extern template triqs_xca::dense::DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+  nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>,
+  triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<true> const &,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  nda::array_const_view<dcomplex, 3>, std::size_t);
+
+extern template triqs_xca::dense::DiagramEvaluatorFewOrb::DiagramEvaluatorFewOrb(
+  nda::vector_const_view<double>, nda::array_const_view<dcomplex, 3>,
+  triqs::mesh::dlr_imtime, triqs::atom_diag::atom_diag<false> const &,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  nda::array_const_view<dcomplex, 3>, std::size_t);
+
+extern template nda::array<dcomplex, 3>
+triqs_xca::dense::DiagramEvaluatorFewOrb::compute_one_time_correlator<true>(
+  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  triqs::atom_diag::atom_diag<true> const &, nda::array_const_view<int, 2>);
+
+extern template nda::array<dcomplex, 3>
+triqs_xca::dense::DiagramEvaluatorFewOrb::compute_one_time_correlator<false>(
+  triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime>,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  std::vector<triqs::operators::many_body_operator_complex> const &,
+  triqs::atom_diag::atom_diag<false> const &, nda::array_const_view<int, 2>);
 
 // ==================== block_sparse::DiagramEvaluator ====================
 

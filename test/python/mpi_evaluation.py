@@ -5,7 +5,7 @@ Here we check the normal Python import/initialization route, binding surface,
 Solver signs and accumulation, and the number of final reduction calls.
 """
 
-from triqs_xca import DenseDiagramEvaluator, BlockSparseDiagramEvaluator
+from triqs_xca import DenseDiagramEvaluatorFewOrb, BlockSparseDiagramEvaluator
 import triqs.utility.mpi as mpi
 from triqs.operators import n
 import numpy as np
@@ -32,7 +32,7 @@ def check_blocks(value, expected):
 def check_solver(use_blocks):
     solver = make_solver(make_model('dimer'), use_blocks)
     evaluator, G = solver.d, solver.G0
-    assert isinstance(evaluator, BlockSparseDiagramEvaluator if use_blocks else DenseDiagramEvaluator)
+    assert isinstance(evaluator, BlockSparseDiagramEvaluator if use_blocks else DenseDiagramEvaluatorFewOrb)
     for removed in ('reset', 'get_num_self_energy_backbones',
                     'get_num_single_ptcle_gf_backbones',
                     'print_self_energy_backbone', 'print_single_ptcle_gf_backbone',

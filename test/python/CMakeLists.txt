@@ -30,6 +30,7 @@ set(all_tests
   api_two_fermions
   bethe_self_cons
   dense_manual_NCA_OCA
+  dense_few_orb
   normalization
   spgf_ordering
   bug_bs_one_fermion
