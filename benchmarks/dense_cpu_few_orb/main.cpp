@@ -86,24 +86,21 @@ namespace {
     };
     for (int order : {2, 3, 5}) {
       auto topology = dense_benchmark::crossing_topology(order);
-      for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
+      for (std::string const kind : {"self_energy", "correlator"}) {
         auto label = "N" + std::to_string(N) + "/r" + std::to_string(m.mesh.size()) + "/prepared/" + kind + "/order" + std::to_string(order);
         if (!wanted(label)) continue;
-        bool pairs = kind == "pairs", correlator = kind == "correlator";
-        long count = pairs ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
-                             diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
-                                                     correlator ? diagram::Kind::correlator : diagram::Kind::self_energy);
+        bool correlator = kind == "correlator";
+        long count = correlator ? diagram::count_diagrams(order, action.n_flavours(), action.poles.size(), diagram::Kind::correlator) :
+                                  diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size());
         std::vector<diagram::SelfEnergyBackbone> sb;
         std::vector<diagram::CorrelatorBackbone> cb;
         auto indices = dense_benchmark::sampled_indices(count);
         for (long index : indices) {
           if (correlator)
             cb.push_back(diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index));
-          else if (pairs)
+          else
             sb.push_back(
                diagram::prepare_backbone<diagram::Kind::self_energy>(topology, diagram::decode_self_energy_pair_arcs(order, action, index)));
-          else
-            sb.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index));
         }
         std::vector<Variant> variants{{"dense", [&]() {
                                          auto sum = correlator ? nda::zeros<nda::dcomplex>(m.mesh.size(), action.n_hyb, action.n_hyb) :
@@ -112,14 +109,14 @@ namespace {
                                            for (auto const &b : cb) sum += scalar.compute_one_time_correlator(m.G, b, mu, kap);
                                          else
                                            for (auto const &b : sb)
-                                             sum += pairs ? scalar.compute_self_energy_by_pairs(m.G, b) : scalar.compute_self_energy(m.G, b);
+                                             sum += scalar.compute_self_energy_both_directions(m.G, b);
                                          return sum;
                                        }}};
         for (auto *e : {&uncached, &cached})
           variants.push_back({e == &uncached ? "few_orb_uncached" : "few_orb",
                               [&, e]() {
                                 if (correlator) return e->compute_one_time_correlator(m.G, cb, mu, kap);
-                                return pairs ? e->compute_self_energy_by_pairs(m.G, sb) : e->compute_self_energy(m.G, sb);
+                                return e->compute_self_energy_both_directions(m.G, sb);
                               },
                               e});
         time_case(label, m.mesh.size(), N, order, indices.size(), variants);
@@ -130,17 +127,15 @@ namespace {
     for (int order : {2, 3}) {
       if (order == 3 && N > 4 && !full_order3) continue;
       auto topology = dense_benchmark::crossing_topology(order);
-      for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
+      for (std::string const kind : {"self_energy", "correlator"}) {
         auto label = "N" + std::to_string(N) + "/r" + std::to_string(m.mesh.size()) + "/topology/" + kind + "/order" + std::to_string(order);
         if (!wanted(label)) continue;
         auto evaluate = [&](auto &e) -> Tensor {
           if (kind == "correlator") return e.compute_single_ptcle_gf(G_blocks, topology);
-          if (kind == "pairs") return Tensor(e.compute_self_energy_by_pairs(G_blocks, topology)[0].data());
           return Tensor(e.compute_self_energy(G_blocks, topology)[0].data());
         };
-        long count = kind == "pairs" ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
-                                       diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
-                                                               kind == "correlator" ? diagram::Kind::correlator : diagram::Kind::self_energy);
+        long count = kind == "correlator" ? diagram::count_diagrams(order, action.n_flavours(), action.poles.size(), diagram::Kind::correlator) :
+                                           diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size());
         time_case(label, m.mesh.size(), N, order, count,
                   {{"dense", [&]() { return evaluate(scalar); }},
                    {"few_orb_uncached", [&]() { return evaluate(uncached); }, &uncached},
@@ -164,6 +159,7 @@ int main(int argc, char **argv) try {
   }
   if (mpi::has_env) throw std::invalid_argument("run without an MPI launcher");
   std::cout << std::setprecision(10);
+  std::cout << "# self_energy sums both special-arc directions per prepared backbone (historical CSV kind: pairs).\n";
   std::cout
      << "# N=2,4,8,16; 1..4 fermion modes. N=4 retains the dense_cpu_batched model/seed.\n"
      << "# Prepared cases sample at most 63 backbones; full order 2 at every N; full order 3 at N<=4 unless --full-order3.\n"

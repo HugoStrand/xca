@@ -41,7 +41,7 @@ case substring after the profile CSV filename, for example `r103/self_energy`.
   from the uninstrumented medians. The helper also checks analytic convolution,
   partial-capacity workspaces, output aliases, and strided fixed-size products.
 - **Evaluator:** the exact existing N=4 physical model and stratified sampling,
-  self-energy/pairs/correlator, orders 2/5, ranks 13/103. Production scalar and
+  self-energy/correlator, orders 2/5, ranks 13/103. Production scalar and
   production batch 1/8 are compared with separately named experimental
   evaluators. Five rotated trials each time one complete prepared call. All
   outputs are checked against the scalar result before and after timing.
@@ -85,3 +85,8 @@ before adopting a production dispatch policy.
 
 The detailed interpretation and measurements are in the
 [workstation analysis](../../thinkstationP620_3945WX/small_n_analysis.md).
+
+The live evaluator probe and recipe census use compact paired self-energy
+work under the `self_energy` label. In archived results that workload is labelled
+`pairs`; the archived `self_energy` rows describe the former directional path.
+The historical data and conclusions have not been retimed or relabelled.

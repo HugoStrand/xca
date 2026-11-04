@@ -1,5 +1,10 @@
 # ThinkStation P620 / Threadripper PRO 3945WX
 
+These recorded results retain the API names used when measured: `self_energy`
+was the directional algorithm and `pairs` summed both special-arc directions.
+The current benchmark uses the paired algorithm under `self_energy`; the tables
+and raw results below have not been rerun or relabelled.
+
 Measured on 2026-11-03 with an AMD Ryzen Threadripper PRO 3945WX (12 cores,
 24 hardware threads), Clang 19.1.1, a Release `-O3` build, and system OpenBLAS.
 `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1`; no GPU or MPI parallelism.

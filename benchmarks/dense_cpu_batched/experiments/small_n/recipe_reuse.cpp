@@ -91,11 +91,10 @@ int main() try {
   std::cout << "kind,order,selection,total_choices,backbones,convolution_calls,unique_edge_recipes,empty_edge_fraction,edge_global_hit_fraction,edge_batch8_position_hit_fraction,edge_batch8_any_position_hit_fraction,initial_prefix_steps,unique_initial_prefix_steps,initial_prefix_global_hit_fraction\n";
   for (int order : {2, 3, 5}) {
     auto topology = crossing_topology(order);
-    for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
-      bool pairs = kind == "pairs", correlator = kind == "correlator";
-      long count = pairs ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
-                          diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
-                                                  correlator ? diagram::Kind::correlator : diagram::Kind::self_energy);
+    for (std::string const kind : {"self_energy", "correlator"}) {
+      bool correlator = kind == "correlator";
+      long count = correlator ? diagram::count_diagrams(order, action.n_flavours(), action.poles.size(), diagram::Kind::correlator) :
+                                  diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size());
       for (std::string const selection : {"sampled", "first", "middle", "last"}) {
         auto indices = sampled_indices(count);
         if (selection != "sampled") {
@@ -106,8 +105,7 @@ int main() try {
         std::vector<diagram::CorrelatorBackbone> corr;
         for (long index : indices) {
           if (correlator) corr.push_back(diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index));
-          else if (pairs) se.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, diagram::decode_self_energy_pair_arcs(order, action, index)));
-          else se.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index));
+          else se.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, diagram::decode_self_energy_pair_arcs(order, action, index)));
         }
         if (correlator) census(kind, order, selection, corr, count);
         else census(kind, order, selection, se, count);

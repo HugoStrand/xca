@@ -30,12 +30,13 @@ Two DLR meshes are tested at beta 2: the small mesh from the evaluator test
 fixture, and a mesh with dimensionless cutoff 100000 and tolerance 1e-12. The CSV
 records their actual ranks. The larger rank is approximately 100.
 
-For each mesh, prepared-backbone timings cover ordinary self-energy, paired
-self-energy, and a fermionic correlator at orders 2, 3 and 5. Each order uses the
+For each mesh, prepared-backbone timings cover self-energy and a fermionic
+correlator at orders 2, 3 and 5. Each order uses the
 fully crossing topology `(a, a + order)`. The benchmark samples at most **63**
 backbones from the relevant index space, using stratified sampling and seed 1789.
-At order 2 it uses the entire smaller index space. Paired samples come from the
-compact pair index space; one sample includes both distinguished-arc directions.
+At order 2 it uses the entire smaller index space. Self-energy samples come
+from the compact pair index space; one sample includes both directions of the
+special arc connected to zero.
 The fixed bound avoids an exponentially expensive complete high-order sum.
 
 Prepared timings exclude model/Action construction, evaluator construction and
@@ -45,7 +46,7 @@ backbones and propagator across variants. The backbones share order and
 distinguished-vertex position, making them eligible for one batching cohort.
 Mixed topology/order workloads may produce shorter cohorts.
 
-Two additional cases evaluate a complete order-2 ordinary self-energy topology,
+Two additional cases evaluate a complete order-2 self-energy topology,
 including backbone preparation and the block-Green-function result wrapper.
 These are labelled `topology`; their timings must not be mixed with `prepared`.
 
@@ -74,7 +75,12 @@ repeats a call one to three times, calibrated toward 5 ms. CSV columns contain
 median/minimum/maximum microseconds **per call**, repeat/trial counts, error,
 output magnitude, speedup over scalar fast, and speedup over batch capacity 1.
 A prepared call sums all `backbones` entries; compare per-backbone costs only
-within the same evaluation kind. Pair entries represent two directions.
+within the same evaluation kind. Self-energy entries represent two directions.
+
+Current `self_energy` rows use the algorithm labelled `pairs` in the archived
+prepared-result CSVs and reports. Their old `self_energy` rows, including
+topology timings, used separate single-direction evaluations. The archived
+results are unchanged; no timings were rerun for this API cleanup.
 
 The benchmark does not measure an impurity-solver iteration, MPI scaling, or GPU
 performance. A speedup here should be followed by a representative solver-level

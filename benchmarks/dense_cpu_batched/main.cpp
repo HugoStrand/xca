@@ -103,24 +103,21 @@ namespace {
     };
     for (int order : {2, 3, 5}) {
       auto topology = crossing_topology(order);
-      for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
+      for (std::string const kind : {"self_energy", "correlator"}) {
         std::string label = "r" + std::to_string(m.mesh.size()) + "/prepared/" + kind + "/order" + std::to_string(order);
         if (!wanted(label)) continue;
-        bool pairs = kind == "pairs", correlator = kind == "correlator";
-        long count = pairs ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
-                             diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
-                                                     correlator ? diagram::Kind::correlator : diagram::Kind::self_energy);
+        bool correlator = kind == "correlator";
+        long count = correlator ? diagram::count_diagrams(order, action.n_flavours(), action.poles.size(), diagram::Kind::correlator) :
+                                  diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size());
         std::vector<diagram::SelfEnergyBackbone> self_energy_backbones;
         std::vector<diagram::CorrelatorBackbone> correlator_backbones;
         auto indices = sampled_indices(count);
         for (long index : indices) {
           if (correlator)
             correlator_backbones.push_back(diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index));
-          else if (pairs)
+          else
             self_energy_backbones.push_back(
                diagram::prepare_backbone<diagram::Kind::self_energy>(topology, diagram::decode_self_energy_pair_arcs(order, action, index)));
-          else
-            self_energy_backbones.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index));
         }
         std::vector<Variant> variants;
         variants.push_back({"scalar_fast", 0, [&]() {
@@ -130,15 +127,14 @@ namespace {
                                 for (auto const &b : correlator_backbones) sum += scalar.compute_one_time_correlator(m.G, b, mu, kap);
                               } else {
                                 for (auto const &b : self_energy_backbones)
-                                  sum += pairs ? scalar.compute_self_energy_by_pairs(m.G, b) : scalar.compute_self_energy(m.G, b);
+                                  sum += scalar.compute_self_energy_both_directions(m.G, b);
                               }
                               return sum;
                             }});
         for (int i = 0; i < int(capacities.size()); ++i)
           variants.push_back({"batched", capacities[i], [&, i]() {
                                 if (correlator) return batched[i]->compute_one_time_correlator(m.G, correlator_backbones, mu, kap);
-                                return pairs ? batched[i]->compute_self_energy_by_pairs(m.G, self_energy_backbones) :
-                                               batched[i]->compute_self_energy(m.G, self_energy_backbones);
+                                return batched[i]->compute_self_energy_both_directions(m.G, self_energy_backbones);
                               }});
         time_case(label, "prepared", kind, m.mesh.size(), order, indices.size(), variants);
       }
@@ -152,7 +148,7 @@ namespace {
       std::vector<Variant> variants{{"scalar_fast", 0, [&]() { return Tensor(scalar.compute_self_energy(G_blocks, topology)[0].data()); }}};
       for (int i = 0; i < int(capacities.size()); ++i)
         variants.push_back({"batched", capacities[i], [&, i]() { return Tensor(batched[i]->compute_self_energy(G_blocks, topology)[0].data()); }});
-      long count = diagram::count_diagrams(2, action.n_flavours(), action.poles.size(), diagram::Kind::self_energy);
+      long count = diagram::count_self_energy_pairs(2, action.n_flavours(), action.poles.size());
       time_case(label, "topology", "self_energy", m.mesh.size(), 2, count, variants);
     }
   }
@@ -163,6 +159,7 @@ int main(int argc, char **argv) try {
   if (mpi::has_env) throw std::invalid_argument("run dense_cpu_batched directly, without an MPI launcher");
   std::string filter = argc > 1 ? argv[1] : "";
   std::cout << std::setprecision(10);
+  std::cout << "# self_energy sums both special-arc directions per prepared backbone (historical CSV kind: pairs).\n";
   std::cout << "# Two fermion modes, Hilbert dimension 4, beta=2; hybridization plus two density interactions.\n";
   std::cout << "# Prepared: stratified samples <=63, fixed seed1789, one fully crossing topology per order; no Action/backbone setup in timings.\n";
   std::cout

@@ -1,5 +1,10 @@
 # ThinkStation P620 / Threadripper PRO 3945WX
 
+These recorded results retain the API names used when measured: `self_energy`
+was the directional algorithm and `pairs` summed both special-arc directions.
+The current benchmark uses the paired algorithm under `self_energy`; the tables
+and raw results below have not been rerun or relabelled.
+
 ## Shared convolution and selected small products
 
 Measured on 2026-11-04. All three variants now use the same real-valued DLR

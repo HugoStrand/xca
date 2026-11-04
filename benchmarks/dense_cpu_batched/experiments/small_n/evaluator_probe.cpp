@@ -64,31 +64,29 @@ namespace {
     auto kap = action.operators.F_dags(nda::range(action.n_hyb), all, all);
     for (int order : {2, 5}) {
       auto topology = crossing_topology(order);
-      for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
+      for (std::string const kind : {"self_energy", "correlator"}) {
         std::string label = "r" + std::to_string(m.mesh.size()) + "/" + kind + "/order" + std::to_string(order);
         if (!filter.empty() && label.find(filter) == std::string::npos) continue;
-        bool pairs = kind == "pairs", correlator = kind == "correlator";
-        long count = pairs ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
-                             diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
-                                                    correlator ? diagram::Kind::correlator : diagram::Kind::self_energy);
+        bool correlator = kind == "correlator";
+        long count = correlator ? diagram::count_diagrams(order, action.n_flavours(), action.poles.size(), diagram::Kind::correlator) :
+                                  diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size());
         std::vector<diagram::SelfEnergyBackbone> self_energy;
         std::vector<diagram::CorrelatorBackbone> correlation;
         auto indices = sampled_indices(count);
         for (long index : indices) {
           if (correlator) correlation.push_back(diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index));
-          else if (pairs) self_energy.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(
+          else self_energy.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(
              topology, diagram::decode_self_energy_pair_arcs(order, action, index)));
-          else self_energy.push_back(diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index));
         }
         auto run = [&](auto &evaluator) {
           if (correlator) return evaluator.compute_one_time_correlator(m.G, correlation, mu, kap);
-          return pairs ? evaluator.compute_self_energy_by_pairs(m.G, self_energy) : evaluator.compute_self_energy(m.G, self_energy);
+          return evaluator.compute_self_energy_both_directions(m.G, self_energy);
         };
         std::vector<ProbeVariant> variants;
         variants.push_back({"scalar", 0, [&] {
           auto sum = correlator ? nda::zeros<dcomplex>(m.mesh.size(), action.n_hyb, action.n_hyb) : nda::zeros<dcomplex>(m.G.shape());
           if (correlator) for (auto const &b : correlation) sum += scalar.compute_one_time_correlator(m.G, b, mu, kap);
-          else for (auto const &b : self_energy) sum += pairs ? scalar.compute_self_energy_by_pairs(m.G, b) : scalar.compute_self_energy(m.G, b);
+          else for (auto const &b : self_energy) sum += scalar.compute_self_energy_both_directions(m.G, b);
           return sum;
         }, false});
         variants.push_back({"production", 1, [&] { return run(batch1); }, false});

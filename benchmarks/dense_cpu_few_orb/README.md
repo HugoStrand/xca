@@ -97,21 +97,22 @@ retain all their encountered recipes. The fixed budget is deliberate and is
 identical across dimensions; consult the recorded hit/miss counts.
 
 Prepared cases sum at most 63 stratified backbones with seed 1789, covering
-self-energy, paired self-energy and fermionic correlators at orders 2, 3 and 5.
+self-energy and fermionic correlators at orders 2, 3 and 5. Self-energy
+samples use the compact pair index space; each backbone sums both directions of
+the special arc connected to zero.
 Every case uses the fully crossing topology `(a,a+order)`. Model, Action,
 evaluator and backbone construction are outside timing. Scalar prepared calls
 return one array per backbone and the driver sums them; the FewOrb span overload
 returns one sum. Consequently the dense-to-uncached ratio includes this API and
 allocation difference as well as arithmetic changes.
 
-Complete topology cases cover all three evaluation kinds at order 2 for every
+Complete topology cases cover both evaluation kinds at order 2 for every
 N, and at order 3 for N=2 and N=4 by default. `--full-order3` additionally enables
 the N=8 and N=16 cases. These include backbone preparation and use matching
 public-call boundaries and result wrappers. **Use these rows for the primary
 evaluator comparison.** The `few_orb_uncached` time divided by `few_orb` time
 isolates edge reuse within either workload category. Order-five results remain
-bounded samples, not full topology sums. Paired backbones represent both
-distinguished-arc directions.
+bounded samples, not full topology sums.
 
 Five timing trials rotate variant order. Calls repeat one to five times, with
 calibration toward 5 ms per trial. CSV times are microseconds per complete call,
@@ -120,6 +121,12 @@ Allocations are warmed before timing; evaluator construction and first-use
 allocation cost are not measured. Outputs are checked before and after timing
 for finite values, nonzero reference magnitude, and relative maximum error
 below 2e-10. These are evaluator timings, not full impurity-solver iterations.
+
+The current `self_energy` cases use the algorithm labelled `pairs` in the
+archived CSVs and reports. Their old `self_energy` rows used the separate
+single-direction algorithm and remain unchanged. Compare new self-energy
+timings with old `pairs` rows, taking source revisions into account. No timings
+were rerun for this API cleanup.
 
 ## Small matrix kernel comparison
 
