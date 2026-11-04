@@ -147,6 +147,7 @@ if(Build_Tests)
   add_subdirectory(benchmarks/block_sparse_layout)
   add_subdirectory(benchmarks/block_sparse_convolution)
   add_subdirectory(benchmarks/dense_cpu_batched)
+  add_subdirectory(benchmarks/dense_cpu_few_orb)
 endif()
 
 # Python
