@@ -28,18 +28,20 @@ namespace triqs_xca::dense {
     /// fallback; bytes counts the entries prepared during that call.
     CacheStatistics const &edge_cache_statistics() const { return cache_statistics; }
 
-    nda::array<nda::dcomplex, 3> compute_self_energy(nda::array_const_view<nda::dcomplex, 3> G, diagram::SelfEnergyBackbone const &backbone);
-    nda::array<nda::dcomplex, 3> compute_self_energy_by_pairs(nda::array_const_view<nda::dcomplex, 3> G, diagram::SelfEnergyBackbone const &backbone);
+    /// Sum both directions of the special arc, sharing the remaining backbone work.
+    /// Either special-arc orientation in the supplied backbone gives the same pair.
+    nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
+                                                                diagram::SelfEnergyBackbone const &backbone);
     nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G, diagram::CorrelatorBackbone const &backbone,
                                                              nda::array_const_view<nda::dcomplex, 3> mu_ops,
                                                              nda::array_const_view<nda::dcomplex, 3> kap_ops,
                                                              diagram::CorrelatorStatistics statistics = {});
 
-    /// Sum in input order. Mixed orders and distinguished-vertex positions are allowed.
-    nda::array<nda::dcomplex, 3> compute_self_energy(nda::array_const_view<nda::dcomplex, 3> G,
-                                                     std::span<diagram::SelfEnergyBackbone const> backbones);
-    nda::array<nda::dcomplex, 3> compute_self_energy_by_pairs(nda::array_const_view<nda::dcomplex, 3> G,
-                                                              std::span<diagram::SelfEnergyBackbone const> backbones);
+    /// Sum both directions for each input backbone, in input order.
+    /// Mixed orders and distinguished-vertex positions are allowed. For a full
+    /// diagram sum, supply one representative per pair, not both orientations.
+    nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
+                                                                std::span<diagram::SelfEnergyBackbone const> backbones);
     nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G,
                                                              std::span<diagram::CorrelatorBackbone const> backbones,
                                                              nda::array_const_view<nda::dcomplex, 3> mu_ops,
@@ -47,8 +49,6 @@ namespace triqs_xca::dense {
                                                              diagram::CorrelatorStatistics statistics = {});
 
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
-                                                                      nda::array_const_view<int, 2> topology);
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                                                nda::array_const_view<int, 2> topology);
     nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                          nda::array_const_view<int, 2> topology);
@@ -86,7 +86,7 @@ namespace triqs_xca::dense {
                         bool right = false);
     void endpoint_sum(nda::array_view<nda::dcomplex, 3> values, OperatorPairOrientation orientation, diagram::PermutationSigns const &signs);
     void eval_self_energy(nda::array_view<nda::dcomplex, 3> result, nda::array_const_view<nda::dcomplex, 3> G,
-                          diagram::SelfEnergyBackbone const &backbone, bool paired);
+                          diagram::SelfEnergyBackbone const &backbone);
     void eval_correlator(nda::array_view<nda::dcomplex, 3> result, nda::array_const_view<nda::dcomplex, 3> G,
                          diagram::CorrelatorBackbone const &backbone, nda::array_const_view<nda::dcomplex, 3> mu_ops,
                          nda::array_const_view<nda::dcomplex, 3> kap_ops, diagram::CorrelatorStatistics statistics);

@@ -78,7 +78,7 @@ using test_utils::tensor_t;
  * - every evaluator in test_utils::all_evaluators(), whose self-energy over the Fock states and Green's function at first, second and third
  *   order are compared with the closed forms times the parity of the topology and, except for the reference itself, with
  *   test_utils::make_reference() on every node where the closed form does not vanish,
- * - the compute_self_energy_by_pairs routine of dense::DiagramEvaluator at all three orders, also against the closed forms times the parity
+ * - the compute_self_energy routine of dense::DiagramEvaluator at all three orders, also against the closed forms times the parity
  *   of the topology, and where the closed form is tabulated against the whole-topology result on every node; it has no single-particle
  *   Green's function analogue,
  * - the dense::manual and block_sparse::manual routines at first and second order, which carry no topology_parity; they have no third-order
@@ -88,7 +88,7 @@ using test_utils::tensor_t;
  *   Richardson-extrapolated on the coarser grid, which removes the error of order n_quad^-2, and compared with a tolerance relative to the
  *   closed form.
  *
- * The evaluators and compute_self_energy_by_pairs multiply each backbone by the fermionic permutation parity of its topology, which is +1 at
+ * The evaluators and compute_self_energy multiply each backbone by the fermionic permutation parity of its topology, which is +1 at
  * first order and -1 at second and third. The comparisons take it as that literal and check topology_parity against it.
  */
 
@@ -187,7 +187,7 @@ namespace {
     nda::array<dcomplex, 3> F_dags_dense;
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> G0_ppsc_dense;
 
-    dense::DiagramEvaluator D_dense;   // for compute_self_energy_by_pairs
+    dense::DiagramEvaluator D_dense;   // for compute_self_energy
     BlockOpSymQuartet Fq;              // field operators of the block-sparse evaluator
 
     /// Build the DLR grid, the model and every dense fixture for the model of this name
@@ -489,9 +489,9 @@ namespace {
   // The hybridization on the same DLR nodes as the propagator, for the trapezoidal routines.
   nda::array<dcomplex, 3> tpz_hyb(OneFermionSetup &s) { return triqs_xca::coefs2vals(s.beta, s.itops, s.model.hyb_coeffs, s.model.hyb_poles); }
 
-  // The self-energy of compute_self_energy_by_pairs at every order, of the manual routines at first and second order, and of sigma_oca_tpz
+  // The self-energy of compute_self_energy at every order, of the manual routines at first and second order, and of sigma_oca_tpz
   // at second order. The raw output of dense::DiagramEvaluator carries the parity of the topology, the other routines carry none. A
-  // tabulated closed form pins a result at the times of its table only, so there compute_self_energy_by_pairs also meets the whole topology
+  // tabulated closed form pins a result at the times of its table only, so there compute_self_energy also meets the sum of single directions
   // on every node.
   void expect_se_routines_match(OneFermionSetup &s) {
     auto const &action = s.D_dense.action;
@@ -500,11 +500,11 @@ namespace {
       SCOPED_TRACE(tag(c));
       auto t = crossing_topology(order);
       ASSERT_EQ(topology_parity(t), crossing_parity(order));
-      tensor_t by_pairs = s.D_dense.compute_self_energy_by_pairs(s.G0_ppsc_dense, t)[0].data();
-      EXPECT_TRUE(matches(by_pairs, c, crossing_parity(order), s.itops)) << "compute_self_energy_by_pairs";
+      tensor_t sigma = s.D_dense.compute_self_energy(s.G0_ppsc_dense, t)[0].data();
+      EXPECT_TRUE(matches(sigma, c, crossing_parity(order), s.itops)) << "compute_self_energy";
       if (!closed_form(c, rel2abs(s.dlr_it)).table.empty())
-        EXPECT_TRUE(matches_on_every_node(by_pairs, s.D_dense.compute_self_energy(s.G0_ppsc_dense, t)[0].data(), c))
-           << "compute_self_energy_by_pairs against compute_self_energy";
+        EXPECT_TRUE(matches_on_every_node(sigma, test_utils::fixture_self_energy(s.D_dense, s.G0_ppsc_dense, t)[0].data(), c))
+           << "compute_self_energy against the sum of single directions";
       if (order == 1) {
         EXPECT_TRUE(matches(dense::manual::sigma_nca(action.tau_values, action.tau_values_reflect, s.Gt_dense, s.Fs_dense, s.F_dags_dense), c, 1, s.itops))
            << "dense::manual::sigma_nca";

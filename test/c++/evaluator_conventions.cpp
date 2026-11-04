@@ -80,7 +80,7 @@ TEST(EvaluatorConventions, time_reflection_and_each_endpoint_direction) {
     expect_close(tensor(triqs_xca::test_utils::fixture_self_energy(sparse, propagator, topology, direction)[0].data()), expected);
     sum += expected;
   }
-  expect_close(tensor(dense.compute_self_energy_by_pairs(propagator, topology)[0].data()), sum);
+  expect_close(tensor(dense.compute_self_energy(propagator, topology)[0].data()), sum);
 }
 
 TEST(EvaluatorConventions, all_constructor_routes_accept_physical_poles) {

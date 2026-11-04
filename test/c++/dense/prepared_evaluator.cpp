@@ -17,17 +17,17 @@ using nda::dcomplex;
 using tensor = nda::array<dcomplex, 3>;
 
 // A wrong endpoint operation must be rejected before evaluation can change scratch or results.
-template <typename B> concept SelfEnergyInput = requires(dense::DiagramEvaluator &e, tensor const &G, B const &b) {
-  { e.compute_self_energy(G, b) } -> std::same_as<tensor>;
+template <typename B> concept SelfEnergySingleDirectionInput = requires(dense::DiagramEvaluator &e, tensor const &G, B const &b) {
+  { e.compute_self_energy_single_direction(G, b) } -> std::same_as<tensor>;
 };
-template <typename B> concept SelfEnergyPairInput = requires(dense::DiagramEvaluator &e, tensor const &G, B const &b) {
-  { e.compute_self_energy_by_pairs(G, b) } -> std::same_as<tensor>;
+template <typename B> concept SelfEnergyBothDirectionsInput = requires(dense::DiagramEvaluator &e, tensor const &G, B const &b) {
+  { e.compute_self_energy_both_directions(G, b) } -> std::same_as<tensor>;
 };
 template <typename B> concept CorrelatorInput = requires(dense::DiagramEvaluator &e, tensor const &G, B const &b) {
   { e.compute_one_time_correlator(G, b, G, G) } -> std::same_as<tensor>;
 };
-static_assert(SelfEnergyInput<diagram::SelfEnergyBackbone> && !SelfEnergyInput<diagram::CorrelatorBackbone>);
-static_assert(SelfEnergyPairInput<diagram::SelfEnergyBackbone> && !SelfEnergyPairInput<diagram::CorrelatorBackbone>);
+static_assert(SelfEnergySingleDirectionInput<diagram::SelfEnergyBackbone> && !SelfEnergySingleDirectionInput<diagram::CorrelatorBackbone>);
+static_assert(SelfEnergyBothDirectionsInput<diagram::SelfEnergyBackbone> && !SelfEnergyBothDirectionsInput<diagram::CorrelatorBackbone>);
 static_assert(CorrelatorInput<diagram::CorrelatorBackbone> && !CorrelatorInput<diagram::SelfEnergyBackbone>);
 template <typename E> concept PublicAccumulator = requires(E &e) { e.Sigma; };
 template <typename E> concept PublicReset = requires(E &e) { e.reset(); };
@@ -61,8 +61,8 @@ TEST(DensePrepared, self_energy_and_pair_outlive_preparation_inputs) {
   auto expected = tensor(triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, f)[0].data());
   auto expected_pair = nda::make_regular(expected + triqs_xca::test_utils::fixture_self_energy(evaluator, G, topology, partner)[0].data());
 
-  expect_close(evaluator.compute_self_energy(model.G, backbone), expected);
-  expect_close(evaluator.compute_self_energy_by_pairs(model.G, backbone), expected_pair);
+  expect_close(evaluator.compute_self_energy_single_direction(model.G, backbone), expected);
+  expect_close(evaluator.compute_self_energy_both_directions(model.G, backbone), expected_pair);
   EXPECT_FALSE(backbone.endpoint_orientation().forward);
   EXPECT_TRUE(backbone.vertices[0].adjoint);
   auto copy = backbone;
@@ -75,7 +75,7 @@ TEST(DensePrepared, self_energy_and_pair_outlive_preparation_inputs) {
   // There are three propagator edges at order two. Reusing preparation with a
   // different G must not reuse old numerical data or an old accumulator.
   auto changed_G = nda::make_regular(1.1 * model.G);
-  expect_close(evaluator.compute_self_energy(changed_G, backbone), nda::make_regular((1.1 * 1.1 * 1.1) * expected));
+  expect_close(evaluator.compute_self_energy_single_direction(changed_G, backbone), nda::make_regular((1.1 * 1.1 * 1.1) * expected));
 }
 
 TEST(DensePrepared, correlator_outlives_preparation_inputs) {
@@ -119,12 +119,12 @@ TEST(DensePrepared, repeated_calls_return_independent_contributions) {
   auto creators = evaluator.action.operators.F_dags(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all);
 
   // Independent evaluator instances provide references without any preceding call.
-  auto expected_sigma = fresh().compute_self_energy(model.G, sigma);
-  auto expected_pair = fresh().compute_self_energy_by_pairs(model.G, sigma);
+  auto expected_sigma = fresh().compute_self_energy_single_direction(model.G, sigma);
+  auto expected_pair = fresh().compute_self_energy_both_directions(model.G, sigma);
   auto expected_correlator = fresh().compute_one_time_correlator(model.G, correlator, annihilators, creators);
 
-  auto actual_sigma = evaluator.compute_self_energy(model.G, sigma);
-  auto actual_pair = evaluator.compute_self_energy_by_pairs(model.G, sigma);
+  auto actual_sigma = evaluator.compute_self_energy_single_direction(model.G, sigma);
+  auto actual_pair = evaluator.compute_self_energy_both_directions(model.G, sigma);
   auto actual_correlator = evaluator.compute_one_time_correlator(model.G, correlator, annihilators, creators);
   expect_close(actual_sigma, expected_sigma);
   expect_close(actual_pair, expected_pair);
@@ -132,13 +132,13 @@ TEST(DensePrepared, repeated_calls_return_independent_contributions) {
 
   // Reuse the three prepared operations with different data, without a reset.
   auto changed_G = nda::make_regular(1.1 * model.G);
-  expect_close(evaluator.compute_self_energy(changed_G, sigma), nda::make_regular(1.1 * expected_sigma));
-  expect_close(evaluator.compute_self_energy_by_pairs(changed_G, sigma), nda::make_regular(1.1 * expected_pair));
+  expect_close(evaluator.compute_self_energy_single_direction(changed_G, sigma), nda::make_regular(1.1 * expected_sigma));
+  expect_close(evaluator.compute_self_energy_both_directions(changed_G, sigma), nda::make_regular(1.1 * expected_pair));
   expect_close(evaluator.compute_one_time_correlator(changed_G, correlator, annihilators, creators),
                nda::make_regular((1.1 * 1.1) * expected_correlator));
 
-  expect_close(evaluator.compute_self_energy(model.G, sigma), expected_sigma);
-  expect_close(evaluator.compute_self_energy_by_pairs(model.G, sigma), expected_pair);
+  expect_close(evaluator.compute_self_energy_single_direction(model.G, sigma), expected_sigma);
+  expect_close(evaluator.compute_self_energy_both_directions(model.G, sigma), expected_pair);
   expect_close(evaluator.compute_one_time_correlator(model.G, correlator, annihilators, creators), expected_correlator);
 
   // Returned arrays own their storage and survive subsequent evaluator calls.
@@ -155,12 +155,12 @@ TEST(DensePrepared, copied_evaluator_retains_convolution_grid) {
     dense::DiagramEvaluator original(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
     nda::array<int, 2> topology{{0, 2}, {1, 3}};
     auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, original.action, 0);
-    auto expected = original.compute_self_energy_by_pairs(model.G, backbone);
+    auto expected = original.compute_self_energy_both_directions(model.G, backbone);
     auto copy = std::make_unique<dense::DiagramEvaluator>(original);
     EXPECT_EQ(&copy->action.tau_mesh.dlr_it(), &original.action.tau_mesh.dlr_it());
     return std::tuple{std::move(copy), model.G, std::move(backbone), std::move(expected)};
   }();
-  expect_close(retained->compute_self_energy_by_pairs(G, prepared), reference);
+  expect_close(retained->compute_self_energy_both_directions(G, prepared), reference);
 }
 
 TEST(DensePrepared, invalid_numerical_shapes_leave_workspace_usable) {
@@ -171,18 +171,18 @@ TEST(DensePrepared, invalid_numerical_shapes_leave_workspace_usable) {
   auto correlator = diagram::prepare_backbone<diagram::Kind::correlator>(topology, evaluator.action, 0);
   auto mu = evaluator.action.operators.Fs(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all);
   auto kap = evaluator.action.operators.F_dags(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all);
-  auto expected_sigma = evaluator.compute_self_energy(model.G, sigma);
-  auto expected_pair = evaluator.compute_self_energy_by_pairs(model.G, sigma);
+  auto expected_sigma = evaluator.compute_self_energy_single_direction(model.G, sigma);
+  auto expected_pair = evaluator.compute_self_energy_both_directions(model.G, sigma);
   auto expected_correlator = evaluator.compute_one_time_correlator(model.G, correlator, mu, kap);
   long r = model.G.extent(0), N = model.G.extent(1);
 
   // Owning scratch must not resize to a bad input shape before validation.
   for (auto shape : {std::array{r - 1, N, N}, std::array{r + 1, N, N}, std::array{r, N - 1, N}, std::array{r, N, N + 1}}) {
     auto invalid = nda::zeros<dcomplex>(shape);
-    EXPECT_THROW(evaluator.compute_self_energy(invalid, sigma), std::invalid_argument);
-    expect_close(evaluator.compute_self_energy(model.G, sigma), expected_sigma);
-    EXPECT_THROW(evaluator.compute_self_energy_by_pairs(invalid, sigma), std::invalid_argument);
-    expect_close(evaluator.compute_self_energy_by_pairs(model.G, sigma), expected_pair);
+    EXPECT_THROW(evaluator.compute_self_energy_single_direction(invalid, sigma), std::invalid_argument);
+    expect_close(evaluator.compute_self_energy_single_direction(model.G, sigma), expected_sigma);
+    EXPECT_THROW(evaluator.compute_self_energy_both_directions(invalid, sigma), std::invalid_argument);
+    expect_close(evaluator.compute_self_energy_both_directions(model.G, sigma), expected_pair);
     EXPECT_THROW(evaluator.compute_one_time_correlator(invalid, correlator, mu, kap), std::invalid_argument);
     expect_close(evaluator.compute_one_time_correlator(model.G, correlator, mu, kap), expected_correlator);
   }

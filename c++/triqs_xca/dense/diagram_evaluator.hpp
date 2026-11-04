@@ -57,19 +57,21 @@ namespace triqs_xca::dense {
     // Evaluate one prepared backbone locally, without MPI partitioning.
     // Each call returns an independent owning array.
     // Gt must have the Action's (r, N, N) shape; observable matrices have shape (n_ops, N, N).
-    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy(
+    /// Evaluate only the supplied special-arc direction, for directional reference comparisons.
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy_single_direction(
       nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
-    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy_by_pairs(
+    /// Sum both special-arc directions while sharing the backbone convolutions.
+    /// Either supplied special-arc direction gives the same sum; internal arc choices stay fixed.
+    C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy_both_directions(
       nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
     C2PY_IGNORE nda::array<dcomplex, 3> compute_one_time_correlator(
       nda::array_const_view<dcomplex, 3> Gt, diagram::CorrelatorBackbone const &backbone,
       nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
       diagram::CorrelatorStatistics correlator_statistics = {});
 
-    /// Evaluate this MPI rank's share of a topology; the caller reduces the accumulated result.
+    /// Evaluate this MPI rank's share of a topology, pairing the special arc's two directions.
+    /// Both directions share the dense backbone convolutions. The caller reduces the accumulated result.
     block_gf<dlr_imtime> compute_self_energy(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);
-    /// Evaluate this MPI rank's share of the unique pairs of special-arc directions.
-    block_gf<dlr_imtime> compute_self_energy_by_pairs(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);
     /// Evaluate this MPI rank's contribution to the single-particle Green's function.
     nda::array<dcomplex, 3> compute_single_ptcle_gf(block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology);
 

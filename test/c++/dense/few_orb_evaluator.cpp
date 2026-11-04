@@ -73,11 +73,9 @@ namespace {
     return 2 * action.tau_mesh.size() * action.block_dims(0) * action.block_dims(0) * sizeof(dcomplex);
   }
 
-  template <typename Compute>
-  Tensor sum_self_energy(dense::DiagramEvaluator &scalar, Tensor const &G, std::vector<diagram::SelfEnergyBackbone> const &backbones,
-                         Compute compute) {
+  Tensor sum_self_energy(dense::DiagramEvaluator &scalar, Tensor const &G, std::vector<diagram::SelfEnergyBackbone> const &backbones) {
     auto result = nda::zeros<dcomplex>(G.shape());
-    for (auto const &backbone : backbones) result += compute(scalar, G, backbone);
+    for (auto const &backbone : backbones) result += scalar.compute_self_energy_both_directions(G, backbone);
     return result;
   }
 } // namespace
@@ -87,12 +85,9 @@ TEST(DenseFewOrb, self_energy_pairs_cache_limits_and_propagator_changes) {
   auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
   dense::DiagramEvaluator scalar(action);
   auto backbones = prepared<diagram::Kind::self_energy>(action);
-  auto ordinary  = [](auto &e, auto const &G, auto const &b) { return e.compute_self_energy(G, b); };
-  auto paired    = [](auto &e, auto const &G, auto const &b) { return e.compute_self_energy_by_pairs(G, b); };
-  auto expected  = sum_self_energy(scalar, m.G, backbones, ordinary);
-  auto pairs     = sum_self_energy(scalar, m.G, backbones, paired);
+  auto expected  = sum_self_energy(scalar, m.G, backbones);
   auto G_changed = test_utils::second_propagator(m);
-  auto changed   = sum_self_energy(scalar, G_changed, backbones, ordinary);
+  auto changed   = sum_self_energy(scalar, G_changed, backbones);
   ASSERT_GT(nda::max_element(nda::abs(expected)), 1e-6);
   ASSERT_GT(nda::max_element(nda::abs(changed - expected)), 1e-6);
 
@@ -102,7 +97,7 @@ TEST(DenseFewOrb, self_energy_pairs_cache_limits_and_propagator_changes) {
     dense::DiagramEvaluatorFewOrb evaluator(action, budget);
     Tensor G      = m.G;
     auto *address = G.data();
-    auto retained = evaluator.compute_self_energy(G, backbones);
+    auto retained = evaluator.compute_self_energy_both_directions(G, backbones);
     expect_close(retained, expected);
     auto stats = evaluator.edge_cache_statistics();
     EXPECT_LE(stats.bytes, budget);
@@ -119,20 +114,21 @@ TEST(DenseFewOrb, self_energy_pairs_cache_limits_and_propagator_changes) {
       EXPECT_EQ(stats.entries, 1);
       EXPECT_GT(stats.misses, stats.entries);
     }
-    expect_close(evaluator.compute_self_energy_by_pairs(G, backbones), pairs);
     // Keep the same allocation: pointer identity cannot establish cache validity.
     G() = G_changed;
     ASSERT_EQ(G.data(), address);
-    expect_close(evaluator.compute_self_energy(G, backbones), changed);
+    expect_close(evaluator.compute_self_energy_both_directions(G, backbones), changed);
     G() = m.G;
     ASSERT_EQ(G.data(), address);
-    expect_close(evaluator.compute_self_energy(G, backbones), expected);
+    expect_close(evaluator.compute_self_energy_both_directions(G, backbones), expected);
     auto repeated_stats = evaluator.edge_cache_statistics();
     EXPECT_EQ(repeated_stats.hits, stats.hits);
     EXPECT_EQ(repeated_stats.misses, stats.misses);
     expect_close(retained, expected);
-    expect_close(evaluator.compute_self_energy(m.G, backbones.front()), scalar.compute_self_energy(m.G, backbones.front()));
-    expect_close(evaluator.compute_self_energy_by_pairs(m.G, backbones.back()), scalar.compute_self_energy_by_pairs(m.G, backbones.back()));
+    expect_close(evaluator.compute_self_energy_both_directions(m.G, backbones.front()),
+                 scalar.compute_self_energy_both_directions(m.G, backbones.front()));
+    expect_close(evaluator.compute_self_energy_both_directions(m.G, backbones.back()),
+                 scalar.compute_self_energy_both_directions(m.G, backbones.back()));
   }
 }
 
@@ -193,17 +189,12 @@ TEST(DenseFewOrb, fixed_dimensions_blas_fallback_and_high_rank) {
     auto correlators = sample.template operator()<diagram::Kind::correlator>();
     auto mu          = action.operators.Fs(nda::range(action.n_hyb), all, all);
     auto kap         = action.operators.F_dags(nda::range(action.n_hyb), all, all);
-    auto expected = nda::zeros<dcomplex>(m.G.shape()), pairs = nda::zeros<dcomplex>(m.G.shape());
+    auto expected = sum_self_energy(scalar, m.G, backbones);
     auto corr = nda::zeros<dcomplex>(m.mesh.size(), mu.extent(0), kap.extent(0));
-    for (auto const &b : backbones) {
-      expected += scalar.compute_self_energy(m.G, b);
-      pairs += scalar.compute_self_energy_by_pairs(m.G, b);
-    }
     for (auto const &b : correlators) corr += scalar.compute_one_time_correlator(m.G, b, mu, kap);
     for (std::size_t budget : {std::size_t{0}, 256 * entry_bytes(action)}) {
       dense::DiagramEvaluatorFewOrb evaluator(action, budget);
-      expect_close(evaluator.compute_self_energy(m.G, backbones), expected);
-      expect_close(evaluator.compute_self_energy_by_pairs(m.G, backbones), pairs);
+      expect_close(evaluator.compute_self_energy_both_directions(m.G, backbones), expected);
       expect_close(evaluator.compute_one_time_correlator(m.G, correlators, mu, kap), corr);
     }
   }
@@ -219,7 +210,6 @@ TEST(DenseFewOrb, topology_empty_input_validation_and_recovery) {
   auto mu  = action.operators.Fs(nda::range(action.n_hyb), all, all);
   auto kap = action.operators.F_dags(nda::range(action.n_hyb), all, all);
   expect_close(evaluator.compute_self_energy(G, topology)[0].data(), scalar.compute_self_energy(G, topology)[0].data());
-  expect_close(evaluator.compute_self_energy_by_pairs(G, topology)[0].data(), scalar.compute_self_energy_by_pairs(G, topology)[0].data());
   expect_close(evaluator.compute_single_ptcle_gf(G, topology), scalar.compute_single_ptcle_gf(G, topology));
   test_utils::ops_t ops{n("f", 0), n("f", 1)};
   expect_close(evaluator.compute_one_time_correlator(G, ops, ops, m.ad_flat, topology),
@@ -227,19 +217,16 @@ TEST(DenseFewOrb, topology_empty_input_validation_and_recovery) {
 
   std::span<diagram::SelfEnergyBackbone const> empty;
   std::span<diagram::CorrelatorBackbone const> empty_correlator;
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy(m.G, empty))), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_by_pairs(m.G, empty))), 0.);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_both_directions(m.G, empty))), 0.);
   EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_one_time_correlator(m.G, empty_correlator, mu, kap))), 0.);
   EXPECT_EQ(evaluator.edge_cache_statistics().entries, 0);
   EXPECT_EQ(evaluator.edge_cache_statistics().hits, 0);
   EXPECT_EQ(evaluator.edge_cache_statistics().misses, 0);
   auto wrong_shape = nda::zeros<dcomplex>(m.mesh.size(), 3, 3);
   auto wrong_ops   = nda::zeros<dcomplex>(2, 3, 3);
-  EXPECT_THROW(evaluator.compute_self_energy(wrong_shape, empty), std::invalid_argument);
-  EXPECT_THROW(evaluator.compute_self_energy_by_pairs(wrong_shape, empty), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_self_energy_both_directions(wrong_shape, empty), std::invalid_argument);
   EXPECT_THROW(evaluator.compute_one_time_correlator(m.G, empty_correlator, wrong_ops, kap), std::invalid_argument);
   EXPECT_THROW(evaluator.compute_self_energy(G, malformed), std::invalid_argument);
-  EXPECT_THROW(evaluator.compute_self_energy_by_pairs(G, malformed), std::invalid_argument);
   EXPECT_THROW(evaluator.compute_single_ptcle_gf(G, malformed), std::invalid_argument);
   test_utils::bgf_t missing{std::vector<triqs::gfs::gf<test_utils::mesh_t>>{}};
   EXPECT_THROW(evaluator.compute_self_energy(missing, topology), std::invalid_argument);
@@ -270,17 +257,12 @@ TEST(DenseFewOrb, strided_propagator_and_observable_inputs) {
   kap_strided                          = kap;
   ASSERT_FALSE(G_strided.indexmap().is_contiguous());
   ASSERT_FALSE(mu_strided.indexmap().is_contiguous());
-  auto expected = nda::zeros<dcomplex>(m.G.shape()), pairs = nda::zeros<dcomplex>(m.G.shape());
+  auto expected = sum_self_energy(scalar, m.G, backbones);
   auto corr = nda::zeros<dcomplex>(r, mu.extent(0), kap.extent(0));
-  for (auto const &b : backbones) {
-    expected += scalar.compute_self_energy(m.G, b);
-    pairs += scalar.compute_self_energy_by_pairs(m.G, b);
-  }
   for (auto const &b : correlators) corr += scalar.compute_one_time_correlator(m.G, b, mu, kap);
   for (std::size_t budget : {std::size_t{0}, 64 * entry_bytes(action)}) {
     dense::DiagramEvaluatorFewOrb evaluator(action, budget);
-    expect_close(evaluator.compute_self_energy(G_strided, backbones), expected);
-    expect_close(evaluator.compute_self_energy_by_pairs(G_strided, backbones), pairs);
+    expect_close(evaluator.compute_self_energy_both_directions(G_strided, backbones), expected);
     expect_close(evaluator.compute_one_time_correlator(G_strided, correlators, mu_strided, kap_strided), corr);
   }
   EXPECT_EQ(G_store(2 * r - 1, 2 * N - 1, 2 * N - 1), (dcomplex{13., -17.}));

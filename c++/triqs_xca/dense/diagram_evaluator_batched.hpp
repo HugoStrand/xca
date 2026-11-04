@@ -24,12 +24,12 @@ namespace triqs_xca::dense {
     public:
     explicit BatchedDiagramEvaluator(Action<FSet> action, long batch_size = 16);
 
-    /// Sum independent prepared contributions in input order, using bounded batches.
+    /// Sum both directions of each backbone's special arc, using bounded batches.
+    /// Input order is preserved; either special-arc orientation gives the same pair.
+    /// For a full diagram sum, supply one representative per pair, not both orientations.
     /// Different orders or distinguished-vertex positions start a new batch.
-    nda::array<nda::dcomplex, 3> compute_self_energy(nda::array_const_view<nda::dcomplex, 3> G,
-                                                     std::span<diagram::SelfEnergyBackbone const> backbones);
-    nda::array<nda::dcomplex, 3> compute_self_energy_by_pairs(nda::array_const_view<nda::dcomplex, 3> G,
-                                                              std::span<diagram::SelfEnergyBackbone const> backbones);
+    nda::array<nda::dcomplex, 3> compute_self_energy_both_directions(nda::array_const_view<nda::dcomplex, 3> G,
+                                                                std::span<diagram::SelfEnergyBackbone const> backbones);
     nda::array<nda::dcomplex, 3> compute_one_time_correlator(nda::array_const_view<nda::dcomplex, 3> G,
                                                              std::span<diagram::CorrelatorBackbone const> backbones,
                                                              nda::array_const_view<nda::dcomplex, 3> mu_ops,
@@ -37,8 +37,6 @@ namespace triqs_xca::dense {
                                                              diagram::CorrelatorStatistics statistics = {});
 
     triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
-                                                                      nda::array_const_view<int, 2> topology);
-    triqs::gfs::block_gf<triqs::mesh::dlr_imtime> compute_self_energy_by_pairs(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                                                nda::array_const_view<int, 2> topology);
     nda::array<nda::dcomplex, 3> compute_single_ptcle_gf(triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G,
                                                          nda::array_const_view<int, 2> topology);

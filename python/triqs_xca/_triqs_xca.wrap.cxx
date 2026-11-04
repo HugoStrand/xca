@@ -111,13 +111,6 @@ static auto const _c2py_fun_48d3f32f = c2py::dispatcher_f_kw_t{c2py::cmethod(
       -> decltype(auto) { return self.compute_self_energy(G_ppsc, topology); },
    "self", "G_ppsc", "topology")};
 
-// compute_self_energy_by_pairs
-static auto const _c2py_fun_773db64f = c2py::dispatcher_f_kw_t{c2py::cmethod(
-   [](_c2py_cls_698c8c52 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
-      nda::basic_array_view<const int, 2, nda::C_stride_layout, 'A', nda::default_accessor, nda::borrowed<nda::mem::AddressSpace::Host>> topology)
-      -> decltype(auto) { return self.compute_self_energy_by_pairs(G_ppsc, topology); },
-   "self", "G_ppsc", "topology")};
-
 // compute_single_ptcle_gf
 static auto const _c2py_fun_4dca0593 = c2py::dispatcher_f_kw_t{c2py::cmethod(
    [](_c2py_cls_698c8c52 &self, triqs::gfs::block_gf_view<triqs::mesh::dlr_imtime> G_ppsc,
@@ -129,10 +122,8 @@ static const auto _c2py_doc_06fc17c6 = _c2py_fun_06fc17c6.doc(R"DOC(
 Evaluate this MPI rank's contribution for the supplied observable operators.
 )DOC");
 static const auto _c2py_doc_48d3f32f = _c2py_fun_48d3f32f.doc(R"DOC(
-Evaluate this MPI rank's share of a topology; the caller reduces the accumulated result.
-)DOC");
-static const auto _c2py_doc_773db64f = _c2py_fun_773db64f.doc(R"DOC(
-Evaluate this MPI rank's share of the unique pairs of special-arc directions.
+Evaluate this MPI rank's share of a topology, pairing the special arc's two directions.
+Both directions share the dense backbone convolutions. The caller reduces the accumulated result.
 )DOC");
 static const auto _c2py_doc_4dca0593 = _c2py_fun_4dca0593.doc(R"DOC(
 Evaluate this MPI rank's contribution to the single-particle Green's function.
@@ -143,7 +134,6 @@ Evaluate this MPI rank's contribution to the single-particle Green's function.
 template <> PyMethodDef c2py::tp_methods<_c2py_cls_698c8c52>[] = {
    PMDF("compute_one_time_correlator", 06fc17c6),
    PMDF("compute_self_energy", 48d3f32f),
-   PMDF("compute_self_energy_by_pairs", 773db64f),
    PMDF("compute_single_ptcle_gf", 4dca0593),
    {nullptr, nullptr, 0, nullptr} // Sentinel
 };

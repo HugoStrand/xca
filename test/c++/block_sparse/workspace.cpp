@@ -65,7 +65,7 @@ TEST(BlockSparseWorkspace, changing_dimensions_endpoint_slots_and_retained_forwa
           changed_anchor |= path.dimension(0) != path.dimension(1);
           multiple_endpoint_slots |= path.zero_operators.size() > 1;
         });
-        auto expected = dense.compute_self_energy(model.G, backbone);
+        auto expected = dense.compute_self_energy_single_direction(model.G, backbone);
         auto result   = evaluator.compute_self_energy(G, backbone);
         auto retained = fixtures::get_tensor_in_full_hilbert_space(result, model.ad, model.mesh.size());
         expect_close(retained, expected);

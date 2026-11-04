@@ -49,22 +49,20 @@ TEST(DenseBatched, self_energy_pairs_tails_and_reuse) {
   auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
   dense::DiagramEvaluator scalar(action);
   auto backbones = prepared<diagram::Kind::self_energy>(action);
-  auto expected = nda::zeros<dcomplex>(m.G.shape()), expected_pairs = nda::zeros<dcomplex>(m.G.shape());
+  auto expected = nda::zeros<dcomplex>(m.G.shape());
   auto changed_G = nda::make_regular(1.03 * m.G);
   auto changed   = nda::zeros<dcomplex>(m.G.shape());
   for (auto const &backbone : backbones) {
-    expected += scalar.compute_self_energy(m.G, backbone);
-    expected_pairs += scalar.compute_self_energy_by_pairs(m.G, backbone);
-    changed += scalar.compute_self_energy(changed_G, backbone);
+    expected += scalar.compute_self_energy_both_directions(m.G, backbone);
+    changed += scalar.compute_self_energy_both_directions(changed_G, backbone);
   }
   for (long capacity : {1, 3, 8, 19}) {
     SCOPED_TRACE(capacity);
     dense::BatchedDiagramEvaluator evaluator(action, capacity);
-    auto retained = evaluator.compute_self_energy(m.G, backbones);
+    auto retained = evaluator.compute_self_energy_both_directions(m.G, backbones);
     expect_close(retained, expected);
-    expect_close(evaluator.compute_self_energy_by_pairs(m.G, backbones), expected_pairs);
-    expect_close(evaluator.compute_self_energy(changed_G, backbones), changed);
-    expect_close(evaluator.compute_self_energy(m.G, backbones), expected);
+    expect_close(evaluator.compute_self_energy_both_directions(changed_G, backbones), changed);
+    expect_close(evaluator.compute_self_energy_both_directions(m.G, backbones), expected);
     expect_close(retained, expected);
   }
 }
@@ -100,12 +98,10 @@ TEST(DenseBatched, topology_wrappers_and_empty_input) {
   test_utils::bgf_t G{std::vector{triqs::gfs::gf<test_utils::mesh_t>(m.mesh, m.G)}};
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
   expect_close(evaluator.compute_self_energy(G, topology)[0].data(), scalar.compute_self_energy(G, topology)[0].data());
-  expect_close(evaluator.compute_self_energy_by_pairs(G, topology)[0].data(), scalar.compute_self_energy_by_pairs(G, topology)[0].data());
   expect_close(evaluator.compute_single_ptcle_gf(G, topology), scalar.compute_single_ptcle_gf(G, topology));
   std::span<diagram::SelfEnergyBackbone const> empty;
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy(m.G, empty))), 0.);
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_by_pairs(m.G, empty))), 0.);
+  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_both_directions(m.G, empty))), 0.);
   EXPECT_THROW((dense::BatchedDiagramEvaluator(action, 0)), std::invalid_argument);
   auto wrong_shape = nda::zeros<dcomplex>(m.mesh.size(), 3, 3);
-  EXPECT_THROW(evaluator.compute_self_energy(wrong_shape, empty), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_self_energy_both_directions(wrong_shape, empty), std::invalid_argument);
 }

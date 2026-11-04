@@ -71,6 +71,8 @@ namespace triqs_xca::diagram {
   }
 
   long count_self_energy_pairs(int order, int flavours, long pole_count) {
+    // Count pairs directly: count_diagrams(..., self_energy) / 2 could overflow
+    // before the division even when the compact pair count fits in a long.
     if (order < 1 || flavours < 0 || pole_count < 0) throw std::invalid_argument("invalid assignment space dimensions");
     if (order == 1) return 1;
     if (flavours == 0 || pole_count == 0) return 0;

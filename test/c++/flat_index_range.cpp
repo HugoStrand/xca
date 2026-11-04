@@ -77,7 +77,7 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   };
 
   for (int bad : {-1, n_sigma}) {
-    SCOPED_TRACE("by-pairs self-energy, f_ix = " + std::to_string(bad));
+    SCOPED_TRACE("single-direction self-energy, f_ix = " + std::to_string(bad));
     expect_flat_index_rejected([&] { test_utils::fixture_self_energy(D_dense, G_flat, topology, bad); });
     expect_flat_index_rejected([&] { test_utils::fixture_self_energy(D_dense, G_flat, topology, valid_then(n_sigma, bad)); });
   }
@@ -97,8 +97,8 @@ TEST(FlatIndexRange, out_of_range_flat_indices_are_rejected) {
   };
 
   fail();
-  check("compute_self_energy_by_pairs(G, topology)", D_dense.compute_self_energy_by_pairs(G_flat, topology),
-        fresh().compute_self_energy_by_pairs(G_flat, topology));
+  check("compute_self_energy(G, topology)", D_dense.compute_self_energy(G_flat, topology),
+        fresh().compute_self_energy(G_flat, topology));
 
 }
 
@@ -156,7 +156,7 @@ TEST(FlatIndexRange, flat_indices_beyond_int) {
   long partner = (f_sigma / n_op) % 2 == 0 ? f_sigma + n_op : f_sigma - n_op;
   auto pair    = nda::make_regular(S + sigma_dense(partner));
   auto pair_backbone = triqs_xca::diagram::prepare_backbone<triqs_xca::diagram::Kind::self_energy>(topology, D_dense.action, f_sigma);
-  auto actual_pair = D_dense.compute_self_energy_by_pairs(G_flat[0].data(), pair_backbone);
+  auto actual_pair = D_dense.compute_self_energy_both_directions(G_flat[0].data(), pair_backbone);
   EXPECT_LE(nda::max_element(nda::abs(actual_pair - pair)), 1.0e-13 * nda::max_element(nda::abs(pair)));
 
   long f_spgf = 0;

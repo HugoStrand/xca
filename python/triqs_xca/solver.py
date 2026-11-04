@@ -734,21 +734,6 @@ class Solver(object):
         return Sigma
     
     
-    def eval_pseudo_particle_self_energy_order_by_pairs(self, G, order, verbose=False):
-
-        Sigma = self.get_zero_pseudo_particle_propagator()
-
-        for sign, topology in all_connected_pairings(order):
-            if verbose and is_root(): print(f'SIGMA: O{order} topo {topology} sign {sign:+d}')
-            topology = np.array(topology, dtype=np.int32)
-            Sigma -= self.d.compute_self_energy_by_pairs(G, topology)
-
-        for _, sigma_b in Sigma:
-            sigma_b.data[:] = mpi.all_reduce(sigma_b.data)
-
-        return Sigma
-
-
     def eval_pseudo_particle_self_energy_topology(self, G, topology):
         """Return the complete topology sum on every MPI rank."""
         Sigma = self.d.compute_self_energy(G, topology)

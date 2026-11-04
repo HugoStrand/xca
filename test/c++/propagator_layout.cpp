@@ -78,7 +78,6 @@ TEST(PropagatorLayout, wrong_layouts_are_rejected) {
   for (auto &[what, G] : wrong_for_dense) {
     SCOPED_TRACE("dense, " + what);
     EXPECT_THROW(D_dense.compute_self_energy(G, topology), std::invalid_argument);
-    EXPECT_THROW(D_dense.compute_self_energy_by_pairs(G, topology), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_single_ptcle_gf(G, topology), std::invalid_argument);
     EXPECT_THROW(D_dense.compute_one_time_correlator(G, ops, ops, ad_flat, topology), std::invalid_argument);
   }

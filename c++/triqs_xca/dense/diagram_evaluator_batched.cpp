@@ -123,20 +123,20 @@ namespace triqs_xca::dense {
     }
 
     void eval_self_energy(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> G,
-                          std::span<diagram::SelfEnergyBackbone const> batch, bool paired, Action<FSet> const &action, nda::array<dcomplex, 4> &T,
+                          std::span<diagram::SelfEnergyBackbone const> batch, Action<FSet> const &action, nda::array<dcomplex, 4> &T,
                           nda::array<dcomplex, 4> &U, nda::array<dcomplex, 4> &GKt, nda::array<dcomplex, 4> &Tkaps, nda::array<dcomplex, 3> &Tmu,
                           cppdlr::fast_convolve_batched_workspace &work) {
       initial_segment(T, GKt, G, batch, action, work);
-      if (paired) active(U, batch.size()) = active(T, batch.size());
+      // Both special-arc orientations share the prefix and the remaining tail.
+      // The opposite orientation has the opposite global self-energy sign.
+      active(U, batch.size()) = active(T, batch.size());
       for (long b = 0; b < batch.size(); ++b) {
         auto const &backbone = batch[b];
         auto values          = active(T, batch.size());
         endpoint_sum(values(all, b, all, all), backbone.endpoint_orientation(), backbone.endpoints.signs, action, Tkaps, Tmu);
-        if (paired) {
-          auto opposite = active(U, batch.size());
-          endpoint_sum(opposite(all, b, all, all), backbone.endpoint_orientation().opposite(), backbone.endpoints.signs, action, Tkaps, Tmu);
-          values(all, b, all, all) -= opposite(all, b, all, all);
-        }
+        auto opposite = active(U, batch.size());
+        endpoint_sum(opposite(all, b, all, all), backbone.endpoint_orientation().opposite(), backbone.endpoints.signs, action, Tkaps, Tmu);
+        values(all, b, all, all) -= opposite(all, b, all, all);
       }
       auto range = batch.front().endpoint_ranges().after_special;
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
@@ -209,25 +209,13 @@ namespace triqs_xca::dense {
        Tkaps(action.n_flavours(), action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)),
        Tmu(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)) {}
 
-  nda::array<dcomplex, 3> BatchedDiagramEvaluator::compute_self_energy(nda::array_const_view<dcomplex, 3> G,
-                                                                       std::span<diagram::SelfEnergyBackbone const> pending) {
+  nda::array<dcomplex, 3> BatchedDiagramEvaluator::compute_self_energy_both_directions(nda::array_const_view<dcomplex, 3> G,
+                                                                                       std::span<diagram::SelfEnergyBackbone const> pending) {
     check_propagator(G, action);
     auto result = nda::zeros<dcomplex>(G.shape());
     while (!pending.empty()) {
       auto batch = next_batch(pending, capacity);
-      eval_self_energy(result, G, batch, false, action, T, U, GKt, Tkaps, Tmu, convolution_work);
-      pending = pending.subspan(batch.size());
-    }
-    return result;
-  }
-
-  nda::array<dcomplex, 3> BatchedDiagramEvaluator::compute_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> G,
-                                                                                std::span<diagram::SelfEnergyBackbone const> pending) {
-    check_propagator(G, action);
-    auto result = nda::zeros<dcomplex>(G.shape());
-    while (!pending.empty()) {
-      auto batch = next_batch(pending, capacity);
-      eval_self_energy(result, G, batch, true, action, T, U, GKt, Tkaps, Tmu, convolution_work);
+      eval_self_energy(result, G, batch, action, T, U, GKt, Tkaps, Tmu, convolution_work);
       pending = pending.subspan(batch.size());
     }
     return result;
@@ -253,17 +241,6 @@ namespace triqs_xca::dense {
     auto propagator = native_propagator(G, action);
     diagram::topology::validate(topology);
     auto result = nda::zeros<dcomplex>(propagator.shape());
-    long count  = diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), diagram::Kind::self_energy);
-    visit_topology<diagram::Kind::self_energy>(
-       count, capacity, [&](long index) { return diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index); },
-       [&](auto batch) { result += compute_self_energy(propagator, batch); });
-    return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
-  }
-
-  block_gf<dlr_imtime> BatchedDiagramEvaluator::compute_self_energy_by_pairs(block_gf_view<dlr_imtime> G, nda::array_const_view<int, 2> topology) {
-    auto propagator = native_propagator(G, action);
-    diagram::topology::validate(topology);
-    auto result = nda::zeros<dcomplex>(propagator.shape());
     long count  = diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
     visit_topology<diagram::Kind::self_energy>(
        count, capacity,
@@ -271,7 +248,7 @@ namespace triqs_xca::dense {
          return diagram::prepare_backbone<diagram::Kind::self_energy>(topology,
                                                                       diagram::decode_self_energy_pair_arcs(topology.extent(0), action, index));
        },
-       [&](auto batch) { result += compute_self_energy_by_pairs(propagator, batch); });
+       [&](auto batch) { result += compute_self_energy_both_directions(propagator, batch); });
     return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
   }
 

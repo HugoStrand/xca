@@ -27,7 +27,11 @@ namespace triqs_xca::diagram {
   void validate_arcs(Arcs const &arcs, int order);
   long count_diagrams(int order, int flavours, long pole_count, Kind kind);
 
-  /// Count internal arc choices, with the special arc's two directions evaluated together.
+  /// Count the (2 * flavours * pole_count)^(order - 1) internal arc choices.
+  /// Dense self-energy evaluation sums both directions of the special arc at once,
+  /// reusing the common backbone convolutions. Its direction is therefore not a
+  /// work index; the first-order diagram has one pair. Block-sparse evaluation
+  /// keeps separate directions because their sector paths and dimensions can differ.
   long count_self_energy_pairs(int order, int flavours, long pole_count);
 
   /// Resolve selected statistics and three-way pole signs. Special-arc metadata

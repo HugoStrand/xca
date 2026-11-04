@@ -155,19 +155,19 @@ namespace triqs_xca::dense {
   }
 
   void DiagramEvaluatorFewOrb::eval_self_energy(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> G,
-                                                diagram::SelfEnergyBackbone const &backbone, bool paired) {
+                                                diagram::SelfEnergyBackbone const &backbone) {
     auto ranges = backbone.endpoint_ranges();
     T           = G;
     for (int v = ranges.before_special.first_vertex; v < ranges.before_special.vertex_end; ++v) {
       multiply_vertex(T, backbone.vertices[v]);
       integrate_edge(T, G, backbone.edges[v]);
     }
-    if (paired) U = T;
+    // Both special-arc orientations share the prefix and the remaining tail.
+    // Reversing that arc flips the global sign, so combine endpoint sums by subtraction.
+    U = T;
     endpoint_sum(T, backbone.endpoint_orientation(), backbone.endpoints.signs);
-    if (paired) {
-      endpoint_sum(U, backbone.endpoint_orientation().opposite(), backbone.endpoints.signs);
-      T -= U;
-    }
+    endpoint_sum(U, backbone.endpoint_orientation().opposite(), backbone.endpoints.signs);
+    T -= U;
     for (int v = ranges.after_special.first_vertex; v < ranges.after_special.vertex_end; ++v) {
       integrate_edge(T, G, backbone.edges[v - 1]);
       multiply_vertex(T, backbone.vertices[v]);
@@ -210,14 +210,9 @@ namespace triqs_xca::dense {
     }
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy(nda::array_const_view<dcomplex, 3> G,
-                                                                      diagram::SelfEnergyBackbone const &backbone) {
-    return compute_self_energy(G, std::span{&backbone, 1});
-  }
-
-  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> G,
-                                                                               diagram::SelfEnergyBackbone const &backbone) {
-    return compute_self_energy_by_pairs(G, std::span{&backbone, 1});
+  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy_both_directions(nda::array_const_view<dcomplex, 3> G,
+                                                                                      diagram::SelfEnergyBackbone const &backbone) {
+    return compute_self_energy_both_directions(G, std::span{&backbone, 1});
   }
 
   nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_one_time_correlator(nda::array_const_view<dcomplex, 3> G,
@@ -228,19 +223,11 @@ namespace triqs_xca::dense {
     return compute_one_time_correlator(G, std::span{&backbone, 1}, mu_ops, kap_ops, statistics);
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy(nda::array_const_view<dcomplex, 3> G,
-                                                                      std::span<diagram::SelfEnergyBackbone const> backbones) {
+  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy_both_directions(nda::array_const_view<dcomplex, 3> G,
+                                                                                      std::span<diagram::SelfEnergyBackbone const> backbones) {
     begin_call(G);
     auto result = nda::zeros<dcomplex>(G.shape());
-    for (auto const &backbone : backbones) eval_self_energy(result, G, backbone, false);
-    return result;
-  }
-
-  nda::array<dcomplex, 3> DiagramEvaluatorFewOrb::compute_self_energy_by_pairs(nda::array_const_view<dcomplex, 3> G,
-                                                                               std::span<diagram::SelfEnergyBackbone const> backbones) {
-    begin_call(G);
-    auto result = nda::zeros<dcomplex>(G.shape());
-    for (auto const &backbone : backbones) eval_self_energy(result, G, backbone, true);
+    for (auto const &backbone : backbones) eval_self_energy(result, G, backbone);
     return result;
   }
 
@@ -260,24 +247,12 @@ namespace triqs_xca::dense {
     auto values = native_propagator(G);
     begin_call(values);
     diagram::topology::validate(topology);
-    auto count         = diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), diagram::Kind::self_energy);
-    auto [first, last] = triqs_xca::detail::local_work_range(count);
-    auto result        = nda::zeros<dcomplex>(values.shape());
-    for (long index = first; index < last; ++index)
-      eval_self_energy(result, values, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index), false);
-    return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
-  }
-
-  block_gf<dlr_imtime> DiagramEvaluatorFewOrb::compute_self_energy_by_pairs(block_gf_view<dlr_imtime> G, nda::array_const_view<int, 2> topology) {
-    auto values = native_propagator(G);
-    begin_call(values);
-    diagram::topology::validate(topology);
     auto count         = diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     auto result        = nda::zeros<dcomplex>(values.shape());
     for (long index = first; index < last; ++index) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), action, index);
-      eval_self_energy(result, values, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs), true);
+      eval_self_energy(result, values, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
     }
     return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
   }

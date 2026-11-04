@@ -180,8 +180,15 @@ namespace triqs_xca::dense {
       }
     }
 
-    // Add one prepared contribution to the supplied output. Output must not
-    // overlap the propagator or scratch arrays; callers initialize it before summing.
+    // Add both directions of the special arc joining vertex zero to its partner.
+    // All internal arc choices stay fixed, so the dense prefix and tail are shared:
+    // evaluate the prefix once, contract the two endpoint orientations, then extend
+    // their combined result through the tail once. Reversing the special arc flips
+    // self_energy_sign(), hence T - U before applying the supplied backbone's sign.
+    // The endpoint contraction already includes reflection and permutation signs.
+    // Either initial orientation gives the same sum. Block-sparse directions can
+    // traverse different sectors and dimensions, so they cannot share this work.
+    // Output must not overlap the propagator or scratch; callers initialize it.
     void eval_self_energy_pair(
       nda::array_view<dcomplex, 3> Sigma, nda::array_const_view<dcomplex, 3> Gt,
       diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
@@ -205,7 +212,8 @@ namespace triqs_xca::dense {
       Sigma += T;
     }
 
-    void eval_self_energy(
+    // Directional reference for tests, including comparisons with block_sparse.
+    void eval_self_energy_single_direction(
       nda::array_view<dcomplex, 3> Sigma, nda::array_const_view<dcomplex, 3> Gt,
       diagram::SelfEnergyBackbone const &backbone, Action<FSet> const &action,
       nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &GKt,
@@ -322,22 +330,6 @@ namespace triqs_xca::dense {
     block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
     auto Gt = native_propagator(G_ppsc, action);
     diagram::topology::validate(topology);
-    auto count = diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), diagram::Kind::self_energy);
-    auto [first, last] = triqs_xca::detail::local_work_range(count);
-    reset();
-    for (long index = first; index < last; ++index) {
-      auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, action, index);
-      eval_self_energy(Sigma, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
-    }
-    auto sigma_gf = triqs::gfs::gf<dlr_imtime>(action.tau_mesh, this->Sigma);
-    reset();
-    return std::vector<triqs::gfs::gf<dlr_imtime>>{sigma_gf};
-  }
-
-  block_gf<dlr_imtime> DiagramEvaluator::compute_self_energy_by_pairs(
-    block_gf_view<dlr_imtime> G_ppsc, nda::array_const_view<int, 2> topology) {
-    auto Gt = native_propagator(G_ppsc, action);
-    diagram::topology::validate(topology);
     auto count = diagram::count_self_energy_pairs(topology.extent(0), action.n_flavours(), action.poles.size());
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     reset();
@@ -353,7 +345,7 @@ namespace triqs_xca::dense {
 
 
 
-  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_by_pairs(
+  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_both_directions(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
     validate_propagator(Gt, action);
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
@@ -361,11 +353,11 @@ namespace triqs_xca::dense {
     return result;
   }
 
-  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy(
+  nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_single_direction(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
     validate_propagator(Gt, action);
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
-    eval_self_energy(result, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
+    eval_self_energy_single_direction(result, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
     return result;
   }
 

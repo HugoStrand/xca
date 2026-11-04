@@ -12,6 +12,8 @@ namespace triqs_xca::test_utils {
 
   // Historical fixture ordinals belong to the tests, not the evaluator API.
   // These helpers execute prepared Backbones locally, without MPI partitioning.
+  // Self-energy fixture indices fix the special-arc direction as well: dense
+  // uses its reference entry point to retain comparisons to block-sparse paths.
   template <typename E> long fixture_count(E const &evaluator, nda::array_const_view<int, 2> topology, diagram::Kind kind) {
     diagram::topology::validate(topology);
     return diagram::count_diagrams(topology.extent(0), evaluator.action.n_flavours(), evaluator.action.poles.size(), kind);
@@ -39,7 +41,7 @@ namespace triqs_xca::test_utils {
       auto result = nda::zeros<nda::dcomplex>(evaluator.action.tau_mesh.size(), evaluator.action.block_dims(0), evaluator.action.block_dims(0));
       visit_fixture_indices(selection, [&](long f) {
         auto backbone = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, f);
-        result += evaluator.compute_self_energy(Gt, backbone);
+        result += evaluator.compute_self_energy_single_direction(Gt, backbone);
       });
       return bgf{std::vector{gf(evaluator.action.tau_mesh, result)}};
     } else {
@@ -68,7 +70,7 @@ namespace triqs_xca::test_utils {
     long count = diagram::count_self_energy_pairs(topology.extent(0), evaluator.action.n_flavours(), evaluator.action.poles.size());
     for (long pair = 0; pair < count; ++pair) {
       auto arcs = diagram::decode_self_energy_pair_arcs(topology.extent(0), evaluator.action, pair);
-      result += evaluator.compute_self_energy_by_pairs(Gt, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
+      result += evaluator.compute_self_energy_both_directions(Gt, diagram::prepare_backbone<diagram::Kind::self_energy>(topology, arcs));
     }
     using gf = triqs::gfs::gf<triqs::mesh::dlr_imtime>;
     return triqs::gfs::block_gf<triqs::mesh::dlr_imtime>{std::vector{gf(evaluator.action.tau_mesh, result)}};

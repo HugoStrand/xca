@@ -95,12 +95,12 @@ namespace {
 } // namespace
 
 /**
- * @brief Check that compute_self_energy_by_pairs() agrees with compute_self_energy() in the presence of dynamical interactions
+ * @brief Check that the default paired evaluation agrees with summing individual directions, including dynamical interactions.
  *
- * @details The by-pairs routine evaluates both directions of the hybridization line attached to vertex 0 in one pass, and must use the same
- * interaction statistics as the plain routine.
+ * @details The default routine evaluates both directions of the arc attached to vertex 0 in one pass, and must use the same
+ * interaction statistics as the single-direction reference routine.
  */
-TEST(DenseDynint, self_energy_by_pairs_agrees) {
+TEST(DenseDynint, self_energy_agrees_with_single_directions) {
 
   double beta   = 2.0;
   double Lambda = 20.0 * beta;
@@ -126,17 +126,17 @@ TEST(DenseDynint, self_energy_by_pairs_agrees) {
   long n_backbones_fermionic = triqs_xca::test_utils::fixture_count(D_no_dynint, topology, triqs_xca::diagram::Kind::self_energy);
   ASSERT_GT(n_backbones, n_backbones_fermionic) << "vacuous test: no backbone carries the interaction operator";
 
-  auto sigma_all   = D.compute_self_energy(m.G_ppsc, topology);
-  auto sigma_pairs = D.compute_self_energy_by_pairs(m.G_ppsc, topology);
+  auto sigma_all   = triqs_xca::test_utils::fixture_self_energy(D, m.G_ppsc, topology);
+  auto sigma_pairs = D.compute_self_energy(m.G_ppsc, topology);
 
   // the comparison below is absolute, so require a non-negligible self-energy
   double scale = nda::max_element(nda::abs(sigma_all[0].data()));
   ASSERT_GT(scale, 0.1) << "vacuous test: the self-energy is too small for an absolute tolerance";
 
   double err = nda::max_element(nda::abs(sigma_all[0].data() - sigma_pairs[0].data()));
-  if (err > 1.0e-12) std::cout << "max|Sigma| = " << scale << ", max|all - by_pairs| = " << err << "\n";
+  if (err > 1.0e-12) std::cout << "max|Sigma| = " << scale << ", max|single directions - pairs| = " << err << "\n";
 
-  EXPECT_LE(err, 1.0e-12) << "compute_self_energy_by_pairs(G, topology) disagrees with compute_self_energy(G, topology)";
+  EXPECT_LE(err, 1.0e-12) << "compute_self_energy(G, topology) disagrees with the sum of single directions";
 }
 
 /**
@@ -154,8 +154,8 @@ TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
   using logical::Direction;
   auto sum = nda::zeros<dcomplex>(D.action.tau_mesh.size(), D.action.block_dims(0), D.action.block_dims(0));
   auto evaluate = [&](logical::SelfEnergyBackbone const &backbone, bool pair) {
-    if (pair) return D.compute_self_energy_by_pairs(m.G_ppsc[0].data(), backbone);
-    return D.compute_self_energy(m.G_ppsc[0].data(), backbone);
+    if (pair) return D.compute_self_energy_both_directions(m.G_ppsc[0].data(), backbone);
+    return D.compute_self_energy_single_direction(m.G_ppsc[0].data(), backbone);
   };
   for (auto direction : {Direction::backward, Direction::forward})
     for (int pole = 0; pole < m.hyb_poles.size(); ++pole)
@@ -171,7 +171,7 @@ TEST(DenseDynint, prepared_pairs_sum_opposite_endpoint_backbones) {
         EXPECT_LE(nda::max_element(nda::abs(evaluate(forward, true) - expected)), 1.0e-14);
         sum += pair;
       }
-  auto all = D.compute_self_energy_by_pairs(m.G_ppsc, topology);
+  auto all = D.compute_self_energy(m.G_ppsc, topology);
   ASSERT_GT(nda::max_element(nda::abs(all[0].data())), 1.0e-8);
   EXPECT_LE(nda::max_element(nda::abs(all[0].data() - sum)), 1.0e-14);
 }
