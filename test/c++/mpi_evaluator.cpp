@@ -12,6 +12,7 @@
 #include "test_utils/evaluators.hpp"
 #include "test_utils/prepared_evaluators.hpp"
 #include "triqs_xca/dense/diagram_evaluator_batched.hpp"
+#include "triqs_xca/dense/diagram_evaluator_few_orb.hpp"
 
 namespace {
   namespace diagram = triqs_xca::diagram;
@@ -246,9 +247,7 @@ TEST(MpiEvaluator, topology_calls_have_no_collectives) {
   comm.barrier();
 }
 
-TEST(MpiEvaluator, batched_dense_topology_sums_and_idle_ranks) {
-  Harness h;
-  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+template <typename Evaluator> void check_optimized_dense_topology_sums(Harness &h, Evaluator &evaluator) {
   auto local_sigma = nda::zeros<nda::dcomplex>(h.model.G.shape());
   tensor_t local_pairs = local_sigma, reference_sigma = local_sigma;
   auto local_spgf = nda::zeros<nda::dcomplex>(h.model.mesh.size(), h.dense.action.n_hyb, h.dense.action.n_hyb);
@@ -265,10 +264,10 @@ TEST(MpiEvaluator, batched_dense_topology_sums_and_idle_ranks) {
     auto [cf, cl] = fixture_range(test_utils::fixture_count(h.dense, topology, diagram::Kind::correlator));
     auto choices = pair_choices(topology.extent(0), h.dense);
     auto [pf, pl] = fixture_range(choices.size());
-    auto sigma = batched.compute_self_energy(h.dense_G, topology);
-    auto pairs = batched.compute_self_energy_by_pairs(h.dense_G, topology);
-    auto spgf = batched.compute_single_ptcle_gf(h.dense_G, topology);
-    auto correlator = batched.compute_one_time_correlator(h.dense_G, topology, mu_ops, kap_ops, statistics);
+    auto sigma = evaluator.compute_self_energy(h.dense_G, topology);
+    auto pairs = evaluator.compute_self_energy_by_pairs(h.dense_G, topology);
+    auto spgf = evaluator.compute_single_ptcle_gf(h.dense_G, topology);
+    auto correlator = evaluator.compute_one_time_correlator(h.dense_G, topology, mu_ops, kap_ops, statistics);
     expect_close(sigma, test_utils::fixture_self_energy(h.dense, h.dense_G, topology, itertools::range(sf, sl)));
     expect_close(pairs, explicit_pairs(h.dense, h.dense_G, topology, choices, pf, pl));
     expect_close(spgf, test_utils::fixture_single_ptcle_gf(h.dense, h.dense_G, topology, itertools::range(cf, cl)));
@@ -297,45 +296,77 @@ TEST(MpiEvaluator, batched_dense_topology_sums_and_idle_ranks) {
   expect_close(total_correlator, reference_correlator);
 }
 
-TEST(MpiEvaluator, batched_idle_ranks_validate_and_recover) {
+TEST(MpiEvaluator, batched_dense_topology_sums_and_idle_ranks) {
   Harness h;
-  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+  triqs_xca::dense::BatchedDiagramEvaluator evaluator(h.dense.action, 3);
+  check_optimized_dense_topology_sums(h, evaluator);
+}
+
+TEST(MpiEvaluator, few_orb_dense_topology_sums_and_idle_ranks) {
+  Harness h;
+  triqs_xca::dense::DiagramEvaluatorFewOrb evaluator(h.dense.action);
+  check_optimized_dense_topology_sums(h, evaluator);
+}
+
+template <typename Evaluator> void check_optimized_dense_validation(Harness &h, Evaluator &evaluator) {
   nda::array<int, 2> topology{{0, 1}}, malformed{{0, 0}};
   bgf_t missing_blocks{std::vector<gf_t>{}};
   ops_t ops{n("A", 0)};
   auto matrices = test_utils::fixture_dense_operators(ops, h.model.ad_flat);
   auto bad_matrices = nda::zeros<nda::dcomplex>(1, h.model.G.extent(1) - 1, h.model.G.extent(2));
   auto statistics = diagram::uniform_correlator_statistics(false);
-  EXPECT_THROW(batched.compute_self_energy(h.dense_G, malformed), std::invalid_argument);
-  EXPECT_THROW(batched.compute_self_energy_by_pairs(h.dense_G, malformed), std::invalid_argument);
-  EXPECT_THROW(batched.compute_single_ptcle_gf(h.dense_G, malformed), std::invalid_argument);
-  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, malformed, matrices, matrices, statistics), std::invalid_argument);
-  EXPECT_THROW(batched.compute_self_energy(missing_blocks, topology), std::invalid_argument);
-  EXPECT_THROW(batched.compute_self_energy_by_pairs(missing_blocks, topology), std::invalid_argument);
-  EXPECT_THROW(batched.compute_single_ptcle_gf(missing_blocks, topology), std::invalid_argument);
-  EXPECT_THROW(batched.compute_one_time_correlator(missing_blocks, topology, matrices, matrices, statistics), std::invalid_argument);
-  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, topology, bad_matrices, matrices, statistics), std::invalid_argument);
-  EXPECT_THROW(batched.compute_one_time_correlator(h.dense_G, topology, matrices, bad_matrices, statistics), std::invalid_argument);
-  expect_close(batched.compute_self_energy(h.dense_G, topology), h.dense.compute_self_energy(h.dense_G, topology));
-  expect_close(batched.compute_self_energy_by_pairs(h.dense_G, topology), h.dense.compute_self_energy_by_pairs(h.dense_G, topology));
-  expect_close(batched.compute_single_ptcle_gf(h.dense_G, topology), h.dense.compute_single_ptcle_gf(h.dense_G, topology));
-  expect_close(batched.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, statistics),
+  EXPECT_THROW(evaluator.compute_self_energy(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_self_energy_by_pairs(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_single_ptcle_gf(h.dense_G, malformed), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(h.dense_G, malformed, matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_self_energy(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_self_energy_by_pairs(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_single_ptcle_gf(missing_blocks, topology), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(missing_blocks, topology, matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(h.dense_G, topology, bad_matrices, matrices, statistics), std::invalid_argument);
+  EXPECT_THROW(evaluator.compute_one_time_correlator(h.dense_G, topology, matrices, bad_matrices, statistics), std::invalid_argument);
+  expect_close(evaluator.compute_self_energy(h.dense_G, topology), h.dense.compute_self_energy(h.dense_G, topology));
+  expect_close(evaluator.compute_self_energy_by_pairs(h.dense_G, topology), h.dense.compute_self_energy_by_pairs(h.dense_G, topology));
+  expect_close(evaluator.compute_single_ptcle_gf(h.dense_G, topology), h.dense.compute_single_ptcle_gf(h.dense_G, topology));
+  expect_close(evaluator.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, statistics),
                h.dense.compute_one_time_correlator(h.dense_G, ops, ops, h.model.ad_flat, topology));
 }
 
-TEST(MpiEvaluator, batched_topology_calls_have_no_collectives) {
+TEST(MpiEvaluator, batched_idle_ranks_validate_and_recover) {
   Harness h;
-  triqs_xca::dense::BatchedDiagramEvaluator batched(h.dense.action, 3);
+  triqs_xca::dense::BatchedDiagramEvaluator evaluator(h.dense.action, 3);
+  check_optimized_dense_validation(h, evaluator);
+}
+
+TEST(MpiEvaluator, few_orb_idle_ranks_validate_and_recover) {
+  Harness h;
+  triqs_xca::dense::DiagramEvaluatorFewOrb evaluator(h.dense.action);
+  check_optimized_dense_validation(h, evaluator);
+}
+
+template <typename Evaluator> void check_optimized_dense_no_collectives(Harness &h, Evaluator &evaluator) {
   mpi::communicator comm;
   if (comm.rank() == 0) {
     nda::array<int, 2> topology{{0, 1}};
     auto matrices = test_utils::fixture_dense_operators(ops_t{n("A", 0)}, h.model.ad_flat);
-    batched.compute_self_energy(h.dense_G, topology);
-    batched.compute_self_energy_by_pairs(h.dense_G, topology);
-    batched.compute_single_ptcle_gf(h.dense_G, topology);
-    batched.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, diagram::uniform_correlator_statistics(false));
+    evaluator.compute_self_energy(h.dense_G, topology);
+    evaluator.compute_self_energy_by_pairs(h.dense_G, topology);
+    evaluator.compute_single_ptcle_gf(h.dense_G, topology);
+    evaluator.compute_one_time_correlator(h.dense_G, topology, matrices, matrices, diagram::uniform_correlator_statistics(false));
   }
   comm.barrier();
+}
+
+TEST(MpiEvaluator, batched_topology_calls_have_no_collectives) {
+  Harness h;
+  triqs_xca::dense::BatchedDiagramEvaluator evaluator(h.dense.action, 3);
+  check_optimized_dense_no_collectives(h, evaluator);
+}
+
+TEST(MpiEvaluator, few_orb_topology_calls_have_no_collectives) {
+  Harness h;
+  triqs_xca::dense::DiagramEvaluatorFewOrb evaluator(h.dense.action);
+  check_optimized_dense_no_collectives(h, evaluator);
 }
 
 int main(int argc, char **argv) {
