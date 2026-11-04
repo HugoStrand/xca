@@ -47,6 +47,25 @@ else()
   endif()
 endif()
 
+# -- Eigen (header-only small matrix kernels) --
+# Keep dependency-only options local; install its CMake package with XCA when
+# building from source, since public small_gemm.hpp includes Eigen headers.
+function(xca_eigen_dependency)
+  set(EIGEN_BUILD_TESTING OFF)
+  set(EIGEN_BUILD_DOC OFF)
+  set(EIGEN_BUILD_BLAS OFF)
+  set(EIGEN_BUILD_LAPACK OFF)
+  set(EIGEN_BUILD_DEMOS OFF)
+  set(EIGEN_BUILD_CMAKE_PACKAGE ON)
+  set(CMAKE_EXPORT_PACKAGE_REGISTRY OFF)
+  external_dependency(Eigen3
+    VERSION 5...<6
+    GIT_REPO https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 5.0.1
+  )
+endfunction()
+xca_eigen_dependency()
+
 # -- c2py --
 if(PythonSupport OR (NOT IS_SUBPROJECT AND Build_Documentation))
   external_dependency(c2py

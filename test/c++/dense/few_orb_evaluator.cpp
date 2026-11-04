@@ -167,15 +167,30 @@ TEST(DenseFewOrb, correlator_reflection_statistics_and_cache_limits) {
   }
 }
 
-TEST(DenseFewOrb, high_rank_high_order_and_blas_fallback_dimensions) {
-  for (auto [modes, high_rank] : {std::pair{1, false}, std::pair{3, false}, std::pair{2, true}}) {
+TEST(DenseFewOrb, fixed_dimensions_blas_fallback_and_high_rank) {
+  for (auto [modes, high_rank] : {std::pair{1, false}, std::pair{2, false}, std::pair{3, false}, std::pair{4, false},
+                                 std::pair{5, false}, std::pair{2, true}}) {
     SCOPED_TRACE(modes);
+    SCOPED_TRACE(high_rank);
     auto m      = model(modes, high_rank);
     auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
+    ASSERT_EQ(action.block_dims(0), 1 << modes);
     if (high_rank) ASSERT_GE(m.mesh.size(), 100);
     dense::DiagramEvaluator scalar(action);
-    auto backbones   = prepared<diagram::Kind::self_energy>(action, 5, true);
-    auto correlators = prepared<diagram::Kind::correlator>(action, 5, true);
+    // Keep the existing high-order checks for N=2,8 and r~=100. The larger
+    // dimensions use a bounded order-two sample, including N=32 BLAS fallback.
+    auto sample = [&]<diagram::Kind K>() {
+      if (high_rank || modes == 1 || modes == 3) return prepared<K>(action, 5, true);
+      nda::array<int, 2> topology{{0, 2}, {1, 3}};
+      long count = diagram::count_diagrams(2, action.n_flavours(), action.poles.size(), K);
+      std::vector<diagram::Backbone<K>> result;
+      for (long i : {0L, count / 3, 2 * count / 3, count - 1}) result.push_back(diagram::prepare_backbone<K>(topology, action, i));
+      auto copy = result;
+      result.insert(result.end(), copy.begin(), copy.end());
+      return result;
+    };
+    auto backbones   = sample.template operator()<diagram::Kind::self_energy>();
+    auto correlators = sample.template operator()<diagram::Kind::correlator>();
     auto mu          = action.operators.Fs(nda::range(action.n_hyb), all, all);
     auto kap         = action.operators.F_dags(nda::range(action.n_hyb), all, all);
     auto expected = nda::zeros<dcomplex>(m.G.shape()), pairs = nda::zeros<dcomplex>(m.G.shape());

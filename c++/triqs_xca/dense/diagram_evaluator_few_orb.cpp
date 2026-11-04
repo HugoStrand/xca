@@ -40,14 +40,17 @@ namespace triqs_xca::dense {
       return G[0].data();
     }
 
-    // This boundary is the only dimension dispatch. Handwritten N=4 is measured;
-    // other dimensions retain BLAS until their fixed-size kernels are measured.
+    // This boundary is the only dimension dispatch. Compile the small physical
+    // Hilbert-space dimensions explicitly; larger matrices retain BLAS.
     void multiply(nda::array_const_view<dcomplex, 2> A, nda::array_const_view<dcomplex, 2> B, nda::array_view<dcomplex, 2> C,
                   double accumulate = 0.) {
-      if (C.extent(0) == 4)
-        small_gemm<4>(1., A, B, accumulate, C);
-      else
-        nda::blas::gemm(1., A, B, accumulate, C);
+      switch (C.extent(0)) {
+        case 2: small_gemm<2>(1., A, B, accumulate, C); break;
+        case 4: small_gemm<4>(1., A, B, accumulate, C); break;
+        case 8: small_gemm<8>(1., A, B, accumulate, C); break;
+        case 16: small_gemm<16>(1., A, B, accumulate, C); break;
+        default: nda::blas::gemm(1., A, B, accumulate, C);
+      }
     }
 
     // All callers use distinct packed buffers. The standard array-oriented
