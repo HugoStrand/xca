@@ -6,7 +6,11 @@ i.e. one to four fermion modes. Both use the shared `cppdlr::fast_convolve`
 real DLR transforms/solves and reusable convolution storage. FewOrb additionally
 uses fixed-size Eigen complex products at N=2 and N=4, and optionally reuses edge
 operands. Its other dimensions, including N=8 and N=16, use BLAS for matrix
-products. Both evaluators remain available; FewOrb is currently a C++ API.
+products. Python's `Solver` uses FewOrb for dense evaluation
+(`conserved_operators=[]`). Both evaluators are also available directly from
+`triqs_xca`: `DenseDiagramEvaluatorFewOrb` and the baseline
+`DenseDiagramEvaluator`. FewOrb accepts the same model inputs, with an optional
+`cache_bytes` constructor argument (default 8 MiB; zero disables retention).
 
 `small_gemm<N>` provides the Eigen implementation, also available at N=8 and
 N=16 for isolated comparisons. The evaluator's dimension dispatch chooses BLAS

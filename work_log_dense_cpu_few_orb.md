@@ -397,3 +397,50 @@ links the raw results and reproduction instructions. The high-order cases are
 sampled fully crossing topologies, not full high-order diagram sums. User edits
 to the baseline evaluator and `.gitignore`, and existing untracked work, remain
 outside these commits.
+
+## 2026-11-04 — Python dense default
+
+Implementation commit `c6378e37` exposes `DenseDiagramEvaluatorFewOrb` through
+the existing `_triqs_xca` module and selects it in `Solver` whenever
+`conserved_operators=[]`. `DenseDiagramEvaluator` remains the separately
+importable baseline. Block-sparse selection is unchanged.
+
+FewOrb now has the baseline's physical-input constructor families, for real
+and complex `atom_diag`, with and without retarded interactions. They build
+an Action internally and move it into the evaluator. c2py constructs the
+evaluator directly, avoiding an Action or evaluator return-value copy at the
+Python boundary. An optional `cache_bytes` argument defaults to 8 MiB and
+accepts zero to disable retention. The ordinary Solver uses that default.
+
+The wrapped surface contains topology self-energy, single-particle Green's
+function and symbolic correlator evaluation. Keyword names `G_ppsc`, `ops_tau`
+and `ops_0` match the baseline. C++ Action access, prepared-backbone/span methods,
+numerical correlator overloads and cache-statistics access remain hidden from
+Python. Topology methods still return rank-local contributions; final reductions
+stay in the Python solver. Generated wrappers were regenerated with clair and
+reviewed alongside the source declarations.
+
+Validation: the full CPU build and **89/89 CTest entries passed** in 33.49 seconds.
+The added Python test covers all four constructor families, keyword calls,
+default/disabled caches, order-one/two self-energies, bosonic and fermionic
+correlators, changed propagators and independent retained outputs. Existing
+serial and three-rank Python tests now assert FewOrb is the dense default.
+The generated cache-comparison benchmark also rebuilds successfully. The CPU
+installation at `~/apps/xca` was updated, and a fresh installed-package import
+constructed a FewOrb Solver and evaluated a nonzero finite self-energy.
+Binding regeneration was returned to OFF after validation.
+
+No new timing sweep was needed for this integration. Existing matched
+order-two paired-self-energy measurements favor cached FewOrb: approximately
+2.08–2.28x at N=2, 1.49–1.50x at N=4, 1.08–1.15x at N=8 and 1.07–1.13x at
+N=16 across ranks 13/103. This is not a universal performance guarantee:
+uncached N=8/16 cases have measured 0.2–2.1% overhead. At rank 103, the 8 MiB
+budget holds nine entries at N=16, two at N=32, and none at N=64 (12.875 MiB
+per entry). Larger dimensions, weak reuse and small MPI work shares can lose
+the reuse benefit; their crossover needs measurement before adding automatic
+fallback policy. First-order diagrams have no convolution edges and therefore
+no cache benefit, but no first-order slowdown has been established.
+
+An independent review checked constructor ownership, wrapper signatures,
+MPI behavior and test coverage. User edits and existing untracked files remain
+outside the implementation and documentation commits.
