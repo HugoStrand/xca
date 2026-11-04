@@ -4,7 +4,6 @@
 #include "triqs_xca/operator_statistics.hpp"
 #include "triqs_xca/work_partition.hpp"
 #include <nda/blas/gemm.hpp>
-#include <nda/blas/interface/cblas_f77.h>
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
@@ -40,45 +39,14 @@ namespace triqs_xca::dense {
       return G[0].data();
     }
 
-    // This boundary is the only dimension dispatch. Compile the small physical
-    // Hilbert-space dimensions explicitly; larger matrices retain BLAS.
+    // Measured Eigen/BLAS crossover: fixed-size products help at N=2 and N=4;
+    // BLAS is faster from N=8 on the reference CPU. Keep one dispatch boundary.
     void multiply(nda::array_const_view<dcomplex, 2> A, nda::array_const_view<dcomplex, 2> B, nda::array_view<dcomplex, 2> C,
                   double accumulate = 0.) {
       switch (C.extent(0)) {
         case 2: small_gemm<2>(1., A, B, accumulate, C); break;
         case 4: small_gemm<4>(1., A, B, accumulate, C); break;
-        case 8: small_gemm<8>(1., A, B, accumulate, C); break;
-        case 16: small_gemm<16>(1., A, B, accumulate, C); break;
         default: nda::blas::gemm(1., A, B, accumulate, C);
-      }
-    }
-
-    // All callers use distinct packed buffers. The standard array-oriented
-    // std::complex representation permits borrowing the interleaved doubles.
-    void transform(nda::matrix_const_view<double> matrix, nda::array_const_view<dcomplex, 3> input, nda::array_view<dcomplex, 3> output,
-                   double accumulate = 0.) {
-      static_assert(sizeof(dcomplex) == 2 * sizeof(double));
-      long entries = 2 * input.extent(1) * input.extent(2);
-      nda::matrix_const_view<double> in{{input.extent(0), entries}, reinterpret_cast<double const *>(input.data())};
-      nda::matrix_view<double> out{{output.extent(0), entries}, reinterpret_cast<double *>(output.data())};
-      nda::blas::gemm(1., matrix, in, accumulate, out);
-    }
-
-    void vals2coefs(cppdlr::imtime_ops const &itops, nda::array_const_view<dcomplex, 3> values, nda::array_view<dcomplex, 3> coefficients) {
-      coefficients = values;
-      // C X = V. cppdlr stores column-major LU factors of C^T in its C-layout
-      // buffer. Solve against X^T, with real and imaginary parts as separate rows.
-      auto lu  = itops.get_it2cf_lu();
-      auto piv = itops.get_it2cf_piv();
-      int r = itops.rank(), entries = static_cast<int>(2 * values.extent(1) * values.extent(2));
-      double one = 1.;
-      char side = 'R', upper = 'U', lower = 'L', transpose = 'N', nonunit = 'N', unit = 'U';
-      auto *data = reinterpret_cast<double *>(coefficients.data());
-      F77_dtrsm(&side, &upper, &transpose, &nonunit, &entries, &r, &one, lu.data(), &r, data, &entries);
-      F77_dtrsm(&side, &lower, &transpose, &unit, &entries, &r, &one, lu.data(), &r, data, &entries);
-      for (int k = r - 1; k >= 0; --k) {
-        int other = piv(k) - 1;
-        if (other != k) std::swap_ranges(data + long(k) * entries, data + long(k + 1) * entries, data + long(other) * entries);
       }
     }
 
@@ -106,9 +74,6 @@ namespace triqs_xca::dense {
        cache_budget(cache_bytes),
        entry_bytes(checked_entry_bytes(action)),
        uncached_edge(action.tau_mesh.size(), action.block_dims(0)),
-       cf2it(action.tau_mesh.dlr_it().get_cf2it()),
-       hilbert(cf2it.shape()),
-       tcf2it(cf2it.shape()),
        coefficients(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)),
        hilbert_coefficients(coefficients.shape()),
        product(coefficients.shape()),
@@ -116,17 +81,7 @@ namespace triqs_xca::dense {
        U(coefficients.shape()),
        GKt(coefficients.shape()),
        Tmu(coefficients.shape()),
-       Tkaps(action.n_flavours(), action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)) {
-    auto const &itops = action.tau_mesh.dlr_it();
-    for (int j = 0; j < itops.rank(); ++j) {
-      double t = itops.get_itnodes(j) > 0. ? itops.get_itnodes(j) : 1. + itops.get_itnodes(j);
-      for (int k = 0; k < itops.rank(); ++k) {
-        double k0     = cppdlr::k_it(0., itops.get_rfnodes(k));
-        hilbert(j, k) = j == k ? 0. : k0 / (itops.get_rfnodes(k) - itops.get_rfnodes(j));
-        tcf2it(j, k)  = t * cf2it(j, k) * k0;
-      }
-    }
-  }
+       Tkaps(action.n_flavours(), action.tau_mesh.size(), action.block_dims(0), action.block_dims(0)) {}
 
   void DiagramEvaluatorFewOrb::begin_call(nda::array_const_view<dcomplex, 3> G) {
     cache_statistics = {};
@@ -147,8 +102,7 @@ namespace triqs_xca::dense {
     auto &operand = retain ? edge_cache[index] : uncached_edge;
     GKt           = G;
     apply_kernel_product(GKt, edge.kernels, action.kernel);
-    vals2coefs(action.tau_mesh.dlr_it(), GKt, operand.coefficients);
-    transform(hilbert, operand.coefficients, operand.hilbert_coefficients);
+    action.convolution.prepare_operand(GKt, operand.coefficients, operand.hilbert_coefficients);
     if (retain) {
       operand.kernels = edge.kernels;
       ++cache_statistics.entries;
@@ -172,20 +126,12 @@ namespace triqs_xca::dense {
   void DiagramEvaluatorFewOrb::integrate_edge(nda::array<dcomplex, 3> &values, nda::array_const_view<dcomplex, 3> G, diagram::Edge const &edge,
                                               bool right) {
     auto const &operand = edge_operand(G, edge);
-    vals2coefs(action.tau_mesh.dlr_it(), values, coefficients);
-    transform(hilbert, coefficients, hilbert_coefficients);
+    action.convolution.prepare_operand(values, coefficients, hilbert_coefficients);
     nda::array_const_view<dcomplex, 3> fc  = right ? coefficients() : operand.coefficients();
     nda::array_const_view<dcomplex, 3> gc  = right ? operand.coefficients() : coefficients();
     nda::array_const_view<dcomplex, 3> hfc = right ? hilbert_coefficients() : operand.hilbert_coefficients();
     nda::array_const_view<dcomplex, 3> hgc = right ? operand.hilbert_coefficients() : hilbert_coefficients();
-    for (long l = 0; l < values.extent(0); ++l) multiply(fc(l, all, all), gc(l, all, all), product(l, all, all));
-    transform(tcf2it, product, values);
-    for (long l = 0; l < values.extent(0); ++l) {
-      multiply(hfc(l, all, all), gc(l, all, all), product(l, all, all));
-      multiply(fc(l, all, all), hgc(l, all, all), product(l, all, all), 1.);
-    }
-    transform(cf2it, product, values, 1.);
-    values *= action.tau_mesh.beta();
+    action.convolution.convolve_prepared(action.tau_mesh.beta(), fc, gc, hfc, hgc, values, product, multiply);
   }
 
   void DiagramEvaluatorFewOrb::endpoint_sum(nda::array_view<dcomplex, 3> values, OperatorPairOrientation orientation,

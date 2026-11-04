@@ -75,8 +75,6 @@ namespace triqs_xca::dense {
     CacheStatistics cache_statistics;
     std::vector<EdgeOperand> edge_cache;
     EdgeOperand uncached_edge;
-    // Real DLR matrices act separately on the interleaved real/imaginary columns.
-    nda::matrix<double> cf2it, hilbert, tcf2it;
     nda::array<nda::dcomplex, 3> coefficients, hilbert_coefficients, product;
     nda::array<nda::dcomplex, 3> T, U, GKt, Tmu;
     nda::array<nda::dcomplex, 4> Tkaps;

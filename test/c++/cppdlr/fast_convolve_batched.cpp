@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <complex>
 #include <limits>
@@ -86,6 +87,7 @@ TEST(FastConvolveBatched, changing_active_batch_reuses_capacity_and_preserves_ta
   auto const *hfc_data     = work.hfc.data();
   auto const *hgc_data     = work.hgc.data();
   auto const *product_data = work.product.data();
+  std::array owners{&work.fc, &work.gc, &work.hfc, &work.hgc, &work.product};
   dcomplex const sentinel(29., -17.);
 
   for (long batch : {5, 2, 1, 4, 5}) {
@@ -95,10 +97,14 @@ TEST(FastConvolveBatched, changing_active_batch_reuses_capacity_and_preserves_ta
     nda::array_view<dcomplex, 4> result{{ops.rank(), batch, 2, 4}, out_storage.data()};
     fill_values(f, false);
     fill_values(g, true);
+    for (auto *owner : owners) (*owner)() = sentinel;
     out_storage() = sentinel;
     convolution.convolve(1.7, f, g, result, work);
     expect_convolution(1.7, f, g, result);
     for (long index = result.size(); index < out_storage.size(); ++index) EXPECT_EQ(out_storage.data()[index], sentinel);
+    std::array active_sizes{f.size(), g.size(), f.size(), g.size(), result.size()};
+    for (std::size_t i = 0; i < owners.size(); ++i)
+      for (long index = active_sizes[i]; index < owners[i]->size(); ++index) EXPECT_EQ(owners[i]->data()[index], sentinel);
     EXPECT_EQ(work.fc.data(), fc_data);
     EXPECT_EQ(work.gc.data(), gc_data);
     EXPECT_EQ(work.hfc.data(), hfc_data);

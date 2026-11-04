@@ -117,6 +117,56 @@ TEST(FastConvolve, rectangular_products_match_reference_and_analytic_integral) {
   }
 }
 
+TEST(FastConvolve, prepared_operand_can_be_reused_on_either_side) {
+  auto const &ops = itops();
+  cppdlr::fast_convolve convolution(ops);
+  auto cached_values = values(2, 3, 0, true);
+  tensor cached_coefficients(cached_values.shape()), cached_hilbert(cached_values.shape());
+  convolution.prepare_operand(cached_values, cached_coefficients, cached_hilbert);
+  auto const saved_coefficients = cached_coefficients;
+  auto const saved_hilbert      = cached_hilbert;
+  tensor output_storage(ops.rank(), 4, 4), product_storage(ops.rank(), 4, 4);
+  dcomplex const sentinel(29., -17.);
+  bool saw_overwrite = false, saw_accumulate = false;
+  auto multiply = [&](nda::matrix_const_view<dcomplex> a, nda::matrix_const_view<dcomplex> b, nda::matrix_view<dcomplex> c, double accumulate) {
+    EXPECT_EQ(a.shape(1), b.shape(0));
+    EXPECT_EQ(c.shape(0), a.shape(0));
+    EXPECT_EQ(c.shape(1), b.shape(1));
+    EXPECT_TRUE(accumulate == 0. || accumulate == 1.);
+    saw_overwrite |= accumulate == 0.;
+    saw_accumulate |= accumulate == 1.;
+    nda::blas::gemm(1., a, b, accumulate, c);
+  };
+
+  // Reuse one rectangular operand both as the left and as the right factor.
+  // The distinct complex operands make accidentally reversing products visible.
+  for (bool cached_left : {true, false, true}) {
+    SCOPED_TRACE(cached_left ? "cached left operand" : "cached right operand");
+    auto other = cached_left ? values(3, 4, 1, true) : values(4, 2, 1, true);
+    tensor coefficients(other.shape()), hilbert(other.shape());
+    convolution.prepare_operand(other, coefficients, hilbert);
+    auto const &f   = cached_left ? cached_values : other;
+    auto const &g   = cached_left ? other : cached_values;
+    auto const &fc  = cached_left ? cached_coefficients : coefficients;
+    auto const &gc  = cached_left ? coefficients : cached_coefficients;
+    auto const &hfc = cached_left ? cached_hilbert : hilbert;
+    auto const &hgc = cached_left ? hilbert : cached_hilbert;
+    auto reference = ops.convolve(2.3, ops.vals2coefs(f), ops.vals2coefs(g), cppdlr::TIME_ORDERED);
+    nda::array_view<dcomplex, 3> result{{ops.rank(), f.shape(1), g.shape(2)}, output_storage.data()};
+    nda::array_view<dcomplex, 3> product{result.shape(), product_storage.data()};
+    output_storage()  = sentinel;
+    product_storage() = sentinel;
+    convolution.convolve_prepared(2.3, fc, gc, hfc, hgc, result, product, multiply);
+    expect_close(nda::make_regular(result), reference);
+    EXPECT_EQ(nda::max_element(nda::abs(cached_coefficients - saved_coefficients)), 0.);
+    EXPECT_EQ(nda::max_element(nda::abs(cached_hilbert - saved_hilbert)), 0.);
+    for (long i = result.size(); i < output_storage.size(); ++i) EXPECT_EQ(output_storage.data()[i], sentinel);
+    for (long i = product.size(); i < product_storage.size(); ++i) EXPECT_EQ(product_storage.data()[i], sentinel);
+  }
+  EXPECT_TRUE(saw_overwrite);
+  EXPECT_TRUE(saw_accumulate);
+}
+
 TEST(FastConvolve, output_can_replace_either_input) {
   auto const &ops = itops();
   cppdlr::fast_convolve convolution(ops);
