@@ -144,3 +144,52 @@ The standalone probe with Eigen runtime allocation assertions passed all four
 dimensions for packed/strided overwrite, accumulation and general complex
 scaling, with no Eigen heap allocation during the products. Code and dependency
 integration were reviewed independently before committing.
+
+
+## 2026-11-04 — Eigen dimension sweep
+
+Benchmark commit `b46b4dd` extends the shared fixture and both benchmark drivers
+to N=2,4,8,16 (one through four fermion modes), preserving the original N=4
+model. The kernel driver now measures the actual production Eigen helper,
+retained handwritten loops and NDA/OpenBLAS products. The evaluator driver
+compares the improved original, uncached FewOrb and default-cache FewOrb at
+ranks 13 and 103, using complete order-two topologies at every dimension,
+complete order three at N=2/4, and bounded prepared samples through order five.
+Larger complete order-three cases require `--full-order3` and were not run.
+
+The timings used one thread pinned to CPU 2, Clang 19.1.1 Release and Eigen 5.0.1,
+with no native-architecture or fast-math flags. Builds/tests were stopped during
+measurements. Every timed call includes numerical cache preparation, while
+allocations are warmed. Eigen and handwritten code use the generic target;
+OpenBLAS dispatches to CPU-specific kernels at runtime. The prepared comparison
+also includes per-backbone result allocation versus one FewOrb span result.
+
+For complete order-two calls, cached FewOrb gives **2.13–2.50×** speedup at N=2
+and **1.51–1.93×** at N=4. N=8 gives **0.72–0.84×** at rank 13 and
+**0.96–1.27×** at rank 103. N=16 gives **0.58–0.66×** and **0.75–1.00×**,
+respectively. Thus extending the Eigen specialization does not improve every
+dimension. The kernel benchmark finds Eigen fastest at N=2/4; OpenBLAS is
+2.1–2.4× faster at N=8 and 2.9–3.3× faster at N=16 for unit-alpha products.
+The requested Eigen default through N=16 remains in place.
+
+At N=16/rank 103, the order-five samples fill the 8 MiB cache with nine entries,
+with hit rates 81.5–82.5%. Speedups are 1.08× for self-energy, 0.98× for paired
+self-energy and 1.16× for correlators. Complete order two needs only three
+entries but still regresses, showing that cache capacity is not the sole issue.
+A useful next experiment is to preserve FewOrb arithmetic and reuse while
+selecting BLAS only for N=8/16 products. A separate cache-budget comparison and
+native-architecture build would isolate additional causes. Neither experiment
+was added in this round.
+
+Independent audit checked **324 evaluator rows / 108 cases** and **48 kernel
+rows**, including finite values, complete variant sets, timing bounds, diagram
+counts, speedup arithmetic and cache accounting. Maximum relative errors were
+**2.19e-13** and **7.32e-16**, respectively. The earlier implementation validation
+remains **88/88** CPU CTest entries; no source changes followed that test run
+other than benchmark code and documentation.
+
+Tables, provenance and limitations are in the updated
+[hardware report](benchmarks/dense_cpu_few_orb/thinkstationP620_3945WX/README.md).
+The previous handwritten N=4 report is preserved as `handwritten_n4.md`, with
+its raw results unchanged. Code, benchmark/results and documentation commits
+remain separate. User edits are preserved; no GPU jobs or remote pushes ran.

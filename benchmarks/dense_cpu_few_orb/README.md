@@ -1,11 +1,16 @@
 # Dense CPU evaluation for few orbitals
 
 Compare the original `dense::DiagramEvaluator` (including reusable output buffers)
-with `dense::DiagramEvaluatorFewOrb` at Hilbert-space dimension **N=4**, i.e. two
-fermion modes. The new evaluator uses handwritten 4×4 complex products, real DLR
-transforms/solves, and optional reuse of edge operands. Other dimensions use BLAS
-for matrix products; their performance is not established by this benchmark.
-Both implementations remain available; FewOrb is currently a C++ API.
+with `dense::DiagramEvaluatorFewOrb` at Hilbert-space dimensions **N=2,4,8,16**,
+i.e. one to four fermion modes. FewOrb uses fixed-size Eigen complex products at
+these dimensions, real DLR transforms/solves, and optional reuse of edge operands.
+Other dimensions use BLAS for matrix products. Both evaluators remain available;
+FewOrb is currently a C++ API.
+
+`small_gemm<N>` selects the Eigen implementation. The previous handwritten loops
+remain available as `small_gemm_handwritten<N>` for comparison. Eigen 5 is a
+normal header-only dependency of XCA, resolved by CMake; the source dependency
+is pinned to 5.0.1. No benchmark-specific Eigen include path is required.
 
 ## Build and run
 
@@ -19,23 +24,41 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
   cbuild/benchmarks/dense_cpu_few_orb/dense_cpu_few_orb > timings.csv
 ```
 
-An optional case substring selects workloads, e.g. `r103`, `order5`,
-`topology/self_energy`, or `prepared/correlator`. Run directly without MPI and
-without competing builds/benchmarks. Store results in hardware-named subfolders.
+An optional case substring selects workloads, e.g. `N4/`, `N16/r103`, `order5`,
+`topology/self_energy`, or `prepared/correlator`. Complete order-three topologies
+at N=8 and N=16 require `--full-order3`; they can be substantially more expensive
+than the bounded samples. For example:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  cbuild/benchmarks/dense_cpu_few_orb/dense_cpu_few_orb \
+  N8/r103/topology/self_energy/order3 --full-order3 > topology_N8_order3.csv
+```
+
+Run directly without MPI and without competing builds/benchmarks. Store results
+in hardware-named subfolders.
 
 ## What is measured
 
-The [shared fixture](../dense_common/n4_fixture.hpp) is also used by the dense
-batching benchmark. It includes complex hopping, hybridization, two retarded
-density operators, and a deterministic dressed propagator. Two DLR meshes at
-beta 2 give ranks 13 and 103 on the recorded installation. The higher rank uses
-dimensionless cutoff 100000 and tolerance 1e-12.
+The [shared fixture](../dense_common/n4_fixture.hpp) preserves the original N=4
+model and sampling used by the dense batching benchmark. A model of dimension
+`N=2^m` has m hybridizing fermion modes and m retarded density operators,
+together with a deterministic complex dressed propagator. Models with two
+or more modes also have complex nearest-neighbour hopping, static density
+interactions, and off-diagonal retarded coefficients. The N=4 Hamiltonian,
+coefficients and propagator are unchanged from the original benchmark.
+
+Two DLR meshes at beta 2 give ranks 13 and 103 on the recorded installation. The
+higher rank uses dimensionless cutoff 100000 and tolerance 1e-12. Changing N
+also changes the number of arc flavours and the complete topology's work count;
+the CSV reports the actual number of backbones. Compare variants within a case
+rather than interpreting timings across N as pure matrix-kernel scaling.
 
 Every case compares three variants:
 
 - `dense`: the original evaluator with direct GEMM into reusable buffers.
-- `few_orb_uncached`: handwritten N=4 products and real DLR arithmetic, retaining
-  no edge operands between convolutions.
+- `few_orb_uncached`: fixed-size Eigen products and real DLR arithmetic,
+  retaining no edge operands between convolutions.
 - `few_orb`: the same arithmetic plus lazy edge operand reuse, with the default
   8 MiB numerical cache budget.
 
@@ -58,6 +81,13 @@ usable and other recipes are evaluated without retention. The CSV reports hits,
 misses, entries and active payload bytes for the final call. Retained allocations
 may reflect a larger preceding call.
 
+The numerical cache cost per recipe is `2*r*N*N*sizeof(complex<double>)`, so
+doubling N quadruples storage. At rank 103 and N=16 one recipe occupies about
+0.805 MiB, allowing nine recipes within the default 8 MiB budget. Higher-order
+cases can therefore encounter cache pressure even when the smaller dimensions
+retain all their encountered recipes. The fixed budget is deliberate and is
+identical across dimensions; consult the recorded hit/miss counts.
+
 Prepared cases sum at most 63 stratified backbones with seed 1789, covering
 self-energy, paired self-energy and fermionic correlators at orders 2, 3 and 5.
 Every case uses the fully crossing topology `(a,a+order)`. Model, Action,
@@ -66,13 +96,14 @@ return one array per backbone and the driver sums them; the FewOrb span overload
 returns one sum. Consequently the dense-to-uncached ratio includes this API and
 allocation difference as well as arithmetic changes.
 
-Complete topology cases cover all three evaluation kinds at orders 2 and 3.
-These include backbone preparation and use matching public-call boundaries and
-result wrappers. **Use these rows for the primary evaluator comparison.** The
-`few_orb_uncached` time divided by `few_orb` time isolates edge reuse within
-either workload category.
-Order-five results remain bounded samples, not full topology sums. Paired
-backbones represent both distinguished-arc directions.
+Complete topology cases cover all three evaluation kinds at order 2 for every
+N, and at order 3 for N=2 and N=4 by default. `--full-order3` additionally enables
+the N=8 and N=16 cases. These include backbone preparation and use matching
+public-call boundaries and result wrappers. **Use these rows for the primary
+evaluator comparison.** The `few_orb_uncached` time divided by `few_orb` time
+isolates edge reuse within either workload category. Order-five results remain
+bounded samples, not full topology sums. Paired backbones represent both
+distinguished-arc directions.
 
 Five timing trials rotate variant order. Calls repeat one to five times, with
 calibration toward 5 ms per trial. CSV times are microseconds per complete call,
@@ -82,28 +113,27 @@ allocation cost are not measured. Outputs are checked before and after timing
 for finite values, nonzero reference magnitude, and relative maximum error
 below 2e-10. These are evaluator timings, not full impurity-solver iterations.
 
-## Optional Eigen comparison
-
-Eigen is used only by a separate kernel experiment. Provide an existing Eigen
-header directory when configuring:
+## Small matrix kernel comparison
 
 ```bash
-cmake -S . -B cbuild -DUpdate_Python_Bindings=OFF \
-  -DXCA_BENCHMARK_EIGEN_INCLUDE_DIR=/path/to/eigen
 cmake --build cbuild --target dense_few_orb_eigen_gemm --parallel 6
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
   cbuild/benchmarks/dense_cpu_few_orb/dense_few_orb_eigen_gemm > eigen_gemm.csv
 ```
 
-The experiment compares handwritten `small_gemm<4>`, fixed-size row-major Eigen
-maps with `noalias()`, and NDA/OpenBLAS GEMM on 103 independent complex matrices.
-It tests overwrite and accumulation, both compile-time unit scaling (as used in
-the evaluator) and general complex scaling. It checks against a long-double
+The experiment compares the production Eigen `small_gemm<N>`, retained
+`small_gemm_handwritten<N>`, and NDA/OpenBLAS GEMM on 103 independent complex
+matrices for each N=2,4,8,16. Eigen is exercised through the same helper used by
+the evaluator, rather than a separately written Eigen expression. It tests
+overwrite and accumulation, both compile-time unit scaling (as used in the
+evaluator) and general complex scaling. It checks against a long-double
 reference, then measures five rotated trials, normally 1024 stack repetitions.
-An optional positive integer overrides repetitions. A compiler barrier prevents
-removal of overwritten results. CSV times are nanoseconds per 4×4 product.
+An optional first argument overrides repetitions; a second selects a single
+dimension, e.g. `dense_few_orb_eigen_gemm 1024 16`. A compiler barrier prevents
+removal of overwritten results. CSV times are nanoseconds per matrix product.
 
-This comparison does not replace the full evaluator with Eigen and does not
-predict its end-to-end gain. Record compiler architecture flags, Eigen version
-and BLAS implementation with each result; fixed-size template code and a BLAS
-library's runtime CPU dispatch need not use the same instruction set.
+Kernel timings alone do not predict end-to-end gain: the evaluator also performs
+DLR transforms, convolutions, edge preparation and output accumulation. Record
+compiler architecture flags, Eigen version and BLAS implementation with each
+result; fixed-size template code and a BLAS library's runtime CPU dispatch need
+not use the same instruction set.
