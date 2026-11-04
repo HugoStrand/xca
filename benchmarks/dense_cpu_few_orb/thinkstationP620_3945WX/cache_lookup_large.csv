@@ -1,0 +1,10 @@
+# Production cache change: cf28480c; Threadripper PRO 3945WX, Clang 19, Release, CPU 2, one BLAS thread.
+# N4/r13/p10 order-five cache lookup; 4096 sampled backbones per call, 8 MiB budget.
+# Two sequential single-case runs; seven rotated trials per run.
+case,rank,dimension,poles,order,backbones,budget_bytes,variant,median_us,min_us,max_us,repeats,trials,relative_max_error,output_max,speedup,cache_hits,cache_misses,cache_entries,cache_bytes
+N4/r13/p10/prepared/self_energy/order5/cache8388608,13,4,10,5,4096,8388608,ordered_linear,400408.121,399732.234,401058,1,7,3.659278071e-15,2.879723656e-08,1,31607,1161,1161,7727616
+N4/r13/p10/prepared/self_energy/order5/cache8388608,13,4,10,5,4096,8388608,canonical_linear,390933.625,390694.366,391415.228,1,7,3.766828768e-15,2.879723656e-08,1.024235562,32281,487,487,3241472
+N4/r13/p10/prepared/self_energy/order5/cache8388608,13,4,10,5,4096,8388608,canonical_hash,389468.317,388625.056,390091.286,1,7,3.766828768e-15,2.879723656e-08,1.028089073,32281,487,487,3241472
+N4/r13/p10/prepared/correlator/order5/cache8388608,13,4,10,5,4096,8388608,ordered_linear,320016.691,319913.437,320305.712,1,7,1.757399419e-14,7.346717535e-09,1,31607,1161,1161,7727616
+N4/r13/p10/prepared/correlator/order5/cache8388608,13,4,10,5,4096,8388608,canonical_linear,311342.354,311180.43,311611.318,1,7,1.572789679e-14,7.346717535e-09,1.027861089,32281,487,487,3241472
+N4/r13/p10/prepared/correlator/order5/cache8388608,13,4,10,5,4096,8388608,canonical_hash,310100.566,309286.038,310314.327,1,7,1.572789679e-14,7.346717535e-09,1.031977126,32281,487,487,3241472

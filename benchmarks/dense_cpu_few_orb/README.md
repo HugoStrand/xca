@@ -74,14 +74,19 @@ differences visible without an Eigen-versus-BLAS change. The separate kernel
 experiment isolates the matrix products. Comparing the two FewOrb variants
 isolates edge reuse with all other choices fixed.
 
-For a recipe q containing the ordered edge kernel factors, the cache stores
+For a recipe q containing the edge kernel factors, the cache stores
 `C_q = vals2coefs(G * kernel_product_q)` and `H * C_q`, each shaped `(r,N,N)`.
-The key preserves factor order and multiplicity. An empty recipe represents G.
+The key sorts factors by `(pole_index, argument_sign)`, preserving multiplicity:
+`A*B` and `B*A` share an entry, while `A*A*B` remains distinct. A hash table
+maps full keys to cache-entry indices; equality resolves hash collisions.
+An empty recipe represents G. The product is evaluated in this same canonical
+order, which can change floating-point rounding relative to the baseline.
 No full convolution matrix is stored. Left and right traversals share the same
 prepared edge operand; matrix multiplication order still follows the backbone.
 
 Cache validity resets at each public call, including when G changes in place.
-Existing allocations are reused. Timings include filling every required cache
+Numerical allocations and hash buckets are reused; table nodes and keys are
+rebuilt on each call. Timings include filling every required cache
 entry on each call; they are **not** repeated evaluations with already valid
 numerical operands. The budget limits the two cached tensor payloads, excluding
 keys/container metadata and fixed scratch. When full, existing entries remain
@@ -127,6 +132,12 @@ archived CSVs and reports. Their old `self_energy` rows used the separate
 single-direction algorithm and remain unchanged. Compare new self-energy
 timings with old `pairs` rows, taking source revisions into account. No timings
 were rerun for this API cleanup.
+
+## Edge-cache lookup
+
+The separate [cache lookup comparison](cache_lookup.md) measures ordered linear,
+canonicalized linear and canonicalized hash lookup on matching evaluator calls.
+It includes larger key sets and capacity-limited cases.
 
 ## Small matrix kernel comparison
 

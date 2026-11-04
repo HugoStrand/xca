@@ -1,5 +1,8 @@
 # ThinkStation P620 / Threadripper PRO 3945WX
 
+The newer [edge-cache lookup report](cache_lookup.md) compares canonicalized
+keys and hash lookup with the ordered linear cache used in the results below.
+
 These recorded results retain the API names used when measured: `self_energy`
 was the directional algorithm and `pairs` summed both special-arc directions.
 The current benchmark uses the paired algorithm under `self_energy`; the tables
