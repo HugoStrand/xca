@@ -83,3 +83,8 @@ measurement before changing the default evaluator.
 The [small-N CPU experiments](experiments/small_n/README.md) isolate convolution
 stages, fixed-size products, real DLR arithmetic and repeated-edge reuse without
 changing the production evaluator.
+
+The [few-orbital CPU benchmark](../dense_cpu_few_orb/README.md) compares the
+subsequently improved scalar evaluator with handwritten products and edge operand
+reuse. Its results use the same shared physical fixture and separate source
+provenance; they should not be mixed with older scalar baseline numbers.

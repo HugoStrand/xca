@@ -58,3 +58,58 @@ CPU CTest run (34.43 s). The fixed-size kernel tests include complex alpha/beta,
 strided views, and beta-zero overwrite of NaN-filled destinations. Independent
 review found no additional blocker. Prepared backbone contents remain trusted,
 as in the original evaluator; no sanitizer build was run this round.
+
+## Benchmark organization
+
+`benchmarks/dense_cpu_few_orb` compares the updated original, FewOrb with cache
+disabled, and FewOrb with cache enabled. Both this benchmark and the existing
+batching driver use `benchmarks/dense_common/n4_fixture.hpp`; the physical model,
+seed and samples of the earlier benchmark are unchanged.
+
+Complete order-two and order-three topology calls provide the primary comparison
+at matching API boundaries. Bounded prepared samples extend to order five; their
+ratios also include the difference between per-backbone returned arrays and one
+span result. Every timed call prepares its cache numerical values anew; existing
+allocations are warmed. Cache hits/bytes and numerical differences are recorded.
+
+A separate optional benchmark compares handwritten 4×4, fixed-size Eigen, and
+NDA/OpenBLAS products. Eigen is not used or required by the production evaluator.
+Unit-alpha cases are compiled with constant one to match evaluator products;
+general complex-alpha cases remain separate controls. Matrix arithmetic is
+checked against a long-double reference before timing.
+
+## 2026-11-04 — measurements and conclusion
+
+Measured N=4 at ranks 13 and 103 on the Threadripper PRO 3945WX, single-threaded
+and pinned to CPU 2, using Clang 19.1.1 Release without native architecture or
+fast-math flags. Builds/tests were stopped before measurements. Five trials
+rotate variant order; raw CSV retains median/minimum/maximum and error.
+
+At rank 103, complete topology calls gain **1.69–2.02×** over the updated original.
+The uncached implementation gains 1.42–1.49×; caching adds 1.19–1.36× on top.
+Rank-13 complete calls gain 1.42–1.64×. Order-five samples at rank 103 gain
+1.98–2.06×, with the prepared-span allocation qualification described above.
+No median case regresses when adding the arithmetic changes or enabling reuse.
+
+Complete-call cache hit rates are 90.6–99.7%; order-five samples reach 96.0–96.4%.
+At most 20 active recipes use 1,054,720 numerical bytes (1.006 MiB). This workload
+never pressures the default 8 MiB cache budget. Retained allocations can exceed
+the active bytes of a later smaller call; metadata and fixed scratch are extra.
+Maximum relative discrepancy across the 90 evaluator rows is 8.16e-14.
+
+The optional Eigen 5.0.1 experiment passes the long-double reference check
+(maximum relative discrepancy 2.59e-16). For unit-alpha products, handwritten
+loops take 83.7 ns overwrite / 98.3 ns accumulation; Eigen takes 53.6 / 57.3 ns;
+NDA/OpenBLAS takes 128.3 / 116.6 ns. Eigen is thus faster at the isolated kernel,
+but the production implementation remains handwritten as requested. Its possible
+whole-evaluator benefit is not measured here.
+
+The [hardware report](benchmarks/dense_cpu_few_orb/thinkstationP620_3945WX/README.md)
+contains tables, provenance and limitations. The generic benchmark README records
+reproduction commands and cache semantics. Follow-up measurements should vary
+pole diversity, cache budget, dimensions and realistic solver inputs, then compare
+Eigen inside the evaluator if desired. Python selection and solver-level timing
+are outside this implementation round.
+
+Code changes are committed separately from work logs/documentation. User edits
+remain uncommitted. No remote changes or GPU jobs were performed.
