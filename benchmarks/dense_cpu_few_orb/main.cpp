@@ -35,7 +35,7 @@ namespace {
     return error / norm;
   }
 
-  void time_case(std::string const &label, long rank, int order, long backbones, std::vector<Variant> const &variants) {
+  void time_case(std::string const &label, long rank, int N, int order, long backbones, std::vector<Variant> const &variants) {
     auto reference = variants.front().run();
     std::vector<double> errors(variants.size());
     std::vector<int> repeats(variants.size());
@@ -63,16 +63,16 @@ namespace {
       errors[v]     = std::max(errors[v], check(variants[v].run(), reference));
       auto stats    = variants[v].evaluator ? variants[v].evaluator->edge_cache_statistics() : dense::DiagramEvaluatorFewOrb::CacheStatistics{};
       double median = timings[v][trials / 2];
-      std::cout << label << ',' << rank << ",4," << order << ',' << backbones << ',' << variants[v].name << ',' << median << ',' << timings[v].front()
-                << ',' << timings[v].back() << ',' << repeats[v] << ',' << trials << ',' << errors[v] << ',' << nda::max_element(nda::abs(reference))
-                << ',' << timings[0][trials / 2] / median << ',' << stats.hits << ',' << stats.misses << ',' << stats.entries << ',' << stats.bytes
-                << '\n';
+      std::cout << label << ',' << rank << ',' << N << ',' << order << ',' << backbones << ',' << variants[v].name << ',' << median << ','
+                << timings[v].front() << ',' << timings[v].back() << ',' << repeats[v] << ',' << trials << ',' << errors[v] << ','
+                << nda::max_element(nda::abs(reference)) << ',' << timings[0][trials / 2] / median << ',' << stats.hits << ',' << stats.misses << ','
+                << stats.entries << ',' << stats.bytes << '\n';
     }
     std::cout.flush();
   }
 
-  void run_model(bool high_rank, std::string const &filter, long &selected) {
-    auto m      = dense_benchmark::model(high_rank);
+  void run_model(bool high_rank, int N, bool full_order3, std::string const &filter, long &selected) {
+    auto m      = dense_benchmark::model(high_rank, N);
     auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
     dense::DiagramEvaluator scalar(action);
     dense::DiagramEvaluatorFewOrb uncached(action, 0), cached(action);
@@ -87,7 +87,7 @@ namespace {
     for (int order : {2, 3, 5}) {
       auto topology = dense_benchmark::crossing_topology(order);
       for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
-        auto label = "r" + std::to_string(m.mesh.size()) + "/prepared/" + kind + "/order" + std::to_string(order);
+        auto label = "N" + std::to_string(N) + "/r" + std::to_string(m.mesh.size()) + "/prepared/" + kind + "/order" + std::to_string(order);
         if (!wanted(label)) continue;
         bool pairs = kind == "pairs", correlator = kind == "correlator";
         long count = pairs ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
@@ -122,15 +122,16 @@ namespace {
                                 return pairs ? e->compute_self_energy_by_pairs(m.G, sb) : e->compute_self_energy(m.G, sb);
                               },
                               e});
-        time_case(label, m.mesh.size(), order, indices.size(), variants);
+        time_case(label, m.mesh.size(), N, order, indices.size(), variants);
       }
     }
     // Complete bounded topologies exercise the production call boundary, with
     // backbone preparation and identical output wrapper overhead in all variants.
     for (int order : {2, 3}) {
+      if (order == 3 && N > 4 && !full_order3) continue;
       auto topology = dense_benchmark::crossing_topology(order);
       for (std::string const kind : {"self_energy", "pairs", "correlator"}) {
-        auto label = "r" + std::to_string(m.mesh.size()) + "/topology/" + kind + "/order" + std::to_string(order);
+        auto label = "N" + std::to_string(N) + "/r" + std::to_string(m.mesh.size()) + "/topology/" + kind + "/order" + std::to_string(order);
         if (!wanted(label)) continue;
         auto evaluate = [&](auto &e) -> Tensor {
           if (kind == "correlator") return e.compute_single_ptcle_gf(G_blocks, topology);
@@ -140,7 +141,7 @@ namespace {
         long count = kind == "pairs" ? diagram::count_self_energy_pairs(order, action.n_flavours(), action.poles.size()) :
                                        diagram::count_diagrams(order, action.n_flavours(), action.poles.size(),
                                                                kind == "correlator" ? diagram::Kind::correlator : diagram::Kind::self_energy);
-        time_case(label, m.mesh.size(), order, count,
+        time_case(label, m.mesh.size(), N, order, count,
                   {{"dense", [&]() { return evaluate(scalar); }},
                    {"few_orb_uncached", [&]() { return evaluate(uncached); }, &uncached},
                    {"few_orb", [&]() { return evaluate(cached); }, &cached}});
@@ -150,16 +151,29 @@ namespace {
 } // namespace
 
 int main(int argc, char **argv) try {
-  if (argc > 2 || mpi::has_env) throw std::invalid_argument("usage: dense_cpu_few_orb [case substring], without MPI launcher");
-  std::string filter = argc > 1 ? argv[1] : "";
+  std::string filter;
+  bool full_order3 = false;
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    if (arg == "--full-order3")
+      full_order3 = true;
+    else if (filter.empty() && !arg.starts_with("--"))
+      filter = arg;
+    else
+      throw std::invalid_argument("usage: dense_cpu_few_orb [case substring] [--full-order3], without MPI launcher");
+  }
+  if (mpi::has_env) throw std::invalid_argument("run without an MPI launcher");
   std::cout << std::setprecision(10);
   std::cout
-     << "# N=4, two fermion modes; same model/seed as dense_cpu_batched.\n"
+     << "# N=2,4,8,16; 1..4 fermion modes. N=4 retains the dense_cpu_batched model/seed.\n"
+     << "# Prepared cases sample at most 63 backbones; full order 2 at every N; full order 3 at N<=4 unless --full-order3.\n"
      << "# Cache numerical contents invalidated each call; allocations warmed; cache preparation included.\n"
      << "case,rank,dimension,order,backbones,variant,median_us,min_us,max_us,repeats,trials,relative_max_error,output_max,speedup,cache_hits,cache_misses,cache_entries,cache_bytes\n";
   long selected = 0;
-  run_model(false, filter, selected);
-  run_model(true, filter, selected);
+  for (int N : {2, 4, 8, 16}) {
+    run_model(false, N, full_order3, filter, selected);
+    run_model(true, N, full_order3, filter, selected);
+  }
   if (selected == 0) throw std::invalid_argument("no benchmark case matched");
   std::cout << "# checksum=" << checksum << '\n';
   return 0;
