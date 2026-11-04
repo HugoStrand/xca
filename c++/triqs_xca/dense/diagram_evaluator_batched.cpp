@@ -165,7 +165,9 @@ namespace triqs_xca::dense {
       auto left = active(T, batch.size()), right = active(U, batch.size());
       // Reflection already accepts arbitrary trailing axes, sharing this transform too.
       right = action.tau_mesh.dlr_it().reflect(right);
-      nda::matrix<dcomplex> product(G.extent(1), G.extent(1));
+      // Both backbone segments stay live; their completed edge scratch is free.
+      // One matrix suffices because each product is consumed immediately.
+      auto product = GKt(0, 0, all, all);
       for (long b = 0; b < batch.size(); ++b) {
         auto const &backbone = batch[b];
         double prefactor     = tau_kernel_prefactor(backbone.kernel_prefactor, action.kernel) * backbone.direction_sign;
@@ -248,7 +250,7 @@ namespace triqs_xca::dense {
          return diagram::prepare_backbone<diagram::Kind::self_energy>(topology,
                                                                       diagram::decode_self_energy_pair_arcs(topology.extent(0), action, index));
        },
-       [&](auto batch) { result += compute_self_energy_both_directions(propagator, batch); });
+       [&](auto batch) { eval_self_energy(result, propagator, batch, action, T, U, GKt, Tkaps, Tmu, convolution_work); });
     return std::vector{triqs::gfs::gf<dlr_imtime>(action.tau_mesh, result)};
   }
 
@@ -268,7 +270,7 @@ namespace triqs_xca::dense {
     long count  = diagram::count_diagrams(topology.extent(0), action.n_flavours(), action.poles.size(), diagram::Kind::correlator);
     visit_topology<diagram::Kind::correlator>(
        count, capacity, [&](long index) { return diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index); },
-       [&](auto batch) { result += compute_one_time_correlator(propagator, batch, mu_ops, kap_ops, statistics); });
+       [&](auto batch) { eval_correlator(result, propagator, batch, mu_ops, kap_ops, statistics, action, T, U, GKt, Tmu, convolution_work); });
     return result;
   }
 } // namespace triqs_xca::dense

@@ -94,14 +94,32 @@ TEST(DenseBatched, topology_wrappers_and_empty_input) {
   auto m      = model();
   auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
   dense::DiagramEvaluator scalar(action);
-  dense::BatchedDiagramEvaluator evaluator(action, 3);
   test_utils::bgf_t G{std::vector{triqs::gfs::gf<test_utils::mesh_t>(m.mesh, m.G)}};
   nda::array<int, 2> topology{{0, 2}, {1, 3}};
-  expect_close(evaluator.compute_self_energy(G, topology)[0].data(), scalar.compute_self_energy(G, topology)[0].data());
-  expect_close(evaluator.compute_single_ptcle_gf(G, topology), scalar.compute_single_ptcle_gf(G, topology));
-  std::span<diagram::SelfEnergyBackbone const> empty;
-  EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_both_directions(m.G, empty))), 0.);
+  auto expected_sigma = Tensor(scalar.compute_self_energy(G, topology)[0].data());
+  auto expected_correlator = scalar.compute_single_ptcle_gf(G, topology);
+  test_utils::bgf_t changed_G{std::vector{triqs::gfs::gf<test_utils::mesh_t>(m.mesh, nda::make_regular(1.03 * m.G))}};
+  auto changed_sigma = Tensor(scalar.compute_self_energy(changed_G, topology)[0].data());
+  auto changed_correlator = scalar.compute_single_ptcle_gf(changed_G, topology);
+  // Exercise accumulation across full batches, partial tails and an oversized capacity,
+  // including scratch reuse between self-energy and correlator topology calls.
+  for (long capacity : {1, 3, 8, 19}) {
+    SCOPED_TRACE(capacity);
+    dense::BatchedDiagramEvaluator evaluator(action, capacity);
+    auto retained_sigma = evaluator.compute_self_energy(G, topology);
+    auto retained_correlator = evaluator.compute_single_ptcle_gf(G, topology);
+    expect_close(retained_sigma[0].data(), expected_sigma);
+    expect_close(retained_correlator, expected_correlator);
+    expect_close(evaluator.compute_self_energy(changed_G, topology)[0].data(), changed_sigma);
+    expect_close(evaluator.compute_single_ptcle_gf(changed_G, topology), changed_correlator);
+    expect_close(evaluator.compute_self_energy(G, topology)[0].data(), expected_sigma);
+    expect_close(evaluator.compute_single_ptcle_gf(G, topology), expected_correlator);
+    expect_close(retained_sigma[0].data(), expected_sigma);
+    expect_close(retained_correlator, expected_correlator);
+    std::span<diagram::SelfEnergyBackbone const> empty;
+    EXPECT_EQ(nda::max_element(nda::abs(evaluator.compute_self_energy_both_directions(m.G, empty))), 0.);
+    auto wrong_shape = nda::zeros<dcomplex>(m.mesh.size(), 3, 3);
+    EXPECT_THROW(evaluator.compute_self_energy_both_directions(wrong_shape, empty), std::invalid_argument);
+  }
   EXPECT_THROW((dense::BatchedDiagramEvaluator(action, 0)), std::invalid_argument);
-  auto wrong_shape = nda::zeros<dcomplex>(m.mesh.size(), 3, 3);
-  EXPECT_THROW(evaluator.compute_self_energy_both_directions(wrong_shape, empty), std::invalid_argument);
 }
