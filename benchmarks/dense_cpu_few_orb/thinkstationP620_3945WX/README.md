@@ -1,206 +1,162 @@
 # ThinkStation P620 / Threadripper PRO 3945WX
 
-Measured on 2026-11-04. The Eigen-based FewOrb evaluator improves the original
-at N=2 and N=4. N=8 is workload-dependent, and N=16 is generally slower for
-complete order-two calls (the rank-103 correlator is near parity). The kernel comparison shows that OpenBLAS overtakes the current
-Eigen products at N=8 on this machine. Fixed-size specialization alone therefore
-does not justify using Eigen at every small dimension.
+## Shared convolution and selected small products
 
-FewOrb now compiles Eigen products for N=2,4,8,16, retaining handwritten products
-as `small_gemm_handwritten<N>` and BLAS fallback for other dimensions. The
-requested Eigen default is used throughout this sweep; dimension-dependent BLAS
-selection remains a follow-up experiment.
+Measured on 2026-11-04. All three variants now use the same real-valued DLR
+transforms and solves from `cppdlr::fast_convolve`. This comparison measures the
+remaining benefit of FewOrb's small matrix products and edge reuse over the
+updated original dense evaluator.
 
-## Setup and scope
+| Variant in CSV | Matrix products | Edge reuse |
+| --- | --- | --- |
+| `dense` | BLAS at every dimension | Off |
+| `few_orb_uncached` | Eigen at N=2/4; BLAS otherwise | Off |
+| `few_orb` | Eigen at N=2/4; BLAS otherwise | On, 8 MiB budget |
 
-AMD Ryzen Threadripper PRO 3945WX (12 cores, 24 hardware threads), Clang 19.1.1,
-Release `-O3 -DNDEBUG -std=c++23`, Eigen 5.0.1 and system OpenBLAS. No
-`-march=native` or fast-math flags. Each process was pinned to CPU 2 with
-`OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1`, without MPI or GPU. The
-`schedutil` governor and frequency boost remained enabled. Builds, tests and
-timings ran sequentially; the machine was not isolated from unrelated activity.
-Eigen and handwritten code use the generic compiler target, while OpenBLAS
-selects CPU-specific kernels at runtime. The measured crossover applies to this
-build and machine.
+The shared helper handles ordinary, batched and prepared convolutions. FewOrb
+has no duplicate DLR tables, transformation routines or convolution formula.
+Its prepared-operand storage supports edge reuse. Both evaluators already used
+persistent scratch and output buffers before this change.
 
-Evaluator source: XCA `cc4f66f`; benchmark source and raw results:
-`b46b4dd`. Dependencies: TRIQS `2930120`, NDA `4e59077`, cppdlr `b9b24ab`.
-The baseline already includes fast convolution and reusable GEMM destinations.
-Eigen is a normal public dependency, using the 5.0.1 source release in this run
-(archive SHA256
-`e9c326dc8c05cd1e044c71f30f1b2e34a6161a3b6ecf445d56b53ff1669e3dec`).
+## Main result
 
-Raw results: [evaluator sweep](timings_eigen_dimensions.csv) and
-[kernel sweep](eigen_gemm_dimensions.csv). The [generic README](../README.md)
-describes the fixture and reproduction commands. The earlier handwritten N=4
-measurements remain in [their report](handwritten_n4.md), [evaluator CSV](timings.csv)
-and [isolated Eigen experiment](eigen_gemm.csv).
+Complete order-two topology calls, ranges across self-energy, paired
+self-energy and correlator evaluation. A speedup is **baseline time / variant
+time**; values below one mean the variant is slower.
 
-N is Hilbert-space dimension, with N=2,4,8,16 corresponding to one through four
-fermion modes. The N=4 fixture is unchanged. Increasing N also increases the
-number of arc flavours and topology work; comparisons across dimensions are not
-pure matrix-size scaling. Compare variants within a row.
+| N | Product choice | Rank 13, no reuse | Rank 13, with reuse | Rank 103, no reuse | Rank 103, with reuse |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 2 | Eigen | 1.63–1.90× | 2.05–2.28× | 1.42–1.67× | 1.77–2.08× |
+| 4 | Eigen | 1.27–1.32× | 1.49–1.57× | 1.16–1.23× | 1.50–1.52× |
+| 8 | BLAS | ≈0.98× | 1.08–1.21× | ≈0.99× | 1.15–1.27× |
+| 16 | BLAS | 0.98–0.99× | 1.07–1.19× | 0.99–1.00× | 1.13–1.26× |
 
-Times below are median **milliseconds per call**, over five rotated trials.
-Numerical cache preparation is included anew in each call; allocation is warmed.
-The default cache budget remains 8 MiB for all dimensions. These are diagram
-evaluator measurements, not full solver iterations.
+At N=2/4, selected small products improve the updated baseline, and edge reuse
+adds further benefit. At N=8/16 the selected products are BLAS, so the uncached
+comparison reveals residual implementation overhead with the same arithmetic.
+The earlier large Eigen-related regressions are removed by this crossover.
+Uncached N=8/16 remains 0.2–2.1% slower than the baseline; rounding to 1.00×
+does not imply exact parity. Cached FewOrb beats the baseline in all 24 complete
+order-two cases and improves every median relative to uncached FewOrb.
 
-## Complete order-two topology calls
+The incremental cache gains across these cases are N=2: 1.20–1.32×, N=4: 1.13–1.29×, N=8: 1.11–1.28×, N=16: 1.08–1.27×.
+These are uncached FewOrb time / cached FewOrb time, isolating reuse with other
+choices fixed. Dense versus uncached FewOrb also includes remaining traversal,
+validation and workspace scheduling differences; it is not a strict matrix-kernel
+A/B. The N=8/16 rows make those differences visible without changing kernels.
 
-These include backbone preparation and matching public-call/result-wrapper
-boundaries. Each paired backbone accounts for both distinguished-arc directions.
-The speedup column is dense time divided by FewOrb time: values below one mean
-FewOrb is slower. Cache gain compares uncached and cached FewOrb at the same API
-boundary.
+The baseline itself has improved. For example, rank-103 N=4 order-two self-energy
+changed from 21.362 ms in the [previous sweep](eigen_all_dimensions.md) to
+16.898 ms here. That cross-run comparison is indicative, since the trials
+were separate. The tables below use variants measured together in this run.
+The common DLR improvement is not credited to the small-matrix or reuse columns.
 
-### DLR rank 13
+## Complete order-two timings
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
-| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 16 | 0.337 | 0.184 | 0.145 | 2.33× | 1.27× |
-| 2 | Paired self-energy | 8 | 0.208 | 0.107 | 0.089 | 2.34× | 1.20× |
-| 2 | Correlator | 8 | 0.155 | 0.091 | 0.073 | 2.13× | 1.25× |
-| 4 | Self-energy | 32 | 1.614 | 1.230 | 1.023 | 1.58× | 1.20× |
-| 4 | Paired self-energy | 16 | 1.107 | 0.834 | 0.734 | 1.51× | 1.14× |
-| 4 | Correlator | 16 | 0.670 | 0.508 | 0.410 | 1.63× | 1.24× |
-| 8 | Self-energy | 48 | 7.783 | 11.096 | 10.032 | 0.78× | 1.11× |
-| 8 | Paired self-energy | 24 | 5.670 | 8.426 | 7.904 | 0.72× | 1.07× |
-| 8 | Correlator | 24 | 2.961 | 4.064 | 3.546 | 0.84× | 1.15× |
-| 16 | Self-energy | 64 | 50.440 | 87.200 | 81.386 | 0.62× | 1.07× |
-| 16 | Paired self-energy | 32 | 39.278 | 70.261 | 67.485 | 0.58× | 1.04× |
-| 16 | Correlator | 32 | 17.487 | 29.506 | 26.614 | 0.66× | 1.11× |
+Median **milliseconds per call**, including backbone preparation and matching
+public-call/result-wrapper boundaries. A paired backbone covers both endpoint
+directions. Changing N also changes the number of arc flavours, so timings across
+dimensions are not pure matrix-size scaling.
 
 ### DLR rank 103
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
+| N | Evaluation | Backbones | Baseline | Products, no reuse | Products + reuse | No reuse vs baseline | With reuse vs baseline |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 16 | 4.033 | 2.117 | 1.616 | 2.50× | 1.31× |
-| 2 | Paired self-energy | 8 | 2.320 | 1.175 | 0.949 | 2.44× | 1.24× |
-| 2 | Correlator | 8 | 2.023 | 1.158 | 0.933 | 2.17× | 1.24× |
-| 4 | Self-energy | 32 | 21.362 | 14.123 | 11.081 | 1.93× | 1.27× |
-| 4 | Paired self-energy | 16 | 12.986 | 8.755 | 7.306 | 1.78× | 1.20× |
-| 4 | Correlator | 16 | 10.015 | 6.667 | 5.199 | 1.93× | 1.28× |
-| 8 | Self-energy | 48 | 108.717 | 112.982 | 96.084 | 1.13× | 1.18× |
-| 8 | Paired self-energy | 24 | 68.369 | 79.180 | 70.962 | 0.96× | 1.12× |
-| 8 | Correlator | 24 | 48.725 | 46.499 | 38.273 | 1.27× | 1.21× |
-| 16 | Self-energy | 64 | 650.480 | 848.070 | 748.990 | 0.87× | 1.13× |
-| 16 | Paired self-energy | 32 | 439.567 | 637.809 | 589.861 | 0.75× | 1.08× |
-| 16 | Correlator | 32 | 271.819 | 319.527 | 272.857 | 1.00× | 1.17× |
-
-At N=2 the gain is 2.13–2.50×; at N=4 it is 1.51–1.93×. N=8 regresses at
-rank 13 and gives mixed results at rank 103. N=16 generally regresses despite
-cache reuse; its rank-103 correlator is near parity (0.38% slower median). The
-low-rank regressions occur while the cache has
-ample capacity, so increasing its budget cannot remove the underlying matrix
-product cost.
-
-## Complete order-three topology calls
-
-The default sweep includes complete order three for N=2 and N=4. For N=8 and
-N=16 it uses bounded prepared samples at orders three and five; complete order
-three is available with `--full-order3` but was not run here.
+| 2 | Self-energy | 16 | 3.327 | 2.138 | 1.624 | 1.56× | 2.05× |
+| 2 | Paired self-energy | 8 | 1.973 | 1.184 | 0.950 | 1.67× | 2.08× |
+| 2 | Correlator | 8 | 1.655 | 1.168 | 0.937 | 1.42× | 1.77× |
+| 4 | Self-energy | 32 | 16.898 | 14.278 | 11.110 | 1.18× | 1.52× |
+| 4 | Paired self-energy | 16 | 10.848 | 8.816 | 7.251 | 1.23× | 1.50× |
+| 4 | Correlator | 16 | 7.846 | 6.756 | 5.239 | 1.16× | 1.50× |
+| 8 | Self-energy | 48 | 84.562 | 85.295 | 68.294 | 0.99× | 1.24× |
+| 8 | Paired self-energy | 24 | 56.279 | 56.964 | 48.755 | 0.99× | 1.15× |
+| 8 | Correlator | 24 | 36.783 | 37.181 | 28.966 | 0.99× | 1.27× |
+| 16 | Self-energy | 64 | 542.615 | 544.386 | 449.030 | 1.00× | 1.21× |
+| 16 | Paired self-energy | 32 | 385.403 | 386.103 | 339.609 | 1.00× | 1.13× |
+| 16 | Correlator | 32 | 218.120 | 219.360 | 172.616 | 0.99× | 1.26× |
 
 ### DLR rank 13
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
+| N | Evaluation | Backbones | Baseline | Products, no reuse | Products + reuse | No reuse vs baseline | With reuse vs baseline |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 128 | 4.674 | 2.652 | 1.921 | 2.43× | 1.38× |
-| 2 | Paired self-energy | 64 | 2.647 | 1.437 | 1.083 | 2.44× | 1.33× |
-| 2 | Correlator | 64 | 2.223 | 1.301 | 0.956 | 2.33× | 1.36× |
-| 4 | Self-energy | 512 | 41.430 | 31.769 | 24.761 | 1.67× | 1.28× |
-| 4 | Paired self-energy | 256 | 25.452 | 19.374 | 15.855 | 1.61× | 1.22× |
-| 4 | Correlator | 256 | 18.477 | 14.163 | 10.661 | 1.73× | 1.33× |
+| 2 | Self-energy | 16 | 0.339 | 0.191 | 0.151 | 1.77× | 2.25× |
+| 2 | Paired self-energy | 8 | 0.209 | 0.110 | 0.092 | 1.90× | 2.28× |
+| 2 | Correlator | 8 | 0.154 | 0.094 | 0.075 | 1.63× | 2.05× |
+| 4 | Self-energy | 32 | 1.594 | 1.240 | 1.034 | 1.29× | 1.54× |
+| 4 | Paired self-energy | 16 | 1.094 | 0.832 | 0.734 | 1.32× | 1.49× |
+| 4 | Correlator | 16 | 0.656 | 0.517 | 0.419 | 1.27× | 1.57× |
+| 8 | Self-energy | 48 | 7.470 | 7.628 | 6.517 | 0.98× | 1.15× |
+| 8 | Paired self-energy | 24 | 5.508 | 5.621 | 5.085 | 0.98× | 1.08× |
+| 8 | Correlator | 24 | 2.820 | 2.880 | 2.338 | 0.98× | 1.21× |
+| 16 | Self-energy | 64 | 49.287 | 49.770 | 43.575 | 0.99× | 1.13× |
+| 16 | Paired self-energy | 32 | 38.736 | 39.092 | 36.177 | 0.99× | 1.07× |
+| 16 | Correlator | 32 | 16.856 | 17.155 | 14.157 | 0.98× | 1.19× |
 
-### DLR rank 103
+## Higher-order results
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
+Complete order-three calls were run at N=2/4. Speedup ranges across the same three
+evaluation kinds are:
+
+| N | DLR rank | No reuse vs baseline | With reuse vs baseline |
+| ---: | ---: | ---: | ---: |
+| 2 | 13 | 1.63–1.79× | 2.23–2.36× |
+| 2 | 103 | 1.41–1.56× | 1.91–2.11× |
+| 4 | 13 | 1.25–1.27× | 1.56–1.65× |
+| 4 | 103 | 1.15–1.19× | 1.55–1.59× |
+
+At N=8/16, order-three and order-five measurements use at most 63 stratified
+prepared backbones. The full order-three topology can be requested with
+`--full-order3`, but was not run here. Prepared samples exclude backbone
+construction. Dense returns one result per backbone; FewOrb returns one span
+sum, so these ratios also include the output allocation/accumulation difference.
+They do not predict full order-five topology timings.
+
+Rank-103 order-five samples, median **milliseconds per call**:
+
+| N | Evaluation | Backbones | Baseline | Products, no reuse | Products + reuse | No reuse vs baseline | With reuse vs baseline |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 128 | 59.764 | 31.841 | 23.011 | 2.60× | 1.38× |
-| 2 | Paired self-energy | 64 | 32.363 | 16.828 | 12.467 | 2.60× | 1.35× |
-| 2 | Correlator | 64 | 29.686 | 16.802 | 12.416 | 2.39× | 1.35× |
-| 4 | Self-energy | 512 | 604.537 | 393.581 | 290.426 | 2.08× | 1.36× |
-| 4 | Paired self-energy | 256 | 338.635 | 223.375 | 172.336 | 1.96× | 1.30× |
-| 4 | Correlator | 256 | 290.962 | 190.398 | 138.867 | 2.10× | 1.37× |
+| 2 | Self-energy | 63 | 44.305 | 30.491 | 21.759 | 1.45× | 2.04× |
+| 2 | Paired self-energy | 63 | 46.816 | 31.437 | 22.708 | 1.49× | 2.06× |
+| 2 | Correlator | 63 | 44.342 | 31.322 | 22.679 | 1.42× | 1.96× |
+| 4 | Self-energy | 63 | 104.004 | 90.643 | 65.233 | 1.15× | 1.59× |
+| 4 | Paired self-energy | 63 | 113.161 | 97.250 | 71.821 | 1.16× | 1.58× |
+| 4 | Correlator | 63 | 102.030 | 89.089 | 63.816 | 1.15× | 1.60× |
+| 8 | Self-energy | 63 | 327.814 | 329.919 | 239.596 | 0.99× | 1.37× |
+| 8 | Paired self-energy | 63 | 364.882 | 367.317 | 278.132 | 0.99× | 1.31× |
+| 8 | Correlator | 63 | 314.127 | 316.587 | 226.446 | 0.99× | 1.39× |
+| 16 | Self-energy | 63 | 1445.337 | 1451.328 | 1137.287 | 1.00× | 1.27× |
+| 16 | Paired self-energy | 63 | 1670.263 | 1675.866 | 1359.461 | 1.00× | 1.23× |
+| 16 | Correlator | 63 | 1338.004 | 1346.692 | 1027.695 | 0.99× | 1.30× |
 
-## Bounded order-five samples
+Rank-13 prepared results and all intermediate order-two/three samples remain in
+the [raw CSV](timings_shared_convolution.csv). Reuse savings depend on the number
+of repeated edge recipes and the available cache capacity.
 
-Each call sums 63 stratified prepared backbones, excluding backbone preparation.
-Dense returns one array per backbone while FewOrb returns one span sum. These
-ratios therefore include that API/allocation difference as well as arithmetic;
-they do not predict complete order-five topology timings. Cache gain compares
-the two FewOrb variants with matching boundaries. Prepared order-two/three rows
-are retained in the CSV.
+## Product crossover
 
-### DLR rank 13
+The crossover uses the earlier [isolated production-kernel measurements](eigen_gemm_dimensions.csv)
+on the same compiler/CPU setup. Median **nanoseconds per complex product**, with
+unit scaling; overwrite computes C=AB and accumulation computes C+=AB:
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
-| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 63 | 4.237 | 2.365 | 1.705 | 2.49× | 1.39× |
-| 2 | Paired self-energy | 63 | 4.521 | 2.491 | 1.813 | 2.49× | 1.37× |
-| 2 | Correlator | 63 | 4.093 | 2.369 | 1.684 | 2.43× | 1.41× |
-| 4 | Self-energy | 63 | 8.931 | 6.834 | 5.153 | 1.73× | 1.33× |
-| 4 | Paired self-energy | 63 | 10.097 | 7.674 | 5.998 | 1.68× | 1.28× |
-| 4 | Correlator | 63 | 8.382 | 6.402 | 4.721 | 1.78× | 1.36× |
-| 8 | Self-energy | 63 | 25.924 | 34.748 | 29.081 | 0.89× | 1.19× |
-| 8 | Paired self-energy | 63 | 30.602 | 42.254 | 36.594 | 0.84× | 1.15× |
-| 8 | Correlator | 63 | 23.475 | 30.932 | 25.321 | 0.93× | 1.22× |
-| 16 | Self-energy | 63 | 113.484 | 182.748 | 159.460 | 0.71× | 1.15× |
-| 16 | Paired self-energy | 63 | 140.966 | 235.346 | 211.968 | 0.67× | 1.11× |
-| 16 | Correlator | 63 | 97.639 | 154.746 | 131.653 | 0.74× | 1.18× |
+| N | Eigen overwrite / accumulate | BLAS overwrite / accumulate | Selected |
+| ---: | ---: | ---: | --- |
+| 2 | 11.6 / 12.1 | 82.7 / 76.3 | Eigen |
+| 4 | 63.8 / 67.1 | 129.2 / 116.1 | Eigen |
+| 8 | 524.0 / 515.3 | 248.9 / 212.1 | BLAS |
+| 16 | 2867.7 / 2833.5 | 983.2 / 862.1 | BLAS |
 
-### DLR rank 103
+Eigen and handwritten code use the generic compiler target, whereas OpenBLAS
+selects CPU-specific kernels at runtime. Thus N=4 is a measured practical cutoff
+for this build, not a universal cutoff. Explicit Eigen and handwritten products
+through N=16 remain available for experiments; the evaluator uses BLAS there.
+These isolated kernel timings were retained from the previous round, while all
+whole-evaluator timings in this report were rerun after sharing the convolution.
 
-| N | Evaluation | Backbones | Dense | FewOrb, cache off | FewOrb | vs dense | Cache gain |
-| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | Self-energy | 63 | 55.806 | 30.134 | 21.639 | 2.58× | 1.39× |
-| 2 | Paired self-energy | 63 | 58.299 | 31.121 | 22.606 | 2.58× | 1.38× |
-| 2 | Correlator | 63 | 55.832 | 31.133 | 22.611 | 2.47× | 1.38× |
-| 4 | Self-energy | 63 | 139.632 | 90.044 | 65.032 | 2.15× | 1.38× |
-| 4 | Paired self-energy | 63 | 148.033 | 96.499 | 71.698 | 2.06× | 1.35× |
-| 4 | Correlator | 63 | 136.317 | 88.569 | 63.658 | 2.14× | 1.39× |
-| 8 | Self-energy | 63 | 454.221 | 407.274 | 318.673 | 1.43× | 1.28× |
-| 8 | Paired self-energy | 63 | 490.989 | 467.502 | 378.628 | 1.30× | 1.23× |
-| 8 | Correlator | 63 | 439.167 | 381.431 | 292.629 | 1.50× | 1.30× |
-| 16 | Self-energy | 63 | 1874.048 | 2051.243 | 1733.502 | 1.08× | 1.18× |
-| 16 | Paired self-energy | 63 | 2096.502 | 2469.806 | 2149.303 | 0.98× | 1.15× |
-| 16 | Correlator | 63 | 1766.098 | 1843.223 | 1522.356 | 1.16× | 1.21× |
+## Cache capacity and correctness
 
-The longer traversals give edge reuse more opportunities to amortize preparation,
-which can overcome some of the N=8/N=16 matrix-product penalty at rank 103. The
-ranking therefore depends on both matrix dimension and DLR rank/workload.
-
-## Kernel comparison
-
-Median **nanoseconds per complex matrix product**, 103 independent matrices,
-1024 stack repetitions, five rotated trials. These unit-alpha cases match the
-evaluator's overwrite and accumulation operations. General complex-alpha
-controls are also recorded in the CSV. The Eigen column calls the production
-`small_gemm<N>` helper, including its packed/strided layout check.
-
-| N | Operation | Handwritten | Eigen | NDA/OpenBLAS |
-| ---: | --- | ---: | ---: | ---: |
-| 2 | C = AB | 23.7 | 11.6 | 82.7 |
-| 2 | C += AB | 26.8 | 12.1 | 76.3 |
-| 4 | C = AB | 84.2 | 63.8 | 129.2 |
-| 4 | C += AB | 98.0 | 67.1 | 116.1 |
-| 8 | C = AB | 510.8 | 524.0 | 248.9 |
-| 8 | C += AB | 563.9 | 515.3 | 212.1 |
-| 16 | C = AB | 3817.7 | 2867.7 | 983.2 |
-| 16 | C += AB | 4104.0 | 2833.5 | 862.1 |
-
-Eigen wins at N=2 and N=4. OpenBLAS is about 2.1–2.4× faster at N=8 and
-2.9–3.3× faster at N=16 for these two operations. Eigen improves on handwritten
-loops at N=16 but still trails BLAS. The previous N=4 microbenchmark called raw
-Eigen maps directly; its numbers do not measure precisely the same wrapper.
-There is no handwritten-versus-Eigen whole-evaluator A/B in this sweep.
-
-## Cache pressure and numerical checks
-
-Each retained recipe stores two complex `(r,N,N)` tensors. At N=16/r=103, each
-entry occupies 843,776 bytes (0.805 MiB): nine fit in 8 MiB. The order-five sample
-reaches that limit; unmatched recipes are recomputed without evicting retained
-entries. Its per-call cache statistics are:
+Each cached recipe stores coefficients and their Hilbert transform, two complex
+`(r,N,N)` tensors. At N=16/rank 103 one recipe uses 843,776 bytes (0.805 MiB), so
+nine fit within 8 MiB. The order-five samples reach this capacity:
 
 | Evaluation | Hits | Misses | Hit rate | Entries | Payload (MiB) |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -208,34 +164,43 @@ entries. Its per-call cache statistics are:
 | Paired self-energy | 416 | 88 | 82.5% | 9 | 7.242 |
 | Correlator | 416 | 88 | 82.5% | 9 | 7.242 |
 
-Three recipes suffice for complete order two; seven suffice for the complete
-order-three cases that were run. The N=16/r=103 prepared order-three cases also
-fit seven entries, so the larger-dimension slowdown is already visible without
-cache pressure. CSV byte counts describe active numerical payload, excluding
-metadata and fixed scratch. Retained allocation can reflect a larger previous
-call, but remains bounded by the numerical budget.
+Once full, the existing entries remain reusable and other recipes are recomputed.
+Complete order two needs three entries, so its results do not reflect capacity
+pressure. Reported bytes count active numerical payload; keys, fixed scratch,
+Action storage and container metadata are additional. Retained allocations can
+reflect larger preceding calls but obey the numerical budget.
 
-All **324 evaluator rows** (108 cases, three variants each) passed finite-result,
-nonzero-reference and relative-error checks. The largest relative maximum
-discrepancy is **2.19e-13**, below the 2e-10 threshold. All **48 kernel rows**
-passed the long-double reference check; maximum discrepancy **7.32e-16**.
-The full rebuilt CPU suite passed **88/88** CTest entries, including fixed
-N=2/4/8/16 kernels and evaluator paths, strided and minimally aligned operands,
-complex alpha/beta, cache limits and N=32 BLAS fallback. A standalone Eigen
-allocation-guard probe passed packed and strided products through N=16, and an
-external C++ consumer built against a temporary installation.
+All **324 evaluator rows / 108 cases** passed finite/nonzero-reference checks and
+the relative-error threshold of 2e-10. The maximum relative maximum discrepancy
+is **3.31e-14**. The complete rebuilt CPU suite passed **88/88** CTest entries
+in 34.68 seconds, including the dense, batched and block-sparse consumers.
+Prepared complex rectangular operands are tested on either side, including
+cache immutability, callback overwrite/accumulation and packed buffer tails.
+Existing tests cover analytic convolutions, in-place solves and output aliasing.
 
-## Recommended next experiment
+## Reproduction and provenance
 
-Retain the FewOrb real DLR arithmetic and edge cache but switch only its N=8 and
-N=16 products to BLAS, then rerun the same cases. That would isolate whether a
-dimension-based Eigen/BLAS choice recovers the larger-dimension regressions
-without losing reuse. The current sweep strongly motivates this experiment,
-but does not measure that combined implementation. A native-architecture build
-should be a separate comparison before generalizing the crossover across CPUs.
+Implementation: XCA `64a34f73`. Benchmark driver: `b46b4dd`, unchanged in this
+round. New raw measurements: `5aa1cc6a`. Dependencies: TRIQS `2930120`,
+NDA `4e59077`, cppdlr `b9b24ab`, Eigen 5.0.1.
 
-For cache policy, compare the default 8 MiB with a budget large enough for every
-encountered recipe at N=16/r=103, then add more poles and realistic solver
-propagators. This separates capacity pressure from arithmetic cost. Complete
-higher-order topologies, full solver timing and multi-core/MPI scaling remain
-outside the present measurements; no GPU conclusion follows from them.
+AMD Ryzen Threadripper PRO 3945WX, 12 cores / 24 hardware threads, Clang 19.1.1,
+Release `-O3 -DNDEBUG -std=c++23`, system OpenBLAS. No native-architecture or
+fast-math flags. One thread, pinned to CPU 2, `OMP_NUM_THREADS=1` and
+`OPENBLAS_NUM_THREADS=1`, no MPI launcher or GPU. The schedutil governor and boost
+remained enabled. No builds, tests or other benchmarks ran during measurement;
+the workstation was not isolated from unrelated activity.
+
+Five trials rotate variant order. Calls repeat one to five times, calibrated
+toward 5 ms per trial. Numerical cache preparation is included on every call;
+only allocations are warmed. Model/Action/evaluator construction and first-use
+allocation are outside the timings. Minimum/median/maximum timings, errors and
+cache counters are retained in the CSV. These are evaluator timings, not a full
+solver iteration or multi-core/MPI scaling measurement.
+
+Build/run instructions and fixture details are in the [generic README](../README.md).
+The original [handwritten N=4 report](handwritten_n4.md) and
+[Eigen-through-N=16 report](eigen_all_dimensions.md), together with their raw
+CSVs, are retained. Further useful comparisons are a native-architecture build,
+more diverse pole/topology sets, and a larger cache budget at N=16/rank 103;
+these were not added to the present sweep.

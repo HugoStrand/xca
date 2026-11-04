@@ -193,3 +193,94 @@ Tables, provenance and limitations are in the updated
 The previous handwritten N=4 report is preserved as `handwritten_n4.md`, with
 its raw results unchanged. Code, benchmark/results and documentation commits
 remain separate. User edits are preserved; no GPU jobs or remote pushes ran.
+
+## 2026-11-04 — shared real convolution and product crossover
+
+Code commit `64a34f73` moves the real DLR arithmetic into the common
+`cppdlr::fast_convolve`. Dense, batched dense, block-sparse and FewOrb now use
+real DLR tables, real GEMM transforms, and real LU triangular solves on the
+interleaved real/imaginary components of complex arrays. No real/imaginary
+packing copies or extra owning numerical representations are introduced.
+Existing output parameters, reusable workspace and input/output aliasing
+contracts remain supported, including changing packed rectangular shapes and
+active batch sizes. Integer limits now account for both real lanes.
+
+FewOrb's duplicate DLR tables, transforms, solves and convolution formula were
+removed. The shared helper exposes `prepare_operand` to fill coefficients and
+their Hilbert transform, and `convolve_prepared` to combine them using a caller's
+matrix-product function. The same internal convolution formula serves ordinary,
+batched and prepared calls. Edge-cache ownership and policy remain in FewOrb.
+The prepared arrays must use the receiving helper's DLR grid; output/product
+scratch must be disjoint from the prepared operands.
+
+The measured kernel crossover selects fixed-size Eigen products for N=2/4 and
+BLAS for other dimensions, including N=8/16. Explicit Eigen and handwritten
+kernels through N=16 remain available for comparison. This is a practical CPU
+choice based on the current generic-architecture build; it is not a universal
+crossover for every compiler or processor.
+
+Validation: a complete CPU rebuild and **88/88** CTest entries passed (34.68 s).
+New coverage reuses a complex rectangular prepared operand on either side of a
+convolution, checks the independent cppdlr reference and cache immutability,
+and checks inactive tails of packed scalar and batched buffers. Existing tests
+cover analytic convolutions, in-place coefficient solves, output aliasing,
+changing rectangular dimensions, FewOrb cache budgets and N=2/4/8/16/32 paths.
+Independent adversarial review found no blocking issue. The prior claim that
+FewOrb uniquely optimized scratch handling was too broad: the original already
+reused its workspace; this refactor shares arithmetic and enables prepared
+operands without attributing an unmeasured separate scratch speedup.
+
+The next comparison uses the updated original as baseline, FewOrb without edge
+reuse, and FewOrb with the same 8 MiB cache. All three share real DLR arithmetic.
+At N=8/16 both evaluator implementations use BLAS products; remaining uncached
+differences reflect traversal/workspace scheduling and overhead, not Eigen
+versus BLAS. Cached versus uncached FewOrb isolates edge reuse. Existing results
+are preserved, including the earlier Eigen-through-N=16 report.
+
+
+## 2026-11-04 — shared-baseline measurements
+
+Results commit `5aa1cc6a` records the unchanged dimension benchmark driver
+(`b46b4dd`) against implementation `64a34f73`. Measurements use the same pinned,
+single-threaded CPU setup, DLR ranks 13/103, N=2/4/8/16 and default 8 MiB cache
+as the earlier sweep. No other builds, tests or benchmarks ran during timing.
+The previous CSVs remain unchanged, and the previous report is retained as
+`eigen_all_dimensions.md` alongside the earlier handwritten N=4 report.
+
+For complete order-two topology calls at rank 103:
+
+| N | Product selection | Without reuse vs baseline | With reuse vs baseline |
+| ---: | --- | ---: | ---: |
+| 2 | Eigen | 1.42–1.67× | 1.77–2.08× |
+| 4 | Eigen | 1.16–1.23× | 1.50–1.52× |
+| 8 | BLAS | about 0.99× | 1.15–1.27× |
+| 16 | BLAS | 0.99–1.00× | 1.13–1.26× |
+
+At rank 13, no-reuse gains are 1.63–1.90× at N=2 and 1.27–1.32× at N=4;
+with reuse they reach 2.05–2.28× and 1.49–1.57×. N=8/16 uncached cases retain
+0.2–2.1% overhead across both ranks with identical BLAS product selection;
+this is no longer the earlier large Eigen penalty. Reuse makes every complete
+order-two case faster than the updated baseline. The order-five samples gain
+1.96–2.38× at N=2, 1.58–1.69× at N=4, 1.22–1.39× at N=8 and 1.21–1.34× at N=16
+across both ranks, with the prepared-API allocation qualification retained.
+
+At N=16/rank 103, order-five samples still reach the nine-entry cache limit
+(7,593,984 payload bytes); hit rates are 81.5–82.5%. These bounded samples benefit
+from reuse despite capacity pressure. Complete order two needs three entries
+and does not encounter that pressure.
+
+The baseline also receives the general DLR optimization. As an indicative
+cross-run comparison, N=4/rank 103/order-two self-energy changes from 21.362 ms
+to 16.898 ms; the main report compares all three new variants within this run
+instead of crediting that shared improvement to small products or edge reuse.
+Existing isolated kernel measurements justify the N=4 crossover; they were
+not rerun because the explicit product helpers did not change.
+
+Independent audit verified **324 rows / 108 cases**, including finite values,
+expected variants/work counts, speedup arithmetic, cache accounting and all
+reported tables. Maximum relative discrepancy is **3.31e-14**, below 2e-10.
+The implementation validation remains **88/88** CPU tests. The
+[hardware report](benchmarks/dense_cpu_few_orb/thinkstationP620_3945WX/README.md)
+contains full order-two timings, order-three summaries, order-five samples,
+cache statistics and limits. No Python API, GPU code, remote state or user
+formatting edits were changed.

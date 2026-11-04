@@ -2,15 +2,18 @@
 
 Compare the original `dense::DiagramEvaluator` (including reusable output buffers)
 with `dense::DiagramEvaluatorFewOrb` at Hilbert-space dimensions **N=2,4,8,16**,
-i.e. one to four fermion modes. FewOrb uses fixed-size Eigen complex products at
-these dimensions, real DLR transforms/solves, and optional reuse of edge operands.
-Other dimensions use BLAS for matrix products. Both evaluators remain available;
-FewOrb is currently a C++ API.
+i.e. one to four fermion modes. Both use the shared `cppdlr::fast_convolve`
+real DLR transforms/solves and reusable convolution storage. FewOrb additionally
+uses fixed-size Eigen complex products at N=2 and N=4, and optionally reuses edge
+operands. Its other dimensions, including N=8 and N=16, use BLAS for matrix
+products. Both evaluators remain available; FewOrb is currently a C++ API.
 
-`small_gemm<N>` selects the Eigen implementation. The previous handwritten loops
-remain available as `small_gemm_handwritten<N>` for comparison. Eigen 5 is a
-normal header-only dependency of XCA, resolved by CMake; the source dependency
-is pinned to 5.0.1. No benchmark-specific Eigen include path is required.
+`small_gemm<N>` provides the Eigen implementation, also available at N=8 and
+N=16 for isolated comparisons. The evaluator's dimension dispatch chooses BLAS
+at those dimensions following the recorded kernel crossover. The previous
+handwritten loops remain available as `small_gemm_handwritten<N>` for comparison.
+Eigen 5 is a normal header-only dependency of XCA, resolved by CMake; the source
+dependency is pinned to 5.0.1. No benchmark-specific Eigen include path is required.
 
 ## Build and run
 
@@ -56,15 +59,20 @@ rather than interpreting timings across N as pure matrix-kernel scaling.
 
 Every case compares three variants:
 
-- `dense`: the original evaluator with direct GEMM into reusable buffers.
-- `few_orb_uncached`: fixed-size Eigen products and real DLR arithmetic,
-  retaining no edge operands between convolutions.
-- `few_orb`: the same arithmetic plus lazy edge operand reuse, with the default
-  8 MiB numerical cache budget.
+- `dense`: the original evaluator with direct BLAS GEMM into reusable buffers
+  and the shared real DLR convolution.
+- `few_orb_uncached`: FewOrb with Eigen products at N=2/4 and BLAS products at
+  other dimensions, retaining no edge operands between convolutions.
+- `few_orb`: the same FewOrb arithmetic plus lazy edge operand reuse, with the
+  default 8 MiB numerical cache budget.
 
-The uncached implementation also changes scratch handling; its comparison with
-dense does not isolate real DLR arithmetic from fixed-size products or buffer
-management. The separate kernel experiment measures only the small products.
+Real DLR arithmetic is common to all three variants. The uncached comparison
+with dense measures the remaining FewOrb implementation changes, including
+matrix-product selection and traversal/workspace scheduling; it is not a strict
+matrix-kernel-only A/B. At N=8 and N=16 both use BLAS products, making residual
+differences visible without an Eigen-versus-BLAS change. The separate kernel
+experiment isolates the matrix products. Comparing the two FewOrb variants
+isolates edge reuse with all other choices fixed.
 
 For a recipe q containing the ordered edge kernel factors, the cache stores
 `C_q = vals2coefs(G * kernel_product_q)` and `H * C_q`, each shaped `(r,N,N)`.

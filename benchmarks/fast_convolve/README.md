@@ -2,7 +2,7 @@
 
 This standalone CPU benchmark compares three implementations: the original
 cppdlr algorithm reproduced in a benchmark-only helper, the fixed cppdlr
-convolution, and XCA's draft `cppdlr::fast_convolve`. All timings include
+convolution, and XCA's shared `cppdlr::fast_convolve`. All timings include
 conversion of two complex arrays from imaginary-time values to DLR
 coefficients, the convolution, and writing its values to an output array.
 The installed reference must include the cppdlr fix that hoists the two
@@ -24,12 +24,13 @@ Hilbert-transform work, not to every part of the convolution.
 The reproduction uses the installed cppdlr coefficient conversion and array
 operations. Its real convolution matrices are prepared once outside the
 timed calls. It does not change the installed library. Its output and the fast
-draft's output are checked against the fixed cppdlr reference.
+helper's output are checked against the fixed cppdlr reference.
 
-## Draft API
+## Shared API
 
-The implementation is in `c++/cppdlr/fast_convolve.hpp`. It is not yet connected
-to the Action or diagram evaluators. For operands shaped `(r,m,n)` and `(r,n,p)`:
+The implementation is in `c++/cppdlr/fast_convolve.hpp`. Dense, batched dense,
+FewOrb and block-sparse diagram evaluation share its DLR arithmetic. For operands
+shaped `(r,m,n)` and `(r,n,p)`:
 
 ```cpp
 cppdlr::fast_convolve convolution(itops);
@@ -38,21 +39,29 @@ convolution.convolve(beta, f_values, g_values, out_values, workspace);
 ```
 
 The helper borrows an unchanged `imtime_ops` that must outlive it. It prepares
-three complex DLR matrices once. Five scratch arrays belong to the workspace;
-each concurrent call needs its own workspace and output. This draft supports
-time-ordered convolution of complex-double, contiguous C-layout arrays.
+three real DLR matrices once. Five scratch arrays belong to the workspace;
+each concurrent call needs its own workspace and output. The helper supports
+time-ordered convolution of complex-double, contiguous C-layout arrays,
+including rectangular matrix operands. A separate overload accepts independent
+convolutions in packed `(rank,batch,rows,columns)` order with a
+`fast_convolve_batched_workspace`. A smaller active shape can use existing
+workspace capacity through packed views.
 
 Values are copied into coefficient buffers to preserve the inputs. Two
 right-sided triangular solves use the existing LU factors directly in those
-buffers, followed by reverse pivot swaps. This removes the Fortran-layout
-buffer and its copy back. The remaining convolution uses output-parameter
+buffers, followed by reverse pivot swaps. Both solves and DLR-axis transforms
+use real BLAS on the interleaved real and imaginary components of the complex
+arrays. They need no separate real/imaginary arrays or Fortran-layout buffer.
+Spatial matrix products remain complex. The convolution uses output-parameter
 GEMMs and reuses scratch without creating owning NDA temporaries. Output may
-overwrite either input; workspace buffers must remain separate.
+overwrite either input; workspace buffers must remain separate. This arithmetic
+optimization does not depend on small matrix dimensions.
 
-The checked NDA checkout (`23ca1590`) exposes raw BLAS `trsm` declarations but
-no high-level wrapper. The draft therefore calls `F77_ztrsm` and links NDA's
-exported `nda::blas_lapack` target. It does not modify NDA or explicitly invert
-the interpolation matrix.
+The triangular solves call the raw `F77_dtrsm` wrapper and link NDA's exported
+`nda::blas_lapack` target. The helper does not modify NDA or explicitly invert
+the interpolation matrix. FewOrb additionally uses the shared coefficient and
+transform operations to retain selected edge operands; that cache is separate
+from the convolution helper and is not exercised by this benchmark.
 
 ## Build and run
 
