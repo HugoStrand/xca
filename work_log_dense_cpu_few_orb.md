@@ -348,3 +348,52 @@ Validation: all three focused CTest entries passed (batched evaluator, serial
 MPI evaluator and three-rank MPI evaluator; 1.08 seconds). The batched benchmark
 and generated diagnostic evaluator also built successfully. No new timing sweep
 was run; the purpose is a consistent implementation for future comparisons.
+
+## 2026-11-04 — canonical edge-cache lookup
+
+Implementation commit `cf28480c` makes FewOrb cache keys independent of scalar
+factor order. It copies each edge's factors into reusable scratch and sorts
+`(pole_index, argument_sign)` pairs, retaining multiplicity. Thus `A*B` and
+`B*A` share an operand while `A*A*B`, `A*B*B`, and reflected factors remain
+distinct. Numerical operands use that same sorted order; input backbones are
+unchanged. This is numerically equivalent, not a bitwise-preserving change.
+
+A standard `std::unordered_map` replaces the linear scan. Full vector equality
+resolves hash collisions; stored entry indices survive numerical-storage vector
+growth. The map owns each key, avoiding a second copy in the operand. No public
+API or diagram type changes, cache replacement scheme, or small-cache threshold
+are introduced. Numerical arrays and hash buckets persist across public calls;
+map contents are cleared, and nodes/keys are rebuilt as needed. Existing cache
+budgets still bound numerical payload only.
+
+Benchmark commit `3a33b833` adds an optional controlled comparison of ordered
+linear, canonical linear and production hash policies. Generated benchmark-only
+controls retain the current numerical evaluation. Twenty cases cover N=4,
+ranks 13/103, two/ten poles, complete order-two calls and 512-backbone order-five
+samples, 8/64 MiB budgets, and disabled/single-entry caches. Two additional
+4096-backbone samples exercise larger key sets. Seven rotated trials include
+fresh numerical-cache filling on every call, with warmed numerical storage.
+
+There is no material low-order regression: the new complete order-two medians
+range from 0.04% slower to 0.71% faster than the previous lookup. The two-pole
+order-five cache shrinks from 31 to 15 entries. The larger ten-pole sample
+shrinks from 1,161 to 487 entries (7.37 to 3.09 MiB), with roughly 3% faster
+evaluation. At rank 103 with 8 MiB, misses fall from 683 to 336 per 512-backbone
+call and evaluation improves by about 3.6–3.8%. Hashing itself adds only about
+0.1–0.6% over canonical linear lookup in the ten-pole cases; canonicalization
+provides most of the measured benefit. These results favor keeping one simple
+hash policy, without claiming a large acceleration from hashing alone.
+
+Validation: the full CPU build succeeded and **88/88 CTest entries passed** in
+33.74 seconds. A new regression covers commuting permutations, repeated powers,
+sign distinctions and unchanged input backbones for both evaluation kinds.
+Existing tests cover cache limits, changed propagators, strided inputs and
+repeated calls. All **66 benchmark rows / 22 cases** agree with the baseline
+within **9.42e-14** relative maximum error (limit 2e-10). Independent reviews
+checked implementation safety, benchmark fairness, tables and cache accounting.
+
+The [hardware report](benchmarks/dense_cpu_few_orb/thinkstationP620_3945WX/cache_lookup.md)
+links the raw results and reproduction instructions. The high-order cases are
+sampled fully crossing topologies, not full high-order diagram sums. User edits
+to the baseline evaluator and `.gitignore`, and existing untracked work, remain
+outside these commits.
