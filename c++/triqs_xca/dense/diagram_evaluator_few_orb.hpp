@@ -4,6 +4,8 @@
 #include "triqs_xca/diagram/backbone.hpp"
 #include <cstddef>
 #include <span>
+#include <unordered_map>
+#include <vector>
 
 namespace triqs_xca::dense {
 
@@ -65,8 +67,13 @@ namespace triqs_xca::dense {
                                                              nda::array_const_view<int, 2> topology);
 
     private:
+    // Scalar kernel factors commute, but repeated factors must remain in the key.
+    using EdgeKey = std::vector<diagram::KernelFactor>;
+    struct EdgeKeyHash {
+      std::size_t operator()(EdgeKey const &key) const;
+    };
+
     struct EdgeOperand {
-      std::vector<diagram::KernelFactor> kernels;
       nda::array<nda::dcomplex, 3> coefficients, hilbert_coefficients;
       EdgeOperand(long rank, long dimension) : coefficients(rank, dimension, dimension), hilbert_coefficients(coefficients.shape()) {}
     };
@@ -74,6 +81,8 @@ namespace triqs_xca::dense {
     std::size_t cache_budget, entry_bytes;
     CacheStatistics cache_statistics;
     std::vector<EdgeOperand> edge_cache;
+    std::unordered_map<EdgeKey, std::size_t, EdgeKeyHash> edge_lookup;
+    EdgeKey edge_key;
     EdgeOperand uncached_edge;
     nda::array<nda::dcomplex, 3> coefficients, hilbert_coefficients, product;
     nda::array<nda::dcomplex, 3> T, U, GKt, Tmu;

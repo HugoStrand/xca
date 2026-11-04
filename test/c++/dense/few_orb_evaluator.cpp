@@ -163,6 +163,51 @@ TEST(DenseFewOrb, correlator_reflection_statistics_and_cache_limits) {
   }
 }
 
+TEST(DenseFewOrb, edge_cache_commuting_factors_preserve_powers_and_signs) {
+  auto m      = model();
+  auto action = dense::make_action(m.mesh, m.hyb_poles, m.hyb_coeffs, m.ad_flat, m.dynint_ops, m.dynint_coeffs);
+  dense::DiagramEvaluator scalar(action);
+  dense::DiagramEvaluatorFewOrb evaluator(action);
+  auto mu  = action.operators.Fs(nda::range(action.n_hyb), all, all);
+  auto kap = action.operators.F_dags(nda::range(action.n_hyb), all, all);
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
+  diagram::KernelFactor A{0, 1}, B{1, -1}, A_reflected{0, -1}, B_reflected{1, 1};
+  std::vector<std::vector<diagram::KernelFactor>> recipes{
+    {A, B}, {B, A}, {A, A, B}, {B, A, A}, {A, B, B}, {B, B, A},
+    {A_reflected, B}, {B, A_reflected}, {A, B_reflected}, {B_reflected, A}, {}};
+
+  auto check = [&]<diagram::Kind K>() {
+    SCOPED_TRACE(K == diagram::Kind::self_energy ? "self_energy" : "correlator");
+    auto backbone = diagram::prepare_backbone<K>(topology, action, 0);
+    std::vector<diagram::Backbone<K>> backbones;
+    // Prescribe the edge products directly to isolate their identity from arc
+    // enumeration. Scalar factors commute, but powers and signs must survive.
+    for (auto const &recipe : recipes) {
+      for (auto &edge : backbone.edges) edge.kernels = recipe;
+      backbones.push_back(backbone);
+    }
+    auto evaluate = [&](auto &implementation, auto const &input) {
+      if constexpr (K == diagram::Kind::self_energy)
+        return implementation.compute_self_energy_both_directions(m.G, input);
+      else
+        return implementation.compute_one_time_correlator(m.G, input, mu, kap);
+    };
+    auto expected = evaluate(scalar, backbones.front());
+    for (std::size_t i = 1; i < backbones.size(); ++i) expected += evaluate(scalar, backbones[i]);
+    ASSERT_GT(nda::max_element(nda::abs(expected)), 1e-6);
+    expect_close(evaluate(evaluator, backbones), expected);
+    auto stats = evaluator.edge_cache_statistics();
+    EXPECT_EQ(stats.entries, 6);
+    EXPECT_EQ(stats.misses, 6);
+    EXPECT_GT(stats.hits, 0);
+    // Cache normalization must not rewrite the supplied backbone instructions.
+    for (std::size_t i = 0; i < backbones.size(); ++i)
+      for (auto const &edge : backbones[i].edges) EXPECT_EQ(edge.kernels, recipes[i]);
+  };
+  check.template operator()<diagram::Kind::self_energy>();
+  check.template operator()<diagram::Kind::correlator>();
+}
+
 TEST(DenseFewOrb, fixed_dimensions_blas_fallback_and_high_rank) {
   for (auto [modes, high_rank] : {std::pair{1, false}, std::pair{2, false}, std::pair{3, false}, std::pair{4, false},
                                  std::pair{5, false}, std::pair{2, true}}) {

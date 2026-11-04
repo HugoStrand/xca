@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
+#include <tuple>
 
 namespace triqs_xca::dense {
   using nda::dcomplex;
@@ -85,26 +86,40 @@ namespace triqs_xca::dense {
 
   void DiagramEvaluatorFewOrb::begin_call(nda::array_const_view<dcomplex, 3> G) {
     cache_statistics = {};
+    edge_lookup.clear();
     if (G.shape() != T.shape()) throw std::invalid_argument("DiagramEvaluatorFewOrb: propagator must have shape (DLR rank, N, N)");
-    // Retain allocations, but no numerical entry survives a call boundary.
+    // Retain numerical storage, but no entry survives a call boundary.
+  }
+
+  std::size_t DiagramEvaluatorFewOrb::EdgeKeyHash::operator()(EdgeKey const &key) const {
+    std::size_t hash = key.size();
+    for (auto const &factor : key)
+      for (int value : {factor.pole_index, factor.argument_sign})
+        hash ^= std::hash<int>{}(value) + 0x9e3779b9U + (hash << 6) + (hash >> 2);
+    return hash;
   }
 
   DiagramEvaluatorFewOrb::EdgeOperand const &DiagramEvaluatorFewOrb::edge_operand(nda::array_const_view<dcomplex, 3> G, diagram::Edge const &edge) {
-    for (std::size_t i = 0; i < cache_statistics.entries; ++i)
-      if (edge_cache[i].kernels == edge.kernels) {
-        ++cache_statistics.hits;
-        return edge_cache[i];
-      }
+    edge_key = edge.kernels;
+    std::sort(edge_key.begin(), edge_key.end(), [](auto const &a, auto const &b) {
+      return std::tie(a.pole_index, a.argument_sign) < std::tie(b.pole_index, b.argument_sign);
+    });
+    if (auto found = edge_lookup.find(edge_key); found != edge_lookup.end()) {
+      ++cache_statistics.hits;
+      return edge_cache[found->second];
+    }
     ++cache_statistics.misses;
     bool retain = cache_statistics.entries < cache_budget / entry_bytes;
     auto index  = cache_statistics.entries;
     if (retain && index == edge_cache.size()) edge_cache.emplace_back(action.tau_mesh.size(), action.block_dims(0));
     auto &operand = retain ? edge_cache[index] : uncached_edge;
     GKt           = G;
-    apply_kernel_product(GKt, edge.kernels, action.kernel);
+    // Evaluate in canonical order too, so the payload does not depend on which
+    // permutation first inserted the key. Full key equality resolves hash collisions.
+    apply_kernel_product(GKt, edge_key, action.kernel);
     action.convolution.prepare_operand(GKt, operand.coefficients, operand.hilbert_coefficients);
     if (retain) {
-      operand.kernels = edge.kernels;
+      edge_lookup.emplace(edge_key, index);
       ++cache_statistics.entries;
       cache_statistics.bytes = cache_statistics.entries * entry_bytes;
     }
