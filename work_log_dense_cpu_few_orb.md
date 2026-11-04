@@ -113,3 +113,34 @@ are outside this implementation round.
 
 Code changes are committed separately from work logs/documentation. User edits
 remain uncommitted. No remote changes or GPU jobs were performed.
+
+## 2026-11-04 — Eigen kernels through dimension sixteen
+
+Code commit `cc4f66f` makes `small_gemm<N>` use Eigen and retains the original
+implementation as `small_gemm_handwritten<N>`. FewOrb dispatches dimensions
+2, 4, 8 and 16 to precompiled fixed-size products; other dimensions use BLAS.
+The diagram traversal, real DLR transforms and edge cache policy are unchanged.
+
+Eigen is now a normal public dependency, resolved through the repository's
+`Build_Deps` mechanism and pinned to 5.0.1 for source builds. The supported
+installed package family is Eigen 5. Its headers and CMake package install with
+XCA when built from source; the exported XCA target finds and propagates Eigen.
+A temporary installation under `/tmp` successfully configured, built and ran an
+external C++ consumer. The usual install prefix was restored, and the existing
+installed XCA application was not changed.
+
+The packed path uses unaligned fixed-size Eigen maps directly. A standalone
+allocation probe uncovered an Eigen 5 issue in the nonpacked path: complex GEMM
+can emit a 16-byte aligned scatter store even though a complex-double pointer
+only needs 8-byte alignment. That path now computes into a fixed-size stack
+matrix and copies back. It reads the previous destination only when beta is
+nonzero. The evaluator's packed path remains direct. A deterministic regression
+uses pointers at 8 modulo 16, testing both packed and strided cases through N=16.
+
+Validation: **88/88** CPU CTest entries passed in 35.04 seconds. Coverage includes
+both kernels, complex alpha/beta, NaN-filled overwrite destinations, padded and
+unequal-stride views, N=2/4/8/16 evaluator calls and bounded N=32 BLAS fallback.
+The standalone probe with Eigen runtime allocation assertions passed all four
+dimensions for packed/strided overwrite, accumulation and general complex
+scaling, with no Eigen heap allocation during the products. Code and dependency
+integration were reviewed independently before committing.

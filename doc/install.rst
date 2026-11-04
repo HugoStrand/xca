@@ -61,3 +61,14 @@ The compilation of ``xca`` can be configured using CMake-options::
 +-----------------------------------------------------------------+-----------------------------------------------+
 | Update the Python bindings (developers only)                    | -DUpdate_Python_Bindings=ON                   |
 +-----------------------------------------------------------------+-----------------------------------------------+
+
+Eigen small-matrix kernels
+-------------------------
+
+The dense few-orbital evaluator uses the header-only Eigen 5 library. Eigen is
+resolved through the normal ``Build_Deps`` policy. Source builds use the pinned
+``5.0.1`` release and install its headers and CMake package with xca; Eigen's own
+tests, examples and BLAS/LAPACK libraries are not built. With
+``-DBuild_Deps=Never``, an installed Eigen 5 package must be discoverable, for
+example through ``Eigen3_DIR`` or ``CMAKE_PREFIX_PATH``. The exported
+``triqs_xca::triqs_xca_c`` target propagates the Eigen dependency to C++ consumers.
