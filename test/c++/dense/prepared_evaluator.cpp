@@ -1,5 +1,6 @@
 #include "test_utils/prepared_evaluators.hpp"
 #include "triqs_xca/diagram/backbone.hpp"
+#include <array>
 #include <concepts>
 #include <memory>
 #include <tuple>
@@ -160,4 +161,41 @@ TEST(DensePrepared, copied_evaluator_retains_convolution_grid) {
     return std::tuple{std::move(copy), model.G, std::move(backbone), std::move(expected)};
   }();
   expect_close(retained->compute_self_energy_by_pairs(G, prepared), reference);
+}
+
+TEST(DensePrepared, invalid_numerical_shapes_leave_workspace_usable) {
+  auto model = test_utils::build_eval_model("unequal_sets_nA0");
+  dense::DiagramEvaluator evaluator(model.hyb_poles, model.hyb_coeffs, model.mesh, model.ad_flat, model.dynint_ops, model.dynint_coeffs);
+  nda::array<int, 2> topology{{0, 2}, {1, 3}};
+  auto sigma = diagram::prepare_backbone<diagram::Kind::self_energy>(topology, evaluator.action, 0);
+  auto correlator = diagram::prepare_backbone<diagram::Kind::correlator>(topology, evaluator.action, 0);
+  auto mu = evaluator.action.operators.Fs(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all);
+  auto kap = evaluator.action.operators.F_dags(nda::range(evaluator.action.n_hyb), nda::range::all, nda::range::all);
+  auto expected_sigma = evaluator.compute_self_energy(model.G, sigma);
+  auto expected_pair = evaluator.compute_self_energy_by_pairs(model.G, sigma);
+  auto expected_correlator = evaluator.compute_one_time_correlator(model.G, correlator, mu, kap);
+  long r = model.G.extent(0), N = model.G.extent(1);
+
+  // Owning scratch must not resize to a bad input shape before validation.
+  for (auto shape : {std::array{r - 1, N, N}, std::array{r + 1, N, N}, std::array{r, N - 1, N}, std::array{r, N, N + 1}}) {
+    auto invalid = nda::zeros<dcomplex>(shape);
+    EXPECT_THROW(evaluator.compute_self_energy(invalid, sigma), std::invalid_argument);
+    expect_close(evaluator.compute_self_energy(model.G, sigma), expected_sigma);
+    EXPECT_THROW(evaluator.compute_self_energy_by_pairs(invalid, sigma), std::invalid_argument);
+    expect_close(evaluator.compute_self_energy_by_pairs(model.G, sigma), expected_pair);
+    EXPECT_THROW(evaluator.compute_one_time_correlator(invalid, correlator, mu, kap), std::invalid_argument);
+    expect_close(evaluator.compute_one_time_correlator(model.G, correlator, mu, kap), expected_correlator);
+  }
+  for (auto shape : {std::array{1L, N - 1, N}, std::array{1L, N, N + 1}}) {
+    auto invalid = nda::zeros<dcomplex>(shape);
+    EXPECT_THROW(evaluator.compute_one_time_correlator(model.G, correlator, invalid, kap), std::invalid_argument);
+    EXPECT_THROW(evaluator.compute_one_time_correlator(model.G, correlator, mu, invalid), std::invalid_argument);
+    expect_close(evaluator.compute_one_time_correlator(model.G, correlator, mu, kap), expected_correlator);
+  }
+  auto empty_ops = nda::zeros<dcomplex>(0, N, N);
+  auto empty_result = evaluator.compute_one_time_correlator(model.G, correlator, empty_ops, kap);
+  EXPECT_EQ(empty_result.extent(0), r);
+  EXPECT_EQ(empty_result.extent(1), 0);
+  EXPECT_EQ(empty_result.extent(2), kap.extent(0));
+  expect_close(evaluator.compute_one_time_correlator(model.G, correlator, mu, kap), expected_correlator);
 }

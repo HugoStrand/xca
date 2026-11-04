@@ -17,10 +17,6 @@ namespace triqs_xca::dense {
 
   using cppdlr::_;
 
-  using nda::trace;
-  using nda::linalg::matmul;
-
-
   namespace {
     dlr_imtime compatible_mesh(double beta, double eps, imtime_ops const &itops) {
       auto mesh = dlr_imtime(beta, triqs::mesh::Fermion, itops.lambda() / beta, eps, false);
@@ -30,18 +26,30 @@ namespace triqs_xca::dense {
       return mesh;
     }
 
-    // Check the dense propagator layout and borrow its single block.
-    nda::array_const_view<dcomplex, 3> native_propagator(block_gf_view<dlr_imtime> G_ppsc, Action<FSet> const &action) {
+    void validate_propagator(nda::array_const_view<dcomplex, 3> G, Action<FSet> const &action) {
       auto const r = action.tau_mesh.size();
       auto const N = action.block_dims(0);
+      if (G.extent(0) != r || G.extent(1) != N || G.extent(2) != N)
+        throw std::invalid_argument("dense::DiagramEvaluator: propagator has shape (" + std::to_string(G.extent(0)) + ", " + std::to_string(G.extent(1))
+                                    + ", " + std::to_string(G.extent(2)) + "), expected (r, N, N) = (" + std::to_string(r) + ", " + std::to_string(N)
+                                    + ", " + std::to_string(N) + ")");
+    }
+
+    void validate_observables(nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
+                              Action<FSet> const &action) {
+      auto const N = action.block_dims(0);
+      if (mu_ops.extent(1) != N || mu_ops.extent(2) != N || kap_ops.extent(1) != N || kap_ops.extent(2) != N)
+        throw std::invalid_argument("dense::DiagramEvaluator: observable matrices must have shape (n_ops, " + std::to_string(N)
+                                    + ", " + std::to_string(N) + ")");
+    }
+
+    // Check the dense propagator layout and borrow its single block.
+    nda::array_const_view<dcomplex, 3> native_propagator(block_gf_view<dlr_imtime> G_ppsc, Action<FSet> const &action) {
       if (G_ppsc.size() != 1)
         throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc must be a single block over the full Hilbert space, got "
                                     + std::to_string(G_ppsc.size()) + " blocks");
       auto G = G_ppsc[0].data();
-      if (G.extent(0) != r || G.extent(1) != N || G.extent(2) != N)
-        throw std::invalid_argument("dense::DiagramEvaluator: G_ppsc has shape (" + std::to_string(G.extent(0)) + ", " + std::to_string(G.extent(1))
-                                    + ", " + std::to_string(G.extent(2)) + "), expected (r, N, N) = (" + std::to_string(r) + ", " + std::to_string(N)
-                                    + ", " + std::to_string(N) + ")");
+      validate_propagator(G, action);
       return G;
     }
 
@@ -65,18 +73,24 @@ namespace triqs_xca::dense {
       return result;
     }
 
-    void multiply_left_vertex(nda::array_view<dcomplex, 3> T_buf, diagram::Vertex const &vertex, Action<FSet> const &action) {
+    void multiply_left_vertex(nda::array<dcomplex, 3> &T_buf, diagram::Vertex const &vertex, Action<FSet> const &action,
+                              nda::array<dcomplex, 3> &scratch) {
       auto const r = action.tau_mesh.size();
       auto F = action.operators.get_operator(vertex);
-      for (int t = 0; t < r; t++) T_buf(t, _, _) = matmul(F, T_buf(t, _, _));
-      apply_kernel(T_buf, vertex, action.kernel);
+      for (int t = 0; t < r; t++) nda::blas::gemm(1., F, T_buf(t, _, _), 0., scratch(t, _, _));
+      apply_kernel(scratch, vertex, action.kernel);
+      // The preceding edge operand is dead; exchange owners instead of copying
+      // a product over its still-needed input. Callers retain no views across this swap.
+      std::swap(T_buf, scratch);
     }
 
-    void multiply_right_vertex(nda::array_view<dcomplex, 3> U_buf, diagram::Vertex const &vertex, Action<FSet> const &action) {
+    void multiply_right_vertex(nda::array<dcomplex, 3> &U_buf, diagram::Vertex const &vertex, Action<FSet> const &action,
+                               nda::array<dcomplex, 3> &scratch) {
       auto const r = action.tau_mesh.size();
       auto F = action.operators.get_operator(vertex);
-      for (int t = 0; t < r; t++) U_buf(t, _, _) = matmul(U_buf(t, _, _), F);
-      apply_kernel(U_buf, vertex, action.kernel, true);
+      for (int t = 0; t < r; t++) nda::blas::gemm(1., U_buf(t, _, _), F, 0., scratch(t, _, _));
+      apply_kernel(scratch, vertex, action.kernel, true);
+      std::swap(U_buf, scratch);
     }
 
     void integrate_left_edge(nda::array_view<dcomplex, 3> T_buf, nda::array_const_view<dcomplex, 3> Gt, diagram::Edge const &edge,
@@ -98,37 +112,37 @@ namespace triqs_xca::dense {
     // The initial segment starts at edge zero, whose kernel is identity:
     // internal arcs never touch vertex zero.
     template <diagram::Kind K>
-    void evaluate_initial_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void evaluate_initial_segment(nda::array<dcomplex, 3> &result, nda::array_const_view<dcomplex, 3> Gt,
                                   diagram::Backbone<K> const &backbone, diagram::BackboneRange range,
                                   Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
                                   cppdlr::fast_convolve_workspace &convolution_work) {
       result = Gt;
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
-        multiply_left_vertex(result, backbone.vertices[v], action);
+        multiply_left_vertex(result, backbone.vertices[v], action, GKt);
         integrate_left_edge(result, Gt, backbone.edges[v], action, GKt, convolution_work);
       }
     }
 
     // Extend an existing endpoint result; an empty self-energy tail does no work.
-    void extend_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void extend_segment(nda::array<dcomplex, 3> &result, nda::array_const_view<dcomplex, 3> Gt,
                         diagram::SelfEnergyBackbone const &backbone, diagram::BackboneRange range,
                         Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
                         cppdlr::fast_convolve_workspace &convolution_work) {
       for (int v = range.first_vertex; v < range.vertex_end; ++v) {
         integrate_left_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution_work);
-        multiply_left_vertex(result, backbone.vertices[v], action);
+        multiply_left_vertex(result, backbone.vertices[v], action, GKt);
       }
     }
 
     // The correlator segment starts at the beta edge in this traversal.
     // Its kernel is identity because all internal arcs end before beta.
-    void evaluate_reflected_segment(nda::array_view<dcomplex, 3> result, nda::array_const_view<dcomplex, 3> Gt,
+    void evaluate_reflected_segment(nda::array<dcomplex, 3> &result, nda::array_const_view<dcomplex, 3> Gt,
                                     diagram::CorrelatorBackbone const &backbone, diagram::BackboneRange range,
                                     Action<FSet> const &action, nda::array<dcomplex, 3> &GKt,
                                     cppdlr::fast_convolve_workspace &convolution_work) {
       result = Gt;
       for (int v = range.vertex_end - 1; v >= range.first_vertex; --v) {
-        multiply_right_vertex(result, backbone.vertices[v], action);
+        multiply_right_vertex(result, backbone.vertices[v], action, GKt);
         integrate_right_edge(result, Gt, backbone.edges[v - 1], action, GKt, convolution_work);
       }
       result = action.tau_mesh.dlr_it().reflect(result);
@@ -146,7 +160,7 @@ namespace triqs_xca::dense {
 
       for (int kap = 0; kap < action.n_flavours(); kap++) {
         nda::array_const_view<dcomplex, 2> F_kap = action.operators.get_operator(orientation.early_operator(kap).adjoint, kap);
-        for (int t = 0; t < r; t++) Tkaps(kap, t, _, _) = matmul(T_buf(t, _, _), F_kap);
+        for (int t = 0; t < r; t++) nda::blas::gemm(1., T_buf(t, _, _), F_kap, 0., Tkaps(kap, t, _, _));
       }
 
       T_buf = 0;
@@ -162,7 +176,7 @@ namespace triqs_xca::dense {
           for (int t = 0; t < r; t++) Tmu(t, _, _) += sign * hyb_t(t) * Tkaps(kap, t, _, _);
         }
         nda::array_const_view<dcomplex, 2> F_mu = action.operators.get_operator(orientation.late_operator(mu).adjoint, mu);
-        for (int t = 0; t < r; t++) T_buf(t, _, _) += matmul(F_mu, Tmu(t, _, _));
+        for (int t = 0; t < r; t++) nda::blas::gemm(1., F_mu, Tmu(t, _, _), 1., T_buf(t, _, _));
       }
     }
 
@@ -216,6 +230,7 @@ namespace triqs_xca::dense {
       diagram::CorrelatorBackbone const &backbone, nda::array_const_view<dcomplex, 3> mu_ops,
       nda::array_const_view<dcomplex, 3> kap_ops, diagram::CorrelatorStatistics correlator_statistics,
       Action<FSet> const &action, nda::array<dcomplex, 3> &T, nda::array<dcomplex, 3> &U, nda::array<dcomplex, 3> &GKt,
+      nda::array<dcomplex, 3> &Tmu,
       cppdlr::fast_convolve_workspace &convolution_work) {
       auto const r = action.tau_mesh.size();
       auto ranges = backbone.endpoint_ranges();
@@ -228,13 +243,22 @@ namespace triqs_xca::dense {
       T *= kernel_prefactor;
       T *= backbone.direction_sign;
 
-      nda::array<dcomplex, 3> Tmuop = nda::zeros<dcomplex>(r, Gt.extent(1), Gt.extent(1));
-
       int sign = signs(correlator_statistics.at_zero, correlator_statistics.at_tau);
       for (int mu = 0; mu < mu_ops.extent(0); ++mu) {
-        for (int t = 0; t < r; ++t) Tmuop(t, _, _) = matmul(U(t, _, _), matmul(mu_ops(mu, _, _), T(t, _, _)));
+        // Both segments remain live for every observable. Reuse the completed
+        // edge buffer and endpoint-sum buffer for their two join products.
+        for (int t = 0; t < r; ++t) {
+          nda::blas::gemm(1., mu_ops(mu, _, _), T(t, _, _), 0., GKt(t, _, _));
+          nda::blas::gemm(1., U(t, _, _), GKt(t, _, _), 0., Tmu(t, _, _));
+        }
         for (int kap = 0; kap < kap_ops.extent(0); ++kap) {
-          for (int t = 0; t < r; ++t) correlator(t, mu, kap) += sign * trace(matmul(Tmuop(t, _, _), kap_ops(kap, _, _)));
+          for (int t = 0; t < r; ++t) {
+            // trace(A B) requires only this contraction, without conjugation.
+            dcomplex trace = 0.;
+            for (long i = 0; i < Gt.extent(1); ++i)
+              for (long j = 0; j < Gt.extent(1); ++j) trace += Tmu(t, i, j) * kap_ops(kap, j, i);
+            correlator(t, mu, kap) += sign * trace;
+          }
         }
       }
     }
@@ -331,6 +355,7 @@ namespace triqs_xca::dense {
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy_by_pairs(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
+    validate_propagator(Gt, action);
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
     eval_self_energy_pair(result, Gt, backbone, action, T, U, GKt, Tkaps, Tmu, convolution_work);
     return result;
@@ -338,6 +363,7 @@ namespace triqs_xca::dense {
 
   nda::array<dcomplex, 3> DiagramEvaluator::compute_self_energy(
     nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone) {
+    validate_propagator(Gt, action);
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), action.block_dims(0), action.block_dims(0));
     eval_self_energy(result, Gt, backbone, action, T, GKt, Tkaps, Tmu, convolution_work);
     return result;
@@ -347,8 +373,10 @@ namespace triqs_xca::dense {
     nda::array_const_view<dcomplex, 3> Gt, diagram::CorrelatorBackbone const &backbone,
     nda::array_const_view<dcomplex, 3> mu_ops, nda::array_const_view<dcomplex, 3> kap_ops,
     diagram::CorrelatorStatistics correlator_statistics) {
+    validate_propagator(Gt, action);
+    validate_observables(mu_ops, kap_ops, action);
     auto result = nda::zeros<dcomplex>(action.tau_mesh.size(), mu_ops.extent(0), kap_ops.extent(0));
-    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt, convolution_work);
+    eval_correlator(result, Gt, backbone, mu_ops, kap_ops, correlator_statistics, action, T, U, GKt, Tmu, convolution_work);
     return result;
   }
 
@@ -364,7 +392,7 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> correlator = nda::zeros<dcomplex>(r, mu_ops.extent(0), kap_ops.extent(0));
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, T, U, GKt, convolution_work);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, {}, action, T, U, GKt, Tmu, convolution_work);
     }
     return correlator;
   }
@@ -407,7 +435,7 @@ namespace triqs_xca::dense {
     auto [first, last] = triqs_xca::detail::local_work_range(count);
     for (long index = first; index < last; ++index) {
       auto backbone = diagram::prepare_backbone<diagram::Kind::correlator>(topology, action, index);
-      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, T, U, GKt, convolution_work);
+      eval_correlator(correlator, Gt, backbone, mu_ops, kap_ops, statistics, action, T, U, GKt, Tmu, convolution_work);
     }
 
     return correlator;

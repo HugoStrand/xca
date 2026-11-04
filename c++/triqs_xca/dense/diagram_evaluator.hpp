@@ -47,15 +47,16 @@ namespace triqs_xca::dense {
     nda::array<dcomplex, 3> Sigma; // result accumulator for topology self-energy calls
     nda::array<dcomplex, 3> T;     // array for storing intermediate result
     nda::array<dcomplex, 3> U;     // array for storing intermediate result (left side of correlator diagram)
-    nda::array<dcomplex, 3> GKt;   // array for storing result of edge computation
+    nda::array<dcomplex, 3> GKt;   // edge operand; also scratch for vertex and correlator products
     nda::array<dcomplex, 4> Tkaps; // intermediate storage array
-    nda::array<dcomplex, 3> Tmu;   // intermediate storage array
+    nda::array<dcomplex, 3> Tmu;   // endpoint sum or correlator join product
 
     void reset(); // reset all arrays to zero
 
     public:
     // Evaluate one prepared backbone locally, without MPI partitioning.
     // Each call returns an independent owning array.
+    // Gt must have the Action's (r, N, N) shape; observable matrices have shape (n_ops, N, N).
     C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy(
       nda::array_const_view<dcomplex, 3> Gt, diagram::SelfEnergyBackbone const &backbone);
     C2PY_IGNORE nda::array<dcomplex, 3> compute_self_energy_by_pairs(
