@@ -327,3 +327,24 @@ pairs. Their `self_energy` workload now corresponds to historical `pairs` rows;
 the READMEs explain the distinction. Existing raw results and tables remain
 unchanged, and no new timing sweep was run. User constructor-formatting edits,
 `.gitignore` changes and pre-existing untracked files remain outside these commits.
+
+## 2026-11-04 — batched destination reuse
+
+Implementation commit `6f35c96e` removes the remaining two destination-storage
+differences from the batched evaluator. Correlator joins now borrow one matrix
+from the completed edge scratch instead of allocating a product matrix for each
+batch. Topology wrappers pass their final output directly to the accumulating
+self-energy/correlator functions, avoiding a freshly allocated and zeroed
+partial result and its extra accumulation for every batch.
+
+The public prepared methods still return independent owning results. Direct
+topology accumulation changes floating-point grouping, so numerical comparisons
+remain tolerance-based. The existing topology test now covers capacities
+1/3/8/19, partial tails, changed propagators, alternating self-energy/correlator
+calls and retained outputs. Independent review checked scratch ownership,
+homogeneous topology batches, validation on idle MPI ranks and probe hooks.
+
+Validation: all three focused CTest entries passed (batched evaluator, serial
+MPI evaluator and three-rank MPI evaluator; 1.08 seconds). The batched benchmark
+and generated diagnostic evaluator also built successfully. No new timing sweep
+was run; the purpose is a consistent implementation for future comparisons.
