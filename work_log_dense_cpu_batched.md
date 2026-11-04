@@ -81,3 +81,41 @@ entries passed** in 33.46 s, including serial and three-rank batching checks.
 The build passed; no GPU resources were used. The independent roundoff
 diagnostic and narrowly scoped cross-engine tolerance adjustment are saved
 with the scalar convolution benchmark. User formatting remains uncommitted.
+
+## Small-N batching investigation — 2026-11-04
+
+Research sources and raw results: `47f9ccd` `[bench] probe small dense cpu`.
+Production evaluators and convolution are unchanged. Isolated benchmark probes
+compare production, an arithmetic clone, fixed4 products, real DLR transforms
+and solves, and fixed-edge convolution matrices. An untimed census measures
+exact edge/prefix reuse. Build-tree generation gives the instrumented evaluator
+a distinct class name; it neither edits nor replaces production symbols.
+
+All targets built. The convolution probe checked analytic noncommuting inputs,
+aliasing, smaller active batches and strided fixed4 products. Full prepared
+evaluator timings covered 228 rows, with maximum relative discrepancy 8.16e-14
+against scalar fast. The full production CTest suite was not rerun for these
+benchmark-only changes. The source/measurement review identified no blocker;
+two rounding statements in the analysis were corrected after independent review.
+
+On the pinned, single-threaded Threadripper workstation, widening the batch
+reduces convolution cost per backbone by only about 9--11%. Every lane still
+executes three tiny GEMMs per DLR node. At rank 103, coefficient solves and DLR
+transforms account for roughly 79% of convolution time. Real DLR arithmetic
+plus direct 4x4 products improves prepared evaluator calls 1.39--1.45x over
+current batch 8, and 1.67--1.82x over scalar fast. The low-rank real-solve policy
+needs separate crossover tuning: real GEMMs plus fixed products perform better
+there while retaining complex solves.
+
+Sampled order-five self-energy has 18 distinct exact edge recipes in 504
+convolutions. A bounded coefficient/Hilbert cache is the next reuse experiment;
+its speedup has not been measured. Cached full convolution matrices are more
+conditional: at rank 103, N=4 each costs 2.59 MiB and about 8.3 ms setup. Against the
+improved arithmetic, eight shared-edge lanes need about 19 batch applications
+to repay setup. Those kernel measurements exclude grouping and cache management.
+
+The detailed report and remaining experiments are in
+`benchmarks/dense_cpu_batched/thinkstationP620_3945WX/small_n_analysis.md`;
+reproduction commands are in `benchmarks/dense_cpu_batched/experiments/small_n/README.md`.
+No GPU resources were used. Existing user formatting and `.gitignore` edits
+remain uncommitted and preserved.

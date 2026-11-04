@@ -145,3 +145,6 @@ claim is made about full-solver speedup, other CPUs, or GPU performance.
 
 See the [generic benchmark README](../README.md) for model construction, execution
 instructions, sampling, and the exact timing boundaries.
+
+The [small-N follow-up analysis](small_n_analysis.md) profiles the limited
+batching gain and measures additional CPU arithmetic and reuse experiments.

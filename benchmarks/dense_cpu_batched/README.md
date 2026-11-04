@@ -79,3 +79,7 @@ within the same evaluation kind. Pair entries represent two directions.
 The benchmark does not measure an impurity-solver iteration, MPI scaling, or GPU
 performance. A speedup here should be followed by a representative solver-level
 measurement before changing the default evaluator.
+
+The [small-N CPU experiments](experiments/small_n/README.md) isolate convolution
+stages, fixed-size products, real DLR arithmetic and repeated-edge reuse without
+changing the production evaluator.
