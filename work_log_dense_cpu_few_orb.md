@@ -284,3 +284,46 @@ The implementation validation remains **88/88** CPU tests. The
 contains full order-two timings, order-three summaries, order-five samples,
 cache statistics and limits. No Python API, GPU code, remote state or user
 formatting edits were changed.
+
+## 2026-11-04 — one self-energy path
+
+Implementation commit `307ee023` makes the existing paired algorithm the sole
+dense topology operation, `compute_self_energy(G, topology)`. It evaluates the
+prefix once, contracts both directions of the special arc connected to zero,
+and propagates their combined result through the common tail once. Reversing
+that arc changes the global self-energy sign, which explains the subtraction
+inside `eval_self_energy_pair`. This optimization and the compact work count
+are documented beside the implementation and `count_self_energy_pairs`.
+Block-sparse evaluation still treats directions separately because their sector
+paths and intermediate dimensions can differ.
+
+The baseline's prepared C++ API now names its semantics explicitly:
+`compute_self_energy_single_direction(Gt, backbone)` retains the directional
+reference, while `compute_self_energy_both_directions(Gt, backbone)` sums both
+orientations with all internal choices fixed. Either supplied special-arc
+orientation gives the same paired result. Both methods remain hidden from
+Python. FewOrb and the experimental Batched evaluator retain only the paired
+prepared operation; their directional overloads and runtime `paired` branches
+are removed. Prepared spans sum both directions for every supplied backbone,
+so a complete topology requires only one representative per pair.
+
+Python's separate `order_by_pairs` method and binding are removed. The existing
+solver path now uses paired dense evaluation, with reduction still delayed
+until after the topology/order sum. Dense MPI work is partitioned by compact
+pairs; in particular, first order is one task. Block-sparse work partitioning
+is unchanged. The shared C++ test adapter explicitly selects the baseline's
+single-direction method, preserving dense-versus-block-sparse comparisons at
+the individual backbone level. Pair equality, opposite orientations, analytic
+references, workspace reuse, and independent MPI direction sums remain covered.
+
+Validation: the CPU library and regenerated Python wrapper built successfully;
+**88/88 CTest entries passed** in 33.76 seconds, including C++ and Python MPI
+tests. The FewOrb, Batched, generated evaluator probe and recipe-reuse benchmark
+targets also compiled. Independent reviews found no correctness issues in the
+signs, enumeration, scratch/cache handling or caller migration.
+
+Benchmark commit `da2519bc` migrates current drivers to compact self-energy
+pairs. Their `self_energy` workload now corresponds to historical `pairs` rows;
+the READMEs explain the distinction. Existing raw results and tables remain
+unchanged, and no new timing sweep was run. User constructor-formatting edits,
+`.gitignore` changes and pre-existing untracked files remain outside these commits.
